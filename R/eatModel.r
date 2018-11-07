@@ -1,4 +1,3 @@
-
 ### Hilfsfunktion zur Bestimmung der Anzahl der Beobachtungen je Itempaar
 nObsItemPairs <- function ( responseMatrix, q3MinType) {
                  spl <- data.frame ( combn(colnames(responseMatrix),2), stringsAsFactors = FALSE)
@@ -1018,7 +1017,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                      if(length(intersect(all.Names$HG.var, all.Names$variablen))>0)     {stop("Test items and HG variable have to be mutually exclusive.\n")}
                      if(length(intersect(all.Names$group.var, all.Names$variablen))>0)  {stop("Test items and group variable have to be mutually exclusive.\n")}
      ### Sektion 'Q matrix ggf. erstellen und auf Konsistenz zu sich selbst und zu den Daten pruefen' ###
-                     if(is.null(qMatrix)) { qMatrix <- data.frame ( Item = all.Names$variablen, Dim1 = 1, stringsAsFactors = FALSE) } else {
+                     if(is.null(qMatrix)) { qMatrix <- data.frame ( item = all.Names$variablen, Dim1 = 1, stringsAsFactors = FALSE) } else {
                          qMatrix <- checkQmatrixConsistency(qMatrix)            ### pruefe Konsistenz der q-matrix
                          notInDat<- setdiff(qMatrix[,1], all.Names$variablen)
                          notInQ  <- setdiff( all.Names$variablen , qMatrix[,1])
