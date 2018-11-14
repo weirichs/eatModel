@@ -2,10 +2,11 @@ Package: eatModel
 Type: Package
 Title: Educational Assessment Tools for IRT Modeling using Conquest or
         TAM
-Version: 0.6.24
+Version: 0.6.25
 Depends: R (>= 3.0.0), TAM, reshape2, parallel
 Imports: future, combinat, car, gdata, plyr, date, Hmisc, eatRep (>=
-        0.9.2), eatTools (>= 0.0.19), sirt (>= 1.12)
+        0.9.2), eatTools (>= 0.0.19), sirt (>= 1.12), devtools
+Remotes: weirichs/eatTools, weirichs/eatRep 
 Date: 2018-11-07
 Author: Sebastian Weirich, Martin Hecht
 Maintainer: Sebastian Weirich <sebastian.weirich@iqb.hu-berlin.de>
