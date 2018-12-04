@@ -569,7 +569,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                          colsValid <- c("lh", "trennschaerfe", "logit", "infit", "bista", "kstufe")
                          colsValid <- colsValid[which(colsValid %in% colnames(itemVera))]
                          long      <- melt ( itemVera, id.vars = c("iqbitem_id", "dummy"), measure.vars = colsValid, na.rm=TRUE)
-                         itemVera  <- asNumericIfPossible(dcast ( long , iqbitem_id ~ dummy + variable, value.var = "value"), verbose = FALSE, ignoreAttributes = TRUE)
+                         suppressWarnings(itemVera  <- asNumericIfPossible(dcast ( long , iqbitem_id ~ dummy + variable, value.var = "value"), force.string = FALSE))
                      }
                  }
             }
@@ -1123,6 +1123,9 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                             }                                                   ### ergaenze neue Variablen im Datensatz
                             all.Names[["HG.var"]] <- setdiff ( all.Names[["HG.var"]], names(varClass)[notNum])
                             all.Names[["HG.var"]] <- c(all.Names[["HG.var"]], colnames(ind))
+                            if ( length(all.Names[["HG.var"]]) > 99 && software == "conquest" ) {
+                                cat(paste0("Warning! ",length(all.Names[["HG.var"]]), " background variables might be problematic in 'Conquest'. Recommend to use 'TAM' instead.\n"))
+                            }                                                   ### Warnung wenn mehr als 100 HG-Variablen und Conquest
                             dat <- data.frame ( dat, ind )
                          }
                          hg.info <- lapply(all.Names[["HG.var"]], FUN = function(ii) {.checkContextVars(x = dat[,ii], varname=ii, type="HG", itemdaten=dat[,all.Names[["variablen"]], drop = FALSE], suppressAbort = TRUE )})
@@ -1353,7 +1356,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                      if(class(x) != "numeric")  {                               ### ist Variable numerisch?
                         if (type == "weight") {stop(paste(type, " variable has to be 'numeric' necessarily. Automatic transformation is not recommended. Please transform by yourself.\n",sep=""))}
                         cat(paste(type, " variable has to be 'numeric'. Variable '",varname,"' of class '",class(x),"' will be transformed to 'numeric'.\n",sep=""))
-                        x <- unlist(asNumericIfPossible(dataFrame = data.frame(x, stringsAsFactors = FALSE), transform.factors = TRUE, maintain.factor.scores = FALSE, verbose=FALSE, ignoreAttributes = TRUE))
+                        suppressWarnings(x <- unlist(asNumericIfPossible(x = data.frame(x, stringsAsFactors = FALSE), transform.factors = TRUE, maintain.factor.scores = FALSE, force.string = FALSE)))
                         if(class(x) != "numeric")  {                            ### erst wenn asNumericIfPossible fehlschlaegt, wird mit Gewalt numerisch gemacht, denn fuer Conquest MUSS es numerisch sein
                            x <- as.numeric(as.factor(x))
                         }
@@ -2150,7 +2153,7 @@ get.wle <- function(file)      {
             input <- strsplit(input," +")
             n.spalten <- max ( sapply(input,FUN=function(ii){ length(ii) }) )   ### Untere Zeile gibt die maximale Spaltenanzahl:
             n.wle <- floor((n.spalten-1) / 4)                                   ### Dies minus eins und dann geteilt durch 4 ergibt Anzahl an WLEs (mehr oder weniger)
-            input <- asNumericIfPossible(data.frame( matrix( t( sapply(input,FUN=function(ii){ ii[1:n.spalten] }) ),length(input),byrow = FALSE), stringsAsFactors = FALSE), set.numeric = TRUE, verbose = FALSE, ignoreAttributes = TRUE)
+            suppressWarnings(input <- asNumericIfPossible(data.frame( matrix( t( sapply(input,FUN=function(ii){ ii[1:n.spalten] }) ),length(input),byrow = FALSE), stringsAsFactors = FALSE), force.string = FALSE))
             valid <- na.omit(input)
             cat(paste("Found valid WLEs of ", nrow(valid)," person(s) for ", n.wle, " dimension(s).\n",sep=""))
             if (nrow(valid) != nrow(input)) { cat(paste("    ",nrow(input)-nrow(valid)," persons with missings on at least one latent dimension.\n",sep="")) }
@@ -2236,7 +2239,7 @@ get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.d
                           namen <- c(namen, rep("add.column",referenzlaenge-length(namen) )) }}
                     input.sel <- t(sapply(input.sel, FUN=function(ii){ c(ii, rep(NA,referenzlaenge-length(ii))) }))
                     colnames(input.sel) <- namen                                ### untere Zeile: entferne eventuelle Sternchen und wandle in Dataframe um!
-                    input.sel <- asNumericIfPossible(data.frame( gsub("\\*","",input.sel), stringsAsFactors = FALSE), set.numeric = TRUE, verbose = FALSE, ignoreAttributes = TRUE)
+                    suppressWarnings(input.sel <- asNumericIfPossible(data.frame( gsub("\\*","",input.sel), stringsAsFactors = FALSE), force.string = FALSE))
                     results.sel <- data.frame(input.sel,filename=file,stringsAsFactors = FALSE)
                     if(is.na(as.numeric(results.sel$ESTIMATE[1]))) {cat(paste("'ESTIMATE' column in Outputfile for term '",all.terms[length(all.terms)],"' in file: '",file,"' does not seem to be a numeric value. Please check!\n",sep=""))}
                     if(!missing(dif.term)) {                                    ### Der absolute DIF-Wert ist 2 * "Betrag des Gruppenunterschieds". Fuer DIF muessen ZWEI Kriterien erfuellt sein:
@@ -2304,7 +2307,7 @@ get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.d
                         bereich[[ii]] <- c(bereich[[ii]][1:(ii-1)], NA)
                      }
                  }
-                 bereich.data.frame <- asNumericIfPossible(data.frame(do.call("rbind", bereich[-1]),stringsAsFactors=FALSE), verbose = FALSE, ignoreAttributes = TRUE)
+                 suppressWarnings(bereich.data.frame <- asNumericIfPossible(data.frame(do.call("rbind", bereich[-1]),stringsAsFactors=FALSE), force.string = FALSE))
                  colnames(bereich.data.frame) <- bereich[[1]]
                  all.output$cov.structure <- bereich.data.frame
               }
@@ -2688,9 +2691,21 @@ isLetter <- function ( string ) {
 
 ### Hilfsfunktion fuer .writeScoreStatementMultidim()
 fromMinToMax <- function(dat, score.matrix, qmatrix, allowAllScoresEverywhere, use.letters)    {
-                all.values <- alply(as.matrix(score.matrix), .margins = 1, .fun = function(ii) {names(tableUnlist(dat[,na.omit(as.numeric(ii[grep("^X", names(ii))])), drop = FALSE]))  })
-                if ( allowAllScoresEverywhere == TRUE ) {                       ### obere Zeile: WICHTIG: "alply" ersetzt "apply"! http://stackoverflow.com/questions/6241236/force-apply-to-return-a-list
-                    all.values <- lapply(all.values, FUN = function(ii) {sort(asNumericIfPossible(unique( unlist ( all.values ) ), verbose = FALSE, ignoreAttributes = TRUE ) ) } )
+                all.values <- alply(as.matrix(score.matrix), .margins = 1, .fun = function(ii) {sort(names(tableUnlist(dat[,na.omit(as.numeric(ii[grep("^X", names(ii))])), drop = FALSE])) ) })
+                if ( length(all.values) > 1) {                                  ### obere Zeile: WICHTIG: "alply" ersetzt "apply"! http://stackoverflow.com/questions/6241236/force-apply-to-return-a-list
+                     if ( all ( outer ( all.values, all.values, Vectorize(identical))) == FALSE ) {
+                          cat(paste("Found different values for dimensions: \n",sep=""))
+                          for ( u in 1:length(all.values)) {
+                               cat(paste0("   Dimension ", u, ": values '",paste(all.values[[u]], collapse= "', '"), "' \n"))
+                          }
+                          if ( allowAllScoresEverywhere == TRUE ) {
+                               all.values <- lapply(all.values, FUN = function ( ii ) { sort(unique( unlist ( all.values ) ))})
+                               cat(paste("Following value definition was done according to 'allowAllScoresEverywhere == TRUE': \n",sep=""))
+                               for ( u in 1:length(all.values)) {
+                                    cat(paste0("   Dimension ", u, ": values '",paste(all.values[[u]], collapse= "', '"), "' \n"))
+                               }
+                          }
+                     }
                 }
                 if(use.letters == TRUE )  {minMaxRawdata  <- unlist ( lapply( all.values, FUN = function (ii) {paste("(",paste(LETTERS[which(LETTERS == ii[1]) : which(LETTERS == ii[length(ii)])], collapse=" "),")") } ) ) }
                 if(use.letters == FALSE ) {minMaxRawdata  <- unlist ( lapply( all.values, FUN = function (ii) {paste("(",paste(ii[1] : ii[length(ii)],collapse = " "),")")  } ) ) }
