@@ -632,10 +632,11 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
                    }
                    if(length( all.Names[["HG.var"]])>0)     { Y <- daten[,all.Names[["HG.var"]], drop=FALSE] } else { Y <- NULL }
                    if(length( all.Names[["weight.var"]])>0) { wgt <- as.vector(daten[,all.Names[["weight.var"]]])} else {wgt <- NULL}
+                   if(length( all.Names[["group.var"]])>0)  { group <- as.vector(daten[,all.Names[["group.var"]]])} else {group <- NULL}
                    stopifnot(all(qMatrix[,1] == all.Names[["variablen"]]))
                    if(length(all.Names[["DIF.var"]]) == 0 ) {
                       if( irtmodel %in% c("1PL", "PCM", "PCM2", "RSM") ) {
-                          mod     <- tam.mml(resp = daten[,all.Names[["variablen"]]], constraint = constraint, pid = daten[,"ID"], Y = Y, Q = qMatrix[,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = irtmodel, pweights = wgt, control = control)
+                          mod     <- tam.mml(resp = daten[,all.Names[["variablen"]]], constraint = constraint, pid = daten[,"ID"], Y = Y, Q = qMatrix[,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = irtmodel, pweights = wgt, control = control, group=group)
                       }
                       if( irtmodel %in% c("2PL", "GPCM", "2PL.groups", "GPCM.design", "3PL") )  {
                           if(!is.null(est.slopegroups))  {
@@ -701,15 +702,15 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
                                  gues <- guessMat[ match( all.Names[["variablen"]], guessMat[,1]) , "guessingGroup"]
                                  gues[which(is.na(gues))] <- 0
                               }  else  { gues <- NULL }
-                              mod  <- tam.mml.3pl(resp = daten[,all.Names[["variablen"]]], pid = daten[,"ID"], Y = Y, Q = qMatrix[,-1,drop=FALSE], xsi.fixed = anchor, pweights = wgt, est.guess =gues,  est.variance = estVar, control = control)
-                          }  else { mod     <- tam.mml.2pl(resp = daten[,all.Names[["variablen"]]], pid = daten[,"ID"], Y = Y, Q = qMatrix[,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = irtmodel, est.slopegroups=est.slopegroups,pweights = wgt, B.fixed = slopMa, est.variance = estVar, control = control) }
+                              mod  <- tam.mml.3pl(resp = daten[,all.Names[["variablen"]]], pid = daten[,"ID"], Y = Y, Q = qMatrix[,-1,drop=FALSE], xsi.fixed = anchor, pweights = wgt, est.guess =gues,  est.variance = estVar, control = control, group=group)
+                          }  else { mod     <- tam.mml.2pl(resp = daten[,all.Names[["variablen"]]], pid = daten[,"ID"], Y = Y, Q = qMatrix[,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = irtmodel, est.slopegroups=est.slopegroups,pweights = wgt, B.fixed = slopMa, est.variance = estVar, control = control, group=group) }
                       }
                    } else {
                      assign(paste("DIF_",all.Names[["DIF.var"]],sep="") , as.data.frame (daten[,all.Names[["DIF.var"]]]) )
                      formel   <- as.formula(paste("~item - ",paste("DIF_",all.Names[["DIF.var"]],sep="")," + item * ",paste("DIF_",all.Names[["DIF.var"]],sep=""),sep=""))
                      facetten <- as.data.frame (daten[,all.Names[["DIF.var"]]])
                      colnames(facetten) <- paste("DIF_",all.Names[["DIF.var"]],sep="")
-                     mod      <- tam.mml.mfr(resp = daten[,all.Names[["variablen"]]], facets = facetten, constraint = constraint, formulaA = formel, pid = daten[,"ID"], Y = Y, Q = qMatrix[,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = irtmodel, pweights = wgt, control = control)
+                     mod      <- tam.mml.mfr(resp = daten[,all.Names[["variablen"]]], facets = facetten, constraint = constraint, formulaA = formel, pid = daten[,"ID"], Y = Y, Q = qMatrix[,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = irtmodel, pweights = wgt, control = control, group=group)
                    }
                    attr(mod, "qMatrix")      <- defineModelObj[["qMatrix"]]     ### hier werden fuer 'tam' zusaetzliche Objekte als Attribute an das Rueckgabeobjekt angehangen
                    attr(mod, "n.plausible")  <- defineModelObj[["n.plausible"]] ### Grund: Rueckgabeobjekt soll weitgehend beibehalten werden, damit alle 'tam'-Funktionen, die darauf aufsetzen, lauffaehig sind
