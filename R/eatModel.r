@@ -983,7 +983,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                         }
                      }
      ### pruefen, ob es Personen gibt, die weniger als <boundary> items gesehen haben (muss VOR den Konsistenzpruefungen geschehen)
-                     datL.valid  <- melt(dat, id.vars = all.Names[["ID"]], meaure.vars = all.Names[["variablen"]], na.rm=TRUE)
+                     datL.valid  <- melt(dat, id.vars = all.Names[["ID"]], measure.vars = all.Names[["variablen"]], na.rm=TRUE)
                      nValid      <- table(datL.valid[,all.Names[["ID"]]])
                      rm(datL.valid)                                             ### Speicher sparen
                      inval       <- nValid[which(nValid<boundary)]
