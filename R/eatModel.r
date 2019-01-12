@@ -86,6 +86,7 @@ getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c(
                return(res)
      ### hier ist der rekursive Aufruf beendet: das folgende geschieht fuer jedes Modell einzeln, technisch auf zweierlei Weisen, je nachdem ob Conquest oder TAM gerechnet wurde
             }  else {                                                           ### Einmodellfall
+		if(is.null(runModelObj)) {return(NULL)}
                isTa  <- FALSE
                if( "runConquest" %in% class(runModelObj) ) {                    ### wurde mit Conquest gerechnet?
                     if ( Q3 == TRUE ) {
