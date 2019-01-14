@@ -2928,7 +2928,7 @@ prepRep <- function ( calibT2, bistaTransfT1, bistaTransfT2, makeIdsUnique = TRU
            }
            return(rbind ( dat1, dat2))}
 
-plotICC <- function ( resultsObj, defineModelObj, item = NULL, personsPerGroup = 30, pdfFolder = NULL, smooth = 20 ) {
+plotICC <- function ( resultsObj, defineModelObj, item = NULL, personPar = c("EAP", "WLE", "PV"), personsPerGroup = 30, pdfFolder = NULL, smooth = 20 ) {
            if (smooth<5) {smooth <- 5}
            it  <- itemFromRes ( resultsObj )
            if ( !"est" %in% colnames(it) ) { it[,"est"] <- NA }
@@ -2937,7 +2937,15 @@ plotICC <- function ( resultsObj, defineModelObj, item = NULL, personsPerGroup =
            if ( !"estSlope" %in% colnames(it) ) { it[,"estSlope"] <- 1 }        ### slope parameter; die werte sind NA. Zum Plotten muessen sie daher fuer das Raschmodell auf 1 gesetzt werden
            if ( length(which(is.na(it[,"estSlope"]))) > 0) { it[which(is.na(it[,"estSlope"])), "estSlope"] <- 1 }
            eapA<- eapFromRes (resultsObj)                                       ### eap fuer alle; muss wideformat haben!!!
-           cat("Note: To date, only 1pl/2pl dichotomous models are supported.\n"); flush.console()
+           if ( personPar == "WLE") {
+                eapA <- wleFromRes(resultsObj)
+                colnames(eapA) <- recode(colnames(eapA), "'wle_est'='EAP'")
+           }
+           if ( personPar == "PV") {
+                eapA <- pvFromRes(resultsObj, toWideFormat = TRUE)
+                colnames(eapA) <- recode(colnames(eapA), "'pv1'='EAP'")
+           }
+	   cat("Note: To date, only 1pl/2pl dichotomous models are supported.\n"); flush.console()
            if ( is.null(item) & is.null(pdfFolder)) {stop("If ICCs for more than one item should be displayed, please specify an output folder for pdf.\n")}
            if ( !is.null(pdfFolder)) { pdf(file = pdfFolder, width = 10, height = 7.5) }
            if ( !is.null ( item ) )  {
