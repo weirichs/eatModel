@@ -4,8 +4,8 @@
 \title{Plots item charactestic curves.}
 \description{Function provides item characteristic plots for each item. To date, 
 only dichotomouls 1pl and 2pl models are supported.}
-\usage{plotICC  ( resultsObj, defineModelObj, item = NULL, personsPerGroup = 30, 
-       pdfFolder = NULL, smooth = 20 )}
+\usage{plotICC  ( resultsObj, defineModelObj, item = NULL, personPar = c("EAP", "WLE", "PV"),
+                 personsPerGroup = 30, pdfFolder = NULL, smooth = 20 )}
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{resultsObj}{
@@ -20,6 +20,9 @@ The object returned by \code{defineModel}.
 %%     ~~Describe \code{file} here~~
 Optional: The item for which the ICC should be plotted. If NULL, ICCs of all items
 will be collected in a common pdf. The \code{pdfFolder} argument than must not be NULL.
+}
+  \item{personPar}{
+Which person parameter should be used for plotting?
 }
   \item{personsPerGroup}{
 %%     ~~Describe \code{file} here~~
