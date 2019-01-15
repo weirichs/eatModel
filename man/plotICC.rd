@@ -4,8 +4,8 @@
 \title{Plots item charactestic curves.}
 \description{Function provides item characteristic plots for each item. To date, 
 only dichotomouls 1pl and 2pl models are supported.}
-\usage{plotICC  ( resultsObj, defineModelObj, item = NULL, personPar = c("EAP", "WLE", "PV"),
-                 personsPerGroup = 30, pdfFolder = NULL, smooth = 20 )}
+\usage{plotICC  ( resultsObj, defineModelObj, item = NULL, personPar = c("WLE", "EAP", "PV"),
+                 personsPerGroup = 30, pdfFolder = NULL, smooth = 7 )}
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{resultsObj}{
