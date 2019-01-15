@@ -2928,7 +2928,7 @@ prepRep <- function ( calibT2, bistaTransfT1, bistaTransfT2, makeIdsUnique = TRU
            }
            return(rbind ( dat1, dat2))}
 
-plotICC <- function ( resultsObj, defineModelObj, item = NULL, personPar = c("EAP", "WLE", "PV"), personsPerGroup = 30, pdfFolder = NULL, smooth = 20 ) {
+plotICC <- function ( resultsObj, defineModelObj, item = NULL, personPar = c("WLE", "EAP", "PV"), personsPerGroup = 30, pdfFolder = NULL, smooth = 7 ) {
            personPar  <- match.arg(arg = toupper(personPar), choices = c("EAP", "WLE", "PV"))
 	   if (smooth<5) {smooth <- 5}
            it  <- itemFromRes ( resultsObj )
