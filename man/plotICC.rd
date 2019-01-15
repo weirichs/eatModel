@@ -22,7 +22,8 @@ Optional: The item for which the ICC should be plotted. If NULL, ICCs of all ite
 will be collected in a common pdf. The \code{pdfFolder} argument than must not be NULL.
 }
   \item{personPar}{
-Which person parameter should be used for plotting?
+Which person parameter should be used for plotting? To mimic the
+behavior of the S3 plot method of \code{TAM}, use \code{"WLE"}.
 }
   \item{personsPerGroup}{
 %%     ~~Describe \code{file} here~~
@@ -38,7 +39,8 @@ than one item should be plotted.
 %%     ~~Describe \code{file} here~~
 Optional: A parameter (integer vaklue) for smoothing the plot. If the number of examinees is high, the
 icc plot may become scratchy. \code{smooth} defines the maximum number of discret nodes
-across the theta scale for evaluating the icc. Higher values result in a less smooth icc.
+across the theta scale for evaluating the icc. Higher values result in a less smooth icc. To mimic the
+behavior of the S3 plot method of \code{TAM}, use the value 7.
 }
 }
 \details{
