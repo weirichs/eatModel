@@ -2931,7 +2931,7 @@ prepRep <- function ( calibT2, bistaTransfT1, bistaTransfT2, makeIdsUnique = TRU
            return(rbind ( dat1, dat2))}
 
 plotICC <- function ( resultsObj, defineModelObj, item = NULL, personPar = c("WLE", "EAP", "PV"), personsPerGroup = 30, pdfFolder = NULL, smooth = 7 ) {
-           personPar  <- match.arg(arg = toupper(personPar), choices = c("EAP", "WLE", "PV"))
+           personPar  <- match.arg(arg = toupper(personPar), choices = c("WLE", "EAP", "PV"))
 	   if (smooth<5) {smooth <- 5}
            it  <- itemFromRes ( resultsObj )
            if ( !"est" %in% colnames(it) ) { it[,"est"] <- NA }
