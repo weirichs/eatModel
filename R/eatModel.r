@@ -650,7 +650,9 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
                                  cat("Remove these item(s) from design matrix.\n")
                                  est.slopegroups <- est.slopegroups[-match(weg2,est.slopegroups[,1]),]
                               }
-                              est.slopegroups <- as.numeric(as.factor(est.slopegroups[match(all.Names[["variablen"]], est.slopegroups[,1]),2]))
+                              weg3            <- c(which(is.na(est.slopegroups[,2])), which(est.slopegroups[,2] ==""))
+                              if(length(weg3)>0) {stop("Items in 'est.slopegroups' with missing or empty values.\n")}
+                              est.slopegroups <- as.numeric(as.factor(as.character(est.slopegroups[match(all.Names[["variablen"]], est.slopegroups[,1]),2])))
                           }
                           if(!is.null(fixSlopeMat))  {                          ### Achtung: wenn Items identifiers NICHT unique sind (z.B., Item gibt es global und domaenenspezifisch,
                               fixSlopeMat <- facToChar(fixSlopeMat)    ### dann wird jetzt 'fixSlopeMat' auf die Dimension in der Q Matrix angepasst ... das ist nur erlaubt, wenn es ein eindimensionales Modell ist!!
@@ -685,7 +687,7 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
                                        stopifnot ( length( matchD ) == 1)
                                        match2<- intersect(which(block[,2] == max(block[,2])), which(block[,3] == (matchD)))
                                        stopifnot ( length( na.omit(match2 )) == 1)
-                                       block[match2,4] <- zeile[[2]]
+                                       block[match2,4] <- as.numeric(zeile[[2]])
                                        return(block) }))
                           }  else  {
                               estVar          <- FALSE
