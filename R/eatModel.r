@@ -453,6 +453,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                                  traitLevel            <- num.to.cat(x = itFrame[,"estTransfBista"], cut.points = cuts[[mat1]][["values"]], cat.values = cuts[[mat1]][["labels"]])
                                  itFrame[,"traitLevel"]<- traitLevel
                             }
+    ### Achtung!! Linkingfehler sollte eigentlich nur ausgegeben werden, wenn das vorherige equating NICHT durchgeschleift wurde!
                             itFrame[,"linkingConstant"]<- equatingList[["items"]][[mod]][[dims]][["eq"]][["B.est"]][[ equatingList[["items"]][[mod]][[dims]][["method"]] ]]
                             itFrame[,"linkingMethod"]  <- equatingList[["items"]][[mod]][[dims]][["method"]]
                             itFrame[,"nLinkitems"]     <- equatingList[["items"]][[mod]][[dims]][["eq"]][["descriptives"]][["N.Items"]]
@@ -493,6 +494,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                                         kmp<- c(cts[l], cts[l+1])               ### Linkingfehler fuer einzelnen Kompetenzintervalle; absteigend wie bei karoline
                                         a1 <- sum ( dnorm ( ( kmp - refPop[mat,4]) / refPop[mat,5] ) * c(-1,1) / refPop[mat,5] )
                                         a2 <- sum ( dnorm ( ( kmp - msdFok[1]) / msdFok[2] ) * c(-1,1) / msdFok[2] )
+    ### Achtung! der 'mutmassliche Fehler' kann auch auftreten, wenn das Equating zuvor durchgeschleift wurde und deshalb gar keine Linkingfehler berechnet werden können
                                         if(a2 == 0 ) {cat("mutmasslicher fehler.\n")}
                                         del<- ( (  a1^2 + a2^2 ) * (unique(itFrame[,"linkingErrorTransfBista"])^2) / 2  )^0.5
                			                    del<- data.frame ( traitLevel = attr(traitLevel, "cat.values")[l], linkingErrorTraitLevel = del )
@@ -501,7 +503,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                                  ori <- colnames(itFrame)
                                  chk <- unique(le[,"traitLevel"]) %in% unique(itFrame[,"traitLevel"])
                                  if ( length( which(chk == FALSE)) > 0) {
-                                     cat(paste("Warning: No items on trait level(s) '",paste( unique(le[,"traitLevel"])[which(chk == FALSE)], collapse = "', '"), "'. \n", sep=""))
+                                     cat(paste("Warning, model '",unique(itFrame[,"model"]),"', dimension '",unique(itFrame[,"dimension"]),"': No items on trait level(s) '",paste( unique(le[,"traitLevel"])[which(chk == FALSE)], collapse = "', '"), "'. \n", sep=""))
                                  }
                                  itFrame <- data.frame ( merge ( itFrame, le, by = "traitLevel", sort = FALSE, all.x = TRUE, all.y = FALSE) )
                                  itFrame <- itFrame[,c(ori, "linkingErrorTraitLevel")]
@@ -515,7 +517,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                             pv[,"dimension"]  <- pv[,"group"]
                             chk <- unique(le[,"traitLevel"]) %in% unique(pv[,"traitLevel"])
                             if ( length( which(chk == FALSE)) > 0) {
-                                 cat(paste("Warning: No plausible values on trait level(s) '",paste( unique(le[,"traitLevel"])[which(chk == FALSE)], collapse = "', '"), "'. \n", sep=""))
+                                 cat(paste("Warning, model '",unique(itFrame[,"model"]),"', dimension '",unique(itFrame[,"dimension"]),"': No plausible values on trait level(s) '",paste( unique(le[,"traitLevel"])[which(chk == FALSE)], collapse = "', '"), "'. \n", sep=""))
                             }
                             stopifnot ( length( unique ( na.omit(itFrame[,"linkingErrorTransfBista"]))) %in% 0:1)
                             pv[,"linkingError"] <- equatingList[["items"]][[mod]][[dims]][["eq"]][["descriptives"]][["linkerror"]]
@@ -579,7 +581,6 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
        ret        <- list ( itempars = itempars, personpars = personpars, refPop = refPop, means = rp, all.Names = context, itemparsVera = itemVera)
        class(ret) <- c("list", "transfBista")
        return( ret ) }
-
 
 runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.console = TRUE, wait = TRUE) {
             if ("defineMultiple" %in% class( defineModelObj ) ) {               ### erstmal fuer den Multimodellfall: nur dafuer wird single core und multicore unterschieden
