@@ -859,7 +859,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                minNperItem = 50, removeMinNperItem = FALSE, boundary = 6, remove.boundary = FALSE, remove.no.answers = TRUE, remove.no.answersHG = TRUE, remove.missing.items = TRUE, remove.constant.items = TRUE,
                remove.failures = FALSE, remove.vars.DIF.missing = TRUE, remove.vars.DIF.constant = TRUE, verbose=TRUE, software = c("conquest","tam"), dir = NULL,
                analysis.name, schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE, n.plausible=5, seed = NULL, conquest.folder=NULL,
-               constraints=c("cases","none","items"),std.err=c("quick","full","none"), distribution=c("normal","discrete"), method=c("gauss", "quadrature", "montecarlo"),
+               constraints=c("cases","none","items"),std.err=c("quick","full","none"), distribution=c("normal","discrete"), method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo"),
                n.iterations=2000,nodes=NULL, p.nodes=2000, f.nodes=2000,converge=0.001,deviancechange=0.0001, equivalence.table=c("wle","mle","NULL"), use.letters=FALSE,
                allowAllScoresEverywhere = TRUE, guessMat = NULL, est.slopegroups = NULL, fixSlopeMat = NULL, slopeMatDomainCol=NULL, slopeMatItemCol=NULL, slopeMatValueCol=NULL,
                progress = FALSE, increment.factor=1 , fac.oldxsi=0, export = list(logfile = TRUE, systemfile = FALSE, history = TRUE, covariance = TRUE, reg_coefficients = TRUE, designmatrix = FALSE) )   {
@@ -989,7 +989,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
      ### pruefen, ob es Personen gibt, die weniger als <boundary> items gesehen haben (muss VOR den Konsistenzpruefungen geschehen)
                      datL.valid  <- melt(dat, id.vars = all.Names[["ID"]], measure.vars = all.Names[["variablen"]], na.rm=TRUE)
                      if(nrow(datL.valid) == 0) {cat("Warning: No valid item values. Skip data preparation.\n"); return(NULL)}
-  		     nValid      <- table(datL.valid[,all.Names[["ID"]]])
+                     nValid      <- table(datL.valid[,all.Names[["ID"]]])
                      rm(datL.valid)                                             ### Speicher sparen
                      inval       <- nValid[which(nValid<boundary)]
                      if(length(inval)>0) {
@@ -1251,7 +1251,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                          alle<- na.omit(match(allTru, dat[,all.Names[["ID"]]]))
                          perA<- dat[alle, all.Names[["ID"]] ]
                       }
-                      rm(datMin); rm(datMax); rm(datW)                          ### Speicher sparen
+                      rm(datMin); rm(datMax); rm(datW); gc()                    ### Speicher sparen
      ### Sektion 'Verlinkung pruefen' ###
                       if(check.for.linking == TRUE) {                           ### Dies geschieht auf dem nutzerspezifisch reduzierten/selektierten Datensatz
                          linkNaKeep <- checkLink(dataFrame = dat[,all.Names[["variablen"]], drop = FALSE], remove.non.responser = FALSE, verbose = FALSE )
@@ -1260,15 +1260,19 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                          if(linkNaKeep == TRUE )                        {cat("Dataset is completely linked.\n")}
                       }
      ### Sektion 'Anpassung der Methode (gauss, monte carlo) und der Nodes'
-                      if(method == "montecarlo")  {
-                        if(nodes < 100 ) {
+                      if(method == "quasiMontecarlo" && software == "conquest") {
+                         cat("Method 'quasiMontecarlo' is not available for software 'conquest'. Set method to 'montecarlo'.\n")
+                         method <- "montecarlo"
+                      }
+                      if(method %in% c("montecarlo", "quasiMontecarlo"))  {
+                        if(nodes < 500 ) {
     				               cat(paste("Warning: Due to user specification, only ",nodes," nodes are used for '",method,"' estimation. Please note or re-specify your analysis.\n",sep=""))
     				            }
                         if(is.null(nodes) )   {
                           cat(paste("'",method,"' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 1000.\n",sep=""))
     				              if(software == "conquest") {nodes <- 1000}
-      		                if(software == "tam" )     {nodes <- NULL; snodes <- 1000; QMC <- TRUE}
-    				            }  else  { if(software == "tam" )     {snodes <- nodes; nodes <- NULL; QMC <- TRUE} }
+      		                if(software == "tam" )     {nodes <- NULL; snodes <- 1000; QMC <- as.logical(recode ( method, "'montecarlo'=FALSE; 'quasiMontecarlo'=TRUE"))}
+    				            }  else  { if(software == "tam" )     {snodes <- nodes; nodes <- NULL; QMC <- as.logical(recode ( method, "'montecarlo'=FALSE; 'quasiMontecarlo'=TRUE"))} }
     			           }
     			           if(method != "montecarlo") {
                         if ( is.null(nodes) )   {
@@ -1355,6 +1359,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                           ret     <- list ( software = software, constraint = match.arg(constraints) , qMatrix=qMatrix, anchor=ankFrame[["resTam"]],  all.Names=all.Names, daten=daten, irtmodel=irtmodel, est.slopegroups = est.slopegroups, guessMat=guessMat, control = control, n.plausible=n.plausible, dir = dir, analysis.name=analysis.name, deskRes = deskRes, discrim = discrim, perNA=perNA, per0=per0, perA = perA, perExHG = perExHG, itemsExcluded = namen.items.weg, fixSlopeMat = fixSlopeMat, slopeMatDomainCol=slopeMatDomainCol, slopeMatItemCol=slopeMatItemCol, slopeMatValueCol=slopeMatValueCol )
                           class(ret) <-  c("defineTam", "list")
                           return ( ret )    }   }  }
+
 
 ### Hilfsfunktionen fuer defineModel
 .checkContextVars <- function(x, varname, type, itemdaten, suppressAbort = FALSE)   {
