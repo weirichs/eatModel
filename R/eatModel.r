@@ -1767,7 +1767,6 @@ getConquestResults<- function(path, analysis.name, model.name, qMatrix, all.Name
          }
          return(ret)}
 
-
 getTamResults     <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV, nplausible , ntheta , normal.approx, samp.regr, theta.model, np.adj, Q3=Q3, q3MinObs =  q3MinObs, q3MinType = q3MinType,
                      pvMethod , group, beta_groups , level , n.iter , n.burnin, adj_MH , adj_change_MH , refresh_MH, accrate_bound_MH,	print_iter , verbose) {
          if( omitRegr == FALSE ) { txt <- capture.output ( regr     <- tam.se(runModelObj)) }
@@ -1807,15 +1806,31 @@ getTamResults     <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV, n
             shw5 <- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = discR[,"item.name"], var2 = NA , type = "fixed", indicator.group = "items", group = discR[,"dimensionName"], par = "itemDiscrim",  derived.par = NA, value = discR[,"item.diskrim"], stringsAsFactors = FALSE)
          }  else  {
             shw5 <- NULL
-         }                                                                      ### untere Zeile: Diskriminationsparameter im 2pl-Fall auslesen
-         if(attr(runModelObj, "irtmodel") %in% c("2PL", "2PL.groups", "GPCM", "3PL") & omitRegr == FALSE) {
+         }
+    ### Diskriminationsparameter im 2pl-Fall auslesen
+         if(attr(runModelObj, "irtmodel") %in% c("2PL", "2PL.groups", "GPCM", "3PL")) {
             shw6 <- do.call("rbind", lapply (  1 : length ( colnames( qMatrix ) [-1] ) , FUN = function ( dims ) {
-                    cols  <- grep(paste0(".Dim",dims,"$" ), colnames(regr[["B"]]))
-                    tamMat<- regr[["B"]][,c(1,cols)]
+                    if ( omitRegr == FALSE ) {                                  ### wenn omitRegr == FALSE, werden die Diskriminationsparameter aus diesem Objekt,
+                         obj <- regr[["B"]]                                     ### ansonsten aus dem direkten TAM-Rueckgabeobjekt ausgelesen
+                    } else {                                                    ### wenn omitRegr == FALSE, kommen die Diskriminationen als data.frame,
+                         obj <- as.data.frame ( runModelObj[["B"]])             ### andernfalls als array, muss also umgewandelt werden
+                         colnames(obj) <- paste0("B.", gsub("Dim0", "Dim", colnames(obj)))
+                         obj[,"item"]  <- rownames(obj)                         ### Spalten rauswerfen, in denen ausschliesslich nullen stehen
+                         isNull        <- which(sapply(obj, FUN = function ( x ) { all(x==0)})==TRUE)
+                         if (length (isNull)>0) {
+                             for ( i in isNull ) { obj[,i] <- NULL }
+                         }
+                    }
+                    cols  <- grep(paste0(".Dim",dims,"$" ), colnames(obj), value=TRUE)
+                    tamMat<- obj[,c("item",cols)]
                     weg   <- which(tamMat[,2] == 0)
                     if(length(weg)>0) {tamMat <- tamMat[-weg,]}
                     shw6D <- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = tamMat[,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = colnames(qMatrix)[dims+1], par = "estSlope",  derived.par = NA, value = tamMat[,2], stringsAsFactors = FALSE)
-                    shw6se<- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = tamMat[,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = colnames(qMatrix)[dims+1], par = "estSlope",  derived.par = "se", value = tamMat[,3], stringsAsFactors = FALSE)
+                    if (ncol(tamMat) == 3 ) {
+                        shw6se<- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = tamMat[,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = colnames(qMatrix)[dims+1], par = "estSlope",  derived.par = "se", value = tamMat[,3], stringsAsFactors = FALSE)
+                    }  else  {
+                        shw6se<- NULL
+                    }
                     return(rbind(shw6D, shw6se)) }))
          }  else  {
             shw6 <- NULL
