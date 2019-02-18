@@ -19,7 +19,7 @@ defineModel (dat, items, id, splittedModels = NULL,
    schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE,
    n.plausible=5, seed = NULL, conquest.folder=NULL,constraints=c("cases","none","items"),
    std.err=c("quick","full","none"), distribution=c("normal","discrete"),
-   method=c("gauss", "quadrature", "montecarlo"), n.iterations=2000,
+   method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo"), n.iterations=2000,
    nodes=NULL, p.nodes=2000, f.nodes=2000,converge=0.001,deviancechange=0.0001,
    equivalence.table=c("wle","mle","NULL"), use.letters=FALSE,
    allowAllScoresEverywhere = TRUE, guessMat = NULL, est.slopegroups = NULL,
@@ -238,8 +238,16 @@ See ConQuest manual pp.167 for details on population distributions.
 A character string indicating which method should be used for analysis. Possible 
 options are "gauss" (default), "quadrature" and "montecarlo". See ConQuest manual 
 pp.225 for details on these methods. When using \code{software = "tam"}, "gauss" and 
-"quadrature" essentially leads to calling TAM with \code{QMC = FALSE}, "montecarlo"
-leads to calling TAM with \code{QMC = TRUE}.
+"quadrature" essentially leads to numerical integration, i.e TAM is called with
+\code{control$snodes = 0} and with \code{control$nodes = seq(-6,6,len=nn)}, where
+\code{nn} equals the number of nodes specified in the \code{nodes} argument of
+\code{defineModel} (see below). When using \code{software = "tam"}, "montecarlo"
+leads to calling TAM with \code{control$QMC = FALSE} and \code{snodes = nn}, where
+\code{nn} equals the number of nodes specified in the \code{nodes} argument of
+\code{defineModel}. When using \code{software = "tam"}, "quasiMontecarlo"
+leads to calling TAM with \code{control$QMC = TRUE} and \code{snodes = nn}, where
+\code{nn} equals the number of nodes specified in the \code{nodes} argument of
+\code{defineModel}.
 }
   \item{n.iterations}{
 %%     ~~Describe \code{dif.term} here~~
@@ -251,11 +259,11 @@ will proceed without improvement in the deviance.
 An integer value specifying the number of nodes to be used in the analysis. The
 default value is 20. When using \code{software = "tam"}, the value specified here
 leads to calling TAM with \code{nodes = 20} AND \code{snodes = 0} if "gauss" or 
-"quadrature" was used in the \code{method} argument. If "montecarlo" was used in 
-the \code{method} argument, the value specified here leads to calling TAM with 
-\code{snodes = 20} AND \code{nodes = 0}. For numerical integration, for example, 
+"quadrature" was used in the \code{method} argument. If "montecarlo" or "quasiMontecarlo"
+was used in the \code{method} argument, the value specified here leads to calling TAM with
+\code{control$snodes = 20}. For numerical integration, for example,
 \code{method = "gauss"} and \code{nodes = 21} (TAM default) may be appropriate. 
-For quasi monte carlo integration, \code{method = "montecarlo"} and \code{nodes = 1000} 
+For quasi monte carlo integration, \code{method = "quasiMontecarlo"} and \code{nodes = 1000}
 may be appropriate (TAM authors recommend to use at least 1000 nodes). 
 }
   \item{p.nodes}{
@@ -1227,3 +1235,4 @@ resT1P<- getResults(runT1P, Q3 = FALSE)
 % R documentation directory.
 \keyword{ ~kwd1 }
 \keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+
