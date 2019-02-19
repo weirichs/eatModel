@@ -4,14 +4,14 @@ checkDesign <- function ( design, bookletColumn) {
       items <- setdiff(colnames(design), book)                                  ### zeilen loeschen, die ausschliesslich NA sind
       weg   <- which ( rowSums(apply(design[,items], MARGIN = 1, FUN = is.na)) == nrow(design[,items]))
       if ( length(weg)>0) { design <- design[-weg,]}                            ### untere zeile: unerlaubte Zeichen aus Blockbezeichnung entfernen und Buchstabe vorabstellen
-      for ( i in items) {design[,i] <- paste0("B", removePattern(removePattern(as.character(design[,i]), " "), "-"))}
+      for ( i in items) {design[which(!is.na(design[,i])),i] <- paste0("B", removePattern(removePattern(as.character(design[which(!is.na(design[,i])),i]), " "), "-"))}
       dat   <- do.call("rbind.fill", apply( design, MARGIN = 1, FUN = simDat, booklet = book))
       link  <- checkLink(dataFrame = dat[,-1, drop = FALSE], remove.non.responser = TRUE, verbose = TRUE )
       return(link)}
 
 ### Hilfsfunktion fuer 'checkDesign'
 simDat <- function ( z, booklet ) {                                             ### erzeugt Datensatz aus einer Zeile des Designs
-          if ( !length(na.omit(z)) == length(unique(na.omit(z))) ) { stop("Blocks are not unique in each line.\n")}
+          if ( !length(na.omit(z[[-match(booklet, names(z))]])) == length(unique(na.omit(z[[-match(booklet, names(z))))) ) { stop("Blocks are not unique in each line.\n")}
           items<- as.vector(sapply(na.omit(z[-match(booklet, names(z))]), FUN= function ( i ) { paste(i, 1:3, sep="_")}))
           pers <- paste(z[[booklet]], 11:22, sep="_")                           ### Funktion muss also ueber "apply" aufgerufen werden!
           mat  <- data.frame ( id = pers, matrix ( sample ( 0:1, size = length(pers) * length(items), replace = TRUE), ncol = length(items), nrow = length(pers)))
