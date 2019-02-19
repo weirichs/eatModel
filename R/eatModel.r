@@ -2645,8 +2645,8 @@ anker <- function(lab, prm, qMatrix, domainCol, itemCol, valueCol )  {
                   dopp<- which(duplicated(prm[,"item"]))
                   if(length(dopp)>0) { cat(paste("W A R N I N G !!   Found ",length(dopp)," duplicate item identifiers in anchor list. Duplicated entries will be deleted.\n",sep="")) ; prm <- prm[which(!duplicated(prm[,"item"])), ] }
                   ind <- intersect(lab[,"item"],prm[,"item"])
-                  if(length(ind) == 0) {stop("No common items found in 'lab.file' and 'prm.file'.\n")}
-                  if(length(ind) > 0)  {cat(paste(length(ind), " common items found in 'lab.file' and 'prm.file'.\n",sep="")) }
+                  if(length(ind) == 0) {stop("No common items found in 'anchor' list and data frame.\n")}
+                  if(length(ind) > 0)  {cat(paste(length(ind), " common items found in 'anchor' list and data frame.\n",sep="")) }
                   resT<- merge(lab, prm, by = "item", sort = FALSE, all = FALSE)
                   res <- data.frame(resT[sort(resT[,2],decreasing=FALSE,index.return=TRUE)$ix,], stringsAsFactors = FALSE)[,-1]
                   stopifnot(nrow(res) == length(ind))
