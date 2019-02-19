@@ -11,7 +11,7 @@ checkDesign <- function ( design, bookletColumn) {
 
 ### Hilfsfunktion fuer 'checkDesign'
 simDat <- function ( z, booklet ) {                                             ### erzeugt Datensatz aus einer Zeile des Designs
-          if ( !length(na.omit(z[[-match(booklet, names(z))]])) == length(unique(na.omit(z[[-match(booklet, names(z))]]))) ) { stop("Blocks are not unique in each line.\n")}
+          if ( !length(na.omit(z[-match(booklet, names(z))])) == length(unique(na.omit(z[-match(booklet, names(z))]))) ) { stop("Blocks are not unique in each line.\n")}
           items<- as.vector(sapply(na.omit(z[-match(booklet, names(z))]), FUN= function ( i ) { paste(i, 1:3, sep="_")}))
           pers <- paste(z[[booklet]], 11:22, sep="_")                           ### Funktion muss also ueber "apply" aufgerufen werden!
           mat  <- data.frame ( id = pers, matrix ( sample ( 0:1, size = length(pers) * length(items), replace = TRUE), ncol = length(items), nrow = length(pers)))
