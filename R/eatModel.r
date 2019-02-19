@@ -1,3 +1,20 @@
+### prueft, ob Design verlinkt ist: checkDesign(design[1:15,c(1:5,ncol(design))], bookletColumn = "TH")
+checkDesign <- function ( design, bookletColumn) {
+      book  <- existsBackgroundVariables(dat = design, variable=bookletColumn)
+      weg   <- which ( rowSums(apply(design[,-match(book, colnames(design))], MARGIN = 1, FUN = is.na)) == nrow(design[,-match(book, colnames(design))]))
+      if ( length(weg)>0) { design <- design[-weg,]}                            ### zeilen loeschen, die ausschliesslich NA sind
+      dat   <- do.call("rbind.fill", apply( design, MARGIN = 1, FUN = simDat, booklet = book))
+      link  <- checkLink(dataFrame = dat[,-1, drop = FALSE], remove.non.responser = TRUE, verbose = TRUE )
+      return(link)}
+
+### Hilfsfunktion fuer 'checkDesign'
+simDat <- function ( z, booklet ) {                                             ### erzeugt Datensatz aus einer Zeile des Designs
+          items<- as.vector(sapply(na.omit(z[-match(booklet, names(z))]), FUN= function ( i ) { paste(i, 1:3, sep="_")}))
+          pers <- paste(z[[booklet]], 11:22, sep="_")                           ### Funktion muss also ueber "apply" aufgerufen werden!
+          mat  <- data.frame ( id = pers, matrix ( sample ( 0:1, size = length(pers) * length(items), replace = TRUE), ncol = length(items), nrow = length(pers)))
+          colnames(mat)[-1] <- items
+          return(mat)}
+
 ### Hilfsfunktion zur Bestimmung der Anzahl der Beobachtungen je Itempaar
 nObsItemPairs <- function ( responseMatrix, q3MinType) {
                  spl <- data.frame ( combn(colnames(responseMatrix),2), stringsAsFactors = FALSE)
