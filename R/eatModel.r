@@ -1293,8 +1293,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
     				              if(software == "conquest") {nodes <- 1000}
       		                if(software == "tam" )     {nodes <- NULL; snodes <- 1000; QMC <- as.logical(recode ( method, "'montecarlo'=FALSE; 'quasiMontecarlo'=TRUE"))}
     				            }  else  { if(software == "tam" )     {snodes <- nodes; nodes <- NULL; QMC <- as.logical(recode ( method, "'montecarlo'=FALSE; 'quasiMontecarlo'=TRUE"))} }
-    			           }
-    			           if(method != "montecarlo") {
+    			           } else {
                         if ( is.null(nodes) )   {
                              cat(paste("Number of nodes was not explicitly specified. Set nodes to 20 for method '",method,"'.\n",sep=""))
     				                 if ( software == "conquest" ) { nodes <- 20 }
