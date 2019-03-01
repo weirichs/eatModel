@@ -7,7 +7,7 @@ one for the item parameters on the bista metric and one for the person parameter
 (PVs) on the bista metric.}
 \usage{
 transformToBista ( equatingList, refPop, cuts, weights = NULL, defaultM = 500, 
-                   defaultSD = 100, roman = FALSE)}
+                   defaultSD = 100, roman = FALSE, vera = TRUE)}
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{equatingList}{
@@ -53,8 +53,10 @@ Standard deviation of the reference population in the ``bista'' metric.
 Logical: Use roman numbers for competence level column in the shortened item parameter
 table dedicated for the ``Vergleichsarbeiten''? 
 }
+  \item{vera}{
+%%     ~~Describe \code{file} here~~
+Logical: Prepare item parameter list according to the guidelines of the ``Vergleichsarbeiten''?
 }
-\details{
 }
 \value{
 %%  ~Describe the value returned
@@ -67,26 +69,9 @@ item parameters and competence levels. The second one contains original and tran
 person parameters and competence levels. The third one contains transformation 
 information. 
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
 \author{
 Sebastian Weirich
-}
-\note{
-This version is alpha. Please use with care!
-%%  ~~further notes~~
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
 # see example 5, 6, and 6a in the help file of defineModel()
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

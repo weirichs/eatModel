@@ -48,9 +48,6 @@ Character string with path and name of the ConQuest console, for
 example \code{"c:/programme/conquest/console_Feb2007.exe"}.
 }
 }
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
 \value{
 %%  ~Describe the value returned
 %%  If it is a LIST, use
@@ -68,20 +65,8 @@ the following 5 columns.
     \item{ks}{competence level}
  }
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
 \author{
 Sebastian Weirich
-}
-\note{
-%%  ~~further notes~~
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
 \dontrun{
@@ -99,7 +84,3 @@ ret <- simEquiTable( anchor = anchor, cutScores = cuts , mRef = -0.05, sdRef = 0
 View(ret$short)       
 }
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

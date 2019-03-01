@@ -30,9 +30,6 @@ A logical (not NA) indicating whether the R interpreter should wait for the comm
 or run it asynchronously.
 }
 }
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
 \value{
 %%  ~Describe the value returned
 %%  If it is a LIST, use
@@ -44,25 +41,9 @@ is identically to the corresponding TAM output. If \code{defineModel} previously
 with \code{software = "conquest"}, the returned value contains only internally used information
 useful for \code{getResults}.
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
 \author{
 Sebastian Weirich
-}
-\note{
-%%  ~~further notes~~
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
 # see examples in the help file of defineModel()
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

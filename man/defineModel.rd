@@ -16,7 +16,7 @@ defineModel (dat, items, id, splittedModels = NULL,
    remove.missing.items = TRUE, remove.constant.items = TRUE, remove.failures = FALSE, 
    remove.vars.DIF.missing = TRUE, remove.vars.DIF.constant = TRUE, 
    verbose=TRUE, software = c("conquest","tam"), dir = NULL, analysis.name, 
-   schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE,
+   schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE, pvMethod = c("regular", "bayesian"), fitTamMmlForBayesian = TRUE,
    n.plausible=5, seed = NULL, conquest.folder=NULL,constraints=c("cases","none","items"),
    std.err=c("quick","full","none"), distribution=c("normal","discrete"),
    method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo"), n.iterations=2000,
@@ -24,7 +24,7 @@ defineModel (dat, items, id, splittedModels = NULL,
    equivalence.table=c("wle","mle","NULL"), use.letters=FALSE,
    allowAllScoresEverywhere = TRUE, guessMat = NULL, est.slopegroups = NULL,
    fixSlopeMat = NULL, slopeMatDomainCol=NULL, slopeMatItemCol=NULL, slopeMatValueCol=NULL, 
-   progress = FALSE, increment.factor=1 , fac.oldxsi=0, 
+   progress = FALSE, Msteps = NULL, increment.factor=1 , fac.oldxsi=0,
    export = list(logfile = TRUE, systemfile = FALSE, history = TRUE,
    covariance = TRUE, reg_coefficients = TRUE, designmatrix = FALSE))}
 %- maybe also 'usage' for other objects documented here.
@@ -201,6 +201,18 @@ with respect to the defined model.
 %%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "conquest"}. Compute item fit statistics?
 }
+  \item{pvMethod}{
+%%     ~~Describe \code{dif.term} here~~
+Applies only if \code{software = "tam"}: Specifies whether PVs should be drawn regularly
+or using a Bayesian algorithm.
+}
+  \item{fitTamMmlForBayesian}{
+%%     ~~Describe \code{dif.term} here~~
+Logical, applies only if \code{software = "tam"}: If PVs are drawn using a Bayesian
+algorithm, it is not necessary to fit the model via \code{tam.mml} before. \code{fitTamMmlForBayesian}
+specifies whether the model should be fitted before though. See the help page of \code{tam.pv.mcmc}
+for further details.
+}
   \item{n.plausible}{
 %%     ~~Describe \code{dif.term} here~~
 The number of plausible values which are to be drawn from the conditioning model.
@@ -370,6 +382,10 @@ more than two columns. The \code{valueCol} column than must specify which column
 %%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "tam"}. Print estimation progress messages on console?
 }
+  \item{Msteps}{
+Number of M steps for item parameter estimation. A high value of M steps could be helpful in cases of non-convergence.
+The default value is 4; the default for 3pl models is set to 10.
+}
   \item{increment.factor}{
 %%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "tam"}. Should only be varied if the model does not converge.
@@ -385,9 +401,6 @@ See help page of \code{tam.mml} for further details.
 Applies only if \code{software = "conquest"}. Specifies which additional files should be written
 on hard disk.
 }
-}
-\details{
-%%  ~~ If necessary, more details than the description above ~~
 }
 \value{
 %%  ~Describe the value returned
@@ -470,20 +483,8 @@ List of control parameters for TAM estimation.
 Desired number of plausible values.
 }
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
 \author{
 Sebastian Weirich
-}
-\note{
-%%  ~~further notes~~
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
 ################################################################################
@@ -1235,4 +1236,3 @@ resT1P<- getResults(runT1P, Q3 = FALSE)
 % R documentation directory.
 \keyword{ ~kwd1 }
 \keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
-

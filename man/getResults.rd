@@ -9,11 +9,11 @@ The last step then is to create a results frame using \code{getResults}. }
 getResults( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c("pv", "wle", "eap"), 
             q3MinObs = 0, q3MinType = c("singleObs", "marginalSum"), omitFit = FALSE, 
             omitRegr = FALSE, omitWle = FALSE, omitPV = FALSE, abs.dif.bound = 0.6, 
-            sig.dif.bound = 0.3, p.value = 0.9, pvMethod = c("regular", "bayesian"), 
-            nplausible = NULL, ntheta = 2000, normal.approx = FALSE, samp.regr = FALSE, 
-            theta.model=FALSE, np.adj=8, group = NULL, beta_groups = TRUE, level = .95, n.iter = 1000, 
+            sig.dif.bound = 0.3, p.value = 0.9, nplausible = NULL, ntheta = 2000,
+            normal.approx = FALSE, samp.regr = FALSE, theta.model=FALSE, np.adj=8,
+            group = NULL, beta_groups = TRUE, level = .95, n.iter = 1000,
             n.burnin = 500, adj_MH = .5, adj_change_MH = .05, refresh_MH = 50, 
-            accrate_bound_MH = c(.45, .55),	print_iter = 20, verbose = TRUE) }
+            accrate_bound_MH = c(.45, .55),	sample_integers=FALSE, theta_init=NULL, print_iter = 20, verbose = TRUE, calc_ic=TRUE) }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{runModelObj}{
@@ -79,11 +79,6 @@ this specifies the critical value for confidence interval DIF.
 %%     ~~Describe \code{file} here~~
 Applies only if DIF analyses are performed before. When DIF-Parameter are evaluated, 
 this specifies the critical p-value for confidence interval DIF.
-}
-  \item{pvMethod}{
-%%     ~~Describe \code{file} here~~
-Applies only if \code{software = "tam"}: Specifies whether PVs should be drawn 
-regularly or using a Bayesian algorithm (Metropolis Hastings). 
 }
  \item{nplausible}{
 Applies only if \code{software = "tam"}: Number of plausible values to be drawn. Note: 
@@ -167,12 +162,26 @@ page of \code{tam.pv.mcmc} for further details.
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. See the help 
 page of \code{tam.pv.mcmc} for further details.
 }
+\item{sample_integers}{
+Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. Logical
+indicating whether weights for complete cases should be sampled in bootstrap. See the help
+page of \code{tam.pv.mcmc} for further details.
+}
+\item{theta_init}{
+Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. Optional matrix
+with initial theta values. See the help page of \code{tam.pv.mcmc} for further details.
+}
 \item{print_iter}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. See the help 
 page of \code{tam.pv.mcmc} for further details.
 }
 \item{verbose}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. See the help 
+page of \code{tam.pv.mcmc} for further details.
+}
+\item{calc_ic}{
+Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. Logical
+indicating whether information criteria should be computed.See the help
 page of \code{tam.pv.mcmc} for further details.
 }
 }
