@@ -13,7 +13,8 @@ getResults( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c("pv", "wle", 
             normal.approx = FALSE, samp.regr = FALSE, theta.model=FALSE, np.adj=8,
             group = NULL, beta_groups = TRUE, level = .95, n.iter = 1000,
             n.burnin = 500, adj_MH = .5, adj_change_MH = .05, refresh_MH = 50, 
-            accrate_bound_MH = c(.45, .55),	sample_integers=FALSE, theta_init=NULL, print_iter = 20, verbose = TRUE, calc_ic=TRUE) }
+            accrate_bound_MH = c(.45, .55),	sample_integers=FALSE, theta_init=NULL,
+            print_iter = 20, verbose = TRUE, calc_ic=TRUE, omitUntil = 1) }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{runModelObj}{
@@ -183,6 +184,10 @@ page of \code{tam.pv.mcmc} for further details.
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. Logical
 indicating whether information criteria should be computed.See the help
 page of \code{tam.pv.mcmc} for further details.
+}
+  \item{omitUntil}{
+Argument is passed to \code{plotDevianceConquest}: An optional value indicating
+number of iterations to be omitted for plotting.
 }
 }
 \details{

@@ -5,7 +5,7 @@
 \description{Function provides item characteristic plots for each item. To date, 
 only dichotomouls 1pl and 2pl models are supported.}
 \usage{plotICC  ( resultsObj, defineModelObj, item = NULL, personPar = c("WLE", "EAP", "PV"),
-                 personsPerGroup = 30, pdfFolder = NULL, smooth = 7 )}
+       personsPerGroup = 30, pdfFolder = NULL, smooth = 7 )}
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{resultsObj}{
@@ -37,36 +37,17 @@ than one item should be plotted.
 }
   \item{smooth}{
 %%     ~~Describe \code{file} here~~
-Optional: A parameter (integer vaklue) for smoothing the plot. If the number of examinees is high, the
+Optional: A parameter (integer value) for smoothing the plot. If the number of examinees is high, the
 icc plot may become scratchy. \code{smooth} defines the maximum number of discret nodes
 across the theta scale for evaluating the icc. Higher values result in a less smooth icc. To mimic the
 behavior of the S3 plot method of \code{TAM}, use the value 7.
 }
-}
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
-\value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-}
-\references{
-%% ~put references to the literature/web site here ~
 }
 \author{
 Sebastian Weirich
 }
 \note{
 This function is beta! Use with care...
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
 data(sciences)
@@ -86,7 +67,3 @@ res1 <- getResults(run1)
 # plot for one item 
 plotICC  ( resultsObj = res1, defineModelObj = mod1, item = "BioPro13")
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

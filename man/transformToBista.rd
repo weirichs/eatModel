@@ -28,9 +28,11 @@ defaulted to 500/100.
   \item{cuts}{
 %%     ~~Describe \code{file} here~~
 A named list with cut scores. Names of the list must match the domain names in the 
-output of \code{getResults}. Each element of the list is a list with one or two 
+output of \code{getResults}. Each element of the list is a named list with one or two
 elements---the cut scores (in ascending order) and (optionally) the labels of the 
-stages. See the examples of \code{defineModel} for further details. 
+stages. The first element (cut scores) must be named \code{values}. The second element
+(labels of the stages) must be named \code{labels}. See the examples of \code{defineModel}
+for further details.
 }
   \item{weights}{
 %%     ~~Describe \code{file} here~~
