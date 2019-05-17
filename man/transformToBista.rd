@@ -16,14 +16,15 @@ The object returned by \code{equat1pl}.
 }
   \item{refPop}{
 %%     ~~Describe \code{file} here~~
-Data frame with at least three columns. First column indicates the domain name. 
+Optional: Data frame with at least three columns. First column indicates the domain name.
 Note that this name must match the domain names in the output of \code{getResults}.
 Second column contains the mean of the reference population. Third column contains
 the standard deviation of the reference population. Fourth column optionally contains 
 the transformed mean on the Bista metric of the reference population. Fifth column 
 optionally contains the transformed standard deviation on the Bista metric of the 
 reference population. If the fourth and fifth columns are missing, values will be 
-defaulted to 500/100. 
+defaulted to 500/100. If \code{refPop} is not specified, mean and SD will be computed
+from the data, optionally using weights (if the \code{weights} argument is specified).
 }
   \item{cuts}{
 %%     ~~Describe \code{file} here~~
