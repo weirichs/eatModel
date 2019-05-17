@@ -440,7 +440,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                     }
                     nd  <- setdiff ( rex[,id] , weights[,1])
                     if ( length(nd) > 0 ) {
-                         stop(paste ( "Plausible values data for dimension '",dimname,"' contain ",length(nd)," cases for which no valid weights exist in the 'weights' frame.\n",sep=""))
+                         cat(paste ( "W A R N I N G !   Plausible values data for dimension '",dimname,"' contain ",length(nd)," cases for which no valid weights exist in the 'weights' frame. \n",sep=""))
                     }
                     rex <- merge ( rex, weights , by.x = id, by.y = colnames(weights)[1], all.x = TRUE, all.y = FALSE)
                     mis <- which(is.na(rex[,colnames(weights)[2]]))
@@ -547,7 +547,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                                  }
                                  nd  <- setdiff ( pv[,id] , weights[,1])
                                  if ( length(nd) > 0 ) {
-                                      stop(paste ( "Plausible values data for dimension '",dims,"' contain ",length(nd)," cases for which no valid weights exist in the 'weights' frame.\n",sep=""))
+                                      cat(paste ( "W A R N I N G !   Plausible values data for dimension '",dims,"' contain ",length(nd)," cases for which no valid weights exist in the 'weights' frame.\n",sep=""))
                                  }
                                  pvF <- merge ( pv, weights , by.x = id, by.y = colnames(weights)[1], all.x = TRUE, all.y = FALSE)
                                  mis <- which(is.na(pvF[,colnames(weights)[2]]))
