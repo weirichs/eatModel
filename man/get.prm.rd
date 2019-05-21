@@ -13,9 +13,6 @@ Character string with the name of the ConQuest prm file (This file is requested 
 statement in the conquest synax file).
 }
 }
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
 \value{
 %%  ~Describe the value returned
 %%  If it is a LIST, use

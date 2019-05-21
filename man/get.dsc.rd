@@ -13,9 +13,6 @@ get.dsc(file)}
 Character string with the name of the Conquest descriptives file.
 }
 }
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
 \value{
 %%  ~Describe the value returned
 %%  If it is a LIST, use

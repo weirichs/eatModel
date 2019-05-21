@@ -77,8 +77,6 @@ Optional: Give the number or name of the domain column in results.
 Optional: Give the number or name of the parameter column in results. 
 }
 }
-\details{
-}
 \value{
 %%  ~Describe the value returned
 %%  If it is a LIST, use
@@ -88,23 +86,9 @@ Optional: Give the number or name of the parameter column in results.
 A list with equating information intended for further transformation by the \code{transformToBista}
 function. 
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
 \author{
 Sebastian Weirich
-}
-\note{
-%%  ~~further notes~~
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-}
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
 # see example 5, 6, and 6a in the help file of defineModel()
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
