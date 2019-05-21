@@ -2213,6 +2213,11 @@ reshapeQ3 <- function ( mat, q3MinObs, nObs ) {
 ### Extraktorfunktionen
 eapFromRes <- function ( resultsObj ) {
           eapRo<- intersect( which(resultsObj[,"par"] == "eap"),which(resultsObj[,"indicator.group"] == "persons"))
+          id   <- unique(resultsObj[intersect(which(resultsObj[,"type"] == "tech"), which(resultsObj[,"par"] == "ID")),"derived.par"])
+          if (length( id ) == 0 ) {
+              cat("Warning! Cannot identify 'id' variable (maybe because 'resultsObj' was created by an older version of 'eatModel'. 'id' variable will be defaulted to 'idstud'.\n")
+              id <- "idstud"
+          }
           if ( length ( eapRo ) == 0 ) {
                cat("Warning: 'resultsObj' does not contain any eap values.\n")
                return ( NULL )
@@ -2220,9 +2225,6 @@ eapFromRes <- function ( resultsObj ) {
              sel  <- resultsObj[eapRo,]
              sel  <- do.call("rbind", by(sel, INDICES = sel[,c("model", "group")], FUN = function ( gr ) {
                      res  <- dcast ( gr , model+group+var1~derived.par, value.var = "value")
-    ### Hotfix: ID namen identifizieren
-                     id   <- unique(resultsObj[intersect(which(resultsObj[,"type"] == "tech"), which(resultsObj[,"par"] == "ID")),"derived.par"])
-                     stopifnot(length(id)==1)
                      colnames(res)[-c(1:2)] <- c(id, "EAP", "SE.EAP")
                      weg  <- match(c("model", id), colnames(res))
                      res  <- data.frame ( res[,c("model", id)], dimension = as.character(gr[1,"group"]), res[,-weg,drop=FALSE], stringsAsFactors = FALSE)
@@ -2238,7 +2240,10 @@ pvFromRes  <- function ( resultsObj, toWideFormat = TRUE) {
           }  else  {
              sel  <- resultsObj[pvRow, ]                                        ### Hotfix: ID namen identifizieren
              id   <- unique(resultsObj[intersect(which(resultsObj[,"type"] == "tech"), which(resultsObj[,"par"] == "ID")),"derived.par"])
-             stopifnot(length(id)==1)
+             if (length( id ) == 0 ) {
+                 cat("Warning! Cannot identify 'id' variable (maybe because 'resultsObj' was created by an older version of 'eatModel'. 'id' variable will be defaulted to 'idstud'.\n")
+                 id <- "idstud"
+             }
              if (toWideFormat == TRUE ) {
                  sel  <- do.call("rbind", by(sel, INDICES = sel[,c("model","group")], FUN = function ( gr ) {
                          res  <- dcast ( gr , model+var1~derived.par, value.var = "value")
@@ -2356,9 +2361,11 @@ wleFromRes <- function ( resultsObj ) {
              sel  <- resultsObj[wleRo,]
              sel  <- do.call("rbind", by(sel, INDICES = sel[,c("model", "group")], FUN = function ( gr ) {
                      res  <- dcast ( gr , model+var1~par+derived.par, value.var = "value")
-    ### Hotfix: 'id' finden
                      id   <- resultsObj[intersect(intersect(which(resultsObj[,"model"] == gr[1,"model"]),which(resultsObj[,"type"] == "tech")), which(resultsObj[,"par"] == "ID")),"derived.par"]
-                     stopifnot(length(id)==1)
+                     if (length( id ) == 0 ) {
+                         cat("Warning! Cannot identify 'id' variable (maybe because 'resultsObj' was created by an older version of 'eatModel'. 'id' variable will be defaulted to 'idstud'.\n")
+                         id <- "idstud"
+                     }
                      recSt<- paste("'var1'='",id,"'; 'NitemsSolved_NA'='NitemsSolved'; 'NitemsTotal_NA'='NitemsTotal'",sep="")
                      colnames(res) <- recode ( colnames(res) , recSt)
                      weg  <- match(c("model", id), colnames(res))
