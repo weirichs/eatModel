@@ -21,6 +21,7 @@ tamObjForBayesianPV <- function(anchor, qMatrix, slopeMatrix = NULL, resp, pid, 
 
 ### prueft, ob Design verlinkt ist: checkDesign(design[1:15,c(1:5,ncol(design))], bookletColumn = "TH")
 checkDesign <- function ( design, bookletColumn) {
+      if (!all(sapply(design, class)=="character")) { design <- data.frame(lapply(design, as.character), stringsAsFactors=FALSE)}
       book  <- existsBackgroundVariables(dat = design, variable=bookletColumn)
       items <- setdiff(colnames(design), book)                                  ### zeilen loeschen, die ausschliesslich NA sind
       weg   <- which(rowSums(do.call("rbind", alply(design[,items], .margin = 1, .fun = is.na))) == ncol(design[,items]))
@@ -995,9 +996,13 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
      ### hintereinander aufgerufen (= rekursiv). Das geschieht ueber die Funktion 'doAufb' und kann prinzipiell ueber single- oder multicore erfolgen
      ### WICHTIG: 'doAufb' ruft irgendwann 'defineModel' auf, braucht also alle Argumente dieser Funktion ... sonst werden defaults genommen, und das will man ja hier nicht mehr
      ### in einem ersten Schritt muessen also alle Argumente von 'default Models' gesammelt werden
-                     cll <- as.list(match.call(definition = defineModel))       ### sammle hier alle Argumente, die der Nutzer bei Aufruf von 'defineModel' selbststaendig definiert hat!
-                     cll[["splittedModels"]] <- splittedModels                  ### ersetze nun alle Argumente, die die Funktion bis hierher geaendert hat!
-                     cll <- lapply ( cll[2:length(cll)], eval )
+                     cl1 <- as.list(match.call(definition = defineModel))       ### sammle hier alle Argumente, die der Nutzer bei Aufruf von 'defineModel' selbststaendig definiert hat!
+                     cl1[["analysis.name"]] <- NULL                             ### aber 'analysis.name' muss weg, selbst wenn der Nutzer das definiert hat, denn es wird ggf. neu konstruiert bzw. erweitert durch den splitter 
+                     cl1[["dat"]] <- as.name("dat")                             ### Hotfix, keine Ahnung, weswegen das frueher auch ohne ging, jetzt aber eine Fehlermeldung gibt 
+                     cl1[["splittedModels"]] <- splittedModels                  ### ersetze nun alle Argumente, die die Funktion bis hierher geaendert hat!
+                     cll <- list()                                              ### boah, wieso geht das hier nicht mehr?!? cll <- lapply ( cl1[2:length(cl1)], eval )
+                     for ( u in 2:length(cl1)) {cll[[u-1]] <- eval(cl1[[u]])}
+                     names(cll) <- names(cl1)[-1]
                      anf <- mods[1]
      ### single core handling: Funktion "doAufb" wird seriell fuer alle "mods" aufgerufen
                      if(is.null ( splittedModels[["nCores"]] ) | splittedModels[["nCores"]] == 1 ) {
@@ -1161,7 +1166,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                           cat(paste(" W A R N I N G !  Found ",sum(n.werte[noZahl])," non-numeric values in the item responses. These values will be treated as missing responses!\n",sep="")) }
                       klasse  <- unlist( lapply(dat[,all.Names[["variablen"]], drop = FALSE], class) )
                       if( "character" %in% klasse | "factor" %in% klasse | "logical" %in% klasse ) {
-                          cat(paste(" W A R N I N G !  Found unexpected class type(s) in item response columns: ",paste(setdiff(klasse, c("numeric", "integer")), collapse = ", "), "\n",sep=""))
+                          cat(paste(" W A R N I N G !  Found unexpected class type(s) in item response columns: '",paste(setdiff(klasse, c("numeric", "integer")), collapse = "', '"), "'\n",sep=""))
                           cat("                  All item columns will be transformed to be 'numeric'. Recommend to edit your data manually prior to analysis.\n")
                           for ( uu in all.Names[["variablen"]] ) { dat[,uu] <- as.numeric(dat[,uu])}
                       }
