@@ -835,15 +835,15 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
 doAufb <- function ( m, matchCall, anf, verbose ) {
           for ( i in 1:length(matchCall) ) { assign ( names(matchCall)[i], matchCall[[i]]) }
           matchL <- match(m, unlist(lapply(splittedModels[["models.splitted"]], FUN = function ( l ) { l[["model.no"]] } )))
-          mess1  <- NULL
+          mess1  <- NULL                                                        ### Nachrichtenobjekt initialisieren
           if(!is.null(splittedModels[["models.splitted"]][[matchL]][["qMatrix"]])) {
      ### check: wenn superSplitter BERUHEND AUF ITEM GROUPING genutzt wird, wird 'items'-Argument von 'defineModel' ignoriert; wenn das also im 'matchCall' NICHT NULL ist, wird es ignoriert
              if ( !is.null(matchCall[["items"]]) )  {                           ### Warnung nur beim ersten Schleifendurchlauf anzeigen!
-                  if(m == anf) { cat("Warning: 'defineModel' was called using 'splitModels' argument. Model split according to item groups is intended. Item selection is defined \n    via 'splittedModels' object. Hence, 'items' argument is expected to be missed in 'defineModel()' and will be ignored.\n") }
+                  if(m == anf) { mess1 <- c(mess1, cat("Warning: 'defineModel' was called using 'splitModels' argument. Model split according to item groups is intended. Item selection is defined \n    via 'splittedModels' object. Hence, 'items' argument is expected to be missed in 'defineModel()' and will be ignored.\n")) }
              }
              itemMis<- setdiff ( splittedModels[["models.splitted"]][[matchL]][["qMatrix"]][,1], colnames(dat))
              if( length ( itemMis ) > 0) {
-                  mess1 <- paste( "Warning! Model No. ",splittedModels[["models.splitted"]][[matchL]][["model.no"]], ", model name: '",splittedModels[["models.splitted"]][[matchL]][["model.name"]],"': ", length(itemMis) ," from ",nrow(splittedModels[["models.splitted"]][[matchL]][["qMatrix"]])," items listed the Q matrix not found in data:\n    ", paste(itemMis,collapse=", "),"\n",sep="")
+                  mess1 <- c(mess1, paste( "Warning! Model No. ",splittedModels[["models.splitted"]][[matchL]][["model.no"]], ", model name: '",splittedModels[["models.splitted"]][[matchL]][["model.name"]],"': ", length(itemMis) ," from ",nrow(splittedModels[["models.splitted"]][[matchL]][["qMatrix"]])," items listed the Q matrix not found in data:\n    ", paste(itemMis,collapse=", "),"\n",sep=""))
              }
              itemSel<- intersect ( splittedModels[["models.splitted"]][[matchL]][["qMatrix"]][,1], colnames(dat))
              qMatrix<- splittedModels[["models.splitted"]][[matchL]][["qMatrix"]]
@@ -855,7 +855,7 @@ doAufb <- function ( m, matchCall, anf, verbose ) {
           if(!is.null(splittedModels[["models.splitted"]][[matchL]][["person.grouping"]])) {
              persMis<- setdiff ( splittedModels[["models.splitted"]][[matchL]][["person.grouping"]][,1], dat[,id])
              if( length ( persMis ) > 0) {
-                 cat(paste( "Warning: ",length(persMis) ," from ",nrow(splittedModels[["models.splitted"]][[matchL]][["person.grouping"]])," persons not found in data.\n",sep=""))
+                 mess1 <- c(mess1, paste( "Warning: ",length(persMis) ," from ",nrow(splittedModels[["models.splitted"]][[matchL]][["person.grouping"]])," persons not found in data.\n",sep=""))
              }
              persons<- intersect ( splittedModels[["models.splitted"]][[matchL]][["person.grouping"]][,1], dat[,id])
              datSel <- dat[match(persons, dat[,id]),]
@@ -871,21 +871,21 @@ doAufb <- function ( m, matchCall, anf, verbose ) {
              notAllow <- setdiff ( overwrF, names(formals(defineModel)))        ### die Spaltennamen zu Argumenten von 'defineModel' passen, sonst werden die ignoriert
              if ( length ( notAllow ) > 0 ) {
                   if ( m == anf ) {                                             ### folgende Warnung soll nur einmal erscheinen, obwohl es fuer jedes Modell geschieht (Konsole nicht mit Meldungen zumuellen)
-                       cat(paste("Column(s) '",paste(notAllow, collapse = "', '"),"' of 'splittedModels' definition frame do not match arguments of 'defineModel()'. Columns will be ignored.\n", sep=""))
+                       mess1 <- c(mess1, paste("Column(s) '",paste(notAllow, collapse = "', '"),"' of 'splittedModels' definition frame do not match arguments of 'defineModel()'. Columns will be ignored.\n", sep=""))
                   }
                   overwrF <- setdiff (overwrF, notAllow)
              }                                                                  ### wenn der Nutzer zusaetzliche Spalten in <models>$models spezifiziert, duerfen bestimmte
              notAllow2<- intersect ( overwrF, names(overwr1))                   ### Argumente von 'defineModel' NICHT benutzt werden, die werden dann auch ignoriert
              if ( length ( notAllow2 ) > 0 ) {
                   if ( m == anf ) {                                             ### folgende Warnung soll nur einmal erscheinen, obwohl es fuer jedes Modell geschieht (Konsole nicht mit Meldungen zumuellen)
-                       cat(paste("Column(s) '",paste(notAllow2, collapse = "', '"),"' of 'splittedModels' definition frame are not allowed to be modified by user. Columns will be ignored.\n", sep=""))
+                       mess1 <- c(mess1, paste("Column(s) '",paste(notAllow2, collapse = "', '"),"' of 'splittedModels' definition frame are not allowed to be modified by user. Columns will be ignored.\n", sep=""))
                   }
                   overwrF <- setdiff (overwrF, notAllow2)
              }
              notAllow3<- intersect ( overwrF, names(matchCall))                 ### wenn der Nutzer bspw. im Splitter die nodes modellspezifisch setzt, duerfen die im Aufruf von 'defineModel' nicht nochmal gesetzt werden ...
              if ( length ( notAllow3 ) > 0 ) {                                  ### gibt nur eine Warnung, das Ignorieren geschieht automatisch
                   if ( m == anf ) {
-                       cat(paste("Column(s) '",paste(notAllow3, collapse = "', '"),"' were defined twice, in <models>$models and 'defineModel'. The latter one will be ignored.\n", sep=""))
+                       mess1 <- c(mess1, paste("Column(s) '",paste(notAllow3, collapse = "', '"),"' were defined twice, in <models>$models and 'defineModel'. The latter one will be ignored.\n", sep=""))
                   }
              }                                                                  ### wenn nach den ganzen checks immer noch zusaetzliche Argumente uebrig sind, werden die jetzt
              if ( length ( overwrF ) > 0 ) {                                    ### in 'overwr1' ergaenzt ... und in 'splittedModels' fuer die 'sprechenden Ausgaben'
@@ -966,7 +966,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                n.iterations=2000,nodes=NULL, p.nodes=2000, f.nodes=2000,converge=0.001,deviancechange=0.0001, equivalence.table=c("wle","mle","NULL"), use.letters=FALSE,
                allowAllScoresEverywhere = TRUE, guessMat = NULL, est.slopegroups = NULL, fixSlopeMat = NULL, slopeMatDomainCol=NULL, slopeMatItemCol=NULL, slopeMatValueCol=NULL,
                progress = FALSE, Msteps = NULL, increment.factor=1 , fac.oldxsi=0, export = list(logfile = TRUE, systemfile = FALSE, history = TRUE, covariance = TRUE, reg_coefficients = TRUE, designmatrix = FALSE) )   {
-                  if(!"data.frame" %in% class(dat) ) { cat("Convert 'dat' to a data.frame.\n"); dat <- data.frame ( dat, stringsAsFactors = FALSE)}
+                  if(!"data.frame" %in% class(dat) || "tbl" %in% class(dat) ) { cat("Convert 'dat' to a data.frame.\n"); dat <- data.frame ( dat, stringsAsFactors = FALSE)}
      ### Sektion 'multiple models handling': jedes Modell einzeln von 'defineModel' aufbereiten lassen
      ### Hier wird jetzt erstmal nur die bescheuerte Liste aus 'splitModels' aufbereitet (wenn der Nutzer sie verhunzt hat)
      ### das findet natuerlich nur statt, wenn es 'splitModels' gibt, wenn also MEHRERE Modelle simultan verarbeitet werden sollen
@@ -1038,6 +1038,12 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                         stopifnot(length(txtP) == length(txts))
                         for ( j in 1:length(txtP) ) {
                               txtG <- c(txtG, txtP[[j]], txts[[j]])
+                        }                                                       ### Hotfix 2: Zusaetzliche warnungen aus 'doAufb' abfangen
+                        fl  <- min(grep( pattern = "====", x = txt))            ### 'fl' = first line
+                        if ( fl > 1) {
+                             if (!all(txt[1:(fl-1)] == "" )) {
+                                 txtG <- c("", txt[1:(fl-3)], txtG)
+                             }
                         }
                         cat(txtG, sep="\n")
                      }
