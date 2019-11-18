@@ -8,7 +8,7 @@ pvFromRes(resultsObj, toWideFormat = TRUE)}
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{resultsObj}{
-The object returned by \code{getResults}.
+The object returned by \code{\link{getResults}}.
 }
   \item{toWideFormat}{
 Logical: Should the plausible values be arranged in the wide format? Alternatively, they

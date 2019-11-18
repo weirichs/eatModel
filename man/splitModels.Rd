@@ -36,13 +36,17 @@ unidimensional structure is assumed.
 data.frame, first row must be person ID, further columns contain group categories, e.g. data.frame ( "id" = 1:10 , "sex" = sample ( c ( "male" , "female" ) , 10 , replace = TRUE ) )
 }
   \item{split}{
-character, possible values:
+character, possible values and their consequences:
 
-NULL							: qMatrix and person.groups are not split, one model with original qMatrix and all persons is set up
-"qMatrix"						: qMatrix is split into single dimensions, number of created models equals number of dimensions
-"person.groups"					: person.groups is split into single groups, number of created models equals number of all combinations of groups (with at least one person)
-c("qMatrix","person.groups")	: default, both qMatrix and person.groups is split and single dimensions and single groups are crossed, number of created models equals number of dimension multiplied with number of all combinations of groups
-
+\code{NULL}: qMatrix and person.groups are not split, one model with original qMatrix
+and all persons is set up
+\code{"qMatrix"}: qMatrix is split into single dimensions, number of created models
+equals number of dimensions
+\code{"person.groups"}: person.groups is split into single groups, number of created models
+equals number of all combinations of groups (with at least one person)
+\code{c("qMatrix","person.groups")}: default, both qMatrix and person.groups is split
+and single dimensions and single groups are crossed, number of created models equals
+number of dimension multiplied with number of all combinations of groups
 }
   \item{add}{
 list of elements with single values, names of elements should be arguments of \code{\link{defineModel}}, elements are the value that is passed when running \code{\link{defineModel}}; elements in \code{add} are used for all models; e.g. list ( "software" = "conquest" , "nodes" = 15 ), that means that all models are estimated with "conquest" and 15 nodes
@@ -93,7 +97,6 @@ logical (default: TRUE), print progess
   
   
 }
-%% \details{}
 \value{
 depending on \code{env} either:
 
@@ -103,14 +106,9 @@ depending on \code{env} either:
 for intended subsequent use with \code{\link{defineModel}} use \code{env=FALSE}
 
 }
-%% \references{}
 \author{
 Martin Hecht
 }
-%% \note{}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
 \seealso{
 \code{\link{defineModel}}
 }

@@ -9,7 +9,7 @@ checkDesign ( design, bookletColumn) }
 \arguments{
   \item{design}{
 %%     ~~Describe \code{file} here~~
-A data frame with the test design. All columns (except the 'booklet' column) are
+A data frame with the test design. All columns (except the \code{booklet} column) are
 expected to contain blocks.
 }
   \item{bookletColumn}{

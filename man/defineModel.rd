@@ -6,7 +6,7 @@
 checks data for IRT consistency, generates Conquest syntax, label, anchor and data files or
 corresponding TAM call for a single model specified by several arguments in R. Finally, an
 R object is created which contain the required input for Conquest or TAM. To start the estimation,
-call \code{runModel} with the argument returned by \code{defineModel}.}
+call \code{\link{runModel}} with the argument returned by \code{defineModel}.}
 \usage{
 defineModel (dat, items, id, splittedModels = NULL,
    irtmodel = c("1PL", "2PL", "PCM", "PCM2", "RSM", "GPCM", "2PL.groups", "GPCM.design", "3PL"),
@@ -46,7 +46,7 @@ Name or column number of the identifier (ID) variable.
 }
   \item{splittedModels}{
 %%     ~~Describe \code{dif.term} here~~
-Optional: Object returned by 'splitModels'. Definition for multiple model handling. 
+Optional: Object returned by \code{\link{splitModels}}. Definition for multiple model handling.
 }
   \item{irtmodel}{
 %%     ~~Describe \code{abs.dif.bound} here~~
@@ -56,7 +56,7 @@ argument of \code{tam}. See the help page of \code{tam} for further details.
   \item{qMatrix}{
 %%     ~~Describe \code{abs.dif.bound} here~~
 Optional: A named data frame indicating how items should be grouped to dimensions. The
-first column contains the names of all items and should be named item. The other
+first column contains the unique names of all items and should be named ``item''. The other
 columns contain dimension definitions and should be named with the respective
 dimension names. A positive value (e.g., 1 or 2 or 1.4) indicates the loading weight
 with which an item loads on the dimension, a value of 0 indicates that the respective
@@ -70,12 +70,12 @@ functioning analysis is to be done.
 }
   \item{HG.var}{
 Optional: Names or column numbers of one or more context variables (e.g., sex, school).
-These variables will be used for latent regression model in ConQuest or TAM.
+These variables will be used for latent regression model in Conquest or TAM.
 }
   \item{group.var}{
 Optional: Names or column numbers of one or more grouping variables. Descriptive
 statistics for WLEs and Plausible Values will be computed separately for each
-group in ConQuest.
+group in Conquest.
 }
   \item{weight.var}{
 %%     ~~Describe \code{sig.dif.bound} here~~
@@ -224,39 +224,39 @@ Optional: Set seed value for analysis.
   \item{conquest.folder}{
 %%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "conquest"}. A character string with path and name
-of the ConQuest console, for example \code{"c:/programme/conquest/console_Feb2007.exe"}.
+of the Conquest console, for example \code{"c:/programme/conquest/console_Feb2007.exe"}.
 }
   \item{constraints}{
 %%     ~~Describe \code{dif.term} here~~
 A character string specifying how the scale should be constrained. Possible options 
-are "cases" (default), "items" and "none". When anchor parameter are specified in 
-anchor, constraints will be set to "none" automatically. In \code{TAM} the option
-"none" is not allowed. (See the help file of \code{tam.mml} for further details.)
+are \code{"cases"} (default), \code{"items"} and \code{"none"}. When anchor parameter are specified in 
+anchor, constraints will be set to \code{"none"} automatically. In \code{TAM} the option
+\code{"none"} is not allowed. (See the help file of \code{tam.mml} for further details.)
 }
   \item{std.err}{
 %%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "conquest"}. A character string specifying which
-type of standard error should be estimated. Possible options are "full", "quick"
-(default) and "none". See ConQuest manual pp.167 for details on standard error estimation.
+type of standard error should be estimated. Possible options are \code{"full"}, \code{"quick"}
+(default) and \code{"none"}. See Conquest manual pp.167 for details on standard error estimation.
 }
   \item{distribution}{
 %%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "conquest"}. A character string indicating the
-a priori trait distribution. Possible options are "normal" (default) and "discrete".
-See ConQuest manual pp.167 for details on population distributions.
+a priori trait distribution. Possible options are \code{"normal"} (default) and \code{"discrete"}.
+See Conquest manual pp.167 for details on population distributions.
 }
   \item{method}{
 %%     ~~Describe \code{dif.term} here~~
 A character string indicating which method should be used for analysis. Possible 
-options are "gauss" (default), "quadrature" and "montecarlo". See ConQuest manual 
-pp.225 for details on these methods. When using \code{software = "tam"}, "gauss" and 
-"quadrature" essentially leads to numerical integration, i.e TAM is called with
+options are \code{"gauss"} (default), \code{"quadrature"} and \code{"montecarlo"}. See Conquest manual 
+pp.225 for details on these methods. When using \code{software = "tam"}, \code{"gauss"} and 
+\code{"quadrature"} essentially leads to numerical integration, i.e TAM is called with
 \code{control$snodes = 0} and with \code{control$nodes = seq(-6,6,len=nn)}, where
 \code{nn} equals the number of nodes specified in the \code{nodes} argument of
-\code{defineModel} (see below). When using \code{software = "tam"}, "montecarlo"
+\code{defineModel} (see below). When using \code{software = "tam"}, \code{"montecarlo"}
 leads to calling TAM with \code{control$QMC = FALSE} and \code{snodes = nn}, where
 \code{nn} equals the number of nodes specified in the \code{nodes} argument of
-\code{defineModel}. When using \code{software = "tam"}, "quasiMontecarlo"
+\code{defineModel}. When using \code{software = "tam"}, \code{"quasiMontecarlo"}
 leads to calling TAM with \code{control$QMC = TRUE} and \code{snodes = nn}, where
 \code{nn} equals the number of nodes specified in the \code{nodes} argument of
 \code{defineModel}.
@@ -270,8 +270,8 @@ will proceed without improvement in the deviance.
 %%     ~~Describe \code{dif.term} here~~
 An integer value specifying the number of nodes to be used in the analysis. The
 default value is 20. When using \code{software = "tam"}, the value specified here
-leads to calling TAM with \code{nodes = 20} AND \code{snodes = 0} if "gauss" or 
-"quadrature" was used in the \code{method} argument. If "montecarlo" or "quasiMontecarlo"
+leads to calling TAM with \code{nodes = 20} AND \code{snodes = 0} if \code{"gauss"} or 
+\code{"quadrature"} was used in the \code{method} argument. If \code{"montecarlo"} or \code{"quasiMontecarlo"}
 was used in the \code{method} argument, the value specified here leads to calling TAM with
 \code{control$snodes = 20}. For numerical integration, for example,
 \code{method = "gauss"} and \code{nodes = 21} (TAM default) may be appropriate. 
@@ -308,7 +308,7 @@ is 0.0001.
   \item{equivalence.table}{
 %%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "conquest"}. A character string specifying the
-type of equivalence table to print. Possible options are "wle" (default), "mle"
+type of equivalence table to print. Possible options are \code{"wle"} (default), \code{"mle"}
 and NULL.
 }
   \item{use.letters}{
@@ -316,7 +316,7 @@ and NULL.
 Applies only if \code{software = "conquest"}. A logical value indicating whether
 item response values should be coded als letters. This option can be used in partial
 credit models comprising items with more than 10 categories to avoid response columns
-with width 2 in ConQuest.
+with width 2 in Conquest.
 }
   \item{allowAllScoresEverywhere}{
 %%     ~~Describe \code{dif.term} here~~
@@ -331,7 +331,7 @@ are defined for `reading', values 1, 2, 3, 4 are defined for `listening'.
 Applies only if \code{software = "tam"} for 3PL models. A named data frame
 with two columns indicating for which items a common guessing parameter should
 be estimated. The first column contains the names of all items in the analysis
-and should be named "item". The second column is numerical (integer values
+and should be named \code{"item"}. The second column is numerical (integer values
 recommended) and allocates the items to groups. For each group of items, a
 separate guessing parameter is estimated. If the value in the second columns equals
 zero, the guessing parameter is fixed to zero.
@@ -341,7 +341,7 @@ zero, the guessing parameter is fixed to zero.
 Applies only if \code{software = "tam"} for 2PL models. Optionally, a named data frame
 with two columns indicating for which items a common discrimination parameter should
 be estimated. The first column contains the names of all items in the analysis
-and should be named "item". The second column is numerical (integer values
+and should be named \code{"item"}. The second column is numerical (integer values
 recommended) and allocates the items to groups. For each group of items, a
 separate discrimination parameter is estimated. Without specifying \code{est.slopegroups}, 
 a discrimination parameter for each item is estimated.
@@ -409,12 +409,14 @@ on hard disk.
 %%  \item{comp2 }{Description of 'comp2'}
 %% ...
 A list which contains information about the desired estimation. The list is intended for 
-further processing via \code{runModel}. Structure of the list varies depending on 
-whether multiple models were called using \code{splitModels} or not. If \code{splitModels} was called, 
-the number of elements in the list equals the number of models defined via \code{splitModels}. Each
-element in the list is a list with various elements: 
+further processing via \code{\link{runModel}}. Structure of the list varies depending on
+whether multiple models were called using \code{\link{splitModels}} or not. If
+\code{\link{splitModels}} was called, the number of elements in the list equals
+the number of models defined via \code{splitModels}. Each element in the list is
+a list with various elements:
   \item{software}{
-Character string of the software which is intended to use for the further estimation, i.e. "conquest" or "tam"
+Character string of the software which is intended to use for the further estimation,
+i.e. \code{"conquest"} or \code{"tam"}
 }
   \item{qMatrix}{
 The Q matrix allocating items to dimensions.
@@ -450,7 +452,7 @@ The person identifiers of examinees which are excluded from the analysis due to 
   \item{itemsExcluded}{
 Character string of items which were excluded, for example due to zero variance or solely missing values. 
 }
-If software == "conquest", the output additionally includes the following elements:
+If \code{software == "conquest"}, the output additionally includes the following elements:
   \item{input}{
 Character string of the path with Conquest input (cqc) file. 
 }
@@ -460,7 +462,7 @@ Character string of the path of the conquest executable file.
   \item{model.name}{
 Character string of the model name. 
 }
-If software == "tam", the output additionally includes the following elements:
+If \code{software == "tam"}, the output additionally includes the following elements:
   \item{anchor}{
 Optional: data frame of anchor parameters (if anchor parameters were defined).
 }

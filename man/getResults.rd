@@ -2,8 +2,8 @@
 \alias{getResults}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Collect all results from Conquest/TAM analysis into a common data frame}
-\description{First the IRT model should be defined using \code{defineModel}. Afterwards,
-call \code{runModel} with the argument returned by \code{defineModel} to start the estimation.
+\description{First the IRT model should be defined using \code{\link{defineModel}}. Afterwards,
+call \code{\link{runModel}} with the argument returned by \code{\link{defineModel}} to start the estimation.
 The last step then is to create a results frame using \code{getResults}. }
 \usage{
 getResults( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c("pv", "wle", "eap"), 
@@ -19,7 +19,7 @@ getResults( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c("pv", "wle", 
 \arguments{
   \item{runModelObj}{
 %%     ~~Describe \code{file} here~~
-The object returned by \code{runModel}.
+The object returned by \code{\link{runModel}}.
 }
   \item{overwrite}{
 %%     ~~Describe \code{file} here~~
@@ -83,16 +83,16 @@ this specifies the critical p-value for confidence interval DIF.
 }
  \item{nplausible}{
 Applies only if \code{software = "tam"}: Number of plausible values to be drawn. Note: 
-number of plausible values were already defined in \code{defineModel}, because 
+number of plausible values were already defined in \code{\link{defineModel}}, because
 Conquest needs to know the number of PVs prior to estimation. In \code{TAM}, it 
 is possible to redefine the number of plausible values and overwrite the definition
-that was given in \code{defineModel}.
+that was given in \code{\link{defineModel}}.
 }
 \item{ntheta}{
 Applies only if \code{software = "tam"}. Following description is borrowed from the help 
 file of \code{tam.pv} from the \code{TAM} package: Number of ability nodes for 
 plausible value imputation. Note that in this function ability nodes are simulated 
-for the whole sample, not for every person (contrary to the software ConQuest).
+for the whole sample, not for every person (contrary to the software Conquest).
 }
 \item{normal.approx}{
 Applies only if \code{software = "tam"}. Following description is borrowed from the help 
@@ -186,12 +186,12 @@ indicating whether information criteria should be computed.See the help
 page of \code{tam.pv.mcmc} for further details.
 }
   \item{omitUntil}{
-Argument is passed to \code{plotDevianceConquest}: An optional value indicating
+Argument is passed to \code{\link{plotDevianceConquest}}: An optional value indicating
 number of iterations to be omitted for plotting.
 }
 }
 \details{
-If \code{defineModel} was run with software Conquest, a path argument (\code{'dir'})
+If \code{\link{defineModel}} was run with software Conquest, a path argument (\code{'dir'})
 is necessary. The path argument is optional for software TAM. If \code{'dir'} was
 specified, \code{getResults} additionally writes its output into the specified folder, 
 using the \code{'analysis.name'} argument for file naming. Otherwise, \code{getResults} 

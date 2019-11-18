@@ -2,7 +2,7 @@
 \alias{transformToBista}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Transformation of item and person parameters to the Bista metric.}
-\description{Function uses output of \code{equat1pl} to provide two data.frames, 
+\description{Function uses output of \code{\link{equat1pl}} to provide two data.frames,
 one for the item parameters on the bista metric and one for the person parameter
 (PVs) on the bista metric.}
 \usage{
@@ -12,12 +12,12 @@ transformToBista ( equatingList, refPop, cuts, weights = NULL, defaultM = 500,
 \arguments{
   \item{equatingList}{
 %%     ~~Describe \code{file} here~~
-The object returned by \code{equat1pl}.
+The object returned by \code{\link{equat1pl}}.
 }
   \item{refPop}{
 %%     ~~Describe \code{file} here~~
 Optional: Data frame with at least three columns. First column indicates the domain name.
-Note that this name must match the domain names in the output of \code{getResults}.
+Note that this name must match the domain names in the output of \code{\link{getResults}}.
 Second column contains the mean of the reference population. Third column contains
 the standard deviation of the reference population. Fourth column optionally contains 
 the transformed mean on the Bista metric of the reference population. Fifth column 
@@ -29,10 +29,10 @@ from the data, optionally using weights (if the \code{weights} argument is speci
   \item{cuts}{
 %%     ~~Describe \code{file} here~~
 A named list with cut scores. Names of the list must match the domain names in the 
-output of \code{getResults}. Each element of the list is a named list with one or two
+output of \code{\link{getResults}}. Each element of the list is a named list with one or two
 elements---the cut scores (in ascending order) and (optionally) the labels of the 
 stages. The first element (cut scores) must be named \code{values}. The second element
-(labels of the stages) must be named \code{labels}. See the examples of \code{defineModel}
+(labels of the stages) must be named \code{labels}. See the examples of \code{\link{defineModel}}
 for further details.
 }
   \item{weights}{
@@ -40,7 +40,7 @@ for further details.
 Optional: a data.frame with two columns, first column is person identifier, second
 columns is individual caseweight. Necessary for the transformation of linking 
 error for (ordered) factors and/or if descriptives of the reference population 
-should be computed directly from the data. See the examples of \code{defineModel}
+should be computed directly from the data. See the examples of \code{\link{defineModel}}
 for further details. 
 }
   \item{defaultM}{

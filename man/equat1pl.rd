@@ -14,16 +14,16 @@ equat1pl(results , prmNorm , item = NULL, domain = NULL, testlet = NULL, value =
 \arguments{
   \item{results}{
 %%     ~~Describe \code{file} here~~
-The object returned by \code{getResults}. Alternatively, a data.frame with item
+The object returned by \code{\link{getResults}}. Alternatively, a data.frame with item
 parameters of the focus group. In this case, additional arguments (\code{itemF}, 
 \code{domainF}, and \code{valueF}) have to be defined.
 }
   \item{prmNorm}{
 %%     ~~Describe \code{file} here~~
 Data frame with normed anchor item parameters. Data frame must have at least two 
-columns: items and item difficulties. Use the further arguments 'item', 'domain',
-'testlet' and 'value' to define the column in which the corresponding parameter
-can be found. If 'item', 'domain', 'testlet' and 'value' is NULL, prmNorm must 
+columns: items and item difficulties. Use the further arguments \code{item}, \code{domain},
+\code{testlet} and \code{value} to define the column in which the corresponding parameter
+can be found. If \code{item}, \code{domain}, \code{testlet} and \code{value} is NULL, \code{prmNorm} must
 have only two columns: First column items, second column item difficulties. 
 Column names than are arbitrary. 
 }
@@ -34,9 +34,9 @@ Optional: Give the number or name of the item identifier column in prmNorm.
   \item{domain}{
 %%     ~~Describe \code{file} here~~
 Optional: Give the number or name of the domain name in prmNorm. Only necessary if
-item identifiers are not unique in prmNorm (for example, if one item occurs several 
+item identifiers are not unique in \code{prmNorm} (for example, if one item occurs several
 times, with a global item parameter and a domain-specific item parameter. Domain names 
-in prmNorm must match dimension names in the 'results' object. 
+in prmNorm must match dimension names in the object returned by \code{\link{getResults}}.
 }
   \item{testlet}{
 %%     ~~Describe \code{file} here~~
@@ -45,7 +45,7 @@ linking errors should be estimated via the jackknife method.
 }
   \item{value}{
 %%     ~~Describe \code{file} here~~
-Optional: Give the number or name of the parameter column in prmNorm. 
+Optional: Give the number or name of the parameter column in \code{prmNorm}.
 }
   \item{excludeLinkingDif}{
 %%     ~~Describe \code{file} here~~
@@ -59,6 +59,9 @@ be removed from the linking procedure.
   \item{iterativ}{
 %%     ~~Describe \code{file} here~~
 Logical. Should the exclusion of linking DIF items executed in an iterative loop?
+(i.e. start with all items and compute linking constant, than remove the item with
+the most pronounced DIF and compute linking constant, and so on, until no item is
+left with |DIF|> \code{difBound}.
 }
   \item{method}{
 %%     ~~Describe \code{file} here~~
@@ -83,7 +86,7 @@ Optional: Give the number or name of the parameter column in results.
 %%  \item{comp1 }{Description of 'comp1'}
 %%  \item{comp2 }{Description of 'comp2'}
 %% ...
-A list with equating information intended for further transformation by the \code{transformToBista}
+A list with equating information intended for further transformation by the \code{\link{transformToBista}}
 function. 
 }
 \author{

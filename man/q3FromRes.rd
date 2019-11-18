@@ -9,7 +9,7 @@ q3FromRes(resultsObj)}
 \arguments{
   \item{resultsObj}{
 %%     ~~Describe \code{file} here~~
-The object returned by \code{getResults}.
+The object returned by \code{\link{getResults}}.
 }
 }
 \value{
