@@ -6,7 +6,7 @@
 Moreover, optional elimination of items with linking DIF is allowed and linking error may be estimated
 via the jackknife method if testlets are specified.}
 \usage{
-equat1pl(results , prmNorm , item = NULL, domain = NULL, testlet = NULL, value = NULL, 
+equat1pl(results, prmNorm, item = NULL, domain = NULL, testlet = NULL, value = NULL, 
          excludeLinkingDif = TRUE, difBound = 1, iterativ = FALSE, 
          method = c("Mean.Mean", "Haebara", "Stocking.Lord"), itemF = NULL, 
          domainF = NULL, valueF = NULL)}
@@ -25,7 +25,7 @@ columns: items and item difficulties. Use the further arguments \code{item}, \co
 \code{testlet} and \code{value} to define the column in which the corresponding parameter
 can be found. If \code{item}, \code{domain}, \code{testlet} and \code{value} is NULL, \code{prmNorm} must
 have only two columns: First column items, second column item difficulties. 
-Column names than are arbitrary. 
+Column names then are irrelevant. 
 }
   \item{item}{
 %%     ~~Describe \code{file} here~~
