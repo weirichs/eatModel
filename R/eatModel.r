@@ -966,7 +966,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                n.iterations=2000,nodes=NULL, p.nodes=2000, f.nodes=2000,converge=0.001,deviancechange=0.0001, equivalence.table=c("wle","mle","NULL"), use.letters=FALSE,
                allowAllScoresEverywhere = TRUE, guessMat = NULL, est.slopegroups = NULL, fixSlopeMat = NULL, slopeMatDomainCol=NULL, slopeMatItemCol=NULL, slopeMatValueCol=NULL,
                progress = FALSE, Msteps = NULL, increment.factor=1 , fac.oldxsi=0, export = list(logfile = TRUE, systemfile = FALSE, history = TRUE, covariance = TRUE, reg_coefficients = TRUE, designmatrix = FALSE) )   {
-                  if(!"data.frame" %in% class(dat) || "tbl" %in% class(dat) ) { cat("Convert 'dat' to a data.frame.\n"); dat <- data.frame ( dat, stringsAsFactors = FALSE)}
+                  if(!"data.frame" %in% class(dat) || "tbl" %in% class(dat) ) { cat(paste0("Convert 'dat' of class '",paste(class(dat), collapse="', '"),"'to a data.frame.\n")); dat <- data.frame ( dat, stringsAsFactors = FALSE)}
      ### Sektion 'multiple models handling': jedes Modell einzeln von 'defineModel' aufbereiten lassen
      ### Hier wird jetzt erstmal nur die bescheuerte Liste aus 'splitModels' aufbereitet (wenn der Nutzer sie verhunzt hat)
      ### das findet natuerlich nur statt, wenn es 'splitModels' gibt, wenn also MEHRERE Modelle simultan verarbeitet werden sollen
