@@ -61,37 +61,52 @@ nObsItemPairs <- function ( responseMatrix, q3MinType) {
 ### cutScores         ... list of two elements. "values" is a numeric vector of cut scores (increasing),
 ###                       "labels" is an optional character vector of cut score labels
 ###                       "labels" has be be of length(values)+1
-simEquiTable <- function ( anchor, mRef, sdRef, addConst = 500, multConst = 100, cutScores , dir , n = 2000, conquest.folder ) {
+#simEquiTable <- function ( anchor, mRef, sdRef, addConst = 500, multConst = 100, cutScores , dir , n = 2000, conquest.folder ) {
+#                if ( length(which ( duplicated(anchor[,1])))>0) {
+#                     cat(paste("Warning: Remove ",length(duplicated(anchor[,1]))," entries in the anchor parameter frame.\n",sep=""))
+#                     anchor <- anchor[!duplicated(anchor[,1]),]
+#                }
+#                it  <- matrix ( data = anchor[,2], ncol = length(anchor[,2]), nrow = n, byrow = TRUE)
+#                colnames(it) <- anchor[,1]
+#                pop <- melt ( data.frame ( idstud = paste("P",1:n,sep=""), theta = rnorm (n = n, mean = mRef, sd = sdRef), it), id.vars = c("idstud", "theta"), value.name = "itemPar", variable.name = "item")
+#                pop[,"resp"] <- item.logit(z = pop[,"theta"]-pop[,"itemPar"], thr = c(0.0), slope = 1)$x
+#                popW<- dcast(pop,idstud~item, value.var = "resp")
+#                mDef<- defineModel ( dat = popW, items = -1, id = "idstud", anchor = anchor, dir = dir, conquest.folder = conquest.folder, compute.fit = FALSE, analysis.name = "equSimTest")
+#                mRun<- runModel(mDef)
+#                equ <- get.equ ( file.path ( dir, "equSimTest.equ"))[[1]]
+#                equ[,"estBista"] <- (equ[,"Estimate"] - mRef) / sdRef * multConst + addConst
+#                equ[,"ks"]       <- num.to.cat ( x = equ[,"estBista"], cut.points = cutScores[["values"]], cat.values = cutScores[["labels"]])
+#    ### jetzt noch die shortversion der Aequivalenztabelle erzeugen
+#                shrt<- do.call("rbind", by ( data = equ, INDICES = equ[,"ks"], FUN = function ( sks ) {
+#                       sks1<- data.frame ( do.call("cbind", lapply ( setdiff ( colnames(sks), "std.error"), FUN = function ( col ) {
+#                              if ( length( unique ( sks[,col] )) > 1) {
+#    ### hier werden spaltenspezifisch die Nachkommastellen bestimmt, auf die gerundet werden soll
+#                                   dig <- as.numeric(recode ( col, "'Score'=0; 'Estimate'=2; 'estBista'=0"))
+#                                   ret <- paste ( round(min(sks[,col]), digits = dig), round(max(sks[,col]), digits = dig), sep=" bis ")
+#                              }  else  {
+#                                   ret <- unique ( sks[,col] )
+#                              }
+#                              return(ret)})) )
+#                       colnames(sks1) <- setdiff ( colnames(sks), "std.error")
+#                       return(sks1)}))
+#                return(list ( complete = equ, short = shrt))}
+### Test:
+### ret <- simEquiTable( anchor = data.frame ( item = paste("i",1:20,sep=""), par = rnorm(20, mean = -.1, sd = 1.5)), mRef = -0.05, sdRef = 0.9, cutScores = list ( values = 330+0:4*75, labels = c("1a", "1b", 2:5) ), dir = "c:/users/weirichs/test", conquest.folder = "N:/console_Feb2007.exe")
+
+### neue Version derselben Funktion 
+simEquiTable <- function ( anchor, mRef, sdRef, addConst = 500, multConst = 100, cutScores) {
                 if ( length(which ( duplicated(anchor[,1])))>0) {
                      cat(paste("Warning: Remove ",length(duplicated(anchor[,1]))," entries in the anchor parameter frame.\n",sep=""))
                      anchor <- anchor[!duplicated(anchor[,1]),]
-                }
-                it  <- matrix ( data = anchor[,2], ncol = length(anchor[,2]), nrow = n, byrow = TRUE)
-                colnames(it) <- anchor[,1]
-                pop <- melt ( data.frame ( idstud = paste("P",1:n,sep=""), theta = rnorm (n = n, mean = mRef, sd = sdRef), it), id.vars = c("idstud", "theta"), value.name = "itemPar", variable.name = "item")
-                pop[,"resp"] <- item.logit(z = pop[,"theta"]-pop[,"itemPar"], thr = c(0.0), slope = 1)$x
-                popW<- dcast(pop,idstud~item, value.var = "resp")
-                mDef<- defineModel ( dat = popW, items = -1, id = "idstud", anchor = anchor, dir = dir, conquest.folder = conquest.folder, compute.fit = FALSE, analysis.name = "equSimTest")
-                mRun<- runModel(mDef)
-                equ <- get.equ ( file.path ( dir, "equSimTest.equ"))[[1]]
-                equ[,"estBista"] <- (equ[,"Estimate"] - mRef) / sdRef * multConst + addConst
-                equ[,"ks"]       <- num.to.cat ( x = equ[,"estBista"], cut.points = cutScores[["values"]], cat.values = cutScores[["labels"]])
+                }                                                               ### untere Zeile: temporaerer Datensatz mit allen moeglichen Summenscores
+                dtmp <- data.frame(rbind(1*(lower.tri(matrix(1, nrow = nrow(anchor), ncol = nrow(anchor)))),1))
+                dtmp <- data.frame(dtmp, score = rowSums(dtmp) , wle(dtmp, cbind(1, anchor[,2], 0)), stringsAsFactors = FALSE)
+                dtmp[,"bista"] <- (dtmp[,"est"] - mRef) / sdRef * multConst + addConst
+                dtmp[,"ks"]    <- num.to.cat ( x = dtmp[,"bista"], cut.points = cutScores[["values"]], cat.values = cutScores[["labels"]])
     ### jetzt noch die shortversion der Aequivalenztabelle erzeugen
-                shrt<- do.call("rbind", by ( data = equ, INDICES = equ[,"ks"], FUN = function ( sks ) {
-                       sks1<- data.frame ( do.call("cbind", lapply ( setdiff ( colnames(sks), "std.error"), FUN = function ( col ) {
-                              if ( length( unique ( sks[,col] )) > 1) {
-    ### hier werden spaltenspezifisch die Nachkommastellen bestimmt, auf die gerundet werden soll
-                                   dig <- as.numeric(recode ( col, "'Score'=0; 'Estimate'=2; 'estBista'=0"))
-                                   ret <- paste ( round(min(sks[,col]), digits = dig), round(max(sks[,col]), digits = dig), sep=" bis ")
-                              }  else  {
-                                   ret <- unique ( sks[,col] )
-                              }
-                              return(ret)})) )
-                       colnames(sks1) <- setdiff ( colnames(sks), "std.error")
-                       return(sks1)}))
-                return(list ( complete = equ, short = shrt))}
-### Test:
-### ret <- simEquiTable( anchor = data.frame ( item = paste("i",1:20,sep=""), par = rnorm(20, mean = -.1, sd = 1.5)), mRef = -0.05, sdRef = 0.9, cutScores = list ( values = 330+0:4*75, labels = c("1a", "1b", 2:5) ), dir = "c:/users/weirichs/test", conquest.folder = "N:/console_Feb2007.exe")
+                shrt <- do.call("rbind", by ( data = dtmp, INDICES = dtmp[,"ks"], FUN = function ( sks ) { data.frame ( score = paste(c(min(sks[,"score"]), max(sks[,"score"])), collapse=" bis "), estimate = paste(round(c(min(sks[,"est"]), max(sks[,"est"])),digits=2), collapse=" bis "), bista = paste(round(c(min(sks[,"bista"]), max(sks[,"bista"])),digits=0), collapse=" bis "), ks=unique(sks[,"ks"]), stringsAsFactors=FALSE)}))
+                return(list ( complete = dtmp[,c("score", "est", "bista", "ks")], short = shrt))}
+
 
 getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c("pv", "wle", "eap"), q3MinObs = 0, q3MinType = c("singleObs", "marginalSum"), omitFit = FALSE, omitRegr = FALSE, omitWle = FALSE, omitPV = FALSE, abs.dif.bound = 0.6, sig.dif.bound = 0.3, p.value = 0.9,
               nplausible = NULL, ntheta = 2000, normal.approx = FALSE, samp.regr = FALSE, theta.model=FALSE, np.adj=8, group = NULL, beta_groups = TRUE, level = .95, n.iter = 1000, n.burnin = 500, adj_MH = .5, adj_change_MH = .05, refresh_MH = 50, accrate_bound_MH = c(.45, .55),	sample_integers=FALSE, theta_init=NULL, print_iter = 20, verbose = TRUE, calc_ic=TRUE, omitUntil=1) {
