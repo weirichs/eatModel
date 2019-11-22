@@ -5,7 +5,7 @@
 \description{Function provides the equivalence table for unidimensional models, 
 specifying the individual competence level for each total score of the test.}
 \usage{simEquiTable  ( anchor, mRef, sdRef, addConst = 500, multConst = 100, 
-cutScores , dir , n = 2000, conquest.folder )}
+cutScores )}
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{anchor}{A data frame with anchor parameters on the logit scale, transformed 
@@ -34,19 +34,6 @@ Named list of one or two elements. "values" is a numeric vector of cut scores (i
 "labels" is an optional character vector of cut score labels. Note that "labels" (if specified)
 has to be of one more length than "values". 
 }
-  \item{dir}{
-%%     ~~Describe \code{sig.dif.bound} here~~
-An already existsing directory with writing permission in which the (temporary) output will be written to.
-}
-  \item{n}{
-%%     ~~Describe \code{sig.dif.bound} here~~
-Scalar: sample size for the simulated data.
-}
-  \item{conquest.folder}{
-%%     ~~Describe \code{dif.term} here~~
-Character string with path and name of the ConQuest console, for 
-example \code{"c:/programme/conquest/console_Feb2007.exe"}.
-}
 }
 \value{
 %%  ~Describe the value returned
@@ -57,16 +44,14 @@ example \code{"c:/programme/conquest/console_Feb2007.exe"}.
 A list of two data frames, including the complete table and the reduced table with
 the following 5 columns. 
   \describe{
-    \item{Score}{Students raw score}
-    \item{Estimate}{Estimated individual WLE according to the raw score.}
-    \item{std.error}{Standard error of the individual WLE estimate. This column is 
-    not included in the reduced table.}
-    \item{estBista}{Transformed WLE}
+    \item{score}{Students raw score}
+    \item{est}{Estimated individual WLE according to the raw score.}
+    \item{bista}{Transformed WLE}
     \item{ks}{competence level}
  }
 }
 \author{
-Sebastian Weirich
+Johannes Schult
 }
 \examples{
 \dontrun{
@@ -79,8 +64,7 @@ anchor <- data.frame ( item = paste("i",1:20,sep=""),
 cuts   <- list ( values = 330+0:4*75, labels = c("1a", "1b", 2:5) )
 
 # create the equivalence table
-ret <- simEquiTable( anchor = anchor, cutScores = cuts , mRef = -0.05, sdRef = 0.9, 
-       dir = "c:/users/weirichs/test", conquest.folder = "N:/console_Feb2007.exe")
+ret <- simEquiTable( anchor = anchor, cutScores = cuts , mRef = -0.05, sdRef = 0.9)
 View(ret$short)       
 }
 }
