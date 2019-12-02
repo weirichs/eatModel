@@ -1117,6 +1117,8 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                            cat(paste("Warning: Specified folder '",dir,"' does not exist. Create folder ... \n",sep="")); flush.console()
                            dir.create(dir, recursive = TRUE)
                         }
+                     }  else  {                                                 ### sicher ist sicher ... 
+                        if (software == "conquest") {stop("Argument 'dir' must be specified if software = 'conquest'.\n")}
                      }
      ### pruefen, ob es Personen gibt, die weniger als <boundary> items gesehen haben (muss VOR den Konsistenzpruefungen geschehen)
                      datL.valid  <- melt(dat, id.vars = all.Names[["ID"]], measure.vars = all.Names[["variablen"]], na.rm=TRUE)
