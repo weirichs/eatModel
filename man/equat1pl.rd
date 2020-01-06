@@ -8,7 +8,7 @@ via the jackknife method if testlets are specified.}
 \usage{
 equat1pl(results, prmNorm, item = NULL, domain = NULL, testlet = NULL, value = NULL, 
          excludeLinkingDif = TRUE, difBound = 1, iterativ = FALSE, 
-         method = c("Mean.Mean", "Haebara", "Stocking.Lord"), itemF = NULL, 
+         method = c("Mean.Mean", "Haebara", "Stocking.Lord", "robust"), itemF = NULL, 
          domainF = NULL, valueF = NULL)}
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -65,7 +65,10 @@ left with |DIF|> \code{difBound}.
 }
   \item{method}{
 %%     ~~Describe \code{file} here~~
-Linking method
+Linking method. If \code{"Mean.Mean"}, \code{"Haebara"}, or \code{"Stocking.Lord"}, 
+the function \code{equating.rasch} from the \code{sirt} package is called. If 
+\code{"robust"}, the function \code{"linking.robust"} from the \code{sirt} package
+is called. 
 }
   \item{itemF}{
 %%     ~~Describe \code{file} here~~
