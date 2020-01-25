@@ -70,22 +70,23 @@
   many categories or differential item functioning) might be unstable in TAM. 
   
   Historically, \code{eatModel} is a \sQuote{reboot} of the package \code{eatRest} formerly known as
-  \code{eat}. The development of some of its main functions started loosely in autumn 2009 at the Institute of
-  Educational Progress (IQB). For the first time, any attempts to develop an R package were neither made nor
-  intended. (Besides, no one knew how to do.) As part of the gradual switchover from SPSS to R which has
-  taken place at the IQB, the package \code{eat} (``Educational Assessment Tools'') was set up to bundle
-  all functions which were developed by then. A gentle group called themselves ``Central coordination of
-  data analysis'' (ZKD) claimed responsibility for these courses of action. The ``Laendervergleich 2011''
-  was the first study where \code{eat} has been used intensely. In 2012, during ZKD's first period of
-  prosperity, the functionality of the \code{eat} package has grown and therefore was partitioned into 
-  several small ``sub packages''---by name \code{eatPrep} for data preparation, \code{eatTools} for 
-  several auxiliary functions, \code{eatRest} for Rasch modeling, \code{eatRep} for replication methods, 
-  \code{eatDesign} for definition and modification of design properties. The further development of 
-  \code{eatRest} was expired because the package turned out to be enigmaticly written which led to 
-  undebugable problems, especially with the ardently loved results structure. ZKD authors did not
-  understand any longer the code which has been written before. Thus, \code{eatModel} is the second 
-  attempt. Its functionality is closely related to \code{eatRest} but adds some new
-  features---for example, the support of 2pl models using the \code{TAM} package.
+  \code{eat}. The first development of some of its main functions started loosely in autumn 2009 at the
+  Institute of Educational Progress (IQB). For the first time, any attempts to develop an R package were
+  neither made nor intended. (Besides, no one knew how to do.) The functions existed only in some ASCII
+  files which were loosely scattered across the IQB computers. As part of the gradual switchover from
+  SPSS to R which has taken place at the IQB, the package \code{eat} (``Educational Assessment Tools'')
+  was set up to bundle all functions which were developed by then. A gentle group called themselves
+  ``Central coordination of data analysis'' (ZKD) claimed responsibility for these courses of action.
+  The ``Laendervergleich 2011'' was the first study where \code{eat} has been used intensely. In 2012,
+  during ZKD's first period of prosperity, the variety of the \code{eat} functionality has been grown
+  and was therefore partitioned into several small ``sub packages''---by name \code{eatPrep} for data
+  preparation, \code{eatTools} for several auxiliary functions, \code{eatRest} for Rasch modeling,
+  \code{eatRep} for replication methods, \code{eatDesign} for definition and modification of design
+  properties. The further development of \code{eatRest} was expired because the package turned out
+  to be enigmaticly written which led to undebugable problems, especially with the ardently loved
+  results structure. ZKD authors did not understand any longer the code which has been written before.
+  Thus, \code{eatModel} is the second attempt. Its functionality is closely related to \code{eatRest}
+  but adds some new features---for example, the support of 2pl models using the \code{TAM} package.
 
   \emph{Important note:} For consistency reasons, some functions in \code{eatModel} have identical names
   as the corresponding function in \code{eatRest}, for example \code{get.shw}. It is strongly recommended
