@@ -8,8 +8,9 @@ via the jackknife method if testlets are specified.}
 \usage{
 equat1pl(results, prmNorm, item = NULL, domain = NULL, testlet = NULL, value = NULL, 
          excludeLinkingDif = TRUE, difBound = 1, iterativ = FALSE, 
-         method = c("Mean.Mean", "Haebara", "Stocking.Lord", "robust"), itemF = NULL, 
-         domainF = NULL, valueF = NULL)}
+         method = c("Mean.Mean", "Haebara", "Stocking.Lord", "robust", "Haberman"), itemF = NULL,
+         domainF = NULL, valueF = NULL, estimation=c("OLS", "BSQ", "HUB", "MED", "LTS", "L1", "L0"),
+         b_trim=Inf, lts_prop=.5)}
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{results}{
@@ -68,7 +69,8 @@ left with |DIF|> \code{difBound}.
 Linking method. If \code{"Mean.Mean"}, \code{"Haebara"}, or \code{"Stocking.Lord"}, 
 the function \code{equating.rasch} from the \code{sirt} package is called. If 
 \code{"robust"}, the function \code{"linking.robust"} from the \code{sirt} package
-is called. 
+is called. If \code{"Haberman"}, the function \code{"linking.haberman"} from the \
+code{sirt} package is called.
 }
   \item{itemF}{
 %%     ~~Describe \code{file} here~~
@@ -81,6 +83,22 @@ Optional: Give the number or name of the domain column in results.
   \item{valueF}{
 %%     ~~Describe \code{file} here~~
 Optional: Give the number or name of the parameter column in results. 
+}
+  \item{estimation}{
+%%     ~~Describe \code{file} here~~
+Applies only if \code{method} equals \code{"Haberman"}. Estimation method. See the
+help page of \code{linking.haberman} from the \code{sirt} package for further details.
+}
+  \item{b_trim}{
+%%     ~~Describe \code{file} here~~
+Applies only if \code{method} equals \code{"Haberman"}. Trimming parameter for item slopes.
+See the help page of \code{linking.haberman} from the \code{sirt} package for further details.
+}
+  \item{lts_prop}{
+%%     ~~Describe \code{file} here~~
+Applies only if \code{method} equals \code{"Haberman"}. Proportion of retained observations
+in \code{"LTS"} regression estimation. See the help page of \code{linking.haberman} from the
+\code{sirt} package for further details.
 }
 }
 \value{
