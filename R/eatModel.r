@@ -362,7 +362,15 @@ equat1pl<- function ( results , prmNorm , item = NULL, domain = NULL, testlet = 
                                if ( !is.null(allN[["testlet"]]) ) { cat(paste( "    Number of testlets:      ",  eq[["ntl"]],"\n",sep="")) }
                                cat(paste("    Linking method:          " , method,"\n",sep=""))
                                if (method == "robust") { cat(paste("    Optimal trimming param.: " , eqr[["kopt"]],"\n",sep="")) }
-                               if (method == "Haberman") { cat(paste("          estimation method: " , recode(estimation,"'OLS'='ordinary least squares'; 'BSQ'='bisquare weighted regression'; 'HUB'='regression using Huber weights'; 'MED'='median regression'; 'LTS'='trimmed least squares'; 'L1'='median polish'; 'L0'='minimizing number of interactions'"), "\n",sep="")) }
+                               if (method == "Haberman") {
+                                   cat(paste("          estimation method: " , recode(estimation,"'OLS'='ordinary least squares'; 'BSQ'='bisquare weighted regression'; 'HUB'='regression using Huber weights'; 'MED'='median regression'; 'LTS'='trimmed least squares'; 'L1'='median polish'; 'L0'='minimizing number of interactions'"), "\n",sep=""))
+                                   tf <- capture.output(summary(eqh))
+                                   i1 <- grep("Used trimming factor", tf)
+                                   i2 <- grep("Estimation information item intercepts", tf)
+                                   i3 <- min(i1[which(i1>i2)])
+                                   i4 <- unlist(strsplit(tf[i3], "="))
+                                   cat(paste("       used trimming factor: " , round(as.numeric(crop(i4[length(i4)])), digits = 3), "\n",sep=""))
+                               }
     ### Gibt es Items mit linking dif?
                                if ( method != "robust" && method != "Haberman" && length( prbl ) > 0 ) {
                                     cat(paste ( "\nDimension '", prmDim[1,"dimension"], "': ", length( prbl), " of ", nrow( eq[["anchor"]]), " items with linking DIF > ",difBound," identified.\n",sep=""))
