@@ -483,6 +483,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
        stopifnot(length(id)==1)
        refList<- lapply ( dims, FUN = function (dimname) {
                  rex  <- pvFromRes(equatingList[["results"]][unique(c(which(equatingList[["results"]][,"group"] == dimname),which(equatingList[["results"]][,"type"] == "tech"))), ], toWideFormat = FALSE)
+                 if (is.null(rex)) {return(NULL)}                               ### NULL wird zurueckgegeben, wenn keine PVs in der Ergebnisstrauktur vorhanden waren
                  if ( is.null(weights) ) {
                       txt <- capture.output ( msd <- jk2.mean ( datL = rex, ID = id, imp = "imp", dependent = "value", na.rm = TRUE))
     ### Achtung!! ggf. anpassen fuer neue eatRep-Version
@@ -510,7 +511,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
        names(refList) <- dims
     ### wenn 'refPop' nicht definiert wurde, wird es hier mit Werten gesetzt, die direkt aus der Stichprobe (= Normpopulation) berechnet wurden
        ref    <- do.call("rbind", lapply(refList, FUN = function ( u ) { u[["rp"]] }))
-       if ( mr == TRUE ) {
+       if ( isTRUE(mr) ) {
           refPop <- ref
        }   else  {
     ### wenn 'refPop' NUR FUER EINE DIMENSION nicht definiert wurde, werden hier die nicht definierten ('NA') Werte durch Werte aus der Stichprobe (= Normpopulation fuer genau diese Dimension) ersetzt
@@ -534,8 +535,10 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
     ### check: sind Personen innerhalb jeder Dimension (und jeder Imputation) unique? ... 'redMD' ist ein reduziertes Results-Objekt: nur die interessierende Dimension des interessierenden Modells + saemtliche "tech"-Variablen
                       resMD<- equatingList[["results"]][unique(c(intersect(which(equatingList[["results"]][,"model"] == mod), which(equatingList[["results"]][,"group"] == dims)),  which(equatingList[["results"]][,"type"] == "tech"))),]
                       rex  <- pvFromRes(resMD, toWideFormat = TRUE)
-                      if ( length ( rex[,id]) != unique(length ( rex[,id])) ) {
-                           stop(paste( "Model '",mod,"', Dimension '",dims,"': cases according to '", id,"' variable are not unique.\n",sep=""))
+                      if (!is.null(rex)) {
+                          if ( length ( rex[,id]) != unique(length ( rex[,id])) ) {
+                               stop(paste( "Model '",mod,"', Dimension '",dims,"': cases according to '", id,"' variable are not unique.\n",sep=""))
+                          }
                       }
     ### check: keine verankerten parameter?
                       offSet  <- grep("offset", as.character(resMD[,"par"]))
@@ -549,7 +552,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                                 cat(paste0("Model '",mod,"', dimension '",dims,"': No item parameters found. This should only occur for bayesian plausible values imputation. Transformation of item parameters will be skipped.\n"))
                             }  else  {
     ### wenn cuts vom user definiert, wird hier auf plausibilitaet geprueft (kuenftig ggf. auslagern in separate funktion)
-                                if ( cutsMis == FALSE ) {
+                                if ( isFALSE(cutsMis) ) {
                                      if ( !itFrame[1,"dimension"] %in% names(cuts) ) { stop(paste("Cannot found dimension '",itFrame[1,"dimension"],"' in the 'cuts' list.\n",sep=""))}
                                      mat1<- match( itFrame[1,"dimension"], names(cuts))
                                      if ( !"values" %in% names(cuts[[mat1]]) ) { stop(paste("'cuts' must be a named list. Cannot found 'values' element for dimension '",itFrame[1,"dimension"],"' in the 'cuts' list.\n",sep=""))}
@@ -562,7 +565,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                                 itFrame[,"estTransf"] <- itFrame[,"est"] + equatingList[["items"]][[mod]][[dims]][["eq"]][["B.est"]][[ equatingList[["items"]][[mod]][[dims]][["method"]] ]]
     ### Achtung, heikel: wenn equatet wurde, aber der Datensatz aus der Normpopulation kommt, werden hier die empirischen Mittelwerte,
     ### die oben (mit oder ohne Gewichte) berechnet wurden, nochmal transformiert ... sollte praktisch nie der Fall sein.
-                                if ( mr == TRUE ) {
+                                if ( isTRUE(mr) ) {
                                      if ( equatingList[["items"]][[mod]][[dims]][["eq"]][["B.est"]][[ equatingList[["items"]][[mod]][[dims]][["method"]] ]] != 0) {
                                           cat("W A R N I N G: Preceding Equating without 'refPop' definition. Sure you want to use current sample as drawn from the reference population?\n")
                                           refPop[mat,2] <- refPop[mat,2]+ equatingList[["items"]][[mod]][[dims]][["eq"]][["B.est"]][[ equatingList[["items"]][[mod]][[dims]][["method"]] ]]
@@ -570,7 +573,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                                 }
                                 itFrame[,"estTransf625"]   <- itFrame[,"estTransf"] + log(0.625/(1-0.625))
                                 itFrame[,"estTransfBista"] <- (itFrame[,"estTransf625"] - refPop[mat,2]) / refPop[mat,3] * refPop[mat,5] + refPop[mat,4]
-                                if ( cutsMis == FALSE ) {
+                                if ( isFALSE(cutsMis) ) {
     ### Achtung: dieser Umweg ist notwendig, weil 'num.to.cat' Attribute ausgibt die unten wieder gebraucht werden!
                                      traitLevel            <- num.to.cat(x = itFrame[,"estTransfBista"], cut.points = cuts[[mat1]][["values"]], cat.values = cuts[[mat1]][["labels"]])
                                      itFrame[,"traitLevel"]<- traitLevel
@@ -591,29 +594,33 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                             if (!exists("mat")) { mat <- match(dims,  refPop[,1]) }
                             pv[,"valueTransfBista"] <- (pv[,"value"] + equ - refPop[mat,2]) / refPop[mat,3] * refPop[mat,5] + refPop[mat,4]
     ### Dazu muss zuerst Mittelwert und SD der Fokuspopulation bestimmt werden.
-                            if ( is.null(weights) ) {
-                                 txt <- capture.output ( msdF <- jk2.mean ( datL = pv, ID = id, imp = "imp", dependent = "valueTransfBista", na.rm = TRUE))
-                                 msdF<- adaptEatRepVersion(msdF)
+                            if (!is.null(pv)) {
+                                if ( is.null(weights) ) {
+                                     txt <- capture.output ( msdF <- jk2.mean ( datL = pv, ID = id, imp = "imp", dependent = "valueTransfBista", na.rm = TRUE))
+                                     msdF<- adaptEatRepVersion(msdF)
+                                }  else  {
+                                     if ( !class ( weights ) %in% "data.frame") {
+                                          cat("'weights' has to be of class 'data.frame'. 'weights' object will be converted.\n")
+                                          weights <- data.frame ( weights )
+                                     }
+                                     nd  <- setdiff ( pv[,id] , weights[,1])
+                                     if ( length(nd) > 0 ) {
+                                          cat(paste ( "W A R N I N G !   Plausible values data for dimension '",dims,"' contain ",length(nd)," cases for which no valid weights exist in the 'weights' frame.\n",sep=""))
+                                     }
+                                     pvF <- merge ( pv, weights , by.x = id, by.y = colnames(weights)[1], all.x = TRUE, all.y = FALSE)
+                                     mis <- which(is.na(pvF[,colnames(weights)[2]]))
+                                     if ( length(mis) > 0 ) {                       ### missings in the weights frame are not allowed
+                                          cat(paste ( "Found ",length(mis)," missing values in the 'weights' frame.\n    Cases with missing values on weighting variable will be ignored for transformation.\n",sep=""))
+                                          pvF <- pvF[-mis,]
+                                     }
+                                     txt <- capture.output ( msdF <- jk2.mean ( datL = pvF, ID = id, imp = "imp", wgt = colnames(weights)[2], dependent = "valueTransfBista", na.rm = TRUE) )
+                                     msdF<- adaptEatRepVersion(msdF)
+                                }
+                                msdFok <- c(msdF[intersect(which(msdF[,"parameter"] == "mean"), which(msdF[,"coefficient"] == "est")),"value"], msdF[intersect(which(msdF[,"parameter"] == "sd"), which(msdF[,"coefficient"] == "est")),"value"])
                             }  else  {
-                                 if ( !class ( weights ) %in% "data.frame") {
-                                      cat("'weights' has to be of class 'data.frame'. 'weights' object will be converted.\n")
-                                      weights <- data.frame ( weights )
-                                 }
-                                 nd  <- setdiff ( pv[,id] , weights[,1])
-                                 if ( length(nd) > 0 ) {
-                                      cat(paste ( "W A R N I N G !   Plausible values data for dimension '",dims,"' contain ",length(nd)," cases for which no valid weights exist in the 'weights' frame.\n",sep=""))
-                                 }
-                                 pvF <- merge ( pv, weights , by.x = id, by.y = colnames(weights)[1], all.x = TRUE, all.y = FALSE)
-                                 mis <- which(is.na(pvF[,colnames(weights)[2]]))
-                                 if ( length(mis) > 0 ) {                       ### missings in the weights frame are not allowed
-                                      cat(paste ( "Found ",length(mis)," missing values in the 'weights' frame.\n    Cases with missing values on weighting variable will be ignored for transformation.\n",sep=""))
-                                      pvF <- pvF[-mis,]
-                                 }
-                                 txt <- capture.output ( msdF <- jk2.mean ( datL = pvF, ID = id, imp = "imp", wgt = colnames(weights)[2], dependent = "valueTransfBista", na.rm = TRUE) )
-                                 msdF<- adaptEatRepVersion(msdF)
+                                cat("Results object does not contain any plausibel values. Skip transformation of linking error for competence levels.\n")
                             }
-                            msdFok <- c(msdF[intersect(which(msdF[,"parameter"] == "mean"), which(msdF[,"coefficient"] == "est")),"value"], msdF[intersect(which(msdF[,"parameter"] == "sd"), which(msdF[,"coefficient"] == "est")),"value"])
-                            if ( !is.null ( itFrame )) {                        ### Cuts mit Schwelle nach unten und nach oben offen
+                            if ( !is.null(pv) && !is.null ( itFrame )) {        ### Cuts mit Schwelle nach unten und nach oben offen
                                 if ( cutsMis == FALSE & !is.null ( equatingList[["items"]] )) {
                                      cts <- c( -10^6, cuts[[mat1]][["values"]], 10^6)
                                      le  <- do.call("rbind", lapply ( (length(cts)-1):1 , FUN = function ( l ) {
@@ -641,27 +648,31 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                             }
     ### 2. Transformation der Personenparameter: kann auch dann stattfinden, wenn PVs bayesianisch gezogen wurden
                             if(!exists("mat1") ) {mat1 <- match(dims, names(cuts)); stopifnot(length(mat1)==1)}
-                            if ( cutsMis == FALSE ) { pv[,"traitLevel"]   <- num.to.cat(x = pv[,"valueTransfBista"], cut.points = cuts[[mat1]][["values"]], cat.values = cuts[[mat1]][["labels"]])}
-                            pv[,"dimension"]  <- pv[,"group"]
-                            if(!exists("le")) {
-                                cat("Warning: Skip check whether all competence levels are occupied (due to bayesian plausible values imputation).\n")
-                            }  else  {
-                                chk <- unique(le[,"traitLevel"]) %in% unique(pv[,"traitLevel"])
-                                if ( length( which(chk == FALSE)) > 0) {
-                                     cat(paste("Warning, model '",unique(itFrame[,"model"]),"', dimension '",unique(itFrame[,"dimension"]),"': No plausible values on trait level(s) '",paste( unique(le[,"traitLevel"])[which(chk == FALSE)], collapse = "', '"), "'. \n", sep=""))
+                            if (!is.null(pv)) {
+                                if ( isFALSE(cutsMis) ) { pv[,"traitLevel"]   <- num.to.cat(x = pv[,"valueTransfBista"], cut.points = cuts[[mat1]][["values"]], cat.values = cuts[[mat1]][["labels"]])}
+                                pv[,"dimension"]  <- pv[,"group"]
+                                if(!exists("le")) {
+                                    cat("Warning: Skip check whether all competence levels are occupied (due to bayesian plausible values imputation).\n")
+                                }  else  {
+                                    chk <- unique(le[,"traitLevel"]) %in% unique(pv[,"traitLevel"])
+                                    if ( length( which(chk == FALSE)) > 0) {
+                                         cat(paste("Warning, model '",unique(itFrame[,"model"]),"', dimension '",unique(itFrame[,"dimension"]),"': No plausible values on trait level(s) '",paste( unique(le[,"traitLevel"])[which(chk == FALSE)], collapse = "', '"), "'. \n", sep=""))
+                                    }
+                                    stopifnot ( length( unique ( na.omit(itFrame[,"linkingErrorTransfBista"]))) %in% 0:1)
+                                    pv[,"linkingError"] <- equatingList[["items"]][[mod]][[dims]][["eq"]][["descriptives"]][["linkerror"]]
+                                    pv[,"linkingErrorTransfBista"] <- unique ( itFrame[,"linkingErrorTransfBista"])
                                 }
-                                stopifnot ( length( unique ( na.omit(itFrame[,"linkingErrorTransfBista"]))) %in% 0:1)
-                                pv[,"linkingError"] <- equatingList[["items"]][[mod]][[dims]][["eq"]][["descriptives"]][["linkerror"]]
-                                pv[,"linkingErrorTransfBista"] <- unique ( itFrame[,"linkingErrorTransfBista"])
-                            }
-                            ori <- colnames(pv)                                 ### nur wenn untere Bedingung == TRUE, gibt es das Objekt 'le', das gemergt werden soll
-                            if ( cutsMis == FALSE && !is.null ( equatingList[["items"]]) && exists("le") ) {
-                                 pv  <- data.frame ( merge ( pv, le, by = "traitLevel", sort = FALSE, all.x = TRUE, all.y = FALSE) )
-                                 pv  <- pv[,c(ori, "linkingErrorTraitLevel")]
-                            }
+                                ori <- colnames(pv)                                 ### nur wenn untere Bedingung == TRUE, gibt es das Objekt 'le', das gemergt werden soll
+                                if ( cutsMis == FALSE && !is.null ( equatingList[["items"]]) && exists("le") ) {
+                                     pv  <- data.frame ( merge ( pv, le, by = "traitLevel", sort = FALSE, all.x = TRUE, all.y = FALSE) )
+                                     pv  <- pv[,c(ori, "linkingErrorTraitLevel")]
+                                }
     ### ggf. Gewichte an Personenframe mit dranhaengen
-                            if (!is.null(weights)) {
-                                 pv  <- merge ( pv, weights , by.x = id, by.y = colnames(weights)[1], all.x = TRUE, all.y = FALSE)
+                                if (!is.null(weights)) {
+                                     pv  <- merge ( pv, weights , by.x = id, by.y = colnames(weights)[1], all.x = TRUE, all.y = FALSE)
+                                }
+                            }  else  {
+                                msdFok <- c(NA, NA)
                             }
     ### 'refPop' Informationstabelle bauen
                             rp  <- refPop[mat,]
