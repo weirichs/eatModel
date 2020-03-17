@@ -18,10 +18,10 @@ tamObjForBayesianPV <- function(anchor, qMatrix, slopeMatrix = NULL, resp, pid, 
       class(tamObj) <- c("list", "tamBayes")
       return(tamObj)}
 
-
 ### prueft, ob Design verlinkt ist: checkDesign(design[1:15,c(1:5,ncol(design))], bookletColumn = "TH")
 checkDesign <- function ( design, bookletColumn) {
       if (!all(sapply(design, class)=="character")) { design <- data.frame(lapply(design, as.character), stringsAsFactors=FALSE)}
+      if ( length(bookletColumn) != 1) {stop("Argument 'bookletColumn' must be of length 1.")}
       book  <- existsBackgroundVariables(dat = design, variable=bookletColumn)
       items <- setdiff(colnames(design), book)                                  ### zeilen loeschen, die ausschliesslich NA sind
       weg   <- which(rowSums(do.call("rbind", alply(design[,items], .margin = 1, .fun = is.na))) == ncol(design[,items]))
