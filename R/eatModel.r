@@ -18,6 +18,7 @@ tamObjForBayesianPV <- function(anchor, qMatrix, slopeMatrix = NULL, resp, pid, 
       class(tamObj) <- c("list", "tamBayes")
       return(tamObj)}
 
+
 ### prueft, ob Design verlinkt ist: checkDesign(design[1:15,c(1:5,ncol(design))], bookletColumn = "TH")
 checkDesign <- function ( design, bookletColumn) {
       if (!all(sapply(design, class)=="character")) { design <- data.frame(lapply(design, as.character), stringsAsFactors=FALSE)}
@@ -363,13 +364,13 @@ equat1pl<- function ( results , prmNorm , item = NULL, domain = NULL, testlet = 
                                cat(paste("    Linking method:          " , method,"\n",sep=""))
                                if (method == "robust") { cat(paste("    Optimal trimming param.: " , eqr[["kopt"]],"\n",sep="")) }
                                if (method == "Haberman") {
-                                   cat(paste("Estimation method:           " , recode(estimation,"'OLS'='ordinary least squares'; 'BSQ'='bisquare weighted regression'; 'HUB'='regression using Huber weights'; 'MED'='median regression'; 'LTS'='trimmed least squares'; 'L1'='median polish'; 'L0'='minimizing number of interactions'"), "\n",sep=""))
+                                   cat(paste("    Estimation method:       " , recode(estimation,"'OLS'='ordinary least squares'; 'BSQ'='bisquare weighted regression'; 'HUB'='regression using Huber weights'; 'MED'='median regression'; 'LTS'='trimmed least squares'; 'L1'='median polish'; 'L0'='minimizing number of interactions'"), "\n",sep=""))
                                    tf <- capture.output(summary(eqh))
                                    i1 <- grep("Used trimming factor", tf)
                                    i2 <- grep("Estimation information item intercepts", tf)
                                    i3 <- min(i1[which(i1>i2)])
                                    i4 <- unlist(strsplit(tf[i3], "="))
-                                   cat(paste("Used trimming factor:        " , round(as.numeric(crop(i4[length(i4)])), digits = 3), "\n",sep=""))
+                                   cat(paste("    Used trimming factor:    " , round(as.numeric(crop(i4[length(i4)])), digits = 3), "\n",sep=""))
                                }
     ### Gibt es Items mit linking dif?
                                if ( method != "robust" && method != "Haberman" && length( prbl ) > 0 ) {
@@ -813,7 +814,7 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
                                   allV <- list(slopeMatDomainCol=slopeMatDomainCol , slopeMatItemCol=slopeMatItemCol, slopeMatValueCol =slopeMatValueCol)
                                   all.Names <- c(all.Names, lapply(allV, FUN=function(ii) {existsBackgroundVariables(dat = fixSlopeMat, variable=ii)}))
                                   if ( ncol(qMatrix) != 2) { stop ( "Duplicated item identifiers in 'fixSlopeMat' are only allowed for unidimensional models.\n") }
-                                  mtch <- wo.sind( colnames(qMatrix)[2], fixSlopeMat[, all.Names[["slopeMatDomainCol"]]], quiet = TRUE)
+                                  mtch <- whereAre( colnames(qMatrix)[2], fixSlopeMat[, all.Names[["slopeMatDomainCol"]]], quiet = TRUE)
                                   if ( length( mtch) < 2 ) { stop(cat(paste ( "Cannot found dimension '",colnames(qMatrix)[2],"' in 'fixSlopeMat'. Found following values in '",all.Names[["slopeMatDomainCol"]],"' column of 'fixSlopeMat': \n    '", paste( sort(unique(fixSlopeMat[, all.Names[["slopeMatDomainCol"]] ])), collapse="', '"),"'.\n",sep="")))}
                                   fixSlopeMat <- fixSlopeMat[mtch, c(all.Names[["slopeMatItemCol"]],all.Names[["slopeMatValueCol"]])]
                               }
@@ -2354,8 +2355,8 @@ itemFromRes<- function ( resultsObj ) {                                         
                                           cat(paste("Warning! DIF variable '",mod[isDif,"derived.par"],"' seems to have more than two categories. To date, this is not supported by 'eatModel'.\n",sep=""))
                                        }
                                        return ( data.frame ( item = v, dif = it[1], weg = it[length(it)] , stringsAsFactors = FALSE) ) }))
-                           weg      <- wo.sind ( itemList[,"weg"], sel[,"var1"], quiet = TRUE)
-                           forDif   <- wo.sind ( itemList[,"dif"], sel[,"var1"], quiet = TRUE)
+                           weg      <- whereAre ( itemList[,"weg"], sel[,"var1"], quiet = TRUE)
+                           forDif   <- whereAre ( itemList[,"dif"], sel[,"var1"], quiet = TRUE)
                            stopifnot(length( intersect(weg, forDif)) == 0 )
                            selForDif<- sel[forDif, ]
                            sel      <- sel[-c(weg, forDif) , ]
@@ -2958,7 +2959,7 @@ anker <- function(lab, prm, qMatrix, domainCol, itemCol, valueCol )  {
                        if ( length( notIncl ) > 0 ) { stop(paste ( "Q matrix contains domain(s) ",paste("'",paste(notIncl, collapse="', '"),"'",sep="")," which are not included in the '",allNams[["domainCol"]],"' column of the anchor parameter frame.\n",sep="")) }
                        weg     <- setdiff ( unique(prm[,allNams[["domainCol"]]]), colnames(qMatrix)[-1])
                        if ( length ( weg ) > 0 ) {
-                            ind <- wo.sind ( weg, prm[,allNams[["domainCol"]]], quiet = TRUE)
+                            ind <- whereAre ( weg, prm[,allNams[["domainCol"]]], quiet = TRUE)
                             cat(paste("Remove ",length(ind)," rows from the anchor parameter frame which do not belong to any of the specified domains in the Q matrix.\n",sep=""))
                             prm <- prm[-ind,]
                        }
@@ -3152,26 +3153,6 @@ desk.irt <- function(daten, itemspalten, na=NA,percent=FALSE,reduce=TRUE,codeboo
              }
              if(percent == TRUE) {results$Rel.Freq <- 100 * results$Rel.Freq}
              return(results)}
-
-wo.sind <- function(a,b,quiet=FALSE) {
-            b <- data.frame(1:length(b),b,stringsAsFactors=FALSE)               ### zusaetzliche Syntaxbefehle sind notwendig, damit die Funktion mit missing values umgehen kann.
-            if(sum(which(is.na(a)))>0)     {cat("a contains missing values. \n")}
-            if(sum(which(is.na(b[,2])))>0) {cat("b contains missing values. \n")}
-            if(length(na.omit(a)) > length(unique(na.omit(a))))     {cat("a contains duplicate elements. \n")}
-            if(length(intersect(a,b[,2])) == 0) {
-               cat("No common elements in a and b. \n")
-               reihe <- NULL
-            }  else {
-               if(quiet==FALSE) { if(length(intersect(a,b[,2])) > 0) {if(length(setdiff(a,b[,2]))>0)      {cat("Not all Elemente of a included in b. \n")} } }
-               a <- na.omit(unique(a))                                          ### Sofern vorhanden, werden missing values aus a entfernt
-               b <- na.omit(b)                                                  ### Sofern vorhanden, werden missing values aus b entfernt; aber: Rangplatz der
-               if(length(a)>0) {                                                ### der nicht fehlenden Elemente in b bleibt erhalten
-                  reihe <- b[ which(b[,2] %in% a)  ,1]
-                  if(quiet==FALSE) { cat(paste("Found",length(reihe),"elements.\n")) }
-               }
-               if(length(a)==0) {cat("No valid values in a.\n")}
-            }
-            return(reihe)}
 
 ### angelehnt an das Skript von Alexander Robitzsch, "R_Skalierung.odt", Seite 11
 item.diskrim <- function(daten, itemspalten, na = NA, streng = TRUE) {
