@@ -359,7 +359,7 @@ equat1pl<- function ( results , prmNorm , item = NULL, domain = NULL, testlet = 
                                    dif <- eq[["anchor"]][,"TransfItempar.Gr1"] - eq[["anchor"]][,"Itempar.Gr2"]
                                    prbl<- which ( abs ( dif ) > difBound )
                                }  else  {
-                                   eqr <- eqh <- NULL
+                                   if ( eq[["descriptives"]][["N.Items"]] == 0) { eqr <- eqh <- NULL}
                                }
                                cat(paste("\n",paste(rep("=",100),collapse=""),"\n \nModel No. ",match(d[1,"model"], names(nMods)),"\n    Model name:                ",d[1,"model"],"\n    Number of dimension(s):    ",length(unique(it[,"dimension"])),"\n    Name(s) of dimension(s):   ", paste( names(table(as.character(it[,"dimension"]))), collapse = ", "),"\n",sep=""))
                                if  ( length(names(table(as.character(it[,"dimension"])))) > 1) {  cat(paste("    Name of current dimension: ",names(table(prmDim[,"dimension"]))," \n",sep=""))}
