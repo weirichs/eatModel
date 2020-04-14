@@ -433,7 +433,7 @@ equat1pl<- function ( results , prmNorm , item = NULL, domain = NULL, testlet = 
 
                                if (method == "Haberman") {
                                    wert <- list(eqh[["transf.itempars"]][2,"B_b"], nrow(eqh[["joint.itempars"]]))
-                                   wert <- lapply(wert, FUN = function (w) {ifelse(is.null(wert), NA, wert)})
+                                   wert <- lapply(wert, FUN = function (w) {ifelse(is.null(w), NA, w)})
                                    eq <- list ( B.est = data.frame ( Haberman = wert[[1]]), descriptives = data.frame ( N.items = wert[[2]], linkerror = NA, stringsAsFactors =FALSE) )
                                }
                                ret <- list ( eq = eq, items = prmDim, info = info, method = method )
