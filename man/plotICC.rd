@@ -1,9 +1,9 @@
 \name{plotICC}
 \alias{plotICC}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Plots item charactestic curves.}
+\title{Plots item characteristic curves.}
 \description{Function provides item characteristic plots for each item. To date, 
-only dichotomouls 1pl and 2pl models are supported.}
+only dichotomous 1pl and 2pl models are supported.}
 \usage{plotICC  ( resultsObj, defineModelObj, item = NULL, personPar = c("WLE", "EAP", "PV"),
        personsPerGroup = 30, pdfFolder = NULL, smooth = 7 )}
 %- maybe also 'usage' for other objects documented here.
@@ -38,7 +38,7 @@ than one item should be plotted.
   \item{smooth}{
 %%     ~~Describe \code{file} here~~
 Optional: A parameter (integer value) for smoothing the plot. If the number of examinees is high, the
-icc plot may become scratchy. \code{smooth} defines the maximum number of discret nodes
+icc plot may become scratchy. \code{smooth} defines the maximum number of discrete nodes
 across the theta scale for evaluating the icc. Higher values result in a less smooth icc. To mimic the
 behavior of the S3 plot method of \code{TAM}, use the value 7.
 }

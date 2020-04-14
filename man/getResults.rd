@@ -41,7 +41,7 @@ as the theta variable.
   \item{q3MinObs}{
 %%     ~~Describe \code{file} here~~
 Q3 statistic might be untrustworthy if item covariance estimation is based on very
-few onservations. Define the minimum number of observation which should be fulfilled
+few observations. Define the minimum number of observation which should be fulfilled
 for Q3 estimation. 
 }
   \item{q3MinType}{
@@ -215,25 +215,9 @@ A data frame in the long format with ten columns.
 \item{derived.par}{Optionally: The derived parameter.}
 \item{value}{The value of the corresponding estimate.}
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
 \author{
 Sebastian Weirich
-}
-\note{
-%%  ~~further notes~~
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
 # see examples in the help file of defineModel()
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

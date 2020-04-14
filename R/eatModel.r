@@ -25,7 +25,7 @@ checkDesign <- function ( design, bookletColumn) {
       if ( length(bookletColumn) != 1) {stop("Argument 'bookletColumn' must be of length 1.")}
       book  <- existsBackgroundVariables(dat = design, variable=bookletColumn)
       items <- setdiff(colnames(design), book)                                  ### zeilen loeschen, die ausschliesslich NA sind
-      weg   <- which(rowSums(do.call("rbind", alply(design[,items], .margin = 1, .fun = is.na))) == ncol(design[,items]))
+      weg   <- which(rowSums(do.call("rbind", alply(design[,items], .margins = 1, .fun = is.na))) == ncol(design[,items]))
       if ( length(weg)>0) { design <- design[-weg,]}                            ### untere zeile: unerlaubte Zeichen aus Blockbezeichnung entfernen und Buchstabe vorabstellen
       for ( i in items) {design[which(!is.na(design[,i])),i] <- paste0("B", removePattern(removePattern(as.character(design[which(!is.na(design[,i])),i]), " "), "-"))}
       dat   <- do.call("rbind.fill", apply( design, MARGIN = 1, FUN = simDat, booklet = book))
@@ -345,32 +345,36 @@ equat1pl<- function ( results , prmNorm , item = NULL, domain = NULL, testlet = 
                                if ( length(prmDim[, "item"]) != length(unique(prmDim[, "item"])) ) {  stop(paste("Items are not unique for model '",as.character(d[1,"model"]),"'.\n",sep="")) }
                                if ( length(prmM[,allN[["item"]] ]) != length(unique(prmM[,allN[["item"]] ])) ) {  stop(paste("Items are not unique for model '",as.character(d[1,"model"]),"'.\n",sep="")) }
                                eq  <- equAux ( x = prmDim[ ,c("item", "est")], y = prmM[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])] )
-                               if ( method == "robust") {
-                                   prm<- merge(prmM[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])], prmDim[ ,c("item", "est")], by.y="item", by.x = allN[["item"]], all=FALSE)
-                                   eqr<- linking.robust(prm)                    ### Haberman: der waehlt das Vorzeichen nach alphabetischer Reihenfolge in "study"
-                               }                                                ### Achtung: fuer Haberman spielt es eine Rolle, wieviele nicht-link-items zusaetzlich mit drin sind
-                               if ( method == "Haberman") {                     ### also die Linkingkonstante ist eine andere, wenn man nur die gemeinsamen items im Objekt 'prm' drinhat, oder wenn alle drin sind
-                                   prm<- rbind ( data.frame ( study = "norm", item = prmM[,allN[["item"]]], a=1, b = prmM[,allN[["value"]]], stringsAsFactors = FALSE), data.frame ( study = "focus", item = prmDim[ ,"item"], a=1, b = prmDim[ ,"est"], stringsAsFactors = FALSE))
-                                   eqh<- linking.haberman(prm, progress = FALSE, estimation = estimation, b_trim=b_trim, lts_prop=lts_prop)
+                               if ( eq[["descriptives"]][["N.Items"]] > 0) {
+                                     if ( method == "robust") {
+                                         prm<- merge(prmM[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])], prmDim[ ,c("item", "est")], by.y="item", by.x = allN[["item"]], all=FALSE)
+                                         eqr<- linking.robust(prm)              ### Haberman: der waehlt das Vorzeichen nach alphabetischer Reihenfolge in "study"
+                                     }                                          ### Achtung: fuer Haberman spielt es eine Rolle, wieviele nicht-link-items zusaetzlich mit drin sind
+                                     if ( method == "Haberman") {               ### also die Linkingkonstante ist eine andere, wenn man nur die gemeinsamen items im Objekt 'prm' drinhat, oder wenn alle drin sind
+                                         prm<- rbind ( data.frame ( study = "norm", item = prmM[,allN[["item"]]], a=1, b = prmM[,allN[["value"]]], stringsAsFactors = FALSE), data.frame ( study = "focus", item = prmDim[ ,"item"], a=1, b = prmDim[ ,"est"], stringsAsFactors = FALSE))
+                                         eqh<- linking.haberman(prm, progress = FALSE, estimation = estimation, b_trim=b_trim, lts_prop=lts_prop)
+                                     }
                                }
                                if ( method %in% c("Mean.Mean", "Haebara", "Stocking.Lord")) {
                                    dif <- eq[["anchor"]][,"TransfItempar.Gr1"] - eq[["anchor"]][,"Itempar.Gr2"]
                                    prbl<- which ( abs ( dif ) > difBound )
+                               }  else  {
+                                   eqr <- eqh <- NULL
                                }
-                               cat(paste("\n",paste(rep("=",100),collapse=""),"\n \nModel No. ",match(d[1,"model"], names(nMods)),"\n    Model name:              ",d[1,"model"],"\n    Number of dimension(s):  ",length(unique(it[,"dimension"])),"\n    Name(s) of dimension(s): ", paste( names(table(as.character(it[,"dimension"]))), collapse = ", "),"\n",sep=""))
+                               cat(paste("\n",paste(rep("=",100),collapse=""),"\n \nModel No. ",match(d[1,"model"], names(nMods)),"\n    Model name:                ",d[1,"model"],"\n    Number of dimension(s):    ",length(unique(it[,"dimension"])),"\n    Name(s) of dimension(s):   ", paste( names(table(as.character(it[,"dimension"]))), collapse = ", "),"\n",sep=""))
                                if  ( length(names(table(as.character(it[,"dimension"])))) > 1) {  cat(paste("    Name of current dimension: ",names(table(prmDim[,"dimension"]))," \n",sep=""))}
-                               cat(paste("    Number of linking items: " , eq[["descriptives"]][["N.Items"]],"\n",sep=""))
-                               if ( !is.null(allN[["testlet"]]) ) { cat(paste( "    Number of testlets:      ",  eq[["ntl"]],"\n",sep="")) }
-                               cat(paste("    Linking method:          " , method,"\n",sep=""))
-                               if (method == "robust") { cat(paste("    Optimal trimming param.: " , eqr[["kopt"]],"\n",sep="")) }
+                               cat(paste("    Number of linking items:   " , eq[["descriptives"]][["N.Items"]],"\n",sep=""))
+                               if ( !is.null(allN[["testlet"]]) ) { cat(paste( "    Number of testlets:        ",  eq[["ntl"]],"\n",sep="")) }
+                               cat(paste("    Linking method:            " , method,"\n",sep=""))
+                               if (method == "robust") { cat(paste("    Optimal trimming param.:   " , eqr[["kopt"]],"\n",sep="")) }
                                if (method == "Haberman") {
-                                   cat(paste("    Estimation method:       " , recode(estimation,"'OLS'='ordinary least squares'; 'BSQ'='bisquare weighted regression'; 'HUB'='regression using Huber weights'; 'MED'='median regression'; 'LTS'='trimmed least squares'; 'L1'='median polish'; 'L0'='minimizing number of interactions'"), "\n",sep=""))
+                                   cat(paste("    Estimation method:         " , recode(estimation,"'OLS'='ordinary least squares'; 'BSQ'='bisquare weighted regression'; 'HUB'='regression using Huber weights'; 'MED'='median regression'; 'LTS'='trimmed least squares'; 'L1'='median polish'; 'L0'='minimizing number of interactions'"), "\n",sep=""))
                                    tf <- capture.output(summary(eqh))
                                    i1 <- grep("Used trimming factor", tf)
                                    i2 <- grep("Estimation information item intercepts", tf)
                                    i3 <- min(i1[which(i1>i2)])
                                    i4 <- unlist(strsplit(tf[i3], "="))
-                                   cat(paste("    Used trimming factor:    " , round(as.numeric(crop(i4[length(i4)])), digits = 3), "\n",sep=""))
+                                   cat(paste("    Used trimming factor:      " , round(as.numeric(crop(i4[length(i4)])), digits = 3), "\n",sep=""))
                                }
     ### Gibt es Items mit linking dif?
                                if ( method != "robust" && method != "Haberman" && length( prbl ) > 0 ) {
@@ -407,10 +411,14 @@ equat1pl<- function ( results , prmNorm , item = NULL, domain = NULL, testlet = 
                                         info <- data.frame ( linking.constant = eq[["B.est"]][[method]], linkerror = eq[["descriptives"]][["linkerror"]] )
                                     }
                                     if ( method == "robust" ) {
-                                        info <- data.frame ( linking.method = c("non robust", "robust"), linking.constant = c(eqr[["meanpars"]][["k0"]], eqr[["meanpars"]][[names(eqr[["ind.kopt"]])]]), linkerror = c(eqr[["se"]][["k0"]], eqr[["se"]][[names(eqr[["ind.kopt"]])]]), stringsAsFactors=FALSE)
+                                        werte<- list (c(eqr[["meanpars"]][["k0"]], eqr[["meanpars"]][[names(eqr[["ind.kopt"]])]]), c(eqr[["se"]][["k0"]], eqr[["se"]][[names(eqr[["ind.kopt"]])]]))
+                                        werte<- lapply( werte , FUN = function ( wert) { ifelse(is.null(wert), NA, wert)})
+                                        info <- data.frame ( linking.method = c("non robust", "robust"), linking.constant = werte[[1]], linkerror = werte[[2]], stringsAsFactors=FALSE)
                                     }    
                                     if ( method == "Haberman" ) {
-                                        info <- data.frame ( linking.constant = eqh[["transf.itempars"]][2,"B_b"], linkerror = NA, stringsAsFactors=FALSE)
+                                        wert <- eqh[["transf.itempars"]][2,"B_b"]
+                                        wert <- ifelse(is.null(wert), NA, wert)
+                                        info <- data.frame ( linking.constant = wert, linkerror = NA, stringsAsFactors=FALSE)
                                     }
                                }
                                cat("\n")
@@ -418,11 +426,15 @@ equat1pl<- function ( results , prmNorm , item = NULL, domain = NULL, testlet = 
                                print(infPrint); flush.console()
                                cat("\n")
                                if (method == "robust") {
-                                   eq <- list ( B.est = data.frame ( robust = eqr[["meanpars"]][[names(eqr[["ind.kopt"]])]]), descriptives = data.frame ( N.items = nrow(prm), linkerror = eqr[["se"]][[names(eqr[["ind.kopt"]])]], stringsAsFactors =FALSE) )
+                                   wert<- list(eqr[["meanpars"]][[names(eqr[["ind.kopt"]])]], eqr[["se"]][[names(eqr[["ind.kopt"]])]])
+                                   wert<- lapply(wert, FUN = function (w) {ifelse(is.null(w), NA, w)})
+                                   eq  <- list ( B.est = data.frame ( robust = wert[[1]]), descriptives = data.frame ( N.items = nrow(prm), linkerror = wert[[2]], stringsAsFactors =FALSE) )
                                }
 
                                if (method == "Haberman") {
-                                   eq <- list ( B.est = data.frame ( Haberman = eqh[["transf.itempars"]][2,"B_b"]), descriptives = data.frame ( N.items = nrow(eqh[["joint.itempars"]]), linkerror = NA, stringsAsFactors =FALSE) )
+                                   wert <- list(eqh[["transf.itempars"]][2,"B_b"], nrow(eqh[["joint.itempars"]]))
+                                   wert <- lapply(wert, FUN = function (w) {ifelse(is.null(wert), NA, wert)})
+                                   eq <- list ( B.est = data.frame ( Haberman = wert[[1]]), descriptives = data.frame ( N.items = wert[[2]], linkerror = NA, stringsAsFactors =FALSE) )
                                }
                                ret <- list ( eq = eq, items = prmDim, info = info, method = method )
                                return ( ret ) }, simplify =FALSE)

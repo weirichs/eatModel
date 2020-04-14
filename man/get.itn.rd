@@ -29,7 +29,7 @@ A data frame with 18 columns:
 of respondents to the item}
 \item{item.p}{Percentage of students who answered this item correctly}
 \item{diskrim}{Item discrimination}
-\item{pt.bis}{Point-biserial correlationfor this response}
+\item{pt.bis}{Point-biserial correlation for this response}
 \item{t.value}{T-Value of the significance test whether the point-biserial correlation is different
 from 0}
 \item{p.value}{p-Value of the significance test whether the point-biserial correlation is different

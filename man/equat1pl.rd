@@ -54,7 +54,7 @@ Logical. Should items with linking DIF excluded?
 }
   \item{difBound}{
 %%     ~~Describe \code{file} here~~
-Defines the boundary. Items with absolut linking DIF greater than the boundary will 
+Defines the boundary. Items with absolute linking DIF greater than the boundary will
 be removed from the linking procedure. 
 }
   \item{iterativ}{

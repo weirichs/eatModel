@@ -10,7 +10,7 @@ get.equ(file)}
   \item{file}{
 %%     ~~Describe \code{file} here~~
 Character string with the name of the Conquest equ file (This file is requested using the \code{"equivalence"}
-statement in the conquest synax file).
+statement in the conquest syntax file).
 }
 }
 \value{
@@ -20,7 +20,7 @@ statement in the conquest synax file).
 %%  \item{comp2 }{Description of 'comp2'}
 %% ...
 A list of \eqn{n+1} elements, with \eqn{n} the number of dimensions in the analysis. Each element is a
-data frame, whose name correponds to the name of the dimension the values belongs to. All
+data frame, whose name corresponds to the name of the dimension the values belongs to. All
 data frames except the last one give the transformation of each possible raw score to the WLE
 or MLE score including its standard error. First column in each data frame contains the raw score,
 second column the transformed WLE or MLE score, third columns its standard error.

@@ -37,13 +37,13 @@ When DIF-Parameter are evaluated, this specifies the critical p-value for confid
 }
 }
 \details{
-Funktion searches for \sQuote{TERM}-statements in Conquest showfile and reads the tables associated
+Function searches for \sQuote{TERM}-statements in Conquest showfile and reads the tables associated
 with. If one statement, for example \code{"item*gender"} is specified to contain DIF analyses, the
 Conquest output concerning this term is read in and some \emph{additional} analyses are conducted. To
 compute the absolute DIF, item parameter estimates of the \code{"item*gender"} table are doubled.
-Confidence intervalls for 90, 95 and 99 percent are computed via the standard error of item parameter
+Confidence intervals for 90, 95 and 99 percent are computed via the standard error of item parameter
 estimates in the \code{"item*gender"} table. If both criteria - absolute DIF exceeds \code{abs.dif.bound}
-and the confidence intervall does not include \code{sig.dif.bound}, item is considered to have DIF.
+and the confidence interval does not include \code{sig.dif.bound}, item is considered to have DIF.
 }
 \value{
 %%  ~Describe the value returned

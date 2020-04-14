@@ -293,7 +293,7 @@ in the calculation of fit statistics. The default value is 2000.
 }
   \item{converge}{
 %%     ~~Describe \code{dif.term} here~~
-An integer value specifiying the convergence criterion for parameter estimates.
+An integer value specifying the convergence criterion for parameter estimates.
 The estimation will terminate when the largest change in any parameter estimate
 between successive iterations of the EM algorithm is less than converge. The
 default value is 0.001.
@@ -314,7 +314,7 @@ and NULL.
   \item{use.letters}{
 %%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "conquest"}. A logical value indicating whether
-item response values should be coded als letters. This option can be used in partial
+item response values should be coded as letters. This option can be used in partial
 credit models comprising items with more than 10 categories to avoid response columns
 with width 2 in Conquest.
 }
@@ -349,7 +349,7 @@ a discrimination parameter for each item is estimated.
   \item{fixSlopeMat}{
 %%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "tam"} for 2PL models. Optionally, a named data frame
-with two columns indicating for which items a fixed discrimation should be assumed. 
+with two columns indicating for which items a fixed discrimination should be assumed.
 The first column contains the names of the items which discrimination should be fixed. 
 Note that item indicators should be unique---if not, use further arguments \code{slopeMatDomainCol}, 
 \code{slopeMatItemCol} and \code{slopeMatValueCol}. The second column is numerical and contains 
