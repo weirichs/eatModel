@@ -16,9 +16,10 @@ defineModel (dat, items, id, splittedModels = NULL,
    remove.missing.items = TRUE, remove.constant.items = TRUE, remove.failures = FALSE, 
    remove.vars.DIF.missing = TRUE, remove.vars.DIF.constant = TRUE, 
    verbose=TRUE, software = c("conquest","tam"), dir = NULL, analysis.name, 
-   schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE, pvMethod = c("regular", "bayesian"), fitTamMmlForBayesian = TRUE,
-   n.plausible=5, seed = NULL, conquest.folder=NULL,constraints=c("cases","none","items"),
-   std.err=c("quick","full","none"), distribution=c("normal","discrete"),
+   schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE,
+   pvMethod = c("regular", "bayesian"), fitTamMmlForBayesian = TRUE,
+   n.plausible=5, seed = NULL, conquest.folder= system.file("extdata", "console_Feb2007.exe", package = "eatModel"),
+   constraints=c("cases","none","items"), std.err=c("quick","full","none"), distribution=c("normal","discrete"),
    method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo"), n.iterations=2000,
    nodes=NULL, p.nodes=2000, f.nodes=2000,converge=0.001,deviancechange=0.0001,
    equivalence.table=c("wle","mle","NULL"), use.letters=FALSE,
@@ -505,7 +506,6 @@ qMat <- sciences[ which( sciences[,"subject"] == "biology") ,c("variable","domai
 qMat <- qMat[!duplicated(qMat[,1]),]
 qMat <- data.frame ( qMat[,1,drop=FALSE], knowledge  = as.numeric(qMat[,"domain"] == "knowledge"),
         procedural = as.numeric(qMat[,"domain"] == "procedural"))
-\dontrun{
 
 
 ################################################################################
@@ -518,7 +518,7 @@ qMat <- data.frame ( qMat[,1,drop=FALSE], knowledge  = as.numeric(qMat[,"domain"
 
 # defining the model: specifying q matrix is not necessary
 mod1 <- defineModel(dat=datW, items= -c(1:3), id="id", analysis.name = "unidim",
-        conquest.folder = "N:/console_Feb2007.exe",  dir = "N:/test")
+        dir = tempdir() )
 
 # run the model
 run1 <- runModel(mod1)
@@ -539,8 +539,7 @@ item <- itemFromRes ( res1 )
 # to be numeric. Variables will be automatically transformed to numeric by 
 # 'defineModels'. However, it might be the better idea to transform the variable
 # manually. 
-datW[,"sexNum"] <- car::recode ( datW[,"sex"] , "'male'=0; 'female'=1", 
-                   as.factor.result = FALSE)
+datW[,"sexNum"] <- car::recode ( datW[,"sex"] , "'male'=0; 'female'=1", as.factor = FALSE)
                    
 # as we have defined a new variable ('sexNum') in the data, it is a good idea 
 # to explicitly specify item columns ... instead of saying 'items= -c(1:3)' which
@@ -550,8 +549,7 @@ items<- grep("^Bio|^Che|^Phy", colnames(datW))
 # Caution: two items ("ChePro48", "PhyPro01") are excluded because they are 
 # constant in one of the DIF groups
 mod1a<- defineModel(dat=datW, items= items, id="id", DIF.var = "sexNum", 
-        analysis.name = "unidimDIF", conquest.folder = "N:/console_Feb2007.exe",  
-        dir = "N:/temp")
+        analysis.name = "unidimDIF", dir = tempdir())
 
 # run the model
 run1a<- runModel(mod1a)
@@ -578,7 +576,7 @@ aPar <- aPar[,c("item", "est")]
 # (This behavior is equivalent as in lm() for example.)
 mod2a<- defineModel(dat=datW, items= qMat[,1], id="id", analysis.name = "twodim",
         qMatrix = qMat, HG.var = "sex", anchor = aPar, n.plausible = 20,
-        conquest.folder = "N:/console_Feb2007.exe",  dir = "N:/test")
+        dir = tempdir())
 
 # run the model
 run2a<- runModel(mod2a)
@@ -594,8 +592,7 @@ res2a<- getResults(run2a)
 # Example 2b: running a multidimensional Rasch model on a subset of items
 # defining the model: specifying q matrix now is necessary.
 mod2b<- defineModel(dat=datW, items= qMat[,1], id="id", analysis.name = "twodim2",
-        qMatrix = qMat, n.plausible = 20, conquest.folder = "N:/console_Feb2007.exe",
-        dir = "N:/test")
+        qMatrix = qMat, n.plausible = 20, dir = tempdir())
 
 # run the model
 run2b<- runModel(mod2b)
@@ -637,7 +634,7 @@ wle  <- tam.wle(run2T)
 
 # Finally, the model result are collected in a single data frame
 res2T<- getResults(run2T)
-}
+
 
 ################################################################################
 ###    Example 4: define und run multiple models defined by 'splitModels'    ###

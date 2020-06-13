@@ -1038,7 +1038,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                qMatrix=NULL, DIF.var=NULL, HG.var=NULL, group.var=NULL, weight.var=NULL, anchor = NULL, domainCol=NULL, itemCol=NULL, valueCol=NULL,check.for.linking = TRUE,
                minNperItem = 50, removeMinNperItem = FALSE, boundary = 6, remove.boundary = FALSE, remove.no.answers = TRUE, remove.no.answersHG = TRUE, remove.missing.items = TRUE, remove.constant.items = TRUE,
                remove.failures = FALSE, remove.vars.DIF.missing = TRUE, remove.vars.DIF.constant = TRUE, verbose=TRUE, software = c("conquest","tam"), dir = NULL,
-               analysis.name, schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE, pvMethod = c("regular", "bayesian"), fitTamMmlForBayesian = TRUE, n.plausible=5, seed = NULL, conquest.folder=NULL,
+               analysis.name, schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE, pvMethod = c("regular", "bayesian"), fitTamMmlForBayesian = TRUE, n.plausible=5, seed = NULL, conquest.folder=system.file("extdata", "console_Feb2007.exe", package = "eatModel"),
                constraints=c("cases","none","items"),std.err=c("quick","full","none"), distribution=c("normal","discrete"), method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo"),
                n.iterations=2000,nodes=NULL, p.nodes=2000, f.nodes=2000,converge=0.001,deviancechange=0.0001, equivalence.table=c("wle","mle","NULL"), use.letters=FALSE,
                allowAllScoresEverywhere = TRUE, guessMat = NULL, est.slopegroups = NULL, fixSlopeMat = NULL, slopeMatDomainCol=NULL, slopeMatItemCol=NULL, slopeMatValueCol=NULL,
