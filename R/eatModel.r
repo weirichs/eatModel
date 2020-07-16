@@ -826,7 +826,7 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
                                   allV <- list(slopeMatDomainCol=slopeMatDomainCol , slopeMatItemCol=slopeMatItemCol, slopeMatValueCol =slopeMatValueCol)
                                   all.Names <- c(all.Names, lapply(allV, FUN=function(ii) {existsBackgroundVariables(dat = fixSlopeMat, variable=ii)}))
                                   if ( ncol(qMatrix) != 2) { stop ( "Duplicated item identifiers in 'fixSlopeMat' are only allowed for unidimensional models.\n") }
-                                  mtch <- whereAre( colnames(qMatrix)[2], fixSlopeMat[, all.Names[["slopeMatDomainCol"]]], quiet = TRUE)
+                                  mtch <- whereAre( colnames(qMatrix)[2], fixSlopeMat[, all.Names[["slopeMatDomainCol"]]], verbose=FALSE)
                                   if ( length( mtch) < 2 ) { stop(cat(paste ( "Cannot found dimension '",colnames(qMatrix)[2],"' in 'fixSlopeMat'. Found following values in '",all.Names[["slopeMatDomainCol"]],"' column of 'fixSlopeMat': \n    '", paste( sort(unique(fixSlopeMat[, all.Names[["slopeMatDomainCol"]] ])), collapse="', '"),"'.\n",sep="")))}
                                   fixSlopeMat <- fixSlopeMat[mtch, c(all.Names[["slopeMatItemCol"]],all.Names[["slopeMatValueCol"]])]
                               }
@@ -2367,8 +2367,8 @@ itemFromRes<- function ( resultsObj ) {                                         
                                           cat(paste("Warning! DIF variable '",mod[isDif,"derived.par"],"' seems to have more than two categories. To date, this is not supported by 'eatModel'.\n",sep=""))
                                        }
                                        return ( data.frame ( item = v, dif = it[1], weg = it[length(it)] , stringsAsFactors = FALSE) ) }))
-                           weg      <- whereAre ( itemList[,"weg"], sel[,"var1"], quiet = TRUE)
-                           forDif   <- whereAre ( itemList[,"dif"], sel[,"var1"], quiet = TRUE)
+                           weg      <- whereAre ( itemList[,"weg"], sel[,"var1"], verbose=FALSE)
+                           forDif   <- whereAre ( itemList[,"dif"], sel[,"var1"], verbose=FALSE)
                            stopifnot(length( intersect(weg, forDif)) == 0 )
                            selForDif<- sel[forDif, ]
                            sel      <- sel[-c(weg, forDif) , ]
@@ -2971,7 +2971,7 @@ anker <- function(lab, prm, qMatrix, domainCol, itemCol, valueCol )  {
                        if ( length( notIncl ) > 0 ) { stop(paste ( "Q matrix contains domain(s) ",paste("'",paste(notIncl, collapse="', '"),"'",sep="")," which are not included in the '",allNams[["domainCol"]],"' column of the anchor parameter frame.\n",sep="")) }
                        weg     <- setdiff ( unique(prm[,allNams[["domainCol"]]]), colnames(qMatrix)[-1])
                        if ( length ( weg ) > 0 ) {
-                            ind <- whereAre ( weg, prm[,allNams[["domainCol"]]], quiet = TRUE)
+                            ind <- whereAre ( weg, prm[,allNams[["domainCol"]]], verbose=FALSE)
                             cat(paste("Remove ",length(ind)," rows from the anchor parameter frame which do not belong to any of the specified domains in the Q matrix.\n",sep=""))
                             prm <- prm[-ind,]
                        }
