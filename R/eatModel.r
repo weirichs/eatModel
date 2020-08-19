@@ -19,8 +19,8 @@ tamObjForBayesianPV <- function(anchor, qMatrix, slopeMatrix = NULL, resp, pid, 
       return(tamObj)}
 
 
-### prueft, ob Design verlinkt ist: checkDesign(design[1:15,c(1:5,ncol(design))], bookletColumn = "TH")
-checkDesign <- function ( design, bookletColumn) {
+### prueft, ob Design verlinkt ist: checkLinking(design[1:15,c(1:5,ncol(design))], bookletColumn = "TH")
+checkLinking <- function ( design, bookletColumn) {
       if (!all(sapply(design, class)=="character")) { design <- data.frame(lapply(design, as.character), stringsAsFactors=FALSE)}
       if ( length(bookletColumn) != 1) {stop("Argument 'bookletColumn' must be of length 1.")}
       book  <- existsBackgroundVariables(dat = design, variable=bookletColumn)
@@ -32,7 +32,7 @@ checkDesign <- function ( design, bookletColumn) {
       link  <- checkLink(dataFrame = dat[,-1, drop = FALSE], remove.non.responser = TRUE, verbose = TRUE )
       return(link)}
 
-### Hilfsfunktion fuer 'checkDesign'
+### Hilfsfunktion fuer 'checkLinking'
 simDat <- function ( z, booklet ) {                                             ### erzeugt Datensatz aus einer Zeile des Designs
           if ( !length(na.omit(z[-match(booklet, names(z))])) == length(unique(na.omit(z[-match(booklet, names(z))] ))) ) { stop("Blocks are not unique in each line.\n")}
           items<- as.vector(sapply(na.omit(z[-match(booklet, names(z))]), FUN= function ( i ) { paste(i, 1:3, sep="_")}))
