@@ -2219,7 +2219,7 @@ getTamEAPs <- function ( runModelObj, qMatrix, leseAlles = leseAlles) {
          return(res)}
          
 
-getTamQ3 <- function(runModelObj, leseAlles, shw1, Q3, q3MinObs){
+getTamQ3 <- function(runModelObj, leseAlles, shw1, Q3, q3MinObs, q3MinType){
          if(leseAlles == FALSE || Q3 == FALSE) {return(NULL)}
          nObs <- NULL
          if ( !is.null(q3MinObs) ) {                                            ### untere Zeile: paarweise Anzahl Beobachtungen je Itempaar
@@ -2279,7 +2279,7 @@ getTamResults     <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV, n
     ### EAPs auslesen
          ret    <- rbind(ret, getTamEAPs(runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles))
     ### Q3 auslesen
-         ret    <- rbind(ret, getTamQ3(runModelObj=runModelObj, leseAlles = leseAlles, shw1 = resItem[["shw1"]], Q3=Q3, q3MinObs=q3MinObs))
+         ret    <- rbind(ret, getTamQ3(runModelObj=runModelObj, leseAlles = leseAlles, shw1 = resItem[["shw1"]], Q3=Q3, q3MinObs=q3MinObs, q3MinType=q3MinType))
          return(ret)}
 
 
