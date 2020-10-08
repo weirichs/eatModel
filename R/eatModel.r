@@ -146,7 +146,7 @@ getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c(
                if ( is.null(runModelObj)) {return(NULL)}
                isTa  <- FALSE
                if( "runConquest" %in% class(runModelObj) ) {                    ### wurde mit Conquest gerechnet?
-                    if ( Q3 == TRUE ) {
+                    if ( isTRUE(Q3) ) {
                         if ( ncol ( runModelObj[["qMatrix"]]) !=2 ) {
                             cat("Q3 is only available for unidimensional models. Estimation will be skipped.\n")
                             Q3 <- FALSE
@@ -159,7 +159,7 @@ getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c(
                     allN<- runModelObj[["all.Names"]]                           ### Alternativ: es wurde mit TAM gerechnet
                }  else  {                                                       ### logisches Argument: wurde mit Tam gerechnet?
                     isTa<- TRUE                                                 ### hier wird ggf. die Anzahl der zu ziehenden PVs ueberschrieben
-                    if ( Q3 == TRUE ) {
+                    if ( isTRUE(Q3) ) {
                         if ( ncol ( attr(runModelObj, "qMatrix")) !=2 ) {
                             cat("Q3 is only available for unidimensional models. Estimation will be skipped.\n")
                             Q3 <- FALSE
@@ -1890,8 +1890,8 @@ getConquestWles <- function ( model.name, analysis.name, qMatrix, allFiles, omit
          res  <- NULL                                                           ### initialisieren
          for ( i in 1:nrow(altN)) { colnames(wle) <- gsub(  paste(".",altN[i,"nr"],"$",sep=""), paste("_", altN[i,"to"],sep="") , colnames(wle))}
          wleL <- melt(wle, id.vars = "ID", measure.vars = colnames(wle)[-c(1:2)], na.rm=TRUE)
-         foo  <- data.frame ( do.call("rbind", strsplit(as.character(wleL[,"variable"]), "_")), stringsAsFactors = FALSE)
-         colnames(foo) <- c("par", "group")
+         foo  <- data.frame ( halveString( as.character(wleL[,"variable"]), pattern = "_"), stringsAsFactors=FALSE)
+         colnames(foo) <- c("par", "group")                                     ### halveString statt strsplit nehmen, weil es sonst schiefgeht, wenn dimensionsname einen Unterstrich enthaelt; foo muss immer zwei spalten haben, das ist nicht so, wenn man strsplit nimmt und der dimensionsname einen Unterstrich enthaelt
          foo[,"derived.par"] <- recode(foo[,"par"], "'wle'='est'; 'std.wle'='se'; else=NA")
          foo[,"par"]         <- recode(foo[,"par"], "'wle'='wle'; 'std.wle'='wle'; 'n.solved'='NitemsSolved'; 'n.total'='NitemsTotal'")
          wleL <- data.frame ( wleL[,-match("variable", colnames(wleL)), drop=FALSE], foo, stringsAsFactors = FALSE)
