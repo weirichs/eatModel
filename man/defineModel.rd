@@ -52,7 +52,7 @@ Optional: Object returned by \code{\link{splitModels}}. Definition for multiple 
   \item{irtmodel}{
 %%     ~~Describe \code{abs.dif.bound} here~~
 Specification of the IRT model. The argument corresponds to the \code{irtmodel} 
-argument of \code{tam}. See the help page of \code{tam} for further details.
+argument of \code{\link[TAM]{tam}}. See the help page of \code{\link[TAM]{tam}} for further details.
 }
   \item{qMatrix}{
 %%     ~~Describe \code{abs.dif.bound} here~~
@@ -210,8 +210,8 @@ or using a Bayesian algorithm.
   \item{fitTamMmlForBayesian}{
 %%     ~~Describe \code{dif.term} here~~
 Logical, applies only if \code{software = "tam"}: If PVs are drawn using a Bayesian
-algorithm, it is not necessary to fit the model via \code{tam.mml} before. \code{fitTamMmlForBayesian}
-specifies whether the model should be fitted before though. See the help page of \code{tam.pv.mcmc}
+algorithm, it is not necessary to fit the model via \code{\link[TAM]{tam.mml}} before. \code{fitTamMmlForBayesian}
+specifies whether the model should be fitted before though. See the help page of \code{\link[TAM]{tam.pv.mcmc}}
 for further details.
 }
   \item{n.plausible}{
@@ -226,13 +226,15 @@ Optional: Set seed value for analysis.
 %%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "conquest"}. A character string with path and name
 of the Conquest console, for example \code{"c:/programme/conquest/console_Feb2007.exe"}.
+In package version 0.7.24 and later, conquest executable file is included in the package,
+so the user needn't to specify this argument.
 }
   \item{constraints}{
 %%     ~~Describe \code{dif.term} here~~
 A character string specifying how the scale should be constrained. Possible options 
 are \code{"cases"} (default), \code{"items"} and \code{"none"}. When anchor parameter are specified in 
 anchor, constraints will be set to \code{"none"} automatically. In \code{TAM} the option
-\code{"none"} is not allowed. (See the help file of \code{tam.mml} for further details.)
+\code{"none"} is not allowed. (See the help file of \code{\link[TAM]{tam.mml}} for further details.)
 }
   \item{std.err}{
 %%     ~~Describe \code{dif.term} here~~
@@ -356,7 +358,7 @@ Note that item indicators should be unique---if not, use further arguments \code
 \code{slopeMatItemCol} and \code{slopeMatValueCol}. The second column is numerical and contains 
 the discrimination value. Note: To date, this works only for between item dimensionality models. 
 Within item dimensionality models must be specified directly in TAM, using the \code{B.fixed} 
-argument of \code{tam.mml}. Items which discrimation should be estimated should not occur in this data frame. 
+argument of \code{\link[TAM]{tam.mml}}. Items which discrimation should be estimated should not occur in this data frame.
 }
   \item{slopeMatDomainCol}{
 %%     ~~Describe \code{dif.term} here~~
@@ -390,12 +392,12 @@ The default value is 4; the default for 3pl models is set to 10.
   \item{increment.factor}{
 %%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "tam"}. Should only be varied if the model does not converge.
-See help page of \code{tam.mml} for further details.
+See help page of \code{\link[TAM]{tam.mml}} for further details.
 }
   \item{fac.oldxsi}{
 %%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "tam"}. Should only be varied if the model does not converge.
-See help page of \code{tam.mml} for further details.
+See help page of \code{\link[TAM]{tam.mml}} for further details.
 }
   \item{export}{
 %%     ~~Describe \code{dif.term} here~~
@@ -413,7 +415,7 @@ A list which contains information about the desired estimation. The list is inte
 further processing via \code{\link{runModel}}. Structure of the list varies depending on
 whether multiple models were called using \code{\link{splitModels}} or not. If
 \code{\link{splitModels}} was called, the number of elements in the list equals
-the number of models defined via \code{splitModels}. Each element in the list is
+the number of models defined via \code{\link{splitModels}}. Each element in the list is
 a list with various elements:
   \item{software}{
 Character string of the software which is intended to use for the further estimation,
@@ -967,7 +969,7 @@ dTrend<- prepRep ( calibT2 = T.t1t2, bistaTransfT1 = dfrT1P, bistaTransfT2 = dfr
 
 
 ################################################################################
-###                   Example 6b: trend analyses (jk2.mean)                  ###
+###                   Example 6b: trend analyses (repMean)                   ###
 ################################################################################
 
 # Example 6b needs the objects created in example 6a
@@ -986,22 +988,22 @@ dTrend[,"idclass"] <- substr(as.character(dTrend[,"id"]),1,2)
 # compute means for both countries without trend, only for domain 'knowledge'
 # create subsample
 subSam<- dTrend[intersect(which(dTrend[,"dimension"] == "knowledge"),which(dTrend[,"year"] == 2003)),]
-m01   <- jk2.mean(datL = subSam, ID="id", imp = "imp", groups = "model",
+m01   <- repMean(datL = subSam, ID="id", imp = "imp", groups = "model",
          dependent = "valueTransfBista")
 r01   <- report(m01, add = list(domain = "knowledge"))
 
 # same example as before, now additionally using weights
-m02   <- jk2.mean(datL = subSam, ID="id", imp = "imp", groups = "model",
+m02   <- repMean(datL = subSam, ID="id", imp = "imp", groups = "model",
          wgt = "wgt", dependent = "valueTransfBista")
 r02   <- report(m02, add = list(domain = "knowledge"))
 
 # now additionally using replication methods (jk2)
-m03   <- jk2.mean(datL = subSam, ID="id", imp = "imp", groups = "model", type = "jk2",
+m03   <- repMean(datL = subSam, ID="id", imp = "imp", groups = "model", type = "jk2",
          wgt = "wgt", PSU = "jkzone", repInd = "jkrep", dependent = "valueTransfBista")
 r03   <- report(m03, add = list(domain = "knowledge"))
 
 # additionally: sex differences in each country, using 'group.differences.by' argument
-m04   <- jk2.mean(datL = subSam, ID="id", imp = "imp", groups = c("sex", "model"),
+m04   <- repMean(datL = subSam, ID="id", imp = "imp", groups = c("sex", "model"),
          group.differences.by = "sex", type = "jk2",wgt = "wgt", PSU = "jkzone",
          repInd = "jkrep", dependent = "valueTransfBista")
 r04   <- report(m04, add = list(domain = "knowledge"))
@@ -1009,7 +1011,7 @@ r04   <- report(m04, add = list(domain = "knowledge"))
 # additionally: differ the sex-specific means in each country from the sex-specific means
 # in the whole population? Are the differences (male vs. female) in each country different
 # from the difference (male vs. female) in the whole population?
-m05   <- jk2.mean(datL = subSam, ID="id", imp = "imp", groups = c("sex", "model"),
+m05   <- repMean(datL = subSam, ID="id", imp = "imp", groups = c("sex", "model"),
          group.differences.by = "sex", cross.differences = TRUE, type = "jk2",wgt = "wgt",
          PSU = "jkzone", repInd = "jkrep", dependent = "valueTransfBista")
 r05   <- report(m05, add = list(domain = "knowledge"))
@@ -1022,7 +1024,7 @@ r05   <- report(m05, add = list(domain = "knowledge"))
 # 'knowledge'. Note: if no linking error is defined, linking error of 0 is assumed.
 # (Due to unbalanced sample data, we switch to 'jk1' method for the remainder of 6b.)
 subS2 <- dTrend[which(dTrend[,"dimension"] == "knowledge"),]
-m06   <- jk2.mean(datL = subS2, ID="id", imp = "imp", groups = c("sex", "model"),
+m06   <- repMean(datL = subS2, ID="id", imp = "imp", groups = c("sex", "model"),
          group.differences.by = "sex", cross.differences = TRUE, type = "jk1",wgt = "wgt",
          PSU = "idclass", trend = "year", linkErr = "trendErrorTransfBista",
          dependent = "valueTransfBista")
@@ -1033,7 +1035,7 @@ r06   <- report(m06, trendDiffs = TRUE, add = list(domain = "knowledge"))
 # using a 'by'-loop. Now we use the whole 'dTrend' data instead of subsamples
 m07   <- by ( data = dTrend, INDICES = as.character(dTrend[,"dimension"]),
          FUN = function ( subdat ) {
-         m07a <- jk2.mean(datL = subdat, ID="id", imp = "imp", groups = c("sex", "model"),
+         m07a <- repMean(datL = subdat, ID="id", imp = "imp", groups = c("sex", "model"),
                  group.differences.by = "sex", cross.differences = TRUE, type = "jk1",wgt = "wgt",
                  PSU = "idclass", trend = "year", linkErr = "trendErrorTransfBista",
                  dependent = "valueTransfBista")
@@ -1043,7 +1045,7 @@ r07   <- do.call("rbind", r07)
 
 
 ################################################################################
-###                  Example 6c: trend analyses (jk2.table)                  ###
+###                  Example 6c: trend analyses (repTable)                   ###
 ################################################################################
 
 # Example 6c needs the objects created in example 6a. Additionally, the merged
@@ -1055,17 +1057,17 @@ library(eatRep)
 # compute frequencies for trait levels, only for domain 'knowledge', without trend
 # create 'knowledge' subsample
 subSam<- dTrend[intersect(which(dTrend[,"dimension"] == "knowledge"),which(dTrend[,"year"] == 2003)),]
-freq01<- jk2.table(datL = subSam, ID="id", imp = "imp", groups = "model",
+freq01<- repTable(datL = subSam, ID="id", imp = "imp", groups = "model",
          dependent = "traitLevel")
 res01 <- report(freq01, add = list(domain = "knowledge"))
 
 # same example as before, now additionally using weights
-freq02<- jk2.table(datL = subSam, ID="id", imp = "imp", groups = "model",
+freq02<- repTable(datL = subSam, ID="id", imp = "imp", groups = "model",
          wgt = "wgt", dependent = "traitLevel")
 res02 <- report(freq02, add = list(domain = "knowledge"))
 
 # now additionally using replication methods (jk2)
-freq03<- jk2.table(datL = subSam, ID="id", imp = "imp", groups = "model", type = "jk2",
+freq03<- repTable(datL = subSam, ID="id", imp = "imp", groups = "model", type = "jk2",
          wgt = "wgt", PSU = "jkzone", repInd = "jkrep", dependent = "traitLevel")
 res03 <- report(freq03, add = list(domain = "knowledge"))
 
@@ -1073,13 +1075,13 @@ res03 <- report(freq03, add = list(domain = "knowledge"))
 # Note: for frequency tables group differences may result in a chi square test or in
 # a difference of each categories' frequency.
 # first: request chi square test
-freq04<- jk2.table(datL = subSam, ID="id", imp = "imp", groups = c("model", "sex"),
+freq04<- repTable(datL = subSam, ID="id", imp = "imp", groups = c("model", "sex"),
          type = "jk2", group.differences.by = "sex", chiSquare = TRUE, wgt = "wgt",
          PSU = "jkzone", repInd = "jkrep", dependent = "traitLevel")
 res04 <- report(freq04, add = list(domain = "knowledge"))
 
 # now request differences for each trait level category
-freq05<- jk2.table(datL = subSam, ID="id", imp = "imp", groups = c("model", "sex"),
+freq05<- repTable(datL = subSam, ID="id", imp = "imp", groups = c("model", "sex"),
          type = "jk2", group.differences.by = "sex", chiSquare = FALSE, wgt = "wgt",
          PSU = "jkzone", repInd = "jkrep", dependent = "traitLevel")
 res05 <- report(freq05, add = list(domain = "knowledge"))
@@ -1087,7 +1089,7 @@ res05 <- report(freq05, add = list(domain = "knowledge"))
 # additionally: differ the sex-specific means in each country from the sex-specific means
 # in the whole population? Are the differences (male vs. female) in each country different
 # from the difference (male vs. female) in the whole population?
-freq06<- jk2.table(datL = subSam, ID="id", imp = "imp", groups = c("model", "sex"),
+freq06<- repTable(datL = subSam, ID="id", imp = "imp", groups = c("model", "sex"),
          type = "jk2", group.differences.by = "sex", cross.differences = TRUE, chiSquare = FALSE,
          wgt = "wgt", PSU = "jkzone", repInd = "jkrep", dependent = "traitLevel")
 res06 <- report(freq06, add = list(domain = "knowledge"))
@@ -1100,7 +1102,7 @@ res06 <- report(freq06, add = list(domain = "knowledge"))
 # 'knowledge'. Note: if no linking error is defined, linking error of 0 is assumed.
 # (Due to unbalanced sample data, we switch to 'jk1' method for the remainder of 6c.)
 subS2 <- dTrend[which(dTrend[,"dimension"] == "knowledge"),]
-freq07<- jk2.table(datL = subS2, ID="id", imp = "imp", groups = c("model", "sex"),
+freq07<- repTable(datL = subS2, ID="id", imp = "imp", groups = c("model", "sex"),
          type = "jk1", group.differences.by = "sex", cross.differences = TRUE, chiSquare = FALSE,
          wgt = "wgt", PSU = "idclass", trend = "trend", linkErr = "trendErrorTraitLevel", dependent = "traitLevel")
 res07 <- report(freq07, add = list(domain = "knowledge"))
@@ -1109,7 +1111,7 @@ res07 <- report(freq07, add = list(domain = "knowledge"))
 # using a 'by'-loop. Now we use the whole 'dTrend' data instead of subsamples
 freq08<- by ( data = dTrend, INDICES = as.character(dTrend[,"dimension"]),
          FUN = function ( subdat ) {
-         f08 <- jk2.table(datL = subdat, ID="id", imp = "imp", groups = c("model", "sex"),
+         f08 <- repTable(datL = subdat, ID="id", imp = "imp", groups = c("model", "sex"),
                 type = "jk1", group.differences.by = "sex", cross.differences = TRUE, chiSquare = FALSE,
                 wgt = "wgt", PSU = "idclass", trend = "trend",
                 linkErr = "trendErrorTraitLevel", dependent = "traitLevel")
@@ -1119,7 +1121,7 @@ res08 <- do.call("rbind", res08)
 
 
 ################################################################################
-###                   Example 6d: trend analyses (jk2.glm)                   ###
+###                   Example 6d: trend analyses (repGlm)                    ###
 ################################################################################
 
 # Example 6c needs the objects created in example 6a. Additionally, the merged
@@ -1135,26 +1137,26 @@ datGlm<- reshape2::dcast(dTrend, value.var = "valueTransfBista",
 
 # first example: only for year 2003
 dat03 <- datGlm[which(datGlm[,"trend"] == "T1"),]
-m08   <- jk2.glm(datL = dat03, ID="id", imp="imp", wgt="wgt", PSU="jkzone",
+m08   <- repGlm(datL = dat03, ID="id", imp="imp", wgt="wgt", PSU="jkzone",
          repInd = "jkrep", type = "jk2", formula = procedural~knowledge)
 res08 <- report(m08)
 
 # compute regression with two regressors separately for each country
-m09   <- jk2.glm(datL = dat03, ID="id", imp="imp", wgt="wgt", PSU="jkzone",
+m09   <- repGlm(datL = dat03, ID="id", imp="imp", wgt="wgt", PSU="jkzone",
          repInd = "jkrep", type = "jk2", groups = "model",
          formula = procedural~sex+knowledge)
 res09 <- report(m09)
 
 # differ country-specific regression coefficients from the regression coefficents
 # in the whole population?
-m10   <- jk2.glm(datL = dat03, ID="id", imp="imp", wgt="wgt", PSU="jkzone",
+m10   <- repGlm(datL = dat03, ID="id", imp="imp", wgt="wgt", PSU="jkzone",
          repInd = "jkrep", type = "jk2", groups = "model", group.splits = 0:1,
          cross.differences = TRUE, formula = procedural~sex+knowledge)
 res10 <- report(m10)
 
 # differ country-specific regression coefficients from the regression coefficents
 # in the whole population? Are these differences different for 2003 vs. 2013?
-m11   <- jk2.glm(datL = datGlm, ID="id", imp="imp", wgt="wgt", PSU="jkzone",
+m11   <- repGlm(datL = datGlm, ID="id", imp="imp", wgt="wgt", PSU="jkzone",
          repInd = "jkrep", type = "jk2", groups = "model", group.splits = 0:1,
          cross.differences = TRUE, trend = "trend", formula = procedural~sex+knowledge)
 res11 <- report(m11, trendDiffs = TRUE)

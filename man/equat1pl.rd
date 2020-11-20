@@ -2,7 +2,7 @@
 \alias{equat1pl}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{1pl equating with optional elimination of linking DIF items}
-\description{Function does the 1pl linking according to \code{equating.rasch} from the \code{sirt} package. 
+\description{Function does the 1pl linking according to \code{\link[sirt]{equating.rasch}} from the \code{sirt} package.
 Moreover, optional elimination of items with linking DIF is allowed and linking error may be estimated
 via the jackknife method if testlets are specified.}
 \usage{
@@ -67,9 +67,9 @@ left with |DIF|> \code{difBound}.
   \item{method}{
 %%     ~~Describe \code{file} here~~
 Linking method. If \code{"Mean.Mean"}, \code{"Haebara"}, or \code{"Stocking.Lord"}, 
-the function \code{equating.rasch} from the \code{sirt} package is called. If 
-\code{"robust"}, the function \code{"linking.robust"} from the \code{sirt} package
-is called. If \code{"Haberman"}, the function \code{"linking.haberman"} from the \
+the function \code{\link[sirt]{equating.rasch}} from the \code{sirt} package is called. If
+\code{"robust"}, the function \code{\link[sirt]{linking.robust}} from the \code{sirt} package
+is called. If \code{"Haberman"}, the function \code{\link[sirt]{linking.haberman}} from the \
 code{sirt} package is called.
 }
   \item{itemF}{

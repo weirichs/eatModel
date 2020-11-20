@@ -498,7 +498,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                  rex  <- pvFromRes(equatingList[["results"]][unique(c(which(equatingList[["results"]][,"group"] == dimname),which(equatingList[["results"]][,"type"] == "tech"))), ], toWideFormat = FALSE)
                  if (is.null(rex)) {return(NULL)}                               ### NULL wird zurueckgegeben, wenn keine PVs in der Ergebnisstrauktur vorhanden waren
                  if ( is.null(weights) ) {
-                      txt <- capture.output ( msd <- jk2.mean ( datL = rex, ID = id, imp = "imp", dependent = "value", na.rm = TRUE))
+                      txt <- capture.output ( msd <- repMean ( datL = rex, ID = id, imp = "imp", dependent = "value", na.rm = TRUE))
     ### Achtung!! ggf. anpassen fuer neue eatRep-Version
                       msd <- adaptEatRepVersion(msd)
                  }  else  {
@@ -516,7 +516,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                          cat(paste ( "Found ",length(mis)," missing values in the 'weights' frame.\n    Cases with missing values on weighting variable will be ignored for transformation.\n",sep=""))
                          rex <- rex[-mis,]
                     }
-                    txt <- capture.output ( msd <- jk2.mean ( datL = rex, ID = id, imp = "imp", wgt = colnames(weights)[2], dependent = "value", na.rm = TRUE) )
+                    txt <- capture.output ( msd <- repMean ( datL = rex, ID = id, imp = "imp", wgt = colnames(weights)[2], dependent = "value", na.rm = TRUE) )
                     msd <- adaptEatRepVersion(msd)
                  }
                  rp <- data.frame ( domain = dimname , m = msd[intersect(which(msd[,"parameter"] == "mean"), which(msd[,"coefficient"] == "est")),"value"], sd = msd[intersect(which(msd[,"parameter"] == "sd"), which(msd[,"coefficient"] == "est")),"value"])
@@ -609,7 +609,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
     ### Dazu muss zuerst Mittelwert und SD der Fokuspopulation bestimmt werden.
                             if (!is.null(pv)) {
                                 if ( is.null(weights) ) {
-                                     txt <- capture.output ( msdF <- jk2.mean ( datL = pv, ID = id, imp = "imp", dependent = "valueTransfBista", na.rm = TRUE))
+                                     txt <- capture.output ( msdF <- repMean ( datL = pv, ID = id, imp = "imp", dependent = "valueTransfBista", na.rm = TRUE))
                                      msdF<- adaptEatRepVersion(msdF)
                                 }  else  {
                                      if ( !class ( weights ) %in% "data.frame") {
@@ -626,7 +626,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                                           cat(paste ( "Found ",length(mis)," missing values in the 'weights' frame.\n    Cases with missing values on weighting variable will be ignored for transformation.\n",sep=""))
                                           pvF <- pvF[-mis,]
                                      }
-                                     txt <- capture.output ( msdF <- jk2.mean ( datL = pvF, ID = id, imp = "imp", wgt = colnames(weights)[2], dependent = "valueTransfBista", na.rm = TRUE) )
+                                     txt <- capture.output ( msdF <- repMean ( datL = pvF, ID = id, imp = "imp", wgt = colnames(weights)[2], dependent = "valueTransfBista", na.rm = TRUE) )
                                      msdF<- adaptEatRepVersion(msdF)
                                 }
                                 msdFok <- c(msdF[intersect(which(msdF[,"parameter"] == "mean"), which(msdF[,"coefficient"] == "est")),"value"], msdF[intersect(which(msdF[,"parameter"] == "sd"), which(msdF[,"coefficient"] == "est")),"value"])
@@ -1145,7 +1145,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                      }
                      if(length(model.statement)!=1)            {stop("'model.statement' has to be of length 1.\n")}
                      if(class(model.statement)!="character")   {stop("'model.statement' has to be of class 'character'.\n")}
-                     if(missing(dat))   {stop("No dataset specified.\n") }      ### 11.04.2014: nutzt Hilfsfunktionen von jk2.mean etc.
+                     if(missing(dat))   {stop("No dataset specified.\n") }      ### 11.04.2014: nutzt Hilfsfunktionen von repMean etc.
                      if(is.null(items)) {stop("Argument 'items' must not be NULL.\n",sep="")}
                      if(length(items) == 0 ) {stop("Argument 'items' has no elements.\n",sep="")}
                      if ( length(items) != length(unique(items)) ) {

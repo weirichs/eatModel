@@ -29,8 +29,8 @@ Logical. Should result files be overwritten if exist?
 %%     ~~Describe \code{file} here~~
 Logical. Estimate the Q3 statistic according to Yen (1984)? Note: this is only 
 possible for uni-dimensional models. If \code{software == "tam"}, Q3 statistic
-is estimated using the \code{tam.modelfit} function. If \code{software == "Conquest"}, 
-Q3 statistic is estimated using the \code{Q3} function from the \code{sirt}
+is estimated using the \code{\link[TAM]{tam.modelfit}} function. If \code{software == "Conquest"},
+Q3 statistic is estimated using the \code{\link[sirt]{Q3}} function from the \code{sirt}
 package.
 }
   \item{q3theta}{
@@ -90,13 +90,13 @@ that was given in \code{\link{defineModel}}.
 }
 \item{ntheta}{
 Applies only if \code{software = "tam"}. Following description is borrowed from the help 
-file of \code{tam.pv} from the \code{TAM} package: Number of ability nodes for 
+file of \code{\link[TAM]{tam.pv}} from the \code{TAM} package: Number of ability nodes for
 plausible value imputation. Note that in this function ability nodes are simulated 
 for the whole sample, not for every person (contrary to the software Conquest).
 }
 \item{normal.approx}{
 Applies only if \code{software = "tam"}. Following description is borrowed from the help 
-file of \code{tam.pv} from the \code{TAM} package: An optional logical indicating 
+file of \code{\link[TAM]{tam.pv}} from the \code{TAM} package: An optional logical indicating
 whether the individual posterior distributions should be approximated by a normal 
 distribution? The default is \code{FALSE}. In the case \code{normal.approx=TRUE}
 (normal distribution approximation), the number of ability nodes \code{ntheta} can 
@@ -105,21 +105,21 @@ implemented for unidimensional and multidimensional models.
 }
 \item{samp.regr}{
 Applies only if \code{software = "tam"}. Following description is borrowed from the help 
-file of \code{tam.pv} from the \code{TAM} package: An optional logical indicating 
+file of \code{\link[TAM]{tam.pv}} from the \code{TAM} package: An optional logical indicating
 whether regression coefficients should be fixed in the plausible value imputation or
 also sampled from their posterior distribution? The default is \code{FALSE}. Sampled 
 regression coefficients are obtained by nonparametric bootstrap.
 }
 \item{theta.model}{
 Applies only if \code{software = "tam"}. Following description is borrowed from the help 
-file of \code{tam.pv} from the \code{TAM} package: Logical indicating whether the 
+file of \code{\link[TAM]{tam.pv}} from the \code{TAM} package: Logical indicating whether the
 theta grid from the \code{tamobj} object should be used for plausible value
 imputation. In case of \code{normal.approx=TRUE}, this should be sufficient in many 
 applications.
 }
 \item{np.adj}{
 Applies only if \code{software = "tam"}. Following description is borrowed from the help 
-file of \code{tam.pv} from the \code{TAM} package: This parameter defines the 
+file of \code{\link[TAM]{tam.pv}} from the \code{TAM} package: This parameter defines the
 ``spread'' of the random theta values for drawing plausible values when 
 \code{normal.approx=FALSE}. If \eqn{s_{EAP}} denotes the standard deviation 
 of the posterior distribution of theta (in the one-dimensional case), then theta
@@ -132,58 +132,58 @@ vector of group identifiers. See the help page of \code{tam.pv.mcmc} for further
 }
 \item{beta_groups}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. See the help 
-page of \code{tam.pv.mcmc} for further details.
+page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
 }
 \item{level}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. Confidence level
-in bayesian approach. See the help page of \code{tam.pv.mcmc} for further details.
+in bayesian approach. See the help page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
 }
 \item{n.iter}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. Number of 
-iterations in the bayesian approach. See the help page of \code{tam.pv.mcmc} for further details.
+iterations in the bayesian approach. See the help page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
 }
 \item{n.burnin}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. Number of 
-burn-in iterations in the bayesian approach. See the help page of \code{tam.pv.mcmc} for 
+burn-in iterations in the bayesian approach. See the help page of \code{\link[TAM]{tam.pv.mcmc}} for
 further details.
 }
 \item{adj_MH}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. See the help 
-page of \code{tam.pv.mcmc} for further details.
+page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
 }
 \item{adj_change_MH}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. See the help 
-page of \code{tam.pv.mcmc} for further details.
+page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
 }
 \item{refresh_MH}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. See the help 
-page of \code{tam.pv.mcmc} for further details.
+page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
 }
 \item{accrate_bound_MH}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. See the help 
-page of \code{tam.pv.mcmc} for further details.
+page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
 }
 \item{sample_integers}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. Logical
 indicating whether weights for complete cases should be sampled in bootstrap. See the help
-page of \code{tam.pv.mcmc} for further details.
+page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
 }
 \item{theta_init}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. Optional matrix
-with initial theta values. See the help page of \code{tam.pv.mcmc} for further details.
+with initial theta values. See the help page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
 }
 \item{print_iter}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. See the help 
-page of \code{tam.pv.mcmc} for further details.
+page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
 }
 \item{verbose}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. See the help 
-page of \code{tam.pv.mcmc} for further details.
+page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
 }
 \item{calc_ic}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. Logical
-indicating whether information criteria should be computed.See the help
-page of \code{tam.pv.mcmc} for further details.
+indicating whether information criteria should be computed. See the help
+page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
 }
   \item{omitUntil}{
 Argument is passed to \code{\link{plotDevianceConquest}}: An optional value indicating
