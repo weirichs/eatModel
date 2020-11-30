@@ -52,7 +52,7 @@ Optional: Object returned by \code{\link{splitModels}}. Definition for multiple 
   \item{irtmodel}{
 %%     ~~Describe \code{abs.dif.bound} here~~
 Specification of the IRT model. The argument corresponds to the \code{irtmodel} 
-argument of \code{\link[TAM]{tam}}. See the help page of \code{\link[TAM]{tam}} for further details.
+argument of \code{\link[TAM]{tam.mml}}. See the help page of \code{\link[TAM]{tam.mml}} for further details.
 }
   \item{qMatrix}{
 %%     ~~Describe \code{abs.dif.bound} here~~
@@ -211,7 +211,7 @@ or using a Bayesian algorithm.
 %%     ~~Describe \code{dif.term} here~~
 Logical, applies only if \code{software = "tam"}: If PVs are drawn using a Bayesian
 algorithm, it is not necessary to fit the model via \code{\link[TAM]{tam.mml}} before. \code{fitTamMmlForBayesian}
-specifies whether the model should be fitted before though. See the help page of \code{\link[TAM]{tam.pv.mcmc}}
+specifies whether the model should be fitted before though. See the help page of \code{tam.pv.mcmc}
 for further details.
 }
   \item{n.plausible}{

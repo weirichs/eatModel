@@ -132,58 +132,58 @@ vector of group identifiers. See the help page of \code{tam.pv.mcmc} for further
 }
 \item{beta_groups}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. See the help 
-page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
+page of \code{tam.pv.mcmc} for further details.
 }
 \item{level}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. Confidence level
-in bayesian approach. See the help page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
+in bayesian approach. See the help page of \code{tam.pv.mcmc} for further details.
 }
 \item{n.iter}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. Number of 
-iterations in the bayesian approach. See the help page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
+iterations in the bayesian approach. See the help page of \code{tam.pv.mcmc} for further details.
 }
 \item{n.burnin}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. Number of 
-burn-in iterations in the bayesian approach. See the help page of \code{\link[TAM]{tam.pv.mcmc}} for
+burn-in iterations in the bayesian approach. See the help page of \code{tam.pv.mcmc} for
 further details.
 }
 \item{adj_MH}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. See the help 
-page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
+page of \code{tam.pv.mcmc} for further details.
 }
 \item{adj_change_MH}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. See the help 
-page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
+page of \code{tam.pv.mcmc} for further details.
 }
 \item{refresh_MH}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. See the help 
-page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
+page of \code{tam.pv.mcmc} for further details.
 }
 \item{accrate_bound_MH}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. See the help 
-page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
+page of \code{tam.pv.mcmc} for further details.
 }
 \item{sample_integers}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. Logical
 indicating whether weights for complete cases should be sampled in bootstrap. See the help
-page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
+page of \code{tam.pv.mcmc} for further details.
 }
 \item{theta_init}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. Optional matrix
-with initial theta values. See the help page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
+with initial theta values. See the help page of \code{tam.pv.mcmc} for further details.
 }
 \item{print_iter}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. See the help 
-page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
+page of \code{tam.pv.mcmc} for further details.
 }
 \item{verbose}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. See the help 
-page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
+page of \code{tam.pv.mcmc} for further details.
 }
 \item{calc_ic}{
 Applies only if \code{software = "tam"} and \code{pvMethod = "bayesian"}. Logical
 indicating whether information criteria should be computed. See the help
-page of \code{\link[TAM]{tam.pv.mcmc}} for further details.
+page of \code{tam.pv.mcmc} for further details.
 }
   \item{omitUntil}{
 Argument is passed to \code{\link{plotDevianceConquest}}: An optional value indicating

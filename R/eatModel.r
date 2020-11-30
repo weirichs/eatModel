@@ -1305,15 +1305,23 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                       }
      ### Sektion 'Hintergrundvariablen auf Konsistenz zu sich selbst und zu den Itemdaten pruefen'. Ausserdem Stelligkeit (Anzahl der benoetigten character) fuer jede Variable herausfinden ###
                       weg.dif <- NULL; weg.hg <- NULL; weg.weight <- NULL; weg.group <- NULL
+                      if(length(all.Names[["HG.var"]])>0 || length(all.Names[["group.var"]])>0 || length(all.Names[["DIF.var"]])>0 || length(all.Names[["weight.var"]]) >0  ) {
+                         varClass<- sapply(c(all.Names[["HG.var"]],all.Names[["group.var"]],all.Names[["DIF.var"]], all.Names[["weight.var"]]),FUN = function(ii) {class(dat[,ii])})
+                         if ( isFALSE(all(sapply(varClass, length) == 1)) ) {
+                              fehler <- which(sapply(varClass, length) != 1)
+                              cat(paste0("Following ",length(fehler), " variables with more that one class:"))
+                              print(varClass[names(fehler)]); stop()
+                         }
+                      }
                       if(length(all.Names[["HG.var"]])>0)    {
                          varClass<- sapply(all.Names[["HG.var"]], FUN = function(ii) {class(dat[,ii])})
                          notNum  <- which(varClass %in% c("factor", "character"))
                          if(length(notNum)>0) {
                             cat(paste("Warning: Background variables '",paste(names(varClass)[notNum], collapse="', '"),"' of class \n    '",paste(varClass[notNum],collapse="', '"),"' will be converted to indicator variables.\n",sep=""))
                             ind <- do.call("cbind", lapply ( names(varClass)[notNum], FUN = function ( yy ) {
+                                   if ( length(which(is.na(dat[,yy])))>0) { stop(paste0("Found ",length(which(is.na(dat[,yy]))), " missings on background variable '",yy,"'."))}
                                    newFr <- model.matrix( as.formula (paste("~",yy,sep="")), data = dat)[,-1,drop=FALSE]
                                    cat(paste("    Variable '",yy,"' was converted to ",ncol(newFr)," indicator(s) with name(s) '",paste(colnames(newFr), collapse= "', '"), "'.\n",sep=""))
-                                   flush.console()
                                    return(newFr) }))
                             if(software == "conquest") {                        ### ggf. fuer Conquest Namen der HG-Variablen aendern
                                subNm <- .substituteSigns(dat=ind, variable=colnames(ind))
