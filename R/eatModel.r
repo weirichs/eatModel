@@ -27,7 +27,9 @@ checkLinking <- function ( design, bookletColumn) {
       items <- setdiff(colnames(design), book)                                  ### zeilen loeschen, die ausschliesslich NA sind
       weg   <- which(rowSums(do.call("rbind", alply(design[,items], .margins = 1, .fun = is.na))) == ncol(design[,items]))
       if ( length(weg)>0) { design <- design[-weg,]}                            ### untere zeile: unerlaubte Zeichen aus Blockbezeichnung entfernen und Buchstabe vorabstellen
-      for ( i in items) {design[which(!is.na(design[,i])),i] <- paste0("B", removePattern(removePattern(as.character(design[which(!is.na(design[,i])),i]), " "), "-"))}
+      for ( i in items) {                                                       ### das wird nur gemacht, wenn die Spalte nicht ausschliesslich NAs enthaelt
+          if (!all(is.na(design[,i]))) {design[which(!is.na(design[,i])),i] <- paste0("B", removePattern(removePattern(as.character(design[which(!is.na(design[,i])),i]), " "), "-"))}
+      }  
       dat   <- do.call("rbind.fill", apply( design, MARGIN = 1, FUN = simDat, booklet = book))
       link  <- checkLink(dataFrame = dat[,-1, drop = FALSE], remove.non.responser = TRUE, verbose = TRUE )
       return(link)}
