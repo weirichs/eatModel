@@ -825,19 +825,11 @@ resT1 <- getResults(runT1)
 # extract item parameters from the 'results' object
 itemT1<- itemFromRes(resT1)
 
-# Second step: drawing plausible values. Two-dimensional model is specified for 
-# each person group with fixed item parameters. Moreover, a latent regression 
-# model is used (in the actual 'Laendervergleich', regressors are principal 
-# components). 
-
-# create arbitrary principal components 
-for ( i in c("PC1", "PC2", "PC3") ) { 
-      datT1[,i] <- rnorm( n = nrow(datT1), mean = 0, sd = 1.2)
-}         
-
-# number of extracted principal components vary: three components for Berlin, 
-# two for Bavaria. Hence, Bavaria has no valid values on 'PC3'.
-datT1[which(datT1[,"country"] == "Bavaria"),"PC3"] <- NA
+# Second step: drawing plausible values separately for each group (= each country).
+# The two-dimensional model is specified for each person group with fixed item
+# parameters. Moreover, a latent regression model is used (in the actual
+# 'Laendervergleich', regressors are principal components). We only use 'sex'
+# and 'grade' as regressors
 
 # define person grouping
 pers  <- data.frame ( idstud = datT1[,"id"] , country = datT1[,"country"])
@@ -845,13 +837,13 @@ pers  <- data.frame ( idstud = datT1[,"id"] , country = datT1[,"country"])
 # Running second step: split models according to person groups
 # ('all.persons' must be FALSE, otherwise the whole group would be treated as
 # a separate distinct group.)
-modT1P<- eatModel::splitModels ( person.groups = pers , all.persons = FALSE, nCores = 1)
+modT1P<- splitModels ( person.groups = pers , all.persons = FALSE, nCores = 1)
 
 # define the 2 country-specific 2-dimensional models, specifying latent regression 
 # model and fixed item parameters.
 defT1P<- defineModel(dat = datT1, items = itemT1[,"item"], id = "id", 
          check.for.linking = TRUE, splittedModels = modT1P, qMatrix = qMat, 
-         anchor = itemT1[,c("item", "est")], HG.var = c("PC1", "PC2", "PC3"), 
+         anchor = itemT1[,c("item", "est")], HG.var = c("sex", "grade"),
          software = "tam")
 
 # run the 2 models 
@@ -883,10 +875,10 @@ dfrT1P<- transformToBista ( equatingList = ankT1P, cuts=cuts )
 # Example 6a needs the objects created in example 6
 # Preparation: assume time of measurement 't2'.
 datT2<- reshape2::dcast(subset ( sciences, year == 2013),
-        formula = id+grade+country~variable, value.var="value")
+        formula = id+grade+sex+country~variable, value.var="value")
 
 # First step: item calibration in separate unidimensional models for each domain
-modsT2<- eatModel::splitModels ( qMatrix = qMat, nCores = 1)
+modsT2<- splitModels ( qMatrix = qMat, nCores = 1)
 
 # define 2 models. Items which occur only in the Q matrix will be ignored.
 defT2 <- defineModel(dat = datT2, id = "id", check.for.linking = TRUE,
@@ -901,16 +893,12 @@ resT2 <- getResults(runT2)
 # collect item parameters
 itemT2<- itemFromRes(resT2)
 
-# Second step: compute linking constant between 't1' and 't2' with the exclusion
-# of linking DIF items and computation of linking error according to a jackknife
-# procedure. We use the 'itemT1' object created in example 6. To demonstrate the
-# jackknife procedure, we create an arbitrary 'testlet' variable in 'itemT1'. The
-# testlet variable indicates items which belong to a common stimulus. The linking
-# procedure is executed simultaneously for procedural and knowledge.
-itemT1[,"testlet"] <- substr(as.character(itemT1[,"item"]), 1, 7)
-L.t1t2<- equat1pl ( results = resT2, prmNorm = itemT1, item = "item",
-         testlet = "testlet", value = "est", excludeLinkingDif = TRUE,
-         difBound = 1)
+# Second step: compute linking constant between 't1' and 't2' with the iterative
+# exclusion of linking DIF items and computation of linking error. We use the
+# 'itemT1' object created in example 6. The linking procedure is executed
+# consecutively for procedural and knowledge.
+L.t1t2<- equat1pl ( results = resT2, prmNorm = itemT1[,c("item", "est")],
+         excludeLinkingDif = TRUE, difBound = 0.64, iterativ = TRUE)
 
 # Third step: transform item parameters of 't2' to the metric of 't1'
 # We now need to specify the 'refPop' argument. We use the values from 't1' which
@@ -924,14 +912,6 @@ head(T.t1t2$personpars)
 
 # Fourth step: drawing plausible values for 't2'. We use the transformed item
 # parameters (captured in 'T.t1t2') for anchoring
-# create arbitrary principal components
-for ( i in c("PC1", "PC2", "PC3", "PC4") ) {
-      datT2[,i] <- rnorm( n = nrow(datT2), mean = 0, sd = 1.2)
-}
-
-# number of extracted principal components vary: four components for Berlin,
-# three for Bavaria. Hence, Bavaria has no valid values on 'PC4'.
-datT2[which(datT2[,"country"] == "Bavaria"),"PC4"] <- NA
 
 # define person grouping
 persT2<- data.frame ( idstud = datT2[,"id"] , country = datT2[,"country"])
@@ -947,7 +927,7 @@ modT2P<- eatModel::splitModels ( person.groups = persT2 , all.persons = FALSE, n
 defT2P<- defineModel(dat = datT2, items = itemT2[,"item"], id = "id",
          check.for.linking = TRUE, splittedModels = modT2P, qMatrix = qMat,
          anchor = T.t1t2[["itempars"]][,c("item", "estTransf")],
-         HG.var = c("PC1", "PC2", "PC3", "PC4"), software = "tam")
+         HG.var = c("sex", "grade"), software = "tam")
 
 # run the 2 models
 runT2P<- runModel(defT2P)
@@ -1012,8 +992,9 @@ r04   <- report(m04, add = list(domain = "knowledge"))
 # in the whole population? Are the differences (male vs. female) in each country different
 # from the difference (male vs. female) in the whole population?
 m05   <- repMean(datL = subSam, ID="id", imp = "imp", groups = c("sex", "model"),
-         group.differences.by = "sex", cross.differences = TRUE, type = "jk2",wgt = "wgt",
-         PSU = "jkzone", repInd = "jkrep", dependent = "valueTransfBista")
+         group.differences.by = "sex", group.splits = 0:1, cross.differences = TRUE,
+         type = "jk2",wgt = "wgt", PSU = "jkzone", repInd = "jkrep",
+         dependent = "valueTransfBista", crossDiffSE.engine= "lm")
 r05   <- report(m05, add = list(domain = "knowledge"))
 
 # additionally: trend estimation for each country- and sex-specific mean, each country-
@@ -1025,20 +1006,19 @@ r05   <- report(m05, add = list(domain = "knowledge"))
 # (Due to unbalanced sample data, we switch to 'jk1' method for the remainder of 6b.)
 subS2 <- dTrend[which(dTrend[,"dimension"] == "knowledge"),]
 m06   <- repMean(datL = subS2, ID="id", imp = "imp", groups = c("sex", "model"),
-         group.differences.by = "sex", cross.differences = TRUE, type = "jk1",wgt = "wgt",
-         PSU = "idclass", trend = "year", linkErr = "trendErrorTransfBista",
-         dependent = "valueTransfBista")
+         group.differences.by = "sex", group.splits = 0:1, cross.differences = TRUE,
+         type = "jk1",wgt = "wgt", PSU = "idclass", trend = "year", crossDiffSE.engine= "lm",
+         linkErr = "trendErrorTransfBista", dependent = "valueTransfBista")
 r06   <- report(m06, trendDiffs = TRUE, add = list(domain = "knowledge"))
-
 
 # additionally: repeat this analysis for both domains, 'knowledge' and 'procedural',
 # using a 'by'-loop. Now we use the whole 'dTrend' data instead of subsamples
 m07   <- by ( data = dTrend, INDICES = as.character(dTrend[,"dimension"]),
          FUN = function ( subdat ) {
          m07a <- repMean(datL = subdat, ID="id", imp = "imp", groups = c("sex", "model"),
-                 group.differences.by = "sex", cross.differences = TRUE, type = "jk1",wgt = "wgt",
-                 PSU = "idclass", trend = "year", linkErr = "trendErrorTransfBista",
-                 dependent = "valueTransfBista")
+                 group.differences.by = "sex", cross.differences = TRUE, group.splits = 0:1,
+                 type = "jk1",wgt = "wgt", PSU = "idclass", trend = "year", linkErr = "trendErrorTransfBista",
+                 dependent = "valueTransfBista", crossDiffSE.engine= "lm")
          return(m07a)})
 r07   <- lapply(names(m07), FUN = function (domain) {report(m07[[domain]], trendDiffs = TRUE, add = list(domain = domain))})
 r07   <- do.call("rbind", r07)
@@ -1104,7 +1084,8 @@ res06 <- report(freq06, add = list(domain = "knowledge"))
 subS2 <- dTrend[which(dTrend[,"dimension"] == "knowledge"),]
 freq07<- repTable(datL = subS2, ID="id", imp = "imp", groups = c("model", "sex"),
          type = "jk1", group.differences.by = "sex", cross.differences = TRUE, chiSquare = FALSE,
-         wgt = "wgt", PSU = "idclass", trend = "trend", linkErr = "trendErrorTraitLevel", dependent = "traitLevel")
+         wgt = "wgt", PSU = "idclass", trend = "trend", linkErr = "trendErrorTraitLevel",
+         dependent = "traitLevel")
 res07 <- report(freq07, add = list(domain = "knowledge"))
 
 # additionally: repeat this analysis for both domains, 'knowledge' and 'procedural',
@@ -1113,8 +1094,8 @@ freq08<- by ( data = dTrend, INDICES = as.character(dTrend[,"dimension"]),
          FUN = function ( subdat ) {
          f08 <- repTable(datL = subdat, ID="id", imp = "imp", groups = c("model", "sex"),
                 type = "jk1", group.differences.by = "sex", cross.differences = TRUE, chiSquare = FALSE,
-                wgt = "wgt", PSU = "idclass", trend = "trend",
-                linkErr = "trendErrorTraitLevel", dependent = "traitLevel")
+                wgt = "wgt", PSU = "idclass", trend = "trend", linkErr = "trendErrorTraitLevel",
+                dependent = "traitLevel")
          return(f08)})
 res08 <- lapply(names(freq08), FUN = function (domain) { report(freq08[[domain]], add = list(domain = domain))})
 res08 <- do.call("rbind", res08)
