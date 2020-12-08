@@ -469,7 +469,7 @@ adaptEatRepVersion <- function ( x ) {
            return(x)
      } }
      
-transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defaultM = 500, defaultSD = 100, roman = FALSE, vera = TRUE ) {
+transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defaultM = 500, defaultSD = 100, roman = FALSE, vera = TRUE, idVarName = NULL ) {
     ### wenn equatet wurde, sollte auch 'refPop' definiert sein (es sei denn, es wurde verankert skaliert)
     ### wenn 'refPop' fehlt, wird es fuer alle gegebenen Dimensionen anhand der Gesamtstichprobe berechnet
        mr  <- FALSE                                                             ### default: 'refPop' fehlt nicht. Wenn doch, wird es aus Daten generiert und spaeter
@@ -493,9 +493,11 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                vera <- FALSE
             }
        }
-    ### Hotfix: 'id'-Variable identifizieren
+    ### Hotfix: 'id'-Variable identifizieren ... um Kompatibilitaet mit aelteren Paketversionen zu wahren, kann man hier die ID auch von Hand eingeben
        id     <- unique(equatingList[["results"]][intersect(which(equatingList[["results"]][,"type"] == "tech"), which(equatingList[["results"]][,"par"] == "ID")),"derived.par"])
-       stopifnot(length(id)==1)
+       if(length(id)!=1) {
+           id   <- getIdVarName(id=NULL, idVarName)
+       }
        refList<- lapply ( dims, FUN = function (dimname) {
                  rex  <- pvFromRes(equatingList[["results"]][unique(c(which(equatingList[["results"]][,"group"] == dimname),which(equatingList[["results"]][,"type"] == "tech"))), ], toWideFormat = FALSE)
                  if (is.null(rex)) {return(NULL)}                               ### NULL wird zurueckgegeben, wenn keine PVs in der Ergebnisstrauktur vorhanden waren
@@ -549,7 +551,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
               dimN <- lapply(nam2, FUN = function ( dims ) {                    ### innere Schleife: geht ueber Dimensionen (innerhalb von modellen)
     ### check: sind Personen innerhalb jeder Dimension (und jeder Imputation) unique? ... 'redMD' ist ein reduziertes Results-Objekt: nur die interessierende Dimension des interessierenden Modells + saemtliche "tech"-Variablen
                       resMD<- equatingList[["results"]][unique(c(intersect(which(equatingList[["results"]][,"model"] == mod), which(equatingList[["results"]][,"group"] == dims)),  which(equatingList[["results"]][,"type"] == "tech"))),]
-                      rex  <- pvFromRes(resMD, toWideFormat = TRUE)
+                      rex  <- pvFromRes(resMD, toWideFormat = TRUE, idVarName = idVarName)
                       if (!is.null(rex)) {
                           if ( length ( rex[,id]) != unique(length ( rex[,id])) ) {
                                stop(paste( "Model '",mod,"', Dimension '",dims,"': cases according to '", id,"' variable are not unique.\n",sep=""))
@@ -2311,13 +2313,10 @@ reshapeQ3 <- function ( mat, q3MinObs, nObs ) {
              return(matL)}
 
 ### Extraktorfunktionen
-eapFromRes <- function ( resultsObj ) {
+eapFromRes <- function ( resultsObj, idVarName = NULL ) {
           eapRo<- intersect( which(resultsObj[,"par"] == "eap"),which(resultsObj[,"indicator.group"] == "persons"))
           id   <- unique(resultsObj[intersect(which(resultsObj[,"type"] == "tech"), which(resultsObj[,"par"] == "ID")),"derived.par"])
-          if (length( id ) == 0 ) {
-              cat("Warning! Cannot identify 'id' variable (maybe because 'resultsObj' was created by an older version of 'eatModel'. 'id' variable will be defaulted to 'idstud'.\n")
-              id <- "idstud"
-          }
+          id   <- getIdVarName(id, idVarName)
           if ( length ( eapRo ) == 0 ) {
                cat("Warning: 'resultsObj' does not contain any eap values.\n")
                return ( NULL )
@@ -2332,7 +2331,7 @@ eapFromRes <- function ( resultsObj ) {
              return(sel)
           }  }
 
-pvFromRes  <- function ( resultsObj, toWideFormat = TRUE) {
+pvFromRes  <- function ( resultsObj, toWideFormat = TRUE, idVarName = NULL) {
           pvRow<- intersect( which(resultsObj[,"par"] == "pv"),which(resultsObj[,"indicator.group"] == "persons"))
           if ( length ( pvRow ) == 0 ) {
                cat("Warning: 'resultsObj' does not contain any pv values.\n")
@@ -2340,10 +2339,7 @@ pvFromRes  <- function ( resultsObj, toWideFormat = TRUE) {
           }  else  {
              sel  <- resultsObj[pvRow, ]                                        ### Hotfix: ID namen identifizieren
              id   <- unique(resultsObj[intersect(which(resultsObj[,"type"] == "tech"), which(resultsObj[,"par"] == "ID")),"derived.par"])
-             if (length( id ) == 0 ) {
-                 cat("Warning! Cannot identify 'id' variable (maybe because 'resultsObj' was created by an older version of 'eatModel'. 'id' variable will be defaulted to 'idstud'.\n")
-                 id <- "idstud"
-             }
+             id   <- getIdVarName(id, idVarName)
              if (toWideFormat == TRUE ) {
                  sel  <- do.call("rbind", by(sel, INDICES = sel[,c("model","group")], FUN = function ( gr ) {
                          res  <- dcast ( gr , model+var1~derived.par, value.var = "value")
@@ -2358,6 +2354,15 @@ pvFromRes  <- function ( resultsObj, toWideFormat = TRUE) {
              }
              return(sel)
          }  }
+
+### ID identifizieren (zur Kompatibilitaet mit aelteren Paketversionen
+getIdVarName <- function ( id, idVarName) {
+          if (length( id ) == 0 ) {
+              if ( is.null(idVarName)) { new <- "idstud"} else { new <- idVarName}
+              cat(paste0("Warning! Cannot identify 'id' variable (maybe because 'resultsObj' was created by an older version of 'eatModel'. 'id' variable will be defaulted to '",new,"'.\n"))
+              id <- new
+          }
+          return(id)}
 
 itemFromRes<- function ( resultsObj ) {                                         ### Funktion wird so oft ausgefuehrt, wie es Modelle gibt
      ### hier muss "rbind.fill" genommen werden, denn 1pl und 2pl Modelle unterscheiden sich in den Spalten (bei 2pl gibt es zusaetzliche Diskriminationsspalten)
