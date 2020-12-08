@@ -499,7 +499,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
            id   <- getIdVarName(id=NULL, idVarName)
        }
        refList<- lapply ( dims, FUN = function (dimname) {
-                 rex  <- pvFromRes(equatingList[["results"]][unique(c(which(equatingList[["results"]][,"group"] == dimname),which(equatingList[["results"]][,"type"] == "tech"))), ], toWideFormat = FALSE)
+                 rex  <- pvFromRes(equatingList[["results"]][unique(c(which(equatingList[["results"]][,"group"] == dimname),which(equatingList[["results"]][,"type"] == "tech"))), ], toWideFormat = FALSE, idVarName=idVarName)
                  if (is.null(rex)) {return(NULL)}                               ### NULL wird zurueckgegeben, wenn keine PVs in der Ergebnisstrauktur vorhanden waren
                  if ( is.null(weights) ) {
                       txt <- capture.output ( msd <- repMean ( datL = rex, ID = id, imp = "imp", dependent = "value", na.rm = TRUE))
@@ -605,7 +605,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
     ### Deltamethode, wie in eatTrend (Funktion 'seKompstuf'). Dazu wird MW und SD der Fokuspopulation benoetigt! (wurde oben als 'msd' berechnet)
     ### das ganze findet nur statt, wenn sowohl cut scores bereits definiert sind und wenn equatet wurde (denn nur dann gibt es einen Linkingfehler, den man transformieren kann)
                             }
-                            pv  <- pvFromRes(resMD, toWideFormat = FALSE)
+                            pv  <- pvFromRes(resMD, toWideFormat = FALSE, idVarName=idVarName)
                             equ <- equatingList[["items"]][[mod]][[dims]][["eq"]][["B.est"]][[ equatingList[["items"]][[mod]][[dims]][["method"]] ]]
     ### Hotfix fuer bayesianisch
                             if (!exists("mat")) { mat <- match(dims,  refPop[,1]) }

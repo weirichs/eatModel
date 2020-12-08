@@ -66,8 +66,7 @@
   \code{TAM} allows to estimate parameters of the mixed-Coefficients Multinomial Logit Model solely in an
   R environment. Hence, \code{eatModel} allows all models to be estimated in \code{TAM} likewise.
   Please note that some model specifications (for example, 2pl/3pl) lead to models only TAM is able to 
-  estimate. Conversely, some other model specifications (for example, partial credit models with 
-  many categories or differential item functioning) might be unstable in TAM. 
+  estimate.
   
   Historically, \code{eatModel} is a \sQuote{reboot} of the package \code{eatRest} formerly known as
   \code{eat}. The first development of some of its main functions started loosely in autumn 2009 at the
@@ -96,7 +95,7 @@
 \tabular{ll}{
 Package: \tab eatModel\cr
 Type: \tab Package\cr
-Version: \tab 0.7.29\cr
+Version: \tab 0.7.30\cr
 Date: \tab 2020-12-08\cr
 License: \tab GPL(>=2)
 }
