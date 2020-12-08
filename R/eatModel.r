@@ -2359,7 +2359,7 @@ pvFromRes  <- function ( resultsObj, toWideFormat = TRUE, idVarName = NULL) {
 getIdVarName <- function ( id, idVarName) {
           if (length( id ) == 0 ) {
               if ( is.null(idVarName)) { new <- "idstud"} else { new <- idVarName}
-              cat(paste0("Warning! Cannot identify 'id' variable (maybe because 'resultsObj' was created by an older version of 'eatModel'. 'id' variable will be defaulted to '",new,"'.\n"))
+              cat(paste0("Warning! Cannot identify student identifier variable (possibly because 'resultsObj' was created by an older version of 'eatModel'). student id variable will be defaulted to '",new,"'.\n"))
               id <- new
           }
           return(id)}
@@ -2457,7 +2457,7 @@ q3FromRes<- function ( resultsObj ) {
                 } else  { sel <- NULL }
                 return(sel)})}
 
-wleFromRes <- function ( resultsObj ) {
+wleFromRes <- function ( resultsObj , idVarName = NULL) {
           wleRo<- intersect( which(resultsObj[,"par"] %in% c("wle","NitemsSolved", "NitemsTotal")),which(resultsObj[,"indicator.group"] == "persons"))
           if(length(wleRo) == 0 ) {
              cat("Warning: 'resultsObj' does not contain any WLE values.\n")
@@ -2467,10 +2467,7 @@ wleFromRes <- function ( resultsObj ) {
              sel  <- do.call("rbind", by(sel, INDICES = sel[,c("model", "group")], FUN = function ( gr ) {
                      res  <- dcast ( gr , model+var1~par+derived.par, value.var = "value")
                      id   <- resultsObj[intersect(intersect(which(resultsObj[,"model"] == gr[1,"model"]),which(resultsObj[,"type"] == "tech")), which(resultsObj[,"par"] == "ID")),"derived.par"]
-                     if (length( id ) == 0 ) {
-                         cat("Warning! Cannot identify 'id' variable (maybe because 'resultsObj' was created by an older version of 'eatModel'. 'id' variable will be defaulted to 'idstud'.\n")
-                         id <- "idstud"
-                     }
+                     id   <- getIdVarName(id, idVarName)
                      recSt<- paste("'var1'='",id,"'; 'NitemsSolved_NA'='NitemsSolved'; 'NitemsTotal_NA'='NitemsTotal'",sep="")
                      colnames(res) <- recode ( colnames(res) , recSt)
                      weg  <- match(c("model", id), colnames(res))
