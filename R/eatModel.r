@@ -1817,7 +1817,7 @@ getConquestInfit <- function (model.name,  shw){
                       data.frame ( model = model.name, source = "conquest", var1 = shw[["item"]][,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = shw$item[,"dimensionName"], par = "est",  derived.par = "outfit", value = as.numeric(shw$item[,"MNSQ"]), stringsAsFactors = FALSE) )
          return(res)}
 
-getConquestAdditionalTerms <- function(model.name, qMatrix, shw){
+getConquestAdditionalTerms <- function(model.name, qMatrix, shw, shwFile){
          if(length(shw) <= 4 )  {  return(NULL)}                                ### ggf. Parameter zusaetzlicher Conquest-Terme einlesen, wenn length(shw) <= 4, gibt es keinen zusaetzlichen Terme
          res   <- NULL                                                          ### initialisieren
          read  <- 2 : (length(shw) - 3)                                         ### Diese Terme muessen eingelesen werden
@@ -1836,23 +1836,24 @@ getConquestAdditionalTerms <- function(model.name, qMatrix, shw){
                       cat(paste("Warning: Cannot identify the group the term '",i,"' in file '",shwFile,"' belongs to. Insert 'NA' to the 'group' column.\n",sep=""))
                       gr <- NA
                    }  else {
-                      gr <- colnames(qMatrix)[2]}
-                      for ( u in c("ESTIMATE", "MNSQ", "MNSQ.1", "ERROR")) {    ### Hotfix
-                            if ( !class ( shw[[i]][,u] ) %in% c("numeric", "integer")) {
-                                 cat(paste("Warning: Expect column '",u,"' in file '",shwFile,"' (statement '",i,"') to be numeric. Current column format is: '",class ( shw[[i]][,u] ),"'. Column will be transformed.\n",sep=""))
-                                 shw[[i]][,u] <- as.numeric(shw[[i]][,u])
-                            }
-                      }
-                      shwE <- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = NA, value = shw[[i]][,"ESTIMATE"], stringsAsFactors = FALSE)
-                      shwE2<- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "infit", value = shw[[i]][,"MNSQ.1"], stringsAsFactors = FALSE)
-                      shwE3<- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "outfit", value = shw[[i]][,"MNSQ"], stringsAsFactors = FALSE)
-                      shwSE<- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "se", value = shw[[i]][,"ERROR"], stringsAsFactors = FALSE)
-                      toOff<- shwSE[ which(is.na(shwSE[,"value"])), "var1"]
-                      if(length(toOff)>0) {
-                         shwE[match(toOff, shwE[,"var1"]), "par"] <- "offset"
-                         shwSE <- shwSE[-which(is.na(shwSE[,"value"])),]
-                      }
-                      res  <- rbind ( res, shwE, shwE2, shwE3, shwSE)
+                      gr <- colnames(qMatrix)[2]
+                   }
+                   for ( u in c("ESTIMATE", "MNSQ", "MNSQ.1", "ERROR")) {       ### Hotfix
+                         if ( !class ( shw[[i]][,u] ) %in% c("numeric", "integer")) {
+                              cat(paste("Warning: Expect column '",u,"' in file '",shwFile,"' (statement '",i,"') to be numeric. Current column format is: '",class ( shw[[i]][,u] ),"'. Column will be transformed.\n",sep=""))
+                              shw[[i]][,u] <- as.numeric(shw[[i]][,u])
+                         }
+                   }
+                   shwE <- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = NA, value = shw[[i]][,"ESTIMATE"], stringsAsFactors = FALSE)
+                   shwE2<- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "infit", value = shw[[i]][,"MNSQ.1"], stringsAsFactors = FALSE)
+                   shwE3<- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "outfit", value = shw[[i]][,"MNSQ"], stringsAsFactors = FALSE)
+                   shwSE<- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "se", value = shw[[i]][,"ERROR"], stringsAsFactors = FALSE)
+                   toOff<- shwSE[ which(is.na(shwSE[,"value"])), "var1"]
+                   if(length(toOff)>0) {
+                      shwE[match(toOff, shwE[,"var1"]), "par"] <- "offset"
+                      shwSE <- shwSE[-which(is.na(shwSE[,"value"])),]
+                   }
+                   res  <- rbind ( res, shwE, shwE2, shwE3, shwSE)
                }
          }
          return(res)}
@@ -2025,7 +2026,7 @@ getConquestResults<- function(path, analysis.name, model.name, qMatrix, all.Name
              shw12<- getConquestShw (model.name=model.name, qMatrix=qMatrix, qL=qL, shw=shw, altN=altN)
              ret  <- rbind(ret, shw12[["shw1"]], shw12[["shw2"]])
              ret  <- rbind(ret, getConquestInfit (model.name=model.name, shw=shw))
-             ret  <- rbind(ret, getConquestAdditionalTerms (model.name=model.name, qMatrix=qMatrix, shw=shw))
+             ret  <- rbind(ret, getConquestAdditionalTerms (model.name=model.name, qMatrix=qMatrix, shw=shw, shwFile = shwFile))
     ### Populationsparameter und Regressionsparameter aus Showfile auslesen (shw)
              ret  <- rbind(ret, getConquestPopPar (model.name=model.name, qMatrix=qMatrix, shw=shw))
              ret  <- rbind(ret, getConquestRegPar (model.name=model.name, shw=shw, altN = altN))

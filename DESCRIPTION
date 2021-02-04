@@ -11,4 +11,3 @@ Description: framework to run IRT models within R
 License: GPL (>= 2)
 LazyLoad: yes
 LazyData: yes
-Remotes: weirichs/eatRep

@@ -76,13 +76,14 @@
   SPSS to R which has taken place at the IQB, the package \code{eat} (``Educational Assessment Tools'')
   was set up to bundle all functions which were developed by then. A gentle group called themselves
   ``Central coordination of data analysis'' (ZKD) claimed responsibility for these courses of action.
-  The ``Laendervergleich 2011'' was the first study where \code{eat} has been used intensely. In 2012,
-  during ZKD's first period of prosperity, the variety of the \code{eat} functionality has been grown
-  and was therefore partitioned into several small ``sub packages''---by name \code{eatPrep} for data
-  preparation, \code{eatTools} for several auxiliary functions, \code{eatRest} for Rasch modeling,
-  \code{eatRep} for replication methods, \code{eatDesign} for definition and modification of design
-  properties. The further development of \code{eatRest} was expired because the package turned out
-  to be enigmaticly written which led to undebugable problems, especially with the ardently loved
+  This group's endeavors were driven by the burning desire to standardize assessment procedures between
+  different projects across the IQB. The ``Laendervergleich 2011'' was the first study where \code{eat}
+  has been used intensely. In 2012, during ZKD's first period of prosperity, the variety of the \code{eat}
+  functionality has been grown and was therefore partitioned into several small ``sub packages''---by name
+  \code{eatPrep} for data preparation, \code{eatTools} for several auxiliary functions, \code{eatRest} for
+  Rasch modeling, \code{eatRep} for replication methods, \code{eatDesign} for definition and modification
+  of design properties. The further development of \code{eatRest} was expired because the package turned
+  out to be enigmaticly written which led to undebugable problems, especially with the ardently loved
   results structure. ZKD authors did not understand any longer the code which has been written before.
   Thus, \code{eatModel} is the second attempt. Its functionality is closely related to \code{eatRest}
   but adds some new features---for example, the support of 2pl models using the \code{TAM} package.
