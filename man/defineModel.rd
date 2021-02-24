@@ -18,7 +18,7 @@ defineModel (dat, items, id, splittedModels = NULL,
    verbose=TRUE, software = c("conquest","tam"), dir = NULL, analysis.name, 
    schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE,
    pvMethod = c("regular", "bayesian"), fitTamMmlForBayesian = TRUE,
-   n.plausible=5, seed = NULL, conquest.folder= system.file("extdata", "console_Feb2007.exe", package = "eatModel"),
+   n.plausible=5, seed = NULL, conquest.folder,
    constraints=c("cases","none","items"), std.err=c("quick","full","none"), distribution=c("normal","discrete"),
    method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo"), n.iterations=2000,
    nodes=NULL, p.nodes=2000, f.nodes=2000,converge=0.001,deviancechange=0.0001,
@@ -226,8 +226,6 @@ Optional: Set seed value for analysis.
 %%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "conquest"}. A character string with path and name
 of the Conquest console, for example \code{"c:/programme/conquest/console_Feb2007.exe"}.
-In package version 0.7.24 and later, conquest executable file is included in the package,
-so the user needn't to specify this argument.
 }
   \item{constraints}{
 %%     ~~Describe \code{dif.term} here~~
@@ -520,7 +518,7 @@ qMat <- data.frame ( qMat[,1,drop=FALSE], knowledge  = as.numeric(qMat[,"domain"
 
 # defining the model: specifying q matrix is not necessary
 mod1 <- defineModel(dat=datW, items= -c(1:3), id="id", analysis.name = "unidim",
-        dir = tempdir() )
+        dir = tempdir() , conquest.folder = "i:/Methoden/00_conquest_console/console_Feb2007.exe")
 
 # run the model
 run1 <- runModel(mod1)
@@ -551,7 +549,8 @@ items<- grep("^Bio|^Che|^Phy", colnames(datW))
 # Caution: two items ("ChePro48", "PhyPro01") are excluded because they are 
 # constant in one of the DIF groups
 mod1a<- defineModel(dat=datW, items= items, id="id", DIF.var = "sexNum", 
-        analysis.name = "unidimDIF", dir = tempdir())
+        analysis.name = "unidimDIF", dir = tempdir(),
+        conquest.folder = "i:/Methoden/00_conquest_console/console_Feb2007.exe")
 
 # run the model
 run1a<- runModel(mod1a)
@@ -578,7 +577,7 @@ aPar <- aPar[,c("item", "est")]
 # (This behavior is equivalent as in lm() for example.)
 mod2a<- defineModel(dat=datW, items= qMat[,1], id="id", analysis.name = "twodim",
         qMatrix = qMat, HG.var = "sex", anchor = aPar, n.plausible = 20,
-        dir = tempdir())
+        dir = tempdir(), conquest.folder = "i:/Methoden/00_conquest_console/console_Feb2007.exe")
 
 # run the model
 run2a<- runModel(mod2a)
@@ -594,7 +593,8 @@ res2a<- getResults(run2a)
 # Example 2b: running a multidimensional Rasch model on a subset of items
 # defining the model: specifying q matrix now is necessary.
 mod2b<- defineModel(dat=datW, items= qMat[,1], id="id", analysis.name = "twodim2",
-        qMatrix = qMat, n.plausible = 20, dir = tempdir())
+        qMatrix = qMat, n.plausible = 20, dir = tempdir(),
+        conquest.folder = "i:/Methoden/00_conquest_console/console_Feb2007.exe")
 
 # run the model
 run2b<- runModel(mod2b)
