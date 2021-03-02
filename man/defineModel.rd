@@ -9,24 +9,28 @@ R object is created which contain the required input for Conquest or TAM. To sta
 call \code{\link{runModel}} with the argument returned by \code{defineModel}.}
 \usage{
 defineModel (dat, items, id, splittedModels = NULL,
-   irtmodel = c("1PL", "2PL", "PCM", "PCM2", "RSM", "GPCM", "2PL.groups", "GPCM.design", "3PL"),
-   qMatrix=NULL, DIF.var=NULL, HG.var=NULL, group.var=NULL, weight.var=NULL, anchor = NULL, 
-   domainCol=NULL, itemCol=NULL, valueCol=NULL, check.for.linking = TRUE, minNperItem = 50, removeMinNperItem = FALSE, 
-   boundary = 6, remove.boundary = FALSE, remove.no.answers = TRUE, remove.no.answersHG = TRUE, 
-   remove.missing.items = TRUE, remove.constant.items = TRUE, remove.failures = FALSE, 
+   irtmodel = c("1PL", "2PL", "PCM", "PCM2", "RSM", "GPCM", "2PL.groups",
+   "GPCM.design", "3PL"), qMatrix=NULL, DIF.var=NULL, HG.var=NULL, group.var=NULL,
+   weight.var=NULL, anchor = NULL, domainCol=NULL, itemCol=NULL, valueCol=NULL,
+   check.for.linking = TRUE, minNperItem = 50, removeMinNperItem = FALSE,
+   boundary = 6, remove.boundary = FALSE, remove.no.answers = TRUE,
+   remove.no.answersHG = TRUE, remove.missing.items = TRUE,
+   remove.constant.items = TRUE, remove.failures = FALSE,
    remove.vars.DIF.missing = TRUE, remove.vars.DIF.constant = TRUE, 
    verbose=TRUE, software = c("conquest","tam"), dir = NULL, analysis.name, 
    schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE,
    pvMethod = c("regular", "bayesian"), fitTamMmlForBayesian = TRUE,
-   n.plausible=5, seed = NULL, conquest.folder,
-   constraints=c("cases","none","items"), std.err=c("quick","full","none"), distribution=c("normal","discrete"),
-   method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo"), n.iterations=2000,
-   nodes=NULL, p.nodes=2000, f.nodes=2000,converge=0.001,deviancechange=0.0001,
-   equivalence.table=c("wle","mle","NULL"), use.letters=FALSE,
+   n.plausible=5, seed = NULL,
+   conquest.folder= system.file("exec", "console_Feb2007.exe", package = "eatModel"),
+   constraints=c("cases","none","items"), std.err=c("quick","full","none"),
+   distribution=c("normal","discrete"),
+   method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo"),
+   n.iterations=2000, nodes=NULL, p.nodes=2000, f.nodes=2000,converge=0.001,
+   deviancechange=0.0001, equivalence.table=c("wle","mle","NULL"), use.letters=FALSE,
    allowAllScoresEverywhere = TRUE, guessMat = NULL, est.slopegroups = NULL,
-   fixSlopeMat = NULL, slopeMatDomainCol=NULL, slopeMatItemCol=NULL, slopeMatValueCol=NULL, 
-   progress = FALSE, Msteps = NULL, increment.factor=1 , fac.oldxsi=0,
-   export = list(logfile = TRUE, systemfile = FALSE, history = TRUE,
+   fixSlopeMat = NULL, slopeMatDomainCol=NULL, slopeMatItemCol=NULL,
+   slopeMatValueCol=NULL, progress = FALSE, Msteps = NULL, increment.factor=1 ,
+   fac.oldxsi=0, export = list(logfile = TRUE, systemfile = FALSE, history = TRUE,
    covariance = TRUE, reg_coefficients = TRUE, designmatrix = FALSE))}
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -226,6 +230,8 @@ Optional: Set seed value for analysis.
 %%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "conquest"}. A character string with path and name
 of the Conquest console, for example \code{"c:/programme/conquest/console_Feb2007.exe"}.
+Beginning from version 0.7.30, conquest executable file is chosen when the paclage is
+loaded for the first time, so the user needn't to specify this argument afterwards.
 }
   \item{constraints}{
 %%     ~~Describe \code{dif.term} here~~
@@ -504,7 +510,8 @@ datW <- reshape2::dcast(sciences, id+grade+sex~variable, value.var="value")
 # second, create the q matrix from the long format data frame
 qMat <- sciences[ which( sciences[,"subject"] == "biology") ,c("variable","domain")]
 qMat <- qMat[!duplicated(qMat[,1]),]
-qMat <- data.frame ( qMat[,1,drop=FALSE], knowledge  = as.numeric(qMat[,"domain"] == "knowledge"),
+qMat <- data.frame ( qMat[,1,drop=FALSE],
+        knowledge  = as.numeric(qMat[,"domain"] == "knowledge"),
         procedural = as.numeric(qMat[,"domain"] == "procedural"))
 
 
@@ -513,12 +520,11 @@ qMat <- data.frame ( qMat[,1,drop=FALSE], knowledge  = as.numeric(qMat[,"domain"
 ################################################################################
 
 # Example 1: define and run a unidimensional Rasch model with all variables in dataset
-# using "Conquest". Note: if software="conquest", the path of the windows executable
-# ConQuest console must be specified by setting conquest.folder = "<path_to_your_conquest.exe>"
+# using "Conquest".
 
 # defining the model: specifying q matrix is not necessary
 mod1 <- defineModel(dat=datW, items= -c(1:3), id="id", analysis.name = "unidim",
-        dir = tempdir() , conquest.folder = "i:/Methoden/00_conquest_console/console_Feb2007.exe")
+        dir = tempdir())
 
 # run the model
 run1 <- runModel(mod1)
@@ -539,7 +545,8 @@ item <- itemFromRes ( res1 )
 # to be numeric. Variables will be automatically transformed to numeric by 
 # 'defineModels'. However, it might be the better idea to transform the variable
 # manually. 
-datW[,"sexNum"] <- car::recode ( datW[,"sex"] , "'male'=0; 'female'=1", as.factor = FALSE)
+datW[,"sexNum"] <- car::recode ( datW[,"sex"] , "'male'=0; 'female'=1",
+                   as.factor = FALSE)
                    
 # as we have defined a new variable ('sexNum') in the data, it is a good idea 
 # to explicitly specify item columns ... instead of saying 'items= -c(1:3)' which
@@ -549,8 +556,7 @@ items<- grep("^Bio|^Che|^Phy", colnames(datW))
 # Caution: two items ("ChePro48", "PhyPro01") are excluded because they are 
 # constant in one of the DIF groups
 mod1a<- defineModel(dat=datW, items= items, id="id", DIF.var = "sexNum", 
-        analysis.name = "unidimDIF", dir = tempdir(),
-        conquest.folder = "i:/Methoden/00_conquest_console/console_Feb2007.exe")
+        analysis.name = "unidimDIF", dir = tempdir())
 
 # run the model
 run1a<- runModel(mod1a)
@@ -577,7 +583,7 @@ aPar <- aPar[,c("item", "est")]
 # (This behavior is equivalent as in lm() for example.)
 mod2a<- defineModel(dat=datW, items= qMat[,1], id="id", analysis.name = "twodim",
         qMatrix = qMat, HG.var = "sex", anchor = aPar, n.plausible = 20,
-        dir = tempdir(), conquest.folder = "i:/Methoden/00_conquest_console/console_Feb2007.exe")
+        dir = tempdir())
 
 # run the model
 run2a<- runModel(mod2a)
@@ -593,8 +599,7 @@ res2a<- getResults(run2a)
 # Example 2b: running a multidimensional Rasch model on a subset of items
 # defining the model: specifying q matrix now is necessary.
 mod2b<- defineModel(dat=datW, items= qMat[,1], id="id", analysis.name = "twodim2",
-        qMatrix = qMat, n.plausible = 20, dir = tempdir(),
-        conquest.folder = "i:/Methoden/00_conquest_console/console_Feb2007.exe")
+        qMatrix = qMat, n.plausible = 20, dir = tempdir())
 
 # run the model
 run2b<- runModel(mod2b)
@@ -606,8 +611,10 @@ res2b<- getResults(run2b)
 eq2b <- equat1pl( results = res2b, prmNorm = aPar)
 
 ### transformation to the 'bista' metric: needs reference population definition
-ref  <- data.frame ( domain = c("knowledge", "procedural"), m = c(0.078, -0.175), sd= c(1.219, 0.799))
-cuts <- list ( knowledge = list ( values = c(380,540)), procedural = list ( values = c ( 410, 550)))
+ref  <- data.frame ( domain = c("knowledge", "procedural"), m = c(0.078, -0.175),
+        sd= c(1.219, 0.799))
+cuts <- list ( knowledge = list ( values = c(380,540)),
+               procedural = list ( values = c ( 410, 550)))
 tf2b <- transformToBista ( equatingList = eq2b, refPop = ref, cuts = cuts)
 
 
@@ -919,7 +926,7 @@ persT2<- data.frame ( idstud = datT2[,"id"] , country = datT2[,"country"])
 # Running second step: split models according to person groups (countries)
 # ('all.persons' must be FALSE, otherwise the whole group would be treated as
 # a separate distinct group.)
-modT2P<- eatModel::splitModels ( person.groups = persT2 , all.persons = FALSE, nCores = 1)
+modT2P<- splitModels ( person.groups = persT2 , all.persons = FALSE, nCores = 1)
 
 # define the 2 country-specific 2-dimensional models, specifying latent regression
 # model and fixed item parameters. We used the transformed item parameters (captured
@@ -967,7 +974,8 @@ dTrend[,"idclass"] <- substr(as.character(dTrend[,"id"]),1,2)
 
 # compute means for both countries without trend, only for domain 'knowledge'
 # create subsample
-subSam<- dTrend[intersect(which(dTrend[,"dimension"] == "knowledge"),which(dTrend[,"year"] == 2003)),]
+subSam<- dTrend[intersect(which(dTrend[,"dimension"] == "knowledge"),
+         which(dTrend[,"year"] == 2003)),]
 m01   <- repMean(datL = subSam, ID="id", imp = "imp", groups = "model",
          dependent = "valueTransfBista")
 r01   <- report(m01, add = list(domain = "knowledge"))
@@ -988,18 +996,18 @@ m04   <- repMean(datL = subSam, ID="id", imp = "imp", groups = c("sex", "model")
          repInd = "jkrep", dependent = "valueTransfBista")
 r04   <- report(m04, add = list(domain = "knowledge"))
 
-# additionally: differ the sex-specific means in each country from the sex-specific means
-# in the whole population? Are the differences (male vs. female) in each country different
-# from the difference (male vs. female) in the whole population?
+# additionally: differ the sex-specific means in each country from the sex-specific
+# means in the whole population? Are the differences (male vs. female) in each
+# country different from the difference (male vs. female) in the whole population?
 m05   <- repMean(datL = subSam, ID="id", imp = "imp", groups = c("sex", "model"),
          group.differences.by = "sex", group.splits = 0:1, cross.differences = TRUE,
          type = "jk2",wgt = "wgt", PSU = "jkzone", repInd = "jkrep",
          dependent = "valueTransfBista", crossDiffSE.engine= "lm")
 r05   <- report(m05, add = list(domain = "knowledge"))
 
-# additionally: trend estimation for each country- and sex-specific mean, each country-
-# specific sex differences and each difference between country-specific sex difference
-# and the sex difference in the whole population
+# additionally: trend estimation for each country- and sex-specific mean, each
+# country-specific sex differences and each difference between country-specific
+# sex difference and the sex difference in the whole population
 
 # create a new sub sample with both---the data of 2003 and 2013 ... only for domain
 # 'knowledge'. Note: if no linking error is defined, linking error of 0 is assumed.
@@ -1007,20 +1015,24 @@ r05   <- report(m05, add = list(domain = "knowledge"))
 subS2 <- dTrend[which(dTrend[,"dimension"] == "knowledge"),]
 m06   <- repMean(datL = subS2, ID="id", imp = "imp", groups = c("sex", "model"),
          group.differences.by = "sex", group.splits = 0:1, cross.differences = TRUE,
-         type = "jk1",wgt = "wgt", PSU = "idclass", trend = "year", crossDiffSE.engine= "lm",
-         linkErr = "trendErrorTransfBista", dependent = "valueTransfBista")
+         type = "jk1",wgt = "wgt", PSU = "idclass", trend = "year",
+         crossDiffSE.engine= "lm", linkErr = "trendErrorTransfBista",
+         dependent = "valueTransfBista")
 r06   <- report(m06, trendDiffs = TRUE, add = list(domain = "knowledge"))
 
 # additionally: repeat this analysis for both domains, 'knowledge' and 'procedural',
 # using a 'by'-loop. Now we use the whole 'dTrend' data instead of subsamples
 m07   <- by ( data = dTrend, INDICES = as.character(dTrend[,"dimension"]),
          FUN = function ( subdat ) {
-         m07a <- repMean(datL = subdat, ID="id", imp = "imp", groups = c("sex", "model"),
-                 group.differences.by = "sex", cross.differences = TRUE, group.splits = 0:1,
-                 type = "jk1",wgt = "wgt", PSU = "idclass", trend = "year", linkErr = "trendErrorTransfBista",
+         m07a <- repMean(datL = subdat, ID="id", imp = "imp",
+                 groups = c("sex", "model"), group.differences.by = "sex",
+                 cross.differences = TRUE, group.splits = 0:1, type = "jk1",
+                 wgt = "wgt", PSU = "idclass", trend = "year",
+                 linkErr = "trendErrorTransfBista",
                  dependent = "valueTransfBista", crossDiffSE.engine= "lm")
          return(m07a)})
-r07   <- lapply(names(m07), FUN = function (domain) {report(m07[[domain]], trendDiffs = TRUE, add = list(domain = domain))})
+r07   <- lapply(names(m07), FUN = function (domain) {report(m07[[domain]],
+         trendDiffs = TRUE, add = list(domain = domain))})
 r07   <- do.call("rbind", r07)
 
 
@@ -1036,7 +1048,8 @@ library(eatRep)
 
 # compute frequencies for trait levels, only for domain 'knowledge', without trend
 # create 'knowledge' subsample
-subSam<- dTrend[intersect(which(dTrend[,"dimension"] == "knowledge"),which(dTrend[,"year"] == 2003)),]
+subSam<- dTrend[intersect(which(dTrend[,"dimension"] == "knowledge"),
+         which(dTrend[,"year"] == 2003)),]
 freq01<- repTable(datL = subSam, ID="id", imp = "imp", groups = "model",
          dependent = "traitLevel")
 res01 <- report(freq01, add = list(domain = "knowledge"))
@@ -1066,12 +1079,13 @@ freq05<- repTable(datL = subSam, ID="id", imp = "imp", groups = c("model", "sex"
          PSU = "jkzone", repInd = "jkrep", dependent = "traitLevel")
 res05 <- report(freq05, add = list(domain = "knowledge"))
 
-# additionally: differ the sex-specific means in each country from the sex-specific means
-# in the whole population? Are the differences (male vs. female) in each country different
-# from the difference (male vs. female) in the whole population?
+# additionally: differ the sex-specific means in each country from the sex-specific
+# means in the whole population? Are the differences (male vs. female) in each
+# country different from the difference (male vs. female) in the whole population?
 freq06<- repTable(datL = subSam, ID="id", imp = "imp", groups = c("model", "sex"),
-         type = "jk2", group.differences.by = "sex", cross.differences = TRUE, chiSquare = FALSE,
-         wgt = "wgt", PSU = "jkzone", repInd = "jkrep", dependent = "traitLevel")
+         type = "jk2", group.differences.by = "sex", cross.differences = TRUE,
+         chiSquare = FALSE, wgt = "wgt", PSU = "jkzone", repInd = "jkrep",
+         dependent = "traitLevel")
 res06 <- report(freq06, add = list(domain = "knowledge"))
 
 # additionally: trend estimation for each country- and sex-specific mean, each country-
@@ -1083,21 +1097,23 @@ res06 <- report(freq06, add = list(domain = "knowledge"))
 # (Due to unbalanced sample data, we switch to 'jk1' method for the remainder of 6c.)
 subS2 <- dTrend[which(dTrend[,"dimension"] == "knowledge"),]
 freq07<- repTable(datL = subS2, ID="id", imp = "imp", groups = c("model", "sex"),
-         type = "jk1", group.differences.by = "sex", cross.differences = TRUE, chiSquare = FALSE,
-         wgt = "wgt", PSU = "idclass", trend = "trend", linkErr = "trendErrorTraitLevel",
-         dependent = "traitLevel")
+         type = "jk1", group.differences.by = "sex", cross.differences = TRUE,
+         chiSquare = FALSE, wgt = "wgt", PSU = "idclass", trend = "trend",
+         linkErr = "trendErrorTraitLevel", dependent = "traitLevel")
 res07 <- report(freq07, add = list(domain = "knowledge"))
 
 # additionally: repeat this analysis for both domains, 'knowledge' and 'procedural',
 # using a 'by'-loop. Now we use the whole 'dTrend' data instead of subsamples
 freq08<- by ( data = dTrend, INDICES = as.character(dTrend[,"dimension"]),
          FUN = function ( subdat ) {
-         f08 <- repTable(datL = subdat, ID="id", imp = "imp", groups = c("model", "sex"),
-                type = "jk1", group.differences.by = "sex", cross.differences = TRUE, chiSquare = FALSE,
-                wgt = "wgt", PSU = "idclass", trend = "trend", linkErr = "trendErrorTraitLevel",
+         f08 <- repTable(datL = subdat, ID="id", imp = "imp",
+                groups = c("model", "sex"), type = "jk1", group.differences.by = "sex",
+                cross.differences = TRUE, chiSquare = FALSE, wgt = "wgt",
+                PSU = "idclass", trend = "trend", linkErr = "trendErrorTraitLevel",
                 dependent = "traitLevel")
          return(f08)})
-res08 <- lapply(names(freq08), FUN = function (domain) { report(freq08[[domain]], add = list(domain = domain))})
+res08 <- lapply(names(freq08), FUN = function (domain) { report(freq08[[domain]],
+         add = list(domain = domain))})
 res08 <- do.call("rbind", res08)
 
 
@@ -1205,7 +1221,8 @@ modT1P<- splitModels ( person.groups = pers , all.persons = FALSE, nCores = 1)
 # model and fixed item and fixed slope parameters.
 defT1P<- defineModel(dat = datT1, items = itemT1[,"item"], id = "id", irtmodel = "2PL",
          check.for.linking = TRUE, splittedModels = modT1P, qMatrix = qMat,
-         anchor = itemT1[,c("item", "est")], fixSlopeMat = itemT1[,c("item", "estSlope")],
+         anchor = itemT1[,c("item", "est")],
+         fixSlopeMat = itemT1[,c("item", "estSlope")],
          HG.var = c("PC1", "PC2", "PC3"), software = "tam")
 
 # run the 2 models
