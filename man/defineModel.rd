@@ -1231,7 +1231,3 @@ runT1P<- runModel(defT1P)
 # get the results
 resT1P<- getResults(runT1P, Q3 = FALSE)
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
