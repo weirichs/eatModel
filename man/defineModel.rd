@@ -514,7 +514,7 @@ qMat <- data.frame ( qMat[,1,drop=FALSE],
         knowledge  = as.numeric(qMat[,"domain"] == "knowledge"),
         procedural = as.numeric(qMat[,"domain"] == "procedural"))
 
-
+\donttest{
 ################################################################################
 ###                Example 1: Unidimensional Rasch Model                     ###
 ################################################################################
@@ -644,7 +644,7 @@ wle  <- tam.wle(run2T)
 # Finally, the model result are collected in a single data frame
 res2T<- getResults(run2T)
 
-
+}
 ################################################################################
 ###    Example 4: define und run multiple models defined by 'splitModels'    ###
 ################################################################################

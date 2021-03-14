@@ -9,7 +9,7 @@
            }  else  {
                fname <- "i:/Methoden/00_conquest_console/console_Feb2007.exe"
            }
-           foo <- file.copy(from = fname, to = file.path(root, "exec", "console_Feb2007.exe") )
+           if ( nchar(fname)>0) { foo <- file.copy(from = fname, to = file.path(root, "exec", "console_Feb2007.exe") ) }
      }
 }
 

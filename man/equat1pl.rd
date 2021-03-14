@@ -8,8 +8,9 @@ via the jackknife method if testlets are specified.}
 \usage{
 equat1pl(results, prmNorm, item = NULL, domain = NULL, testlet = NULL, value = NULL, 
          excludeLinkingDif = TRUE, difBound = 1, iterativ = FALSE, 
-         method = c("Mean.Mean", "Haebara", "Stocking.Lord", "robust", "Haberman"), itemF = NULL,
-         domainF = NULL, valueF = NULL, estimation=c("OLS", "BSQ", "HUB", "MED", "LTS", "L1", "L0"),
+         method = c("Mean.Mean", "Haebara", "Stocking.Lord", "robust", "Haberman"),
+         itemF = NULL, domainF = NULL, valueF = NULL,
+         estimation=c("OLS", "BSQ", "HUB", "MED", "LTS", "L1", "L0"),
          b_trim=Inf, lts_prop=.5)}
 %- maybe also 'usage' for other objects documented here.
 \arguments{
