@@ -2256,7 +2256,13 @@ getTamResults     <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV, n
          qL     <- reshape2::melt(qMatrix, id.vars = colnames(qMatrix)[1], variable.name = "dimensionName", na.rm=TRUE)
          qL     <- qL[which(qL[,"value"] != 0 ) , ]
          varName<- colnames(qMatrix)[1]                                         ### untere Zeile: Standardfehler auslesen, falls vorhanden
-         if( omitRegr == FALSE && !"tamBayes" %in% class(runModelObj)) { txt <- capture.output ( regr <- tam.se(runModelObj)) } else {regr <- NULL}
+         if( omitRegr == FALSE && !"tamBayes" %in% class(runModelObj)) {
+             txt <- capture.output ( regr <- tam.se(runModelObj))               ### Namen der Regressoren stehen nicht im tam-Output 'reg' drin, nur Ziffern
+             stopifnot ( nrow(regr$beta) == ncol(attr(runModelObj, "Y") )+1)    ### die Namen muessen daher jetzt wieder aus den Spaltennamen der Y-Matrix rekonstruiert werden
+             rownames(regr$beta) <- c("(Intercept)", colnames(attr(runModelObj, "Y")))
+          } else {
+             regr <- NULL
+         }
     ### wenn PVs bayesianisch gezogen werden sollen ohne dass 'tam.mml' aufgerufen wurde, muessen alle Schritte bis zur PV-Ziehung nun uebersprungen werden
          if ( !"tamBayes" %in% class(runModelObj) ) {leseAlles <- TRUE} else {leseAlles <- FALSE}
          ret    <- NULL                                                       ### Rueckgabeobjekt initialisieren, und untere Zeile: Itemparameter auslesen
