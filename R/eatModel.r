@@ -2090,7 +2090,7 @@ getTam2plDiscrim <- function(runModelObj, qMatrix, leseAlles, regr, omitRegr) {
                       obj[,"item"]  <- rownames(obj)                            ### Spalten rauswerfen, in denen ausschliesslich nullen stehen
                       isNull        <- which(sapply(obj, FUN = function ( x ) { all(x==0)})==TRUE)
                       if (length (isNull)>0) {
-                          for ( i in isNull ) { obj[,i] <- NULL }
+                          obj <- obj[,-isNull]
                       }
                  }
                  cols  <- grep(paste0(".Dim",dims,"$" ), colnames(obj), value=TRUE)
