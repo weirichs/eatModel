@@ -1899,7 +1899,7 @@ getConquestWles <- function ( model.name, analysis.name, qMatrix, allFiles, omit
              cat("Cannot find Conquest WLE file.\n")
              return(NULL)
          }
-         wle  <- get.wle( file.path(path, wleFile) )
+         wle  <- get.wle( file.path(path, wleFile) )                            ### unten: ins mittel-longformat, um rel zu bestimmen
          res  <- NULL                                                           ### initialisieren
          for ( i in 1:nrow(altN)) { colnames(wle) <- gsub(  paste(".",altN[i,"nr"],"$",sep=""), paste("_", altN[i,"to"],sep="") , colnames(wle))}
          wleL <- reshape2::melt(wle, id.vars = "ID", measure.vars = colnames(wle)[-c(1:2)], na.rm=TRUE)
@@ -1908,10 +1908,11 @@ getConquestWles <- function ( model.name, analysis.name, qMatrix, allFiles, omit
          foo[,"derived.par"] <- car::recode(foo[,"par"], "'wle'='est'; 'std.wle'='se'; else=NA")
          foo[,"par"]         <- car::recode(foo[,"par"], "'wle'='wle'; 'std.wle'='wle'; 'n.solved'='NitemsSolved'; 'n.total'='NitemsTotal'")
          wleL <- data.frame ( wleL[,-match("variable", colnames(wleL)), drop=FALSE], foo, stringsAsFactors = FALSE)
-         res  <- rbind ( res, data.frame ( model = model.name, source = "conquest", var1 = wleL[,"ID"], var2 = NA , type = "indicator", indicator.group = "persons", group = wleL[,"group"], par = wleL[,"par"],  derived.par = wleL[,"derived.par"], value = wleL[,"value"] , stringsAsFactors = FALSE))
-         return(list(res=res, wle=wle))
-         }
-         
+         wleW <- reshape2::dcast(wleL[which(wleL[,"par"] == "wle"),], ID+group~derived.par, value="value")
+         rels <- do.call("rbind", by(wleW, INDICES = wleW[,"group"], FUN = function ( g ) { data.frame (dim = g[1,"group"], rel = 1 - mean(g[,"se"]^2)/var(g[,"est"]), stringsAsFactors = FALSE)}))
+         res  <- rbind ( res, data.frame ( model = model.name, source = "conquest", var1 = c(wleL[,"ID"],rep(NA,nrow(rels))), var2 = NA , type = c(rep("indicator",nrow(wleL)), rep("tech",nrow(rels))), indicator.group = "persons", group = c(wleL[,"group"],rels[,"dim"]), par = c(wleL[,"par"],rep("wle",nrow(rels))),  derived.par = c(wleL[,"derived.par"],rep("rel", nrow(rels))), value = c(wleL[,"value"] ,rels[,"rel"]) , stringsAsFactors = FALSE))
+         return(list(res=res, wle=wle))   }
+
 getConquestPVs <- function ( model.name, analysis.name, omitPV, altN, path, allFiles){
          pvFile<- paste(analysis.name, "pvl", sep=".")
          if ( omitPV == TRUE ) {return(NULL)}
@@ -2174,7 +2175,7 @@ getTamWles    <- function(runModelObj, qMatrix, leseAlles, omitWle) {
          if(leseAlles == FALSE || omitWle == TRUE ) {return(NULL)}
          txt  <- capture.output(wle  <- tam.wle(runModelObj, progress = FALSE)) ### Achtung: im eindimensionalen Fall enthalten die Spaltennamen keine Benennung der Dimension
          eind1<- ncol(wle) == 7                                                 ### ist das eindimensional?
-         if(eind1 == TRUE) {
+         if(isTRUE(eind1)) {
             cols1<- grep("theta$", colnames(wle))
             cols2<- grep("error$", colnames(wle))
             stopifnot(length(cols1) ==1, length(cols2) ==1)
@@ -2183,9 +2184,17 @@ getTamWles    <- function(runModelObj, qMatrix, leseAlles, omitWle) {
          weg1 <- grep("WLE.rel", colnames(wle))
          wleL <- reshape2::melt(wle, id.vars = "pid", measure.vars = colnames(wle)[-c(1:2,weg1)], na.rm=TRUE)
          wleL[,"group"] <- colnames(qMatrix)[as.numeric(eatTools::removePattern(string = unlist(lapply(strsplit(as.character(wleL[,"variable"]),"\\."), FUN = function (l) {l[2]})), pattern = "Dim"))+1]
+         trans<- na.omit(unique(data.frame ( original = unlist(lapply(strsplit(as.character(wleL[,"variable"]),"\\."), FUN = function (l) {l[2]})), uebersetzt = wleL[,"group"], stringsAsFactors = FALSE)))
          wleL[,"par"]   <- car::recode(unlist(lapply(strsplit(as.character(wleL[,"variable"]),"\\."), FUN = function (l) {l[1]})), "'PersonScores'='NitemsSolved'; 'PersonMax'='NitemsTotal'; 'theta'='wle'; 'error'='wle'")
          wleL[,"derived.par"] <- car::recode(unlist(lapply(strsplit(as.character(wleL[,"variable"]),"\\."), FUN = function (l) {l[1]})), "'theta'='est'; 'error'='se';else=NA")
-         res  <- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = wleL[,"pid"], var2 = NA , type = "indicator", indicator.group = "persons", group = wleL[,"group"], par = wleL[,"par"],  derived.par = wleL[,"derived.par"], value = wleL[,"value"] , stringsAsFactors = FALSE)
+         rel  <- reshape2::melt(as.data.frame ( wle)[1,weg1], na.rm = TRUE)     ### das Auslesen der Dimensionsnamen fuer den ein- und zweidimensionalen Fall (Objekt 'trans')
+         if ( "variable" %in% colnames(rel)) {                                  ### ist noch nicht wirklich schoen, muesste gegebenenfalls (wenn mal Zeit ist) elegantisiert werden
+               rel[,"original"] <- unlist(lapply(strsplit(as.character(rel[,"variable"]),"\\."), FUN = function (l) {l[length(l)]}))
+               rel  <- merge(rel, trans, by="original", all=TRUE)
+         }  else  {
+               rel[,"uebersetzt"] <- colnames(qMatrix)[-1]
+         }
+         res  <- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = c(wleL[,"pid"],rep(NA,nrow(rel))), var2 = NA , type = c(rep("indicator",nrow(wleL)), rep("tech", nrow(rel))), indicator.group = "persons", group = c(wleL[,"group"],rel[,"uebersetzt"]), par = c(wleL[,"par"],rep("wle", nrow(rel))),  derived.par = c(wleL[,"derived.par"],rep("rel",nrow(rel))), value = c(wleL[,"value"] ,rel[,"value"]), stringsAsFactors = FALSE)
          return(res)}
 
 getTamPVs <- function ( runModelObj, qMatrix, leseAlles, omitPV, pvMethod, tam.pv.arguments) {
@@ -2463,6 +2472,11 @@ q3FromRes<- function ( resultsObj ) {
                      sel  <- reshape2::dcast( sel, var1~var2, value.var = "value")
                 } else  { sel <- NULL }
                 return(sel)})}
+
+wleRelFromRes <- function(resultsObj) {
+          ret <- resultsObj[intersect(which(resultsObj[,"derived.par"] == "rel"), which(resultsObj[,"par"] == "wle")),c("model", "group", "value")]
+          colnames(ret) <- car::recode(colnames(ret), "'value'='rel'; 'group'='domain'")
+          return(ret)}
 
 wleFromRes <- function ( resultsObj , idVarName = NULL) {
           wleRo<- intersect( which(resultsObj[,"par"] %in% c("wle","NitemsSolved", "NitemsTotal")),which(resultsObj[,"indicator.group"] == "persons"))
