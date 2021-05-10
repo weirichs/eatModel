@@ -2984,6 +2984,7 @@ gen.syntax     <- function(Name,daten, all.Names, namen.all.hg = NULL, all.hg.ch
                            syntax <- syntax[-ind.x]}}
                    if(export["history"] == TRUE)  {
                       if(!is.null(conquest.folder))  {
+                         checkWhetherConquestExeExists(pkgname="eatModel")
                          cq.version <- getConquestVersion( path.conquest = conquest.folder, path.temp = pfad)
                          if(cq.version < date::as.date("1Jan2007") )   {
    									      ind.3 <- grep("^export history",syntax)               ### wenn Conquest aelter als 2007, soll history geloescht werden,
@@ -2993,6 +2994,21 @@ gen.syntax     <- function(Name,daten, all.Names, namen.all.hg = NULL, all.hg.ch
                       }
                       if(is.null(conquest.folder)) {cat("Warning! Conquest folder was not specified. Unable to detect Conquest version. When you propose to use 2005 version,\nhistory statement will invoke to crash Conquest analysis. Please remove history statement manually if you work with 2005 version.\n")} }
                    write(syntax,file.path(pfad,paste(Name,".cqc",sep="")),sep="\n")}
+                   
+### das oeffnet ein Menue, um die conquest.exe zu finden, falls es sie nicht gibt
+checkWhetherConquestExeExists <- function (pkgname) {
+     root <- system.file(package = pkgname)
+     if ( !file.exists(file.path(root, "exec"))) {dir.create(file.path(root, "exec"))}
+     if ( !file.exists( system.file("exec", "console_Feb2007.exe", package = pkgname) )) {
+           if ( !file.exists("i:/Methoden/00_conquest_console/console_Feb2007.exe") ) {
+               packageStartupMessage("Cannot find conquest executable file. Please choose manually.")
+               fname <- file.choose()
+           }  else  {
+               fname <- "i:/Methoden/00_conquest_console/console_Feb2007.exe"
+           }
+           if ( nchar(fname)>0) { foo <- file.copy(from = fname, to = file.path(root, "exec", "console_Feb2007.exe") ) }
+     }
+}
 
 anker <- function(lab, prm, qMatrix, domainCol, itemCol, valueCol )  {
                   stopifnot(ncol(lab)==2)
