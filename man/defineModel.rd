@@ -599,7 +599,7 @@ res2a<- getResults(run2a)
 # Example 2b: running a multidimensional Rasch model on a subset of items
 # defining the model: specifying q matrix now is necessary.
 mod2b<- defineModel(dat=datW, items= qMat[,1], id="id", analysis.name = "twodim2",
-        qMatrix = qMat, n.plausible = 20, dir = software="tam")
+        qMatrix = qMat, n.plausible = 20, software="tam")
 
 # run the model
 run2b<- runModel(mod2b)
