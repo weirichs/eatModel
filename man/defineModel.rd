@@ -524,7 +524,7 @@ qMat <- data.frame ( qMat[,1,drop=FALSE],
 
 # defining the model: specifying q matrix is not necessary
 mod1 <- defineModel(dat=datW, items= -c(1:3), id="id", analysis.name = "unidim",
-        dir = tempdir())
+        software="tam")
 
 # run the model
 run1 <- runModel(mod1)
@@ -556,7 +556,7 @@ items<- grep("^Bio|^Che|^Phy", colnames(datW))
 # Caution: two items ("ChePro48", "PhyPro01") are excluded because they are 
 # constant in one of the DIF groups
 mod1a<- defineModel(dat=datW, items= items, id="id", DIF.var = "sexNum", 
-        analysis.name = "unidimDIF", dir = tempdir())
+        analysis.name = "unidimDIF", software="tam")
 
 # run the model
 run1a<- runModel(mod1a)
@@ -583,7 +583,7 @@ aPar <- aPar[,c("item", "est")]
 # (This behavior is equivalent as in lm() for example.)
 mod2a<- defineModel(dat=datW, items= qMat[,1], id="id", analysis.name = "twodim",
         qMatrix = qMat, HG.var = "sex", anchor = aPar, n.plausible = 20,
-        dir = tempdir())
+        software="tam")
 
 # run the model
 run2a<- runModel(mod2a)
@@ -599,7 +599,7 @@ res2a<- getResults(run2a)
 # Example 2b: running a multidimensional Rasch model on a subset of items
 # defining the model: specifying q matrix now is necessary.
 mod2b<- defineModel(dat=datW, items= qMat[,1], id="id", analysis.name = "twodim2",
-        qMatrix = qMat, n.plausible = 20, dir = tempdir())
+        qMatrix = qMat, n.plausible = 20, dir = software="tam")
 
 # run the model
 run2b<- runModel(mod2b)

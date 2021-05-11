@@ -40,10 +40,7 @@ test1<- checkLinking(design = des1, bookletColumn = "booklet")
 
 # second example: use the original design of the 'IQB Bildungstrend 2016'
 # use the 'read_excel' function to import excel design table
-library(readxl)
-file <- system.file("extdata", "LV16_DE_Testdesign_FINAL.xlsx", package = "eatModel")
-des2 <- data.frame(read_excel(file, sheet = 1, col_types = "text", range = "B5:F44"),
-        stringsAsFactors=FALSE)
+data(des2)
 # design contains three dimensions -- reading, listening and orthography
 # linking check must be conducted for each dimension separately. If linking should be checked
 # for listening, reading and orthography cells must be set to NA
@@ -56,9 +53,7 @@ for ( i in 2:ncol(reading)) { reading[grep("^D-R|^D-H", reading[,i]),i] <- NA}
 test3<- checkLinking(design = reading, bookletColumn = "TH")
 
 # third example: use the original design of the 'IQB Bildungstrend 2018'
-file <- system.file("extdata", "Design_2018_final.xlsx", package = "eatModel")
-des3 <- data.frame(read_excel(file, sheet = 1, col_types = "text", range = "A6:J86"),
-        stringsAsFactors=FALSE)
+data(des3)
 cols <- paste0("X", 1:6)
 mathe<- des3[which(des3[,3] == "Mathe"),]
 test4<- checkLinking(design = mathe[,c("Label", cols)], bookletColumn = "Label")
