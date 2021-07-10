@@ -2240,7 +2240,8 @@ getTamEAPs <- function ( runModelObj, qMatrix, leseAlles = leseAlles) {
          eaps[,"par"]   <- "est"
          eaps[grep("^SD.",as.character(eaps[,"variable"])),"par"]   <- "se"
          res  <- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = eaps[,"pid"], var2 = NA , type = "indicator", indicator.group = "persons", group = eaps[,"group"], par = "eap", derived.par = eaps[,"par"], value = eaps[,"value"] , stringsAsFactors = FALSE)
-         res  <- rbind(res, data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = NA, var2 = NA , type = "tech", indicator.group = "persons", group = names(runModelObj[["EAP.rel"]]), par = "eap", derived.par = "rel", value = runModelObj[["EAP.rel"]] , stringsAsFactors = FALSE) )
+         if (ncol(qMatrix)>2) { grp  <- names(runModelObj[["EAP.rel"]]) } else { stopifnot(length(unique(eaps[,"group"])) == 1); grp <- unique(eaps[,"group"]) }
+         res  <- rbind(res, data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = NA, var2 = NA , type = "tech", indicator.group = "persons", group = grp, par = "eap", derived.par = "rel", value = runModelObj[["EAP.rel"]] , stringsAsFactors = FALSE) )
          return(res)}
 
 
