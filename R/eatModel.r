@@ -2028,6 +2028,8 @@ getConquestResults<- function(path, analysis.name, model.name, qMatrix, all.Name
              ret  <- rbind(ret, shw12[["shw1"]], shw12[["shw2"]])
              ret  <- rbind(ret, getConquestInfit (model.name=model.name, shw=shw))
              ret  <- rbind(ret, getConquestAdditionalTerms (model.name=model.name, qMatrix=qMatrix, shw=shw, shwFile = shwFile))
+    ### reliabilitaeten ergaenzen
+             ret  <- rbind(ret, data.frame ( model = model.name, source="conquest", var1=NA, var2=NA,type="tech", indicator.group="persons", group = colnames(qMatrix)[-1], par="eap", derived.par = "rel", value = shw[["reliability"]][,"eap.rel"], stringsAsFactors=FALSE))
     ### Populationsparameter und Regressionsparameter aus Showfile auslesen (shw)
              ret  <- rbind(ret, getConquestPopPar (model.name=model.name, qMatrix=qMatrix, shw=shw))
              ret  <- rbind(ret, getConquestRegPar (model.name=model.name, shw=shw, altN = altN))
@@ -2238,8 +2240,9 @@ getTamEAPs <- function ( runModelObj, qMatrix, leseAlles = leseAlles) {
          eaps[,"par"]   <- "est"
          eaps[grep("^SD.",as.character(eaps[,"variable"])),"par"]   <- "se"
          res  <- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = eaps[,"pid"], var2 = NA , type = "indicator", indicator.group = "persons", group = eaps[,"group"], par = "eap", derived.par = eaps[,"par"], value = eaps[,"value"] , stringsAsFactors = FALSE)
+         res  <- rbind(res, data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = NA, var2 = NA , type = "tech", indicator.group = "persons", group = names(runModelObj[["EAP.rel"]]), par = "eap", derived.par = "rel", value = runModelObj[["EAP.rel"]] , stringsAsFactors = FALSE) )
          return(res)}
-         
+
 
 getTamQ3 <- function(runModelObj, leseAlles, shw1, Q3, q3MinObs, q3MinType){
          if(leseAlles == FALSE || Q3 == FALSE) {return(NULL)}
@@ -2330,7 +2333,7 @@ reshapeQ3 <- function ( mat, q3MinObs, nObs ) {
 
 ### Extraktorfunktionen
 eapFromRes <- function ( resultsObj, idVarName = NULL ) {
-          eapRo<- intersect( which(resultsObj[,"par"] == "eap"),which(resultsObj[,"indicator.group"] == "persons"))
+          eapRo<- setdiff(intersect( which(resultsObj[,"par"] == "eap"),which(resultsObj[,"indicator.group"] == "persons")), which(resultsObj[,"derived.par"] == "rel"))
           id   <- unique(resultsObj[intersect(which(resultsObj[,"type"] == "tech"), which(resultsObj[,"par"] == "ID")),"derived.par"])
           id   <- getIdVarName(id, idVarName)
           if ( length ( eapRo ) == 0 ) {
@@ -2477,9 +2480,15 @@ wleRelFromRes <- function(resultsObj) {
           ret <- resultsObj[intersect(which(resultsObj[,"derived.par"] == "rel"), which(resultsObj[,"par"] == "wle")),c("model", "group", "value")]
           colnames(ret) <- car::recode(colnames(ret), "'value'='rel'; 'group'='domain'")
           return(ret)}
+          
+eapRelFromRes <- function(resultsObj) {
+          ret <- resultsObj[intersect(which(resultsObj[,"derived.par"] == "rel"), which(resultsObj[,"par"] == "eap")),c("model", "group", "value")]
+          colnames(ret) <- car::recode(colnames(ret), "'value'='rel'; 'group'='domain'")
+          return(ret)}
+
 
 wleFromRes <- function ( resultsObj , idVarName = NULL) {
-          wleRo<- intersect( which(resultsObj[,"par"] %in% c("wle","NitemsSolved", "NitemsTotal")),which(resultsObj[,"indicator.group"] == "persons"))
+          wleRo<- setdiff(intersect( which(resultsObj[,"par"] %in% c("wle","NitemsSolved", "NitemsTotal")),which(resultsObj[,"indicator.group"] == "persons")), which(resultsObj[,"derived.par"] == "rel"))
           if(length(wleRo) == 0 ) {
              cat("Warning: 'resultsObj' does not contain any WLE values.\n")
              return(NULL)
@@ -2708,6 +2717,12 @@ get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.d
                  all.output$cov.structure <- bereich.data.frame
               }
             all.output$final.deviance <- rowToFind
+    ### Reliabilitaetsindices einlesen
+            i1   <- grep("Dimension: \\(Dimension", input.all)
+            all.output$reliability <- do.call("rbind", lapply(i1, FUN = function (z ) {
+                    stopifnot(substr(input.all[z+3], 2,35) == "WLE Person separation RELIABILITY:")
+                    stopifnot(substr(input.all[z+4], 2,20) == "EAP/PV RELIABILITY:")
+                    return(data.frame ( dim = eatTools::crop(eatTools::crop(substring(input.all[z], 13)), ")"), wle.rel = as.numeric(eatTools::crop(substring(input.all[z+3], 36))), eap.rel = as.numeric(eatTools::crop(substring(input.all[z+4], 36))), stringsAsFactors = FALSE))}))
             return(all.output)}
 
 get.prm <- function(file)   {
