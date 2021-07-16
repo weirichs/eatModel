@@ -4,7 +4,7 @@
 \title{Gives EAP reliability from the object returned by getResults()}
 \description{EAP reliability in a data frame. }
 \usage{
-wleRelFromRes(resultsObj)}
+eapRelFromRes(resultsObj)}
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{resultsObj}{

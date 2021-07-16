@@ -1153,7 +1153,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                      if(is.null(items)) {stop("Argument 'items' must not be NULL.\n",sep="")}
                      if(length(items) == 0 ) {stop("Argument 'items' has no elements.\n",sep="")}
                      if ( length(items) != length(unique(items)) ) {
-                          cat("Warning: Item identifier is not unique. Only unique item identifiers will be used.\n")
+                          cat(paste0("Warning: Item identifier is not unique. Only ",length(unique(items))," unique item identifiers will be used.\n"))
                           items <- unique(items)
                      }
                      if(length(id) != 1 ) {stop("Argument 'id' must be of length 1.\n",sep="")}
