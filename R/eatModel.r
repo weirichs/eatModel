@@ -1667,7 +1667,7 @@ checkQmatrixConsistency <-  function(qmat) {
              wertes<- lapply(qmat[,-1,drop=FALSE], FUN = function (col)  {all ( col == 0)})
              konst <- which(wertes == TRUE)
              if ( length(konst)>0) {
-                  cat(paste0("Column(s) '",paste(names(konst), collapse = "', '"),"' are konstant with value 0. Delete column(s)."))
+                  cat(paste0("Column(s) '",paste(names(konst), collapse = "', '"),"' are konstant with value 0. Delete column(s).\n"))
                   qmat <- qmat[,-match(names(konst), colnames(qmat)), drop=FALSE]
              }
     ### keine doppelten Eintraege in Itemspalte
