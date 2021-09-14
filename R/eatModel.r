@@ -1653,14 +1653,24 @@ checkQmatrixConsistency <-  function(qmat) {
              if(class(qmat) != "data.frame")    { qmat     <- data.frame(qmat, stringsAsFactors = FALSE)}
              if(class(qmat[,1]) != "character") { qmat[,1] <- as.character(qmat[,1])}
              nClass<- sapply(qmat, class)
+    ### alle Spalten ausser der ersten muessen numerisch oder integer sein
              ind   <- which (!nClass %in% c("integer", "numeric"))
              if ( length ( ind ) > 1) {
                   cat(paste("Warning: Found non-numeric indicator column(s) in the Q matrix. Transform column(s) '",paste(colnames(qmat)[ind[-1]], collapse = "', '") ,"' into numeric format.\n",sep=""))
                   for ( a in ind[-1] ) { qmat[,a] <- as.numeric(as.character(qmat[,a] ))}
              }
+    ### es duerfen nur werte von 0 und 1 auftreten (keine missings)
              werte <- eatTools::tableUnlist(qmat[,-1,drop=FALSE], useNA="always")
              if(length(setdiff( names(werte) , c("0","1", "NA")))<0) {stop("Q matrix must not contain entries except '0' and '1'.\n")}
              if(werte[match("NA", names(werte))] > 0) {stop("Missing values in Q matrix.\n")}
+    ### Indikatorspalten duerfen nicht konstant 0 sein (konstant 1 ginge, das waere dann within item multidimensionality)
+             wertes<- lapply(qmat[,-1,drop=FALSE], FUN = function (col)  {all ( col == 0)})
+             konst <- which(wertes == TRUE)
+             if ( length(konst)>0) {
+                  cat(paste0("Column(s) '",paste(names(konst), collapse = "', '"),"' are konstant with value 0. Delete column(s)."))
+                  qmat <- qmat[,-match(names(konst), colnames(qmat)), drop=FALSE]
+             }
+    ### keine doppelten Eintraege in Itemspalte
              doppel<- which(duplicated(qmat[,1]))
              if(length(doppel)>0) {
                 cat("Found duplicated elements in the item id column of the q matrix. Duplicated elements will be removed.\n")
@@ -1673,6 +1683,7 @@ checkQmatrixConsistency <-  function(qmat) {
                         })
                 qmat <- qmat[!duplicated(qmat[,1]),]
              }
+    ### items loeschen, die auf keiner dimension laden
              zeilen<- apply(qmat, 1, FUN = function ( y ) { all ( names(table(y[-1])) == "0")  })
              weg   <- which(zeilen == TRUE)
              if(length(weg)>0) {
