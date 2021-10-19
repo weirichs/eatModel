@@ -249,200 +249,303 @@ getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c(
                return(res)
                }}
 
-equat1pl<- function ( results , prmNorm , item = NULL, domain = NULL, testlet = NULL, value = NULL, excludeLinkingDif = TRUE, difBound = 1, iterativ = FALSE, method = c("Mean.Mean", "Haebara", "Stocking.Lord", "robust", "Haberman"),
-           itemF = NULL, domainF = NULL, valueF = NULL, estimation=c("OLS", "BSQ", "HUB", "MED", "LTS", "L1", "L0"), b_trim=Inf, lts_prop=.5) {
-           estimation <- match.arg(estimation)
-           method<- match.arg(method)
-    ### Achtung! Funktion kann (was der default ist) sowohl Output aus 'runModel' weiterverarbeiten oder einfach nur zum Equaten zweiter verschiedener Itemparameterlisten genutzt werden
-    ### Also muss die Funktion erstmal rauskriegen, was von beidem gemacht werden soll. Wenn 'isRunM' gleich TRUE, dann default
-           isRunM<- all(c("model" , "source" , "var1" , "var2" , "type" , "indicator.group", "group", "par", "derived.par", "value") %in% names(results))
-           if ( isTRUE(isRunM)) {
-                nMods <- table(results[,"model"])
-                cat(paste("Found ", length(nMods), " model(s).\n   Equating is executed for each dimension in each model separately.\n",sep=""))
-                dims  <- unique(unlist(by ( data = results, INDICES = results[,"model"], FUN = function ( x ) { names(table(as.character(itemFromRes(x)[,"dimension"])))})))
-                if ( is.null(dims)) {
-                     dims <- unique(na.omit(results[,"group"]))
-                     cat(paste0("  Warning: Cannot extract dimensions from 'results' object. This should only occur for bayesian plausible values imputation. Assume following dimensions: \n    '",paste(dims, collapse = "', '"),"'.\n"))
+### Hilfsfunktion fuer equat1pl: konsistenzpruefungen fuer den itemparameter-Dataframe
+checkItemParLists <- function (prmNorm, item, domain, testlet, value, dims = NULL) {
+           if ( !"data.frame" %in% class(prmNorm)) {stop("'prmNorm' must be of class 'data.frame'.")}
+    ### wenn data.frame zwei spalten hat, muessen die Item- und value-Spalten nicht explizit benannt werden
+           if ( ncol ( prmNorm ) == 2 ) {
+                if ( is.null(item) && is.null(value) ) {
+                     item <- colnames(prmNorm)[1]
+                     value<- colnames(prmNorm)[2]
                 }
-    ### jetzt beginnt der Fall, dass einfach nur zwei Itemparameterlisten equatet werden sollen. Dazu transformiert die Funktion den Input 'results' in das benoetigte Format
+                if ( is.null(item) && !is.null(value) || !is.null(item) && is.null(value)) {
+                     stop("If 'prmNorm' has two columns, either both 'item' and 'value' or none of them should be specified.")
+                }
            }  else  {
-                allF <- list(itemF=itemF, domainF = domainF, valueF = valueF)
-                allF <- lapply(allF, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = results, variable=ii)})
-                if (!is.null(allF[["domainF"]])) {
-                    dims <- names(table(results[,allF[["domainF"]]]))
-                }  else  {
-                    allF[["domainF"]] <- "domaene"
-                    results[, allF[["domainF"]]] <- dims <- "global"
-                }
-                nMods<- dims
-                results[,"model"] <- results[, allF[["domainF"]]]
-                weg  <- intersect ( colnames (results ) , setdiff  ( c("item", "dimension", "est"), unlist(allF) ))
-                if ( length ( weg ) > 0 )  {                                    ### damit keine Spalten durch 'recode' doppelt benannt werden,
-                     results <- results[, -match(weg, colnames(results))]       ### muessen spalten, die sich durch die Recodierung aendern
-                }                                                               ### und zugleich schon im datensatz 'results' vergeben sind, raus
-                toRec<- lapply(names(allF), FUN = function ( ff ) { paste ( "'",allF[[ff]],"'='",car::recode(ff, "'itemF'='item'; 'domainF'='dimension'; 'valueF'='est'"),"'",sep="")})
-                toRec<- paste(toRec, collapse = "; ")
-                colnames(results) <- car::recode (colnames(results), toRec)
+                if ( is.null(item) || is.null(value)) { stop("If 'prmNorm' has more than two columns, 'item' and 'value' columns must be specified explicitly.") }
            }
-           if ( missing ( prmNorm) ) {                                          ### kein Equating: Rueckgabe NULL, 'results' wird durchgeschleift
-                if ( isFALSE(isRunM) ) { stop("No norm parameter defined ('prmNorm' is missing).\n")}
-                cat("No norm parameter defined ('prmNorm' is missing). Treat current sample as drawn from the reference population.\n")
-    ### Kein equating: baue 'leeres' Rueckgabeobjekt
-                items <- by ( data = results, INDICES = results[,"model"], FUN = function ( d ) {
-                         it  <- itemFromRes(d)
-                         if ( "estOffset" %in% colnames ( it ) ) {
-                              d[,"par"] <- car::recode ( d[,"par"], "'offset'='est'")
-                              it <- itemFromRes(d)
-                         }
-                         if ( !is.null(it)) {
-                              dimN <- by ( data = it, INDICES = it[,"dimension"], FUN = function ( prmDim ) {
-                                      eq <- list(B.est = c(Mean.Mean=0 , Haebara =0, Stocking.Lord=0), descriptives = c(N.Items =0, SD=NA,  Var=NA, linkerror=NA))
-                                      return ( list ( eq = eq, items = prmDim, method = method ) ) }, simplify = FALSE)
-                         }  else  {                                             ### jetzt fuer den Fall dass PVs bayesianische gezogen wurden und keine Itemparameter im results objekt stehen
-                              resX <- results[which(!is.na(results[,"group"])),]
-                              dimN <- by ( data = results, INDICES = results[,"group"], FUN = function ( prmDim ) {
-                                      eq <- list(B.est = c(Mean.Mean=0 , Haebara =0, Stocking.Lord=0), descriptives = c(N.Items =0, SD=NA,  Var=NA, linkerror=NA))
-                                      return ( list ( eq = eq, items = prmDim, method = method ) ) }, simplify = FALSE)
-                         }
-                         return(dimN)}, simplify = FALSE)
-                return(list(items = items, results = results))
-    ### Equating: baue 'befuelltes' Rueckgabeobjekt
-           }  else {                                                            ### plausibility checks
-              stopifnot ( "data.frame" %in% class(prmNorm))
-              if ( ncol ( prmNorm ) == 2 ) {
-                   if (!length(prmNorm[,1]) == length(unique(prmNorm[,1]))) { stop("Item identifiers are not unique in 'prmNorm'.\n")}
-                   if(is.null(item)) { item <- colnames(prmNorm)[1] }
-                   if(is.null(value)){ value<- colnames(prmNorm)[2] }
-              }  else  {
-                   if ( !is.null(item) & !is.null(value) == FALSE ) { stop("If 'prmNorm' has more than two columns, 'item' and 'value' columns must be specified explicitly.\n") }
-              }
-              allV <- list(item=item, domain = domain, testlet = testlet, value = value)
-              allN <- lapply(allV, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = prmNorm, variable=ii)})
-              if (!is.null ( allN[["domain"]] )) {                              ### check: match domain names
-                   mis <- setdiff ( dims,  names(table(prmNorm[, allN[["domain"]] ])) )
-                   if ( length( mis ) > 0 ) { stop ( paste ( "Domain '",mis,"' is missing in 'prmNorm'.\n",sep="")) }
-                   uni <- by ( data = prmNorm, INDICES = prmNorm[, allN[["domain"]] ], FUN = function ( g ) {
-                          if (!length(g[,allN[["item"]]]) == length(unique(g[,allN[["item"]]]))) { stop(paste ( "Item identifiers are not unique in 'prmNorm' for domain '",g[1,allN[["domain"]]],"'.\n",sep=""))}
-                   }, simplify = FALSE)                                         ### check: items unique within domains?
-              }
-    ### Fuer jedes Modell und jede Dimension innerhalb jedes Modells findet Equating separat statt
-              items <- by ( data = results, INDICES = results[,"model"], FUN = function ( d ) {
-                       if ( isTRUE(isRunM ) ) {
-                            it  <- itemFromRes(d)
-                       }  else  {
-                            it  <- d
-                       }
-                       if ( "estOffset" %in% colnames ( it ) ) {
-                            cat(paste("W A R N I N G:  Model '",d[1,"model"],"' was estimated with (at least partially) anchored items parameters. Equating seems questionable.\n",sep=""))
-                            d[,"par"] <- car::recode ( d[,"par"], "'offset'='est'")
-                            it <- itemFromRes(d)
-                       }
-                       dimN <- by ( data = it, INDICES = it[,"dimension"], FUN = function ( prmDim ) {
-                               if(!is.null(allN[["domain"]]) ) {
-                                   prmM<- prmNorm [ which(prmNorm[,allN[["domain"]]] %in% unique(it[,"dimension"])) ,]
-                               }  else  {
-                                   prmM<- prmNorm
-                               }
+           allF <- list(item=item, domain = domain, testlet=testlet, value = value)
+           allF <- lapply(allF, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = prmNorm, variable=ii)})
+    ### keine Missings in Spalten
+           nomis<- sapply(prmNorm[,unlist(allF)], FUN = function ( i ) { length(which(is.na(i)))})
+           if ( any(nomis>0)) {
+                warning("Found ", length(which(nomis>0)), " column(s) in 'prmNorm' with missing values: '", paste(names(nomis[which(nomis>0)]), collapse= "', '"), "'")
+           }
     ### items muessen unique sein
-                               if ( length(prmDim[, "item"]) != length(unique(prmDim[, "item"])) ) {  stop(paste("Items are not unique for model '",as.character(d[1,"model"]),"'.\n",sep="")) }
-                               if ( length(prmM[,allN[["item"]] ]) != length(unique(prmM[,allN[["item"]] ])) ) {  stop(paste("Items are not unique for model '",as.character(d[1,"model"]),"'.\n",sep="")) }
-                               eq  <- equAux ( x = prmDim[ ,c("item", "est")], y = prmM[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])] )
-                               if ( eq[["descriptives"]][["N.Items"]] > 0) {
-                                     if ( method == "robust") {
-                                         prm<- merge(prmM[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])], prmDim[ ,c("item", "est")], by.y="item", by.x = allN[["item"]], all=FALSE)
-                                         eqr<- sirt::linking.robust(prm)        ### Haberman: der waehlt das Vorzeichen nach alphabetischer Reihenfolge in "study"
-                                     }                                          ### Achtung: fuer Haberman spielt es eine Rolle, wieviele nicht-link-items zusaetzlich mit drin sind
-                                     if ( method == "Haberman") {               ### also die Linkingkonstante ist eine andere, wenn man nur die gemeinsamen items im Objekt 'prm' drinhat, oder wenn alle drin sind
-                                         prm<- rbind ( data.frame ( study = "norm", item = prmM[,allN[["item"]]], a=1, b = prmM[,allN[["value"]]], stringsAsFactors = FALSE), data.frame ( study = "focus", item = prmDim[ ,"item"], a=1, b = prmDim[ ,"est"], stringsAsFactors = FALSE))
-                                         eqh<- sirt::linking.haberman(prm, progress = FALSE, estimation = estimation, b_trim=b_trim, lts_prop=lts_prop)
-                                     }
-                               }
-                               if ( method %in% c("Mean.Mean", "Haebara", "Stocking.Lord")) {
+           tab  <- table(prmNorm[,c(allF[["item"]], allF[["domain"]]), drop=FALSE])
+           if (!all(tab %in% 0:1)) {stop("Items must be unique for each domain in reference parameter frame 'prmNorm'.")}
+    ### check: match domain names
+           if (!is.null ( allF[["domain"]]) && !is.null(dims) ) {
+                mis <- setdiff ( dims,  names(table(prmNorm[, allF[["domain"]] ])) )
+                if ( length( mis ) > 0 ) { stop ( paste ( "Domain '",mis,"' is missing in 'prmNorm'.\n",sep="")) }
+                uni <- by ( data = prmNorm, INDICES = prmNorm[, allF[["domain"]] ], FUN = function ( g ) {
+                       if (!length(g[,allF[["item"]]]) == length(unique(g[,allF[["item"]]]))) { stop(paste ( "Item identifiers are not unique in 'prmNorm' for domain '",g[1,allF[["domain"]]],"'.\n",sep=""))}
+                       }, simplify = FALSE)                                     ### check: items unique within domains?
+           }
+           return(allF)}
+
+### hilfsfunktion fuer equat1pl: transformiert itemparameterliste in results-objekt, wenn nicht das Rueckgabeobjekt von getResults()
+### die Fokusparameter enthaelt, sondern ein einfacher data.frame
+transformItemParListIntoResults <- function(results, prmNorm, itemF, domainF, testletF, valueF){
+           chk2 <- checkItemParLists(prmNorm =prmNorm, item = itemF, domain = domainF, testlet = testletF, value = valueF)
+           allF <- list(itemF=itemF, domainF = domainF, testletF = testletF, valueF = valueF)
+           allF <- lapply(allF, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = results, variable=ii)})
+           if (!is.null(allF[["domainF"]])) {
+                dims <- names(table(results[,allF[["domainF"]]]))
+           }  else  {
+                allF[["domainF"]] <- "domaene"
+                results[, allF[["domainF"]]] <- dims <- "global"
+           }
+           results[,"model"] <- results[, allF[["domainF"]]]
+           weg  <- intersect ( colnames (results ) , setdiff  ( c("item", "dimension", "est"), unlist(allF) ))
+           if ( length ( weg ) > 0 )  {                                         ### damit keine Spalten durch 'recode' doppelt benannt werden,
+                results <- results[, -match(weg, colnames(results))]            ### muessen spalten, die sich durch die Recodierung aendern
+           }                                                                    ### und zugleich schon im datensatz 'results' vergeben sind, raus
+           toRec<- lapply(names(allF), FUN = function ( ff ) { paste ( "'",allF[[ff]],"'='",car::recode(ff, "'itemF'='item'; 'domainF'='dimension'; 'valueF'='est'"),"'",sep="")})
+           toRec<- paste(toRec, collapse = "; ")
+           colnames(results) <- car::recode (colnames(results), toRec)
+           return(list(results=results, dims=dims))}
+
+### hilfsfunktion fuer equat1pl: baut leeres results objekt, falls equating nur durchgeschleift werden soll
+buildEmptyResultsObject <- function (d, method ) {
+           it  <- itemFromRes(d)
+           if ( "estOffset" %in% colnames ( it ) ) {
+                 d[,"par"] <- car::recode ( d[,"par"], "'offset'='est'")
+                 it <- itemFromRes(d)
+           }
+           if ( !is.null(it)) {
+                 dimN <- by ( data = it, INDICES = it[,"dimension"], FUN = function ( prmDim ) {
+                         eq <- list(B.est = c(Mean.Mean=0 , Haebara =0, Stocking.Lord=0), descriptives = c(N.Items =0, SD=NA,  Var=NA, linkerror=NA))
+                         return ( list ( eq = eq, items = prmDim, method = method ) ) }, simplify = FALSE)
+           }  else  {                                                           ### jetzt fuer den Fall dass PVs bayesianische gezogen wurden und keine Itemparameter im results objekt stehen
+                 resX <- results[which(!is.na(results[,"group"])),]
+                 dimN <- by ( data = results, INDICES = results[,"group"], FUN = function ( prmDim ) {
+                         eq <- list(B.est = c(Mean.Mean=0 , Haebara =0, Stocking.Lord=0), descriptives = c(N.Items =0, SD=NA,  Var=NA, linkerror=NA))
+                         return ( list ( eq = eq, items = prmDim, method = method ) ) }, simplify = FALSE)
+           }
+           return(dimN)}
+
+### hilfsfunktion fuer equat1pl: schreibt Informationen auf die Konsole
+printToConsole <- function(d, nMods, it, prmDim, eq, allN, method, estimation, eqh) {
+           cat(paste("\n",paste(rep("=",100),collapse=""),"\n \nModel No. ",match(d[1,"model"], names(nMods)),"\n    Model name:                ",d[1,"model"],"\n    Number of dimension(s):    ",length(unique(it[,"dimension"])),"\n    Name(s) of dimension(s):   ", paste( names(table(as.character(it[,"dimension"]))), collapse = ", "),"\n",sep=""))
+           if  ( length(names(table(as.character(it[,"dimension"])))) > 1) {  cat(paste("    Name of current dimension: ",names(table(prmDim[,"dimension"]))," \n",sep=""))}
+           cat(paste("    Number of linking items:   " , eq[["descriptives"]][["N.Items"]],"\n",sep=""))
+           if ( !is.null(allN[["testlet"]]) ) { cat(paste( "    Number of testlets:        ",  eq[["ntl"]],"\n",sep="")) }
+           cat(paste("    Linking method:            " , method,"\n",sep=""))
+           if (method == "robust") { cat(paste("    Optimal trimming param.:   " , eqr[["kopt"]],"\n",sep="")) }
+           if (method == "Haberman") {
+               cat(paste("    Estimation method:         " , car::recode(estimation,"'OLS'='ordinary least squares'; 'BSQ'='bisquare weighted regression'; 'HUB'='regression using Huber weights'; 'MED'='median regression'; 'LTS'='trimmed least squares'; 'L1'='median polish'; 'L0'='minimizing number of interactions'"), "\n",sep=""))
+               tf <- capture.output(summary(eqh))
+               i1 <- grep("Used trimming factor", tf)
+               i2 <- grep("Estimation information item intercepts", tf)
+               i3 <- min(i1[which(i1>i2)])
+               i4 <- unlist(strsplit(tf[i3], "="))
+               cat(paste("    Used trimming factor:      " , round(as.numeric(eatTools::crop(i4[length(i4)])), digits = 3), "\n",sep=""))   }}
+
+### hilfsfunktion fuer equat1pl: behandelt linking DIF
+handleLinkingDif <- function(prmDim,prbl, eq, difBound, dif, method, excludeLinkingDif, iterativ,prmM, allN) {
+               cat(paste ( "\nDimension '", prmDim[1,"dimension"], "': ", length( prbl), " of ", nrow( eq[["anchor"]]), " items with linking DIF > ",difBound," identified.\n",sep=""))
+               dskr <- data.frame ( item = eq[["anchor"]][prbl,"item"], dif = dif[prbl], linking.constant = eq[["B.est"]][[method]], linkerror = eq[["descriptives"]][["linkerror"]] )
+               if ( !excludeLinkingDif) { info<- dskr }
+               if ( excludeLinkingDif ) {
+                    if ( iterativ == FALSE ) {
+                          cat(paste("   Exclude ",length( prbl), " items.\n",sep=""))
+                          qp1 <- prmM[-match ( dskr[,"item"], prmM[,allN[["item"]]]),]
+                          eq1 <- equAux ( x=prmDim[ ,c("item", "est")], y = qp1[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])] )
+                          info<- data.frame ( method = "nonIterativ", rbind ( data.frame ( itemExcluded = "" , linking.constant = eq[["B.est"]][[method]], linkerror = eq[["descriptives"]][["linkerror"]] ), data.frame ( itemExcluded = paste ( prmM[match ( dskr[,"item"], prmM[,allN[["item"]]]),allN[["item"]]] , collapse = ", "), linking.constant = eq1[["B.est"]][[method]], linkerror = eq1[["descriptives"]][["linkerror"]] ) ))
+                          eq  <- eq1
+    ### hier beginnt iterativer Ausschluss von Linking-DIF
+                    }  else  {
+                          info<- data.frame ( method = "iterativ", iter = 0 , itemExcluded = "" , linking.constant = eq[["B.est"]][[method]], linkerror = eq[["descriptives"]][["linkerror"]] )
+                          qp1 <- prmM
+                          iter<- 1
+                          while  ( length ( prbl ) > 0 ) {
+                                   maxD<- which ( abs ( eq[["anchor"]][,"TransfItempar.Gr1"] - eq[["anchor"]][,"Itempar.Gr2"] ) == max ( abs (eq[["anchor"]][,"TransfItempar.Gr1"] - eq[["anchor"]][,"Itempar.Gr2"])) )
+                                   wegI<- eq[["anchor"]][maxD,"item"]
+                                   cat ( paste ( "   Iteration ", iter,": Exclude item '",wegI,"'.\n",sep=""))
+                                   qp1 <- qp1[-match ( wegI, qp1[,allN[["item"]]]),]
+                                   eq  <- equAux ( x = prmDim[ ,c("item", "est")], y = qp1[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])] )
                                    dif <- eq[["anchor"]][,"TransfItempar.Gr1"] - eq[["anchor"]][,"Itempar.Gr2"]
                                    prbl<- which ( abs ( dif ) > difBound )
-                               }  else  {
-                                   if ( eq[["descriptives"]][["N.Items"]] == 0) { eqr <- eqh <- NULL}
-                               }
-                               cat(paste("\n",paste(rep("=",100),collapse=""),"\n \nModel No. ",match(d[1,"model"], names(nMods)),"\n    Model name:                ",d[1,"model"],"\n    Number of dimension(s):    ",length(unique(it[,"dimension"])),"\n    Name(s) of dimension(s):   ", paste( names(table(as.character(it[,"dimension"]))), collapse = ", "),"\n",sep=""))
-                               if  ( length(names(table(as.character(it[,"dimension"])))) > 1) {  cat(paste("    Name of current dimension: ",names(table(prmDim[,"dimension"]))," \n",sep=""))}
-                               cat(paste("    Number of linking items:   " , eq[["descriptives"]][["N.Items"]],"\n",sep=""))
-                               if ( !is.null(allN[["testlet"]]) ) { cat(paste( "    Number of testlets:        ",  eq[["ntl"]],"\n",sep="")) }
-                               cat(paste("    Linking method:            " , method,"\n",sep=""))
-                               if (method == "robust") { cat(paste("    Optimal trimming param.:   " , eqr[["kopt"]],"\n",sep="")) }
-                               if (method == "Haberman") {
-                                   cat(paste("    Estimation method:         " , car::recode(estimation,"'OLS'='ordinary least squares'; 'BSQ'='bisquare weighted regression'; 'HUB'='regression using Huber weights'; 'MED'='median regression'; 'LTS'='trimmed least squares'; 'L1'='median polish'; 'L0'='minimizing number of interactions'"), "\n",sep=""))
-                                   tf <- capture.output(summary(eqh))
-                                   i1 <- grep("Used trimming factor", tf)
-                                   i2 <- grep("Estimation information item intercepts", tf)
-                                   i3 <- min(i1[which(i1>i2)])
-                                   i4 <- unlist(strsplit(tf[i3], "="))
-                                   cat(paste("    Used trimming factor:      " , round(as.numeric(eatTools::crop(i4[length(i4)])), digits = 3), "\n",sep=""))
-                               }
-    ### Gibt es Items mit linking dif?
-                               if ( method != "robust" && method != "Haberman" && length( prbl ) > 0 ) {
-                                    cat(paste ( "\nDimension '", prmDim[1,"dimension"], "': ", length( prbl), " of ", nrow( eq[["anchor"]]), " items with linking DIF > ",difBound," identified.\n",sep=""))
-                                    dskr <- data.frame ( item = eq[["anchor"]][prbl,"item"], dif = dif[prbl], linking.constant = eq[["B.est"]][[method]], linkerror = eq[["descriptives"]][["linkerror"]] )
-                                    if ( !excludeLinkingDif) { info<- dskr }
-                                    if ( excludeLinkingDif ) {
-                                         if ( iterativ == FALSE ) {
-                                              cat(paste("   Exclude ",length( prbl), " items.\n",sep=""))
-                                              qp1 <- prmM[-match ( dskr[,"item"], prmM[,allN[["item"]]]),]
-                                              eq1 <- equAux ( x=prmDim[ ,c("item", "est")], y = qp1[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])] )
-                                              info<- data.frame ( method = "nonIterativ", rbind ( data.frame ( itemExcluded = "" , linking.constant = eq[["B.est"]][[method]], linkerror = eq[["descriptives"]][["linkerror"]] ), data.frame ( itemExcluded = paste ( prmM[match ( dskr[,"item"], prmM[,allN[["item"]]]),allN[["item"]]] , collapse = ", "), linking.constant = eq1[["B.est"]][[method]], linkerror = eq1[["descriptives"]][["linkerror"]] ) ))
-                                              eq  <- eq1
-    ### hier beginnt iterativer Ausschluss von Linking-DIF
-                                         }  else  {
-                                              info<- data.frame ( method = "iterativ", iter = 0 , itemExcluded = "" , linking.constant = eq[["B.est"]][[method]], linkerror = eq[["descriptives"]][["linkerror"]] )
-                                              qp1 <- prmM
-                                              iter<- 1
-                                              while  ( length ( prbl ) > 0 ) {
-                                                  maxD<- which ( abs ( eq[["anchor"]][,"TransfItempar.Gr1"] - eq[["anchor"]][,"Itempar.Gr2"] ) == max ( abs (eq[["anchor"]][,"TransfItempar.Gr1"] - eq[["anchor"]][,"Itempar.Gr2"])) )
-                                                  wegI<- eq[["anchor"]][maxD,"item"]
-                                                  cat ( paste ( "   Iteration ", iter,": Exclude item '",wegI,"'.\n",sep=""))
-                                                  qp1 <- qp1[-match ( wegI, qp1[,allN[["item"]]]),]
-                                                  eq  <- equAux ( x = prmDim[ ,c("item", "est")], y = qp1[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])] )
-                                                  dif <- eq[["anchor"]][,"TransfItempar.Gr1"] - eq[["anchor"]][,"Itempar.Gr2"]
-                                                  prbl<- which ( abs ( dif ) > difBound )
-                                                  info<- rbind(info, data.frame ( method = "iterativ", iter = iter , itemExcluded = wegI, linking.constant = round ( eq[["B.est"]][[method]],digits = 3), linkerror = round ( eq[["descriptives"]][["linkerror"]], digits = 3) ))
-                                                  iter<- iter + 1
-                                              }
-                                         }
-                                    }
-                               }  else  {                                       ### hier folgt der Abschnitt, wenn es keine Linking-Dif Items gibt bzw. wenn methode 'robust' ist
-                                    if (method %in% c("Mean.Mean", "Haebara", "Stocking.Lord")) {
-                                        info <- data.frame ( linking.constant = eq[["B.est"]][[method]], linkerror = eq[["descriptives"]][["linkerror"]] )
-                                    }
-                                    if ( method == "robust" ) {
-                                        werte<- list (c(eqr[["meanpars"]][["k0"]], eqr[["meanpars"]][[names(eqr[["ind.kopt"]])]]), c(eqr[["se"]][["k0"]], eqr[["se"]][[names(eqr[["ind.kopt"]])]]))
-                                        werte<- lapply( werte , FUN = function ( wert) { ifelse(is.null(wert), NA, wert)})
-                                        info <- data.frame ( linking.method = c("non robust", "robust"), linking.constant = werte[[1]], linkerror = werte[[2]], stringsAsFactors=FALSE)
-                                    }    
-                                    if ( method == "Haberman" ) {
-                                        wert <- eqh[["transf.itempars"]][2,"B_b"]
-                                        wert <- ifelse(is.null(wert), NA, wert)
-                                        info <- data.frame ( linking.constant = wert, linkerror = NA, stringsAsFactors=FALSE)
-                                    }
-                               }
-                               cat("\n")
-                               infPrint <- data.frame ( lapply ( info , FUN = function ( x ) {if(class(x) == "numeric") { x <- round(x, digits = 3)}; return(x) }))
-                               print(infPrint); flush.console()
-                               cat("\n")
-                               if (method == "robust") {
-                                   wert<- list(eqr[["meanpars"]][[names(eqr[["ind.kopt"]])]], eqr[["se"]][[names(eqr[["ind.kopt"]])]])
-                                   wert<- lapply(wert, FUN = function (w) {ifelse(is.null(w), NA, w)})
-                                   eq  <- list ( B.est = data.frame ( robust = wert[[1]]), descriptives = data.frame ( N.items = nrow(prm), linkerror = wert[[2]], stringsAsFactors =FALSE) )
-                               }
+                                   info<- rbind(info, data.frame ( method = "iterativ", iter = iter , itemExcluded = wegI, linking.constant = round ( eq[["B.est"]][[method]],digits = 3), linkerror = round ( eq[["descriptives"]][["linkerror"]], digits = 3) ))
+                                   iter<- iter + 1
+                          }
+                    }
+               }
+               return(list(eq=eq, info=info))}
 
-                               if (method == "Haberman") {
-                                   wert <- list(eqh[["transf.itempars"]][2,"B_b"], nrow(eqh[["joint.itempars"]]))
-                                   wert <- lapply(wert, FUN = function (w) {ifelse(is.null(w), NA, w)})
-                                   eq <- list ( B.est = data.frame ( Haberman = wert[[1]]), descriptives = data.frame ( N.items = wert[[2]], linkerror = NA, stringsAsFactors =FALSE) )
-                               }
-                               ret <- list ( eq = eq, items = prmDim, info = info, method = method )
-                               return ( ret ) }, simplify =FALSE)
-                       return(dimN) }, simplify = FALSE)
-              return(list ( items = items, results = results))                  ### "results"-Objekt wird durchgeschleift
-              }  }
+### hilfsfunktion fuer equat1pl: wenn es keine Linking-Dif Items gibt bzw. wenn methode 'robust' ist
+noLinkingDif <- function (method=method, eq=eq, eqr=eqr, eqh=eqh) {
+              if (method %in% c("Mean.Mean", "Haebara", "Stocking.Lord")) {
+                   info <- data.frame ( linking.constant = eq[["B.est"]][[method]], linkerror = eq[["descriptives"]][["linkerror"]] )
+              }
+              if ( method == "robust" ) {
+                   werte<- list (c(eqr[["meanpars"]][["k0"]], eqr[["meanpars"]][[names(eqr[["ind.kopt"]])]]), c(eqr[["se"]][["k0"]], eqr[["se"]][[names(eqr[["ind.kopt"]])]]))
+                   werte<- lapply( werte , FUN = function ( wert) { ifelse(is.null(wert), NA, wert)})
+                   info <- data.frame ( linking.method = c("non robust", "robust"), linking.constant = werte[[1]], linkerror = werte[[2]], stringsAsFactors=FALSE)
+              }
+              if ( method == "Haberman" ) {
+                   wert <- eqh[["transf.itempars"]][2,"B_b"]
+                   wert <- ifelse(is.null(wert), NA, wert)
+                   info <- data.frame ( linking.constant = wert, linkerror = NA, stringsAsFactors=FALSE)
+              }
+              return(list(eq=eq, info=info))}
+
+### hilfsfunktion fuer equat1pl
+createOutput <- function (method, eqr, prm, eqh, info){
+              if (method == "robust") {
+                  wert<- list(eqr[["meanpars"]][[names(eqr[["ind.kopt"]])]], eqr[["se"]][[names(eqr[["ind.kopt"]])]])
+                  wert<- lapply(wert, FUN = function (w) {ifelse(is.null(w), NA, w)})
+                  eq  <- list ( B.est = data.frame ( robust = wert[[1]]), descriptives = data.frame ( N.items = nrow(prm), linkerror = wert[[2]], stringsAsFactors =FALSE) )
+              }
+              if (method == "Haberman") {
+                  wert <- list(eqh[["transf.itempars"]][2,"B_b"], nrow(eqh[["joint.itempars"]]))
+                  wert <- lapply(wert, FUN = function (w) {ifelse(is.null(w), NA, w)})
+                  eq <- list ( B.est = data.frame ( Haberman = wert[[1]]), descriptives = data.frame ( N.items = wert[[2]], linkerror = NA, stringsAsFactors =FALSE) )
+              }
+              return(list(eq=eq, info=info))}
+
+
+### hilfsfunktion fuer equat1pl: 'splitter', der die einzelnen equatings fuer rekursiven selbstaufruf definiert
+#buildWorkbook <- function(results, prmNorm, allF, funCall = NULL){
+#           years <- unique(sort(prmNorm[,allF[["year"]]]))
+#           breaks<- combinat::combn(1:length(years), 2, simplify=FALSE)
+#           breaks<- breaks[which(unlist(lapply(breaks, diff))==1)]
+#           breaks[["last"]] <- "focus"
+#           breaks<- lapply(breaks, FUN = function (b) {
+#    ### workbook schreiben fuer equating innerhalb der itemparameter-data.frames
+#                    if ( class(b) %in% c("numeric", "integer") ) {
+#                         foc <- prmNorm[which(prmNorm[,allF[["year"]]] == years[b[2]]),]
+#                         ref <- prmNorm[which(prmNorm[,allF[["year"]]] == years[b[1]]),]
+#                         neu <- c("item", "domain", "testlet", "value")
+#                         for ( i in neu) { allF[[paste0(i,"F")]] <- allF[[i]]}
+#    ### workbook schreiben fuer equating des (letzten) itemparameter-data.frames mit dem results-objekt
+#                    }  else  {
+#                         ref <- prmNorm[which(prmNorm[,allF[["year"]]] == max(years)),]
+#                    }
+#                    allF[["year"]] <- allF[["ref"]] <- NULL
+#                    arg <- paste(names(allF), paste0("allF[[\"",names(allF),"\"]]"), sep=" = ", collapse=", ")
+#                    if ( !is.null(funCall)) {
+#                          drin    <- which(names(funCall) %in% c(names(allF), "results", "prmNorm", "year", "ref"))
+#                          funCall <- funCall[-drin]
+#                    }
+#                    quot<- lapply(funCall, FUN = function ( g ) {car::recode(as.numeric(g), "NA=TRUE; else=FALSE")})
+#                    arg2<- paste(names(funCall), paste0(car::recode(unlist(quot), "0=''; 1='\'"),funCall,car::recode(unlist(quot), "0=''; 1='\'")), sep=" = ", collapse=", ")
+#                    arg <- paste(arg, arg2, sep=", ")
+#                    if ( class(b) %in% c("numeric", "integer") ) {
+#                         call<- paste0("equat1pl(results=foc, prmNorm = ref, ", arg, ")")
+#                    }  else  {
+#                         call<- paste0("equat1pl(results=results, prmNorm = ref, ", arg, ")")
+#                    }
+#                    res <- eval(parse(text=call))
+#                    return(res)})
+#           vgls  <- c(years, "focus")
+#           vgls  <- unlist(lapply(1:(length(vgls)-1),FUN = function(i) { paste0(vgls[i],"_vs_",vgls[i+1])}))
+#           names(breaks) <- vgls
+#           return(breaks) }
+
+
+### fuer mehr als zwei Messzeitpunkte muss die Funktion rekursiv werden (ruft sich selber auf)
+equat1pl<- function ( results , prmNorm , item = NULL, domain = NULL, testlet = NULL, value = NULL, excludeLinkingDif = TRUE, difBound = 1, iterativ = FALSE, method = c("Mean.Mean", "Haebara", "Stocking.Lord", "robust", "Haberman"),
+           itemF = NULL, domainF = NULL, testletF = NULL, valueF = NULL, estimation=c("OLS", "BSQ", "HUB", "MED", "LTS", "L1", "L0"), b_trim=Inf, lts_prop=.5) {
+           estimation <- match.arg(estimation)
+           method     <- match.arg(method)
+    ### [Platzhalter] wenn mehr als zwei Jahre verlinkt werden sollen (also wenn 'year' nicht null ist), soll rekursiver Aufruf beginnen
+           if ( 1 == 2) {                                                       ### Konsistenz des Referenzparameter-data.frames checken
+               return(NULL)
+               #chk3  <- checkItemParLists (prmNorm=prmNorm, item=item, domain=domain, testlet=testlet, value=value, year=year, ref=ref)
+               #wb1   <- buildWorkbook(results=results, prmNorm=prmNorm, allF = chk3, funCall=funCall)
+           }  else  {
+    ### Achtung! Funktion kann (was der default ist) sowohl Output aus 'runModel' weiterverarbeiten oder einfach nur zum Equaten zweiter verschiedener Itemparameterlisten genutzt werden
+    ### Also muss die Funktion erstmal rauskriegen, was von beidem gemacht werden soll. Wenn 'isRunM' gleich TRUE, dann default
+               isRunM<- all(c("model" , "source" , "var1" , "var2" , "type" , "indicator.group", "group", "par", "derived.par", "value") %in% names(results))
+               if ( isRunM) {
+                    nMods <- table(results[,"model"])
+                    cat(paste("Found ", length(nMods), " model(s).\n   Equating is executed for each dimension in each model separately.\n",sep=""))
+                    dims  <- unique(unlist(by ( data = results, INDICES = results[,"model"], FUN = function ( x ) { names(table(as.character(itemFromRes(x)[,"dimension"])))})))
+                    if ( is.null(dims)) {
+                         dims <- unique(na.omit(results[,"group"]))
+                         cat(paste0("  Warning: Cannot extract dimensions from 'results' object. This should only occur for bayesian plausible values imputation. Assume following dimensions: \n    '",paste(dims, collapse = "', '"),"'.\n"))
+                    }
+    ### jetzt beginnt der Fall, dass einfach nur zwei Itemparameterlisten equatet werden sollen. Dazu transformiert die Funktion den Input 'results' in das benoetigte Format
+               }  else  {
+                    resList <- transformItemParListIntoResults (results = results, prmNorm =prmNorm, itemF = itemF, domainF = domainF, testletF = testletF, valueF = valueF)
+                    results <- resList[["results"]]
+                    dims    <- nMods <- resList[["dims"]]
+               }
+               if ( missing ( prmNorm) ) {                                      ### kein Equating: Rueckgabe NULL, 'results' wird durchgeschleift
+                    if ( isFALSE(isRunM) ) { stop("No norm parameter defined ('prmNorm' is missing).\n")}
+                    cat("No norm parameter defined ('prmNorm' is missing). Treat current sample as drawn from the reference population.\n")
+    ### Kein equating: baue 'leeres' Rueckgabeobjekt
+                    items <- by ( data = results, INDICES = results[,"model"], FUN = function ( d ) {
+                             dimN <- buildEmptyResultsObject(d=d, method = method)
+                             return(dimN)}, simplify = FALSE)
+                    ret   <- list(items = items, results = results)             ### die Klasse des Rueckgabeobjekts heisst hier "eq2tom", das ist das Equatingobjekt
+                    class(ret) <- c("eq2tom", class(ret))                       ### fuer 2 Messzeitpunkte (time of measurement)
+                    return(ret)
+    ### Equating: baue 'befuelltes' Rueckgabeobjekt
+               }  else {                                                        ### plausibility checks
+                    allN  <- checkItemParLists(prmNorm =prmNorm, item = item, domain = domain, testlet = testlet, value = value, dims=dims)
+    ### Fuer jedes Modell und jede Dimension innerhalb jedes Modells findet Equating separat statt
+                    items <- by ( data = results, INDICES = results[,"model"], FUN = function ( d ) {
+                           if ( isRunM  ) {
+                                it  <- itemFromRes(d)
+                           }  else  {
+                                it  <- d
+                           }
+                           if ( "estOffset" %in% colnames ( it ) ) {
+                                cat(paste("W A R N I N G:  Model '",d[1,"model"],"' was estimated with (at least partially) anchored items parameters. Equating seems questionable.\n",sep=""))
+                                d[,"par"] <- car::recode ( d[,"par"], "'offset'='est'")
+                                it <- itemFromRes(d)
+                           }
+                           dimN <- by ( data = it, INDICES = it[,"dimension"], FUN = function ( prmDim ) {
+                                   if(!is.null(allN[["domain"]]) ) {
+                                       prmM<- prmNorm [ which(prmNorm[,allN[["domain"]]] %in% unique(it[,"dimension"])) ,]
+                                   }  else  {
+                                       prmM<- prmNorm
+                                   }
+    ### items muessen unique sein
+                                   if ( length(prmDim[, "item"]) != length(unique(prmDim[, "item"])) ) {  stop(paste("Items are not unique for model '",as.character(d[1,"model"]),"'.\n",sep="")) }
+                                   eq  <- equAux ( x = prmDim[ ,c("item", "est")], y = prmM[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])] )
+                                   if ( eq[["descriptives"]][["N.Items"]] > 0) {
+                                         if ( method == "robust") {
+                                             prm<- merge(prmM[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])], prmDim[ ,c("item", "est")], by.y="item", by.x = allN[["item"]], all=FALSE)
+                                             eqr<- sirt::linking.robust(prm)    ### Haberman: der waehlt das Vorzeichen nach alphabetischer Reihenfolge in "study"
+                                         }                                      ### Achtung: fuer Haberman spielt es eine Rolle, wieviele nicht-link-items zusaetzlich mit drin sind
+                                         if ( method == "Haberman") {           ### also die Linkingkonstante ist eine andere, wenn man nur die gemeinsamen items im Objekt 'prm' drinhat, oder wenn alle drin sind
+                                             prm<- rbind ( data.frame ( study = "norm", item = prmM[,allN[["item"]]], a=1, b = prmM[,allN[["value"]]], stringsAsFactors = FALSE), data.frame ( study = "focus", item = prmDim[ ,"item"], a=1, b = prmDim[ ,"est"], stringsAsFactors = FALSE))
+                                             eqh<- sirt::linking.haberman(prm, progress = FALSE, estimation = estimation, b_trim=b_trim, lts_prop=lts_prop)
+                                         }
+                                   }
+                                   if ( method %in% c("Mean.Mean", "Haebara", "Stocking.Lord")) {
+                                       dif <- eq[["anchor"]][,"TransfItempar.Gr1"] - eq[["anchor"]][,"Itempar.Gr2"]
+                                       prbl<- which ( abs ( dif ) > difBound )
+                                   }  else  {
+                                       if ( eq[["descriptives"]][["N.Items"]] == 0) { eqr <- eqh <- NULL}
+                                   }
+    ### Konsolenoutput (Teil 1) erstellen
+                                   foo <- printToConsole(d=d, nMods=nMods, it=it, prmDim=prmDim, eq=eq, allN=allN, method=method, estimation=estimation, eqh=eqh)
+    ### Gibt es Items mit linking dif?
+                                   if ( method != "robust" && method != "Haberman" && length( prbl ) > 0 ) {
+                                        eld  <- handleLinkingDif(prmDim=prmDim,prbl=prbl, eq=eq, difBound=difBound, dif=dif, method=method, excludeLinkingDif=excludeLinkingDif, iterativ=iterativ,prmM=prmM, allN=allN)
+                                   }  else  {                                   ### hier folgt der Abschnitt, wenn es keine Linking-Dif Items gibt bzw. wenn methode 'robust' ist
+                                        eld  <- noLinkingDif(method=method, eq=eq, eqr=eqr, eqh=eqh)
+                                   }
+    ### Konsolenoutput (Teil 2) ausgeben lassen
+                                   cat("\n")
+                                   print(eatTools::roundDF(eld[["info"]])); flush.console()
+                                   cat("\n")
+    ### Output fuer die Methoden robust und Haberman in die einheitliche Struktur der anderen Methoden bringen
+                                   if ( method %in% c("robust", "Haberman")) {
+                                        eld <- createOutput(method=method, eqr=eqr, prm=prm, eqh=eqh, info=eld[["info"]])
+                                   }
+                                   ret <- list ( eq = eld[["eq"]], items = prmDim, info = eld[["info"]], method = method )
+                                   return ( ret ) }, simplify =FALSE)
+                           return(dimN) }, simplify = FALSE)
+                  ret  <- list ( items = items, results = results)              ### die Klasse des Rueckgabeobjekts heisst hier "eq2tom", das ist das Equatingobjekt
+                  class(ret) <- c("eq2tom", class(ret))                         ### fuer 2 Messzeitpunkte (time of measurement)
+                  return(ret)                                                   ### "results"-Objekt wird durchgeschleift
+                  }  }  }
 
 ### Hilfsfunktion fuer equat1pl
 equAux  <- function ( x, y ) {
@@ -468,7 +571,7 @@ adaptEatRepVersion <- function ( x ) {
            stopifnot ( "data.frame" %in% class(x) )
            return(x)
      } }
-     
+
 transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defaultM = 500, defaultSD = 100, roman = FALSE, vera = TRUE, idVarName = NULL ) {
     ### wenn equatet wurde, sollte auch 'refPop' definiert sein (es sei denn, es wurde verankert skaliert)
     ### wenn 'refPop' fehlt, wird es fuer alle gegebenen Dimensionen anhand der Gesamtstichprobe berechnet

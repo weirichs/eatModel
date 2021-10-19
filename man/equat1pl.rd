@@ -7,10 +7,9 @@ Moreover, optional elimination of items with linking DIF is allowed and linking 
 via the jackknife method if testlets are specified.}
 \usage{
 equat1pl(results, prmNorm, item = NULL, domain = NULL, testlet = NULL, value = NULL, 
-         excludeLinkingDif = TRUE, difBound = 1, iterativ = FALSE, 
-         method = c("Mean.Mean", "Haebara", "Stocking.Lord", "robust", "Haberman"),
-         itemF = NULL, domainF = NULL, valueF = NULL,
-         estimation=c("OLS", "BSQ", "HUB", "MED", "LTS", "L1", "L0"),
+         excludeLinkingDif = TRUE, difBound = 1, iterativ = FALSE,
+         method = c("Mean.Mean", "Haebara", "Stocking.Lord", "robust", "Haberman"), itemF = NULL,
+         domainF = NULL, testletF = NULL, valueF = NULL, estimation=c("OLS", "BSQ", "HUB", "MED", "LTS", "L1", "L0"),
          b_trim=Inf, lts_prop=.5)}
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -49,6 +48,15 @@ linking errors should be estimated via the jackknife method.
 %%     ~~Describe \code{file} here~~
 Optional: Give the number or name of the parameter column in \code{prmNorm}.
 }
+%%  \item{year}{
+%%     ~~Describe \code{file} here~~
+%%Optional: If the function is used to link more than 2 time points, give the number or name of the year column in \code{prmNorm}.
+%%}
+%%  \item{ref}{
+%%     ~~Describe \code{file} here~~
+%%Optional: If the function is used to link more than 2 time points, give the number or name of the reference column in \code{prmNorm}.
+%%This column is expected to be logical (missings are not allowed). \code{TRUE} indicates the reference year.
+%%}
   \item{excludeLinkingDif}{
 %%     ~~Describe \code{file} here~~
 Logical. Should items with linking DIF excluded? 
@@ -80,6 +88,11 @@ Optional: Give the number or name of the item column in results.
   \item{domainF}{
 %%     ~~Describe \code{file} here~~
 Optional: Give the number or name of the domain column in results. 
+}
+  \item{testletF}{
+%%     ~~Describe \code{file} here~~
+Optional: Give the number or name of the testlet column in teh results object. Only necessary if
+linking errors should be estimated via the jackknife method.
 }
   \item{valueF}{
 %%     ~~Describe \code{file} here~~
