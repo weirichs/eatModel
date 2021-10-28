@@ -520,7 +520,7 @@ qMat <- data.frame ( qMat[,1,drop=FALSE],
 ################################################################################
 
 # Example 1: define and run a unidimensional Rasch model with all variables in dataset
-# using "Conquest".
+# using "TAM".
 
 # defining the model: specifying q matrix is not necessary
 mod1 <- defineModel(dat=datW, items= -c(1:3), id="id", analysis.name = "unidim",
