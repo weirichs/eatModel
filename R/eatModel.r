@@ -1074,8 +1074,8 @@ doAufb <- function ( m, matchCall, anf, verbose ) {
              }                                                                  ### wenn nach den ganzen checks immer noch zusaetzliche Argumente uebrig sind, werden die jetzt
              if ( length ( overwrF ) > 0 ) {                                    ### in 'overwr1' ergaenzt ... und in 'splittedModels' fuer die 'sprechenden Ausgaben'
                   for ( hh in overwrF ) {
-                        overwr1[[hh]] <- splittedModels[["models"]][m,hh]
-                        splittedModels[["models.splitted"]][[matchL]][[hh]] <- splittedModels[["models"]][m,hh]
+                        overwr1[[hh]] <- splittedModels[["models"]][which(splittedModels[["models"]][,"model.no"] == m),hh]
+                        splittedModels[["models.splitted"]][[matchL]][[hh]] <- splittedModels[["models"]][which(splittedModels[["models"]][,"model.no"] == m),hh]
                   }
              }
           }  else  { overwrF <-  NULL }
@@ -1088,7 +1088,7 @@ doAufb <- function ( m, matchCall, anf, verbose ) {
           allNams<- lapply(allVars, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = dat, variable=ii)})
           overwr3<- data.frame ( arg = c("Model name", "Number of items", "Number of persons", "Number of dimensions"), eval = as.character(c(splittedModels[["models.splitted"]][[matchL]][["model.name"]],length(allNams[["variablen"]]), nrow(datSel) , nDim)), stringsAsFactors = FALSE)
            if ( length ( overwrF) > 0 )  {
-                zusatz <- lapply ( overwrF, FUN = function ( y ) { splittedModels[["models"]][m,y] })
+                zusatz <- lapply ( overwrF, FUN = function ( y ) { splittedModels[["models"]][which(splittedModels[["models"]][,"model.no"] == m),y] })
                 zusatz <- data.frame ( arg = overwrF, eval = as.character ( zusatz ) )
                 overwr3<- rbind ( overwr3, zusatz)
            }
@@ -1106,7 +1106,8 @@ doAufb <- function ( m, matchCall, anf, verbose ) {
              ret    <- overwr1                                                  ### multicore: die verschiedenen Modelle werden noch nicht weiter verarbeitet,
           }                                                                     ### es wird lediglich der Modellaufruf generiert, der dann spaeter an die einzelnen
           return(ret) }                                                         ### cores weitergegeben wird
-
+          
+          
 ### dat               ... Datensatz als R-Dataframe
 ### items             ... wo stehen Items im datensatz, z.B. 5:120 oder -c(1:5)
 ### id                ... wo steht ID-variable, entweder Spaltennummer oder Variablenname als String
