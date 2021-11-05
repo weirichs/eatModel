@@ -2783,26 +2783,30 @@ get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.d
             	if ( isRegression)   {
                   regrEnd <- grep("An asterisk next", input.all)
               		regrEnd <- regrEnd[which(regrEnd > regrStart)][1] - 2
-              		regrInput <- eatTools::crop(input.all[regrStart:regrEnd])
-              		zeileDimensions <- grep("Regression Variable",input.all)
-                  stopifnot(length(zeileDimensions) ==1)
-              		nameDimensions  <- unlist(strsplit(input.all[zeileDimensions], "  +"))[-1]
-              		regrRows <- grep("CONSTANT",input.all)
-                  regrRows <- regrRows[regrRows<=regrEnd][1]
-              		regrNamen <- unlist(lapply(strsplit(input.all[regrRows:regrEnd],"  +"), FUN=function(ii) {unlist(ii)[1]} ))
-                  regrInputSel <- eatTools::crop(input.all[regrRows:regrEnd])
-                  regrInputSel <- gsub("\\(","",regrInputSel)
-              		regrInputSel <- gsub(")","",regrInputSel)
-              		regrInputSel <- gsub("\\*","  NA",regrInputSel)
-              		regrInputSel <- unlist( strsplit(regrInputSel," +") )
-              		nDimensions  <- (length(  regrInputSel ) / length(regrNamen) - 1 )/2
-                  cat(paste("Found ",nDimensions," dimension(s): ",paste(nameDimensions,collapse=", "),"\n",sep=""))
-                  cat(paste("Found ",length(regrNamen)-1," regressor(s).\n",sep=""))
-                  regrInputSel <- data.frame(matrix(regrInputSel, ncol=2*nDimensions+1, byrow=T),stringsAsFactors=F)
-                  for (ii in 2:ncol(regrInputSel))  {regrInputSel[,ii] <- as.numeric(regrInputSel[,ii])}
-                  colnames(regrInputSel) <- c("reg.var", paste(rep(c("coef","error"),nDimensions), rep(nameDimensions,each=2),sep="_") )
-                  regrInputSel$filename <- file
-              		all.output$regression <- regrInputSel
+              		if ( is.na(regrEnd)) {
+              		     warning(paste0("Regression coefficients seems to be missing or corrupted in '",file,"'."))
+              		} else {
+                    	 regrInput <- eatTools::crop(input.all[regrStart:regrEnd])
+                  		 zeileDimensions <- grep("Regression Variable",input.all)
+                       stopifnot(length(zeileDimensions) ==1)
+                  		 nameDimensions  <- unlist(strsplit(input.all[zeileDimensions], "  +"))[-1]
+                  		 regrRows <- grep("CONSTANT",input.all)
+                       regrRows <- regrRows[regrRows<=regrEnd][1]
+                  		 regrNamen <- unlist(lapply(strsplit(input.all[regrRows:regrEnd],"  +"), FUN=function(ii) {unlist(ii)[1]} ))
+                       regrInputSel <- eatTools::crop(input.all[regrRows:regrEnd])
+                       regrInputSel <- gsub("\\(","",regrInputSel)
+                  		 regrInputSel <- gsub(")","",regrInputSel)
+                  		 regrInputSel <- gsub("\\*","  NA",regrInputSel)
+                  		 regrInputSel <- unlist( strsplit(regrInputSel," +") )
+                  		 nDimensions  <- (length(  regrInputSel ) / length(regrNamen) - 1 )/2
+                       cat(paste("Found ",nDimensions," dimension(s): ",paste(nameDimensions,collapse=", "),"\n",sep=""))
+                       cat(paste("Found ",length(regrNamen)-1," regressor(s).\n",sep=""))
+                       regrInputSel <- data.frame(matrix(regrInputSel, ncol=2*nDimensions+1, byrow=T),stringsAsFactors=F)
+                       for (ii in 2:ncol(regrInputSel))  {regrInputSel[,ii] <- as.numeric(regrInputSel[,ii])}
+                       colnames(regrInputSel) <- c("reg.var", paste(rep(c("coef","error"),nDimensions), rep(nameDimensions,each=2),sep="_") )
+                       regrInputSel$filename <- file
+                  		 all.output$regression <- regrInputSel
+              		}
               }
     ### Kovarianz-/ Korrelationsmatrix einlesen: schwierig, also Trennen nach ein- vs. mehrdimensional. Eindimensional: zweimal "-----" zwischen Beginn und Ende des COVARIANCE-Statements
               korStart <- grep("COVARIANCE/CORRELATION MATRIX", input.all)
@@ -2838,9 +2842,12 @@ get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.d
             all.output$reliability <- do.call("rbind", lapply(i1, FUN = function (z ) {
                     stopifnot(substr(input.all[z+3], 2,35) == "WLE Person separation RELIABILITY:")
                     stopifnot(substr(input.all[z+4], 2,20) == "EAP/PV RELIABILITY:")
-                    return(data.frame ( dim = eatTools::crop(eatTools::crop(substring(input.all[z], 13)), ")"), wle.rel = as.numeric(eatTools::crop(substring(input.all[z+3], 36))), eap.rel = as.numeric(eatTools::crop(substring(input.all[z+4], 36))), stringsAsFactors = FALSE))}))
+                    return(data.frame ( dim = eatTools::crop(eatTools::crop(substring(input.all[z], 13)), ")"),
+                           wle.rel = as.numeric(eatTools::crop(substring(input.all[z+3], 36))),
+                           eap.rel = as.numeric(eatTools::crop(substring(input.all[z+4], 36))),
+                           stringsAsFactors = FALSE))}))
             return(all.output)}
-
+            
 get.prm <- function(file)   {
             input <- scan(file,what="character",sep="\n",quiet=TRUE)
             input <- strsplit( gsub("\\\t"," ",eatTools::crop(input)), "/\\*")  ### Hier ist es wichtig, gsub() anstelle von sub() zu verwenden! sub() loescht nur das erste Tabulatorzeichen
