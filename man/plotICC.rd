@@ -50,13 +50,17 @@ Sebastian Weirich
 This function is beta! Use with care...
 }
 \examples{
-data(sciences)
+data(trends)
+# choose only 2010
+dat <- trends[which(trends[,"year"] == 2010),]
+# choose reading
+dat <- dat[which(dat[,"domain"] == "reading"),]
 
 # first reshape the data set into wide format
-datW <- reshape2::dcast(sciences, id+grade+sex~variable, value.var="value")
+datW <- reshape2::dcast(dat, idstud~item, value.var="value")
 
 # defining the model: specifying q matrix is not necessary
-mod1 <- defineModel(dat=datW, items= -c(1:3), id="id", software = "tam")
+mod1 <- defineModel(dat=datW, items= -1, id="idstud", software = "tam")
 
 # run the model
 run1 <- runModel(mod1)
@@ -65,5 +69,5 @@ run1 <- runModel(mod1)
 res1 <- getResults(run1)
 
 # plot for one item 
-plotICC  ( resultsObj = res1, defineModelObj = mod1, item = "BioPro13")
+plotICC  ( resultsObj = res1, defineModelObj = mod1, item = "T04_04")
 }
