@@ -1,22 +1,22 @@
 # wird auf namespace exportiert, soll sowohl data.frames als auch results-objekte verarbeiten koennen
 # inputobjekte heissen unspezifisch x1, x2, x3, weil es ja sowohl data.frames als auch results-objekte sein koennen
-multiEquatError <- function (x1, x2, x3, difBound = 1 ){
+multiEquatError <- function(x1, x2, x3, difBound = 1, dependentDIF = FALSE) {
     ### unspecific checks
        liste<- list(x1, x2, x3)
        chk1 <- checkInput(liste)
     ### what kind of input?
        if ( "derived.par" %in% colnames(x1) ) {                                 ### specific checks for 'eatModelResults' object
             obj  <- prepareAndCheckEatModelObject(liste, difBound=difBound)     ### diese Funktion checkt das 'defModelObjList' Objekt und passt es so an, dass damit 'tripleEquatError' ausgefuehrt werden kann
-            link <- lapply(names(obj), FUN = function (dim ) { tripleEquatError(e1=obj[[dim]][[1]][,c("item", "est")], e2=obj[[dim]][[2]][,c("item", "est")], e3= obj[[dim]][[3]][,c("item", "est")])})
+            link <- lapply(names(obj), FUN = function (dim ) { tripleEquatError(e1=obj[[dim]][[1]][,c("item", "est")], e2=obj[[dim]][[2]][,c("item", "est")], e3= obj[[dim]][[3]][,c("item", "est")], dependentDIF=dependentDIF)})
             names(link) <- names(obj)
        } else {                                                                 ### specific checks for 'data.frame' object
-            link <- tripleEquatError(e1=x1, e2=x2, e3=x3)
+            link <- tripleEquatError(e1=x1, e2=x2, e3=x3, dependentDIF=dependentDIF)
        }
        return(link) }
 
 
 # hilfsfunktion (nicht auf NAMESPACE exportieren)
-tripleEquatError <- function(e1, e2, e3) {
+tripleEquatError <- function(e1, e2, e3, dependentDIF) {
 	el12 <- sirt::equating.rasch(e1,e2)
 	el13 <- sirt::equating.rasch(e1,e3)
 	el23 <- sirt::equating.rasch(e2,e3)
@@ -30,10 +30,14 @@ tripleEquatError <- function(e1, e2, e3) {
 	is1223 <- intersect(el12$anchor$item, el23$anchor$item)
 	dif12 <- el12$anchor$TransfItempar.Gr1[match(is1223, el12$anchor$item)] - el12$anchor$Itempar.Gr2[match(is1223, el12$anchor$item)]
 	dif23 <- el23$anchor$TransfItempar.Gr1[match(is1223, el23$anchor$item)] - el23$anchor$Itempar.Gr2[match(is1223, el23$anchor$item)]
-	cov1223a <- cov(dif12, dif23)
-	if(cov1223a < 0) cov1223a <- 0
-	cov1223 <- sqrt(cov1223a)/sqrt(length(dif12))
-	le1223 <- sqrt(l12$linkerror^2 + l23$linkerror^2 - 2*cov1223^2)
+	if(dependentDIF) {
+  	cov1223a <- cov(dif12, dif23)
+  	if(cov1223a < 0) cov1223a <- 0
+  	cov1223 <- sqrt(cov1223a)/sqrt(length(dif12))
+  	le1223 <- sqrt(l12$linkerror^2 + l23$linkerror^2 - 2*cov1223^2)
+	} else {
+	  le1223 <- sqrt(l12$linkerror^2 + l23$linkerror^2)
+	  }
 	le13 <- l13$linkerror
 
 	res <- data.frame(trend13 = trend13, trend1223 = trend1223, le13 = le13, le1223 = le1223)
@@ -44,7 +48,7 @@ checkInput <- function(inputlist) {
      cls <- lapply(inputlist, class)
      if(!all.equal(cls[[1]], cls[[2]], cls[[3]])) {stop("'x1', 'x2', and 'x3' must have the same class.")}
      if(!is.data.frame(inputlist[[1]])) {stop("'x1', 'x2', and 'x3' must be of class 'data.frame'.")} }
-     
+
 #multiEquatError <- function (defModelObjList, nCores=1 ){
 #    ### checks
 #       obj  <- checkInput(defModelObjList)                                      ### diese Funktion checkt das 'defModelObjList' Objekt und aendert es geringfuegig
