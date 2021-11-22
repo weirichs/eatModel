@@ -1,9 +1,13 @@
 # wird auf namespace exportiert, soll sowohl data.frames als auch results-objekte verarbeiten koennen
 # inputobjekte heissen unspezifisch x1, x2, x3, weil es ja sowohl data.frames als auch results-objekte sein koennen
-multiEquatError <- function(x1, x2, x3, difBound = 1, dependentDIF = FALSE) {
+multiEquatError <- function(x1, x2, x3, difBound = 1, dependentDIF = FALSE, testletStr = FALSE) {
     ### unspecific checks
        liste<- list(x1, x2, x3)
-       chk1 <- checkInput(liste)
+       chk1 <- checkInput(liste) #chk1 is defined but not used, brauch wir ggf. nicht als Rückgabe?
+       if(testletStr) {
+        # dann muss einiges anders werden
+         stopifnot(ncol(x1) == 3) # etc.
+       }
     ### what kind of input?
        if ( "derived.par" %in% colnames(x1) ) {                                 ### specific checks for 'eatModelResults' object
             obj  <- prepareAndCheckEatModelObject(liste, difBound=difBound)     ### diese Funktion checkt das 'defModelObjList' Objekt und passt es so an, dass damit 'tripleEquatError' ausgefuehrt werden kann

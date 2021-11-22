@@ -5,23 +5,23 @@
 \description{Computes linking errors based on the 1pl linking procedure according
 to \code{\link[sirt]{equating.rasch}} (\code{sirt} package) for three measurement occasions (or time points).}
 \usage{
-multiEquatError(x1, x2, x3, difBound = 1, dependentDIF=FALSE)}
+multiEquatError(x1, x2, x3, difBound = 1, dependentDIF = FALSE, testletStr = FALSE)}
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x1}{
 %%     ~~Describe \code{file} here~~
 The object returned by \code{\link{getResults}} for the first measurement occasion. Alternatively,
-a data.frame with two columns. First column: item identifier. Second column: difficulty parameter.
+a data.frame with two columns. First column: item identifier. Second column: difficulty parameter. Optional third column with unit identifier if testletStr = TRUE.
 }
   \item{x2}{
 %%     ~~Describe \code{file} here~~
 The object returned by \code{\link{getResults}} for the second measurement occasion. Alternatively,
-a data.frame with two columns. First column: item identifier. Second column: difficulty parameter.
+a data.frame with two columns. First column: item identifier. Second column: difficulty parameter. Optional third column with unit identifier if testletStr = TRUE.
 }
   \item{x3}{
 %%     ~~Describe \code{file} here~~
 The object returned by \code{\link{getResults}} for the third measurement occasion. Alternatively,
-a data.frame with two columns. First column: item identifier. Second column: difficulty parameter.
+a data.frame with two columns. First column: item identifier. Second column: difficulty parameter. Optional third column with unit identifier if testletStr = TRUE.
 }
   \item{difBound}{
 %%     ~~Describe \code{file} here~~
@@ -31,6 +31,10 @@ be removed from the linking procedure.
   \item{dependentDIF}{
 %%     ~~Describe \code{file} here~~
 Logical. If DIF is assumed to be correlated between measurement occasions one and two versus two and three this covariance will be taken into account. If the assumption of linear dependency does not seem reasonable this option possibly results in overfitting and underestimation of the true linking error.
+}
+  \item{testletStr}{
+%%     ~~Describe \code{file} here~~
+Logical. If items are nested in testlets Jackknife procedures should be used (cf. Monseur & Berezner, 2007) in order to avoid underestimation. If testletStr is TRUE, a third column, identifying the item uni will be required in data.frame input.
 }
 }
 \value{
