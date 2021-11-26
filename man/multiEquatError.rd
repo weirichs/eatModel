@@ -50,7 +50,7 @@ Karoline Sachse, Sebastian Weirich
 }
 \examples{
 data(trends)
-# calibrate all three measurement occasions, using a unidimensional model each (only reading)
+# calibrate all three measurements, using a unidimensional model each (only reading)
 results <- by(data = trends, INDICES = trends[,"year"], FUN = function (y){
            dat <- reshape2::dcast(subset ( y, domain == "reading"), idstud~item, value.var="value")
            def <- defineModel(dat=dat, items= -1, id="idstud", software="tam")
@@ -58,6 +58,13 @@ results <- by(data = trends, INDICES = trends[,"year"], FUN = function (y){
            res <- getResults(run)
            return(res)})
 lErrors <- multiEquatError(results[[1]], results[[2]], results[[3]], difBound = 0.64)
+
+# direct linking 1 to 3 (1 is reference)
+it1     <- itemFromRes(results[[1]])
+eq1.vs.3<- equat1pl(results[[3]], prmNorm = it1[,c("item", "est")], difBound = 0.64, iterativ = TRUE)
+
+# replace 'direct' linking error with 'indirect' linking error from 'multiEquatError()'
+eq1.vs.3<- replaceLinkingError (equatingList=eq1.vs.3, multiEquatError_output=lErrors)
 
 # second example: calibrate all three measurements, using a unidimensional model each
 # reading and listening are handled subsequently, using the model split function
@@ -72,6 +79,13 @@ results2<- by(data = trends, INDICES = trends[,"year"], FUN = function (y){
            return(res)})
 lErrors2<- multiEquatError(results2[[1]], results2[[2]], results2[[3]], difBound = 0.64)
 
+# direct linking 1 to 3 (1 is reference)
+it1     <- itemFromRes(results2[[1]])
+eq1.vs.3<- equat1pl(results2[[3]], prmNorm = it1[,c("item", "est")], difBound = 0.64, iterativ = TRUE)
+
+# replace 'direct' linking error with 'indirect' linking error from 'multiEquatError()'
+eq1.vs.3<- replaceLinkingError (equatingList=eq1.vs.3, multiEquatError_output=lErrors2)
+
 # third example: use three item parameter lists for equating
 # borrow item parameter data from the 'sirt' package
 data(data.pars1.rasch, package="sirt")
@@ -81,5 +95,4 @@ e1 <- subset ( data.pars1.rasch, study == "study1")[,c("item", "b")]
 e2 <- subset ( data.pars1.rasch, study == "study2")[,c("item", "b")]
 e3 <- subset ( data.pars1.rasch, study == "study3")[,c("item", "b")]
 multiEquatError(e1, e2, e3)
-multiEquatError(e1, e2, e3, difBound = 0.64)
 }

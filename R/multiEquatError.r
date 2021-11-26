@@ -156,19 +156,22 @@ prepareAndCheckEatModelObject <- function ( liste, difBound ) {
        ref <- itemFromRes(liste[[1]])
     ### 2 vs. 1
        eq  <- equat1pl(liste[[2]], prmNorm = ref[,c("item", "est")], difBound = difBound, iterativ = TRUE)
-       for ( d in dims) {
-           weg <- setdiff(eq[["items"]][["not_specified"]][[d]][["info"]][["itemExcluded"]], "")
+       stru<- lapply(eq[["items"]], names)
+       for ( d in 1:length(stru)) {
+           weg <- setdiff(eq[["items"]][[names(stru)[d]]][[stru[[d]]]][["info"]][["itemExcluded"]], "")
            if ( length(weg)>0) {
-                its[[d]][[1]] <- its[[d]][[1]][-match(weg, its[[d]][[1]][,"item"]),]
+                its[[stru[[d]]]][[1]] <- its[[stru[[d]]]][[1]][-match(weg, its[[stru[[d]]]][[1]][,"item"]),]
            }
        }
     ### 3 vs. 2
        ref2<- itemFromRes(liste[[2]])
        eq  <- equat1pl(liste[[3]], prmNorm = ref2[,c("item", "est")], difBound = difBound, iterativ = TRUE)
-       for ( d in dims) {
-           weg <- setdiff(eq[["items"]][["not_specified"]][[d]][["info"]][["itemExcluded"]], "")
+       stru<- lapply(eq[["items"]], names)
+       for ( d in 1:length(stru)) {
+           weg <- setdiff(eq[["items"]][[names(stru)[d]]][[stru[[d]]]][["info"]][["itemExcluded"]], "")
            if ( length(weg)>0) {
                 its[[d]][[3]] <- its[[d]][[3]][-match(weg, its[[d]][[3]][,"item"]),]
            }
        }
        return(its)}
+
