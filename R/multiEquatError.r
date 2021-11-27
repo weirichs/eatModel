@@ -1,51 +1,92 @@
 # wird auf namespace exportiert, soll sowohl data.frames als auch results-objekte verarbeiten koennen
 # inputobjekte heissen unspezifisch x1, x2, x3, weil es ja sowohl data.frames als auch results-objekte sein koennen
-multiEquatError <- function(x1, x2, x3, difBound = 1, dependentDIF = FALSE, testletStr = FALSE) {
-    ### unspecific checks
-       liste<- list(x1, x2, x3)
-       chk1 <- checkInput(liste) #chk1 is defined but not used, brauch wir ggf. nicht als Rückgabe?
-       if(testletStr) {
-        # dann muss einiges anders werden
-         stopifnot(ncol(x1) == 3) # etc.
-       }
-    ### what kind of input?
-       if ( "derived.par" %in% colnames(x1) ) {                                 ### specific checks for 'eatModelResults' object
-            obj  <- prepareAndCheckEatModelObject(liste, difBound=difBound)     ### diese Funktion checkt das 'defModelObjList' Objekt und passt es so an, dass damit 'tripleEquatError' ausgefuehrt werden kann
-            link <- lapply(names(obj), FUN = function (dim ) { tripleEquatError(e1=obj[[dim]][[1]][,c("item", "est")], e2=obj[[dim]][[2]][,c("item", "est")], e3= obj[[dim]][[3]][,c("item", "est")], dependentDIF=dependentDIF)})
-            names(link) <- names(obj)
-       } else {                                                                 ### specific checks for 'data.frame' object
-            link <- tripleEquatError(e1=x1, e2=x2, e3=x3, dependentDIF=dependentDIF)
-       }
-       return(link) }
+multiEquatError <- function(x1, x2, x3, difBound = 1, dependentDIF = FALSE, testletStr = NULL) {
+  ### unspecific checks
+  liste<- list(x1, x2, x3)
+  chk1 <- checkInput(liste) #chk1 is defined but not used, brauch wir ggf. nicht als Rückgabe?
+  if(!is.null(testletStr)) {
+    # check input for equalting.rasch.jackknife: hier muss noch gecheckt werden, ob alle Items eine Unit haben und ausgegeben werden welche nicht, bzw. muss dann der Itemname als Unitname benutzt werden
+
+    # dann muss einiges anders werden
+    stopifnot(ncol(x1) == 3) # etc.
+  }
+  ### what kind of input?
+  if ( "derived.par" %in% colnames(x1) ) {                                 ### specific checks for 'eatModelResults' object
+    obj  <- prepareAndCheckEatModelObject(liste, difBound=difBound)     ### diese Funktion checkt das 'defModelObjList' Objekt und passt es so an, dass damit 'tripleEquatError' ausgefuehrt werden kann
+    link <- lapply(names(obj), FUN = function (dim ) { tripleEquatError(e1=obj[[dim]][[1]][,c("item", "est")], e2=obj[[dim]][[2]][,c("item", "est")], e3= obj[[dim]][[3]][,c("item", "est")], dependentDIF=dependentDIF)})
+    names(link) <- names(obj)
+  } else {                                                                 ### specific checks for 'data.frame' object
+    link <- tripleEquatError(e1=x1, e2=x2, e3=x3, dependentDIF=dependentDIF, testletStr=testletStr)
+  }
+  return(link) }
 
 
 # hilfsfunktion (nicht auf NAMESPACE exportieren)
-tripleEquatError <- function(e1, e2, e3, dependentDIF) {
-	el12 <- sirt::equating.rasch(e1,e2)
-	el13 <- sirt::equating.rasch(e1,e3)
-	el23 <- sirt::equating.rasch(e2,e3)
-	l12 <- el12$descriptives
-    l13 <- el13$descriptives
-    l23 <- el23$descriptives
+tripleEquatError <- function(e1, e2, e3, dependentDIF, testletStr) {
 
-	trend1223 <- -el12$B.est$Mean.Mean - el23$B.est$Mean.Mean
-	trend13 <- -el13$B.est$Mean.Mean
+  if(is.null(testletStr)) {
+      el12 <- sirt::equating.rasch(e1,e2)
+      el13 <- sirt::equating.rasch(e1,e3)
+      el23 <- sirt::equating.rasch(e2,e3)
+      l12 <- el12$descriptives
+      l13 <- el13$descriptives
+      l23 <- el23$descriptives
+      trend1223 <- -el12$B.est$Mean.Mean - el23$B.est$Mean.Mean
+      trend13 <- -el13$B.est$Mean.Mean
+     if(dependentDIF) {
+       is1223 <- intersect(el12$anchor$item, el23$anchor$item)
+       dif12 <- el12$anchor$TransfItempar.Gr1[match(is1223, el12$anchor$item)] - el12$anchor$Itempar.Gr2[match(is1223, el12$anchor$item)]
+       dif23 <- el23$anchor$TransfItempar.Gr1[match(is1223, el23$anchor$item)] - el23$anchor$Itempar.Gr2[match(is1223, el23$anchor$item)]
+        cov1223a <- cov(dif12, dif23)
+        if(cov1223a < 0) cov1223a <- 0
+        cov1223 <- sqrt(cov1223a)/sqrt(length(dif12))
+        le1223 <- sqrt(l12$linkerror^2 + l23$linkerror^2 - 2*cov1223^2)
+      } else {
+        le1223 <- sqrt(l12$linkerror^2 + l23$linkerror^2)
+      }
+      le13 <- l13$linkerror
+  } else {
+      e12a <- merge(e1, e2, by = "item", all=TRUE)
+      e12 <- merge(testletStr, e12a, by="item", all.x=FALSE, all.y=TRUE)
+      e12 <- e12[,c(2,3,4,1)]
 
-	is1223 <- intersect(el12$anchor$item, el23$anchor$item)
-	dif12 <- el12$anchor$TransfItempar.Gr1[match(is1223, el12$anchor$item)] - el12$anchor$Itempar.Gr2[match(is1223, el12$anchor$item)]
-	dif23 <- el23$anchor$TransfItempar.Gr1[match(is1223, el23$anchor$item)] - el23$anchor$Itempar.Gr2[match(is1223, el23$anchor$item)]
-	if(dependentDIF) {
-  	cov1223a <- cov(dif12, dif23)
-  	if(cov1223a < 0) cov1223a <- 0
-  	cov1223 <- sqrt(cov1223a)/sqrt(length(dif12))
-  	le1223 <- sqrt(l12$linkerror^2 + l23$linkerror^2 - 2*cov1223^2)
-	} else {
-	  le1223 <- sqrt(l12$linkerror^2 + l23$linkerror^2)
-	  }
-	le13 <- l13$linkerror
+      e13a <- merge(e1, e3, by = "item", all=TRUE)
+      e13 <- merge(testletStr, e13a, by="item", all.x=FALSE, all.y=TRUE)
+      e13 <- e13[,c(2,3,4,1)]
 
-	res <- data.frame(trend13 = trend13, trend1223 = trend1223, le13 = le13, le1223 = le1223)
-	return(res)
+      e23a <- merge(e2, e3, by = "item", all=TRUE)
+      e23 <- merge(testletStr, e23a, by="item", all.x=FALSE, all.y=TRUE)
+      e23 <- e23[,c(2,3,4,1)]
+
+      eli12 <- sirt::equating.rasch.jackknife(e12)
+      eli13 <- sirt::equating.rasch.jackknife(e13)
+      eli23 <- sirt::equating.rasch.jackknife(e23)
+      l12 <- eli12$descriptives$linkerror.jackknife
+      l13 <- eli13$descriptives$linkerror.jackknife
+      l23 <- eli23$descriptives$linkerror.jackknife
+      if(dependentDIF) {
+        n1 <- na.omit(e12)
+        n1$est.x <- n1$est.x - mean(n1$est.x)
+        n1$est.y <- n1$est.y - mean(n1$est.y)
+        n2 <- na.omit(e23)
+        n2$est.x <- n2$est.x - mean(n2$est.x)
+        n2$est.y <- n2$est.y - mean(n2$est.y)
+        e1223 <- na.omit(merge(n1, n2, by=c("unit","item")))
+        dif12 <-(e1223[,4]-mean(e1223[,4])) - (e1223[,3]-mean(e1223[,3]))
+        dif23 <- e1223[,6] - e1223[,5]
+# alles falsch hier, haut überhaupt nicht hin, arbeite gleich morgen früh dran weiter ;)
+        cov1223a <- tcrossprod(dif12, dif23)
+        if(cov1223a < 0) cov1223a <- 0
+        cov1223 <- sqrt(cov1223a)/sqrt(length(dif12))
+        le1223 <- sqrt(l12$linkerror^2 + l23$linkerror^2 - 2*cov1223^2)
+      } else {
+        le1223 <- sqrt(l12$linkerror^2 + l23$linkerror^2)
+      }
+  }
+
+
+  res <- data.frame(trend13 = trend13, trend1223 = trend1223, le13 = le13, le1223 = le1223)
+  return(res)
 }
 
 checkInput <- function(inputlist) {
