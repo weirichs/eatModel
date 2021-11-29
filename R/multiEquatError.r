@@ -37,7 +37,7 @@ tripleEquatError <- function(e1, e2, e3, dependentDIF, testletStr) {
        dif32 <- el32$anchor$TransfItempar.Gr1[match(is3221, el32$anchor$item)] - el32$anchor$Itempar.Gr2[match(is3221, el32$anchor$item)]
         cov1223a <- cov(dif21, dif32)
         if(cov1223a < 0) cov1223a <- 0
-        cov1223 <- sqrt(cov1223a)/sqrt(length(dif12))
+        cov1223 <- sqrt(cov1223a)/sqrt(length(dif21))
         le3221 <- sqrt(l21$linkerror^2 + l32$linkerror^2 - 2*cov1223^2)
       } else {
         le3221 <- sqrt(l21$linkerror^2 + l32$linkerror^2)
@@ -75,7 +75,7 @@ tripleEquatError <- function(e1, e2, e3, dependentDIF, testletStr) {
         }
         cov1223a <- mean(res1)
         if(cov1223a < 0) cov1223a <- 0
-        cov1223 <- sqrt(cov1223a)/sqrt(length(dif12))
+        cov1223 <- sqrt(cov1223a)/sqrt(length(p1223$dif12))
         if((l12^2 + l23^2 - 2*cov1223^2) < 0) {
           le3221 <- sqrt(l12^2 + l23^2)
         } else {
