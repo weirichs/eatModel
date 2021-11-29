@@ -2,7 +2,7 @@
 \alias{replaceLinkingError}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{Output interface for \code{\link{multiEquatError}} }
-\description{\code{\link{multiEquatError} computes linking errors for three
+\description{\code{\link{multiEquatError}} computes linking errors for three
 measurement occasions. \code{replaceLinkingError} serves to integrate this
 linking error into the object created by \code{\link{equat1pl}}. The linking
 error then can be transformed with subsequent function \code{\link{transformToBista}}.
