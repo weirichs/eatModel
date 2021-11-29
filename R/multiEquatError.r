@@ -6,9 +6,7 @@ multiEquatError <- function(x1, x2, x3, difBound = 1, dependentDIF = FALSE, test
   chk1 <- checkInput(liste) #chk1 is defined but not used, brauch wir ggf. nicht als Rückgabe?
   if(!is.null(testletStr)) {
     # check input for equalting.rasch.jackknife: hier muss noch gecheckt werden, ob alle Items eine Unit haben und ausgegeben werden welche nicht, bzw. muss dann der Itemname als Unitname benutzt werden
-
-    # dann muss einiges anders werden
-    stopifnot(ncol(x1) == 3) # etc.
+    stopifnot(ncol(testletStr)==2)
   }
   ### what kind of input?
   if ( "derived.par" %in% colnames(x1) ) {                                 ### specific checks for 'eatModelResults' object
@@ -24,27 +22,27 @@ multiEquatError <- function(x1, x2, x3, difBound = 1, dependentDIF = FALSE, test
 # hilfsfunktion (nicht auf NAMESPACE exportieren)
 tripleEquatError <- function(e1, e2, e3, dependentDIF, testletStr) {
 
-  if(is.null(testletStr)) {
-      el12 <- sirt::equating.rasch(e1,e2)
-      el13 <- sirt::equating.rasch(e1,e3)
-      el23 <- sirt::equating.rasch(e2,e3)
-      l12 <- el12$descriptives
-      l13 <- el13$descriptives
-      l23 <- el23$descriptives
-      trend1223 <- -el12$B.est$Mean.Mean - el23$B.est$Mean.Mean
-      trend13 <- -el13$B.est$Mean.Mean
+      el21 <- equ.rasch(e2,e1)
+      el31 <- equ.rasch(e3,e1)
+      el32 <- equ.rasch(e3,e2)
+      l21 <- el21$descriptives
+      l31 <- el31$descriptives
+      l32 <- el32$descriptives
+      trend3221 <- el32$B.est$Mean.Mean + el21$B.est$Mean.Mean
+      trend31 <- el31$B.est$Mean.Mean
+    if(is.null(testletStr)) {
      if(dependentDIF) {
-       is1223 <- intersect(el12$anchor$item, el23$anchor$item)
-       dif12 <- el12$anchor$TransfItempar.Gr1[match(is1223, el12$anchor$item)] - el12$anchor$Itempar.Gr2[match(is1223, el12$anchor$item)]
-       dif23 <- el23$anchor$TransfItempar.Gr1[match(is1223, el23$anchor$item)] - el23$anchor$Itempar.Gr2[match(is1223, el23$anchor$item)]
-        cov1223a <- cov(dif12, dif23)
+       is3221 <- intersect(el21$anchor$item, el32$anchor$item)
+       dif21 <- el21$anchor$TransfItempar.Gr1[match(is3221, el21$anchor$item)] - el21$anchor$Itempar.Gr2[match(is3221, el21$anchor$item)]
+       dif32 <- el32$anchor$TransfItempar.Gr1[match(is3221, el32$anchor$item)] - el32$anchor$Itempar.Gr2[match(is3221, el32$anchor$item)]
+        cov1223a <- cov(dif21, dif32)
         if(cov1223a < 0) cov1223a <- 0
         cov1223 <- sqrt(cov1223a)/sqrt(length(dif12))
-        le1223 <- sqrt(l12$linkerror^2 + l23$linkerror^2 - 2*cov1223^2)
+        le3221 <- sqrt(l21$linkerror^2 + l32$linkerror^2 - 2*cov1223^2)
       } else {
-        le1223 <- sqrt(l12$linkerror^2 + l23$linkerror^2)
+        le3221 <- sqrt(l21$linkerror^2 + l32$linkerror^2)
       }
-      le13 <- l13$linkerror
+      le31 <- l31$linkerror
   } else {
       e12a <- merge(e1, e2, by = "item", all=TRUE)
       e12 <- merge(testletStr, e12a, by="item", all.x=FALSE, all.y=TRUE)
@@ -58,34 +56,38 @@ tripleEquatError <- function(e1, e2, e3, dependentDIF, testletStr) {
       e23 <- merge(testletStr, e23a, by="item", all.x=FALSE, all.y=TRUE)
       e23 <- e23[,c(2,3,4,1)]
 
-      eli12 <- sirt::equating.rasch.jackknife(e12)
-      eli13 <- sirt::equating.rasch.jackknife(e13)
-      eli23 <- sirt::equating.rasch.jackknife(e23)
+      eli12 <- equa.rasch.jk(e12)
+      eli13 <- equa.rasch.jk(e13)
+      eli23 <- equa.rasch.jk(e23)
       l12 <- eli12$descriptives$linkerror.jackknife
-      l13 <- eli13$descriptives$linkerror.jackknife
+      le31 <- eli13$descriptives$linkerror.jackknife
       l23 <- eli23$descriptives$linkerror.jackknife
       if(dependentDIF) {
-        n1 <- na.omit(e12)
-        n1$est.x <- n1$est.x - mean(n1$est.x)
-        n1$est.y <- n1$est.y - mean(n1$est.y)
-        n2 <- na.omit(e23)
-        n2$est.x <- n2$est.x - mean(n2$est.x)
-        n2$est.y <- n2$est.y - mean(n2$est.y)
-        e1223 <- na.omit(merge(n1, n2, by=c("unit","item")))
-        dif12 <-(e1223[,4]-mean(e1223[,4])) - (e1223[,3]-mean(e1223[,3]))
-        dif23 <- e1223[,6] - e1223[,5]
-# alles falsch hier, haut überhaupt nicht hin, arbeite gleich morgen früh dran weiter ;)
-        cov1223a <- tcrossprod(dif12, dif23)
+        eli12$pars.data[,2] <- eli12$pars.data[,2]+eli12$descriptives$shift
+        eli23$pars.data[,2] <- eli23$pars.data[,2]+eli23$descriptives$shift
+        e1223 <- stats::na.omit(merge(eli12$pars.data, eli23$pars.data, by=c("unit","item"),all=TRUE))
+        e1223$dif12 <- e1223[,3] - e1223[,4]
+        e1223$dif23 <- e1223[,5] - e1223[,6]
+        res1 <- NULL
+        for(un in e1223$unit) {
+          p1223 <- e1223[e1223[,1] != un,]
+          res1 <- c(cov(p1223$dif12,p1223$dif23),res1)
+        }
+        cov1223a <- mean(res1)
         if(cov1223a < 0) cov1223a <- 0
         cov1223 <- sqrt(cov1223a)/sqrt(length(dif12))
-        le1223 <- sqrt(l12$linkerror^2 + l23$linkerror^2 - 2*cov1223^2)
+        if((l12^2 + l23^2 - 2*cov1223^2) < 0) {
+          le3221 <- sqrt(l12^2 + l23^2)
+        } else {
+          le3221 <- sqrt(l12^2 + l23^2 - 2*cov1223^2)
+        }
       } else {
-        le1223 <- sqrt(l12$linkerror^2 + l23$linkerror^2)
+        le3221 <- sqrt(l12^2 + l23^2)
       }
   }
 
 
-  res <- data.frame(trend13 = trend13, trend1223 = trend1223, le13 = le13, le1223 = le1223)
+  res <- data.frame(trend31 = trend31, trend3221 = trend3221, le31 = le31, le3221 = le3221)
   return(res)
 }
 
@@ -216,3 +218,140 @@ prepareAndCheckEatModelObject <- function ( liste, difBound ) {
        }
        return(its)}
 
+equa.rasch.jk <- function (pars.data, display = FALSE, se.linkerror = FALSE, alpha1 = 0,
+                           alpha2 = 0) {
+  pars.data <- as.data.frame(stats::na.omit(pars.data))
+  itemunits <- unique(pars.data[, 1])
+  N.units <- length(itemunits)
+  N.items <- nrow(pars.data)
+  #pars.data[, 4] <- paste("I", 1:N.items, sep = "")
+  if (display) {
+    cat(paste("Jackknife Equating Procedure (Mean-Mean)\n",
+              N.items, " Items in ", N.units, " Units\n",
+              sep = ""))
+  }
+  mod1 <- equ.rasch(pars.data[, c(4, 2)], pars.data[,
+                                                         c(4, 3)])
+  res1 <- data.frame(unit = itemunits, shift = 0, SD = 0, linkerror = 0)
+  for (nn in 1:N.units) {
+    pars.data1 <- pars.data[pars.data[, 1] != itemunits[nn],
+    ]
+    mod.nn <- equ.rasch(x = pars.data1[, c(4, 2)], y = pars.data1[,
+                                                                       c(4, 3)])
+    res1[nn, "shift"] <- mod.nn$B.est$Mean.Mean
+    res1[nn, "SD"] <- mod.nn$descriptives$SD
+    if (se.linkerror) {
+      itemunits.nn <- itemunits[-nn]
+      l1 <- NULL
+      for (ii in itemunits.nn) {
+        pars.data1.ii <- pars.data1[paste(pars.data1[,
+                                                     1]) != ii, ]
+        mod.ii <- equ.rasch(x = pars.data1.ii[,
+                                                   c(4, 2)], y = pars.data1.ii[, c(4, 3)], alpha1 = alpha1,
+                                 alpha2 = alpha2)
+        l1 <- c(l1, mod.ii$B.est$Mean.Mean)
+      }
+      res1[nn, "linkerror"] <- sqrt((N.units - 2)/(N.units -
+                                                     1) * sum((l1 - res1[nn, "shift"])^2))
+    }
+    if (display) {
+      cat(paste(nn, " ", sep = ""))
+      utils::flush.console()
+      if (nn%%10 == 0) {
+        cat("\n")
+      }
+    }
+  }
+  cat("\n")
+  linkerror <- sqrt((N.units - 1)/N.units * sum((res1[, 2] -
+                                                   mod1$B.est$Mean.Mean)^2))
+  se.sd <- sqrt((N.units - 1)/N.units * sum((res1[, 3] - mod1$descriptives$SD)^2))
+  if (se.linkerror) {
+    se.linkerror <- sqrt((N.units - 1)/N.units * sum((res1[,
+                                                           4] - linkerror)^2))
+  }
+  else {
+    se.linkerror <- NA
+  }
+  descriptives <- data.frame(N.items = N.items, N.units = N.units,
+                             shift = mod1$B.est$Mean.Mean, SD = mod1$descriptives$SD,
+                             linkerror.jackknife = linkerror, SE.SD.jackknife = se.sd,
+                             se.linkerror.jackknife = se.linkerror)
+  res <- list(pars.data = pars.data, itemunits = itemunits,
+              descriptives = descriptives)
+  return(res)
+}
+
+equ.rasch <- function (x, y, theta = seq(-4, 4, len = 100), alpha1 = 0, alpha2 = 0) {
+  x[, 1] <- gsub(" ", "", paste(x[, 1]))
+  y[, 1] <- gsub(" ", "", paste(y[, 1]))
+  b.xy <- data.frame(merge(x, y, by.x = 1, by.y = 1))
+  colnames(b.xy) <- c("item", "Itempar.Gr1", "Itempar.Gr2")
+  b.xy <- stats::na.omit(b.xy)
+  B.mm <- mean(b.xy[, 3]) - mean(b.xy[, 2])
+  g1 <- .prob.raschtype.genlogis(theta = theta, b = b.xy[,
+                                                         2], alpha1 = 0, alpha2 = 0)
+  opt_interval <- 10 * c(-1, 1)
+  ha <- function(B) {
+    fct1 <- .prob.raschtype.genlogis(theta = theta, b = b.xy[,
+                                                             2], alpha1 = alpha1, alpha2 = alpha2)
+    fct2 <- .prob.raschtype.genlogis(theta = theta, b = b.xy[,
+                                                             3] - B, alpha1 = alpha1, alpha2 = alpha2)
+    sum((fct1 - fct2)^2)
+  }
+  B.ha <- stats::optimize(f = ha, interval = opt_interval)$minimum
+  sl <- function(B) {
+    fct1 <- .prob.raschtype.genlogis(theta = theta, b = b.xy[,
+                                                             2], alpha1 = alpha1, alpha2 = alpha2)
+    fct2 <- .prob.raschtype.genlogis(theta = theta, b = b.xy[,
+                                                             3] - B, alpha1 = alpha1, alpha2 = alpha2)
+    sum((rowSums(fct1 - fct2))^2)
+  }
+  B.sl <- stats::optimize(f = sl, interval = opt_interval)$minimum
+  B.est <- data.frame(B.mm, B.ha, B.sl)
+  colnames(B.est) <- c("Mean.Mean", "Haebara",
+                       "Stocking.Lord")
+  b.xy$TransfItempar.Gr1 <- b.xy[, 2] + B.est[1, "Mean.Mean"]
+  x[, 2] <- x[, 2] + B.est[1, "Mean.Mean"]
+  transf.par <- merge(x = x, y = y, by.x = 1, by.y = 1, all = TRUE)
+  colnames(transf.par) <- c("item", "TransfItempar.Gr1",
+                            "Itempar.Gr2")
+  transf.par <- transf.par[order(paste(transf.par$item)), ]
+  des <- data.frame(N.Items = nrow(b.xy), SD = stats::sd(b.xy$TransfItempar.Gr1 -
+                                                           b.xy$Itempar.Gr2))
+  des$Var <- des$SD^2
+  des$linkerror <- as.vector(sqrt(des["SD"]^2/des["N.Items"]))[1,
+                                                               1]
+  res <- list(B.est = B.est, descriptives = des, anchor = b.xy[,
+                                                               c(1, 2, 4, 3)], transf.par = transf.par)
+  return(res)
+}
+
+prob_raschtype_genlogis <- function( theta, b, alpha1, alpha2, fixed.a=1+0*b,
+                                     Qmatrix=NULL, dimensions=NULL )
+{
+  LT <- length(theta)
+  if (is.matrix(theta)){
+    LT <- nrow(theta)
+  }
+
+  if ( is.null(Qmatrix) ){
+    XX <- TAM::tam_outer(x=theta, y=b, op="-")
+    XX <- as.vector(XX)
+    aM <- sirt_matrix2(x=fixed.a, nrow=LT)
+    XX <- aM * XX
+  }
+  if ( ! is.null(Qmatrix) ){
+    XX0 <- tcrossprod( as.matrix(theta), Qmatrix )
+    XX <- XX0 - outer( rep(1,nrow(theta)), b )
+    XX <- as.vector(XX)
+    aM <- sirt_matrix2(x=fixed.a, nrow=LT)
+    XX <- aM * XX
+  }
+  pm <- pgenlogis(x=XX, alpha1=alpha1, alpha2=alpha2 )
+  pm <- matrix( pm, ncol=length(b))
+  return(pm)
+}
+
+
+.prob.raschtype.genlogis <- prob_raschtype_genlogis
