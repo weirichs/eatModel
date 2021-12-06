@@ -42,17 +42,16 @@ tripleEquatError <- function(e1, e2, e3, dependentDIF, testletStr) {
       le31 <- l31$linkerror
   } else {
       e12a <- merge(e1, e2, by = "item", all=TRUE)
-      e12 <- merge(testletStr, e12a, by="item", all.x=FALSE, all.y=TRUE)
+    ### Achtung! hier wird 'chk1' reingeschrieben statt 'testletStr', da das Objekt ggf. von der check-Funktion veraendert wird ('item'-Spalte wird
+    ### in 'item' umbenannt, falls sie nicht schon so heisst), und das veraenderte Objekt hier benutzt werden soll!
+      e12 <- merge(chk1, e12a, by="item", all.x=FALSE, all.y=TRUE)
       e12 <- e12[,c(2,3,4,1)]
-
       e13a <- merge(e1, e3, by = "item", all=TRUE)
-      e13 <- merge(testletStr, e13a, by="item", all.x=FALSE, all.y=TRUE)
+      e13 <- merge(chk1, e13a, by="item", all.x=FALSE, all.y=TRUE)
       e13 <- e13[,c(2,3,4,1)]
-
       e23a <- merge(e2, e3, by = "item", all=TRUE)
-      e23 <- merge(testletStr, e23a, by="item", all.x=FALSE, all.y=TRUE)
+      e23 <- merge(chk1, e23a, by="item", all.x=FALSE, all.y=TRUE)
       e23 <- e23[,c(2,3,4,1)]
-
       eli12 <- equa.rasch.jk(e12)
       eli13 <- equa.rasch.jk(e13)
       eli23 <- equa.rasch.jk(e23)
@@ -162,20 +161,21 @@ checkInputConsistency <- function(e1,e2,e3,testletStr) {
        chk1<- lapply(comp, FUN = function ( com ){ if ( length(intersect(it[[com[1]]], it[[com[2]]])) < 2) { stop(paste0(length(intersect(it[[com[1]]], it[[com[2]]])) ," common items between measurement occasions ",com[1], " and ", com[2], "."))} })
     ### testlet checken
        if (!is.null(testletStr)) {
-            if(!"data.frame" %in% class(testletStr) || "tbl" %in% class(testletStr) ) { stop("'testletStr' must be a data.rame.")}
+            if(!"data.frame" %in% class(testletStr) || "tbl" %in% class(testletStr) ) { stop("'testletStr' must be a data.frame.")}
             if ( ncol(testletStr) != 2) {stop("'testletStr' must have two columns.")}
             if(!"item" %in% colnames(testletStr)) { stop("One column in 'testletStr' must be named 'item'.")}
             if (setdiff(colnames(testletStr), "item") != "unit") {
                 cat(paste0("The 'unit' column in 'testletStr' seemed to be called '",setdiff(colnames(testletStr), "item"),"'. Rename this column into 'unit'.\n"))
                 colnames(testletStr)[setdiff(1:2, match("item", colnames(testletStr)))] <- "unit"
-                return(testletStr)
-            }  else  {
-                return(NULL)
             }
+    ### pruefen, ob alle Item, die es in e1, e2, e3 gibt, auch eine Testletzuordnung haben!
+            allI<- unique(unlist(lapply(il, FUN = function (x){x[,"item"]})))
+            if(!all(allI %in% testletStr[,"item"])) {stop(paste0("Following items without testlet definition: '",paste(setdiff(allI,testletStr[,"item"]) , collapse="', '"), "'."))}
+    ### wenn es testlets gibt, soll das testlet-Objekt zurueckgegeben werden, entweder unveraendert oder veraendert (Spaltenbezeichnung angepasst)
+            return(testletStr)
        }  else  {
             return(NULL)
-       }
-}
+       } }
 
 equa.rasch.jk <- function (pars.data, se.linkerror = FALSE, alpha1 = 0, alpha2 = 0) {
   pars.data <- as.data.frame(stats::na.omit(pars.data))
