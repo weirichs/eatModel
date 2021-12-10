@@ -65,8 +65,9 @@
   
   Basically, \code{eatModel} is useful for Conquest analyses which are called from R. Alternatively, the R package
   \code{TAM} allows to estimate parameters of the mixed-Coefficients Multinomial Logit Model solely in an
-  R environment. Hence, \code{eatModel} allows all models to be estimated in \code{TAM} likewise.
-  Please note that some model specifications (for example, 2pl/3pl) lead to models only TAM is able to 
+  R environment. \code{eatModel} allows all models to be estimated in \code{TAM} likewise. The \code{software}
+  argument in the \code{\link{defineModel}} function allows to choose the desired software.
+  Please note that some model specifications (for example, 2pl/3pl) lead to models only TAM is able to
   estimate.
   
   Historically, \code{eatModel} is a \sQuote{reboot} of the package \code{eatRest} formerly known as
@@ -97,8 +98,8 @@
 \tabular{ll}{
 Package: \tab eatModel\cr
 Type: \tab Package\cr
-Version: \tab 0.7.46\cr
-Date: \tab 2021-12-06\cr
+Version: \tab 0.7.47\cr
+Date: \tab 2021-12-10\cr
 License: \tab GPL(>=2)
 }
 }

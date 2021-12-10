@@ -795,45 +795,58 @@ head(dfr$personpars)
 
 
 ################################################################################
-###        Example 6: Linking and equating for multiple models (II)          ###
+###    Example 6: Scaling, linking and equating for multiple models (II)     ###
 ################################################################################
 
-# Example 6 and 6a: define und run multiple models according to different domains 
-# (item groups) and different person groups. This example mimics the routines 
-# necessary for the 'Laendervergleich/Bildungstrend' at the Institute for 
-# Educational Progress (IQB). Example 6 demonstrates routines without trend 
-# estimation. Example 6a demonstrates routines with trend estimation---hence,
-# example 6 mimics time of measurement 't1', example 6a mimics time of measurement
-# 't2'.
+# Example 6 and 6a: define und run multiple models according to different domains
+# (item groups) and different person groups. This example mimics the routines
+# necessary for the 'Laendervergleich/Bildungstrend' at the Institute for
+# Educational Progress (IQB). Example 6 demonstrates routines without trend
+# estimation, i.e. for the first (or solely) measurement occasion. Example 6a
+# demonstrates routines for the second measurement occasion (t2) which is linked
+# to t1. Example 6b demonstrates routines for the third measurement occasion (t3)
+# which is linked to the common scale of t1 and t2.
 
 # Preparation: assume time of measurement 't1' corresponds to the year 2010.
-# This is the year of the reference population
+# This is the year of the reference population. We consider both domains,
+# rading and listening in a single call.
 datT1<- reshape2::dcast(subset ( trends, year == 2010),
         idstud+country+sex+ses+language~item, value.var="value")
 
+# generate Q matrix
+qMat <- unique(trends[ ,c("item","domain")])
+qMat <- data.frame ( qMat[,"item", drop=FALSE], model.matrix(~domain-1, data = qMat))
+
 # First step: item calibration in separate unidimensional models for each domain
+# (the models are short and simple, so we don't need multicore)
 modsT1<- splitModels ( qMatrix = qMat, nCores = 1)
 
 # define 2 models. Note: not all items of the Q matrix are present in the data.
-# Items which occur only in the Q matrix will be ignored. 
+# Items which occur only in the Q matrix will be ignored.
 defT1 <- defineModel(dat = datT1, id = "idstud", check.for.linking = TRUE,
          splittedModels = modsT1, software = "tam")
 
-# run 2 models 
+# run (calibrate) the 2 models subsequently
 runT1 <- runModel(defT1)
 
 # get the results of the two unidimensional models
 resT1 <- getResults(runT1)
 
 # extract item parameters from the 'results' object
+# t1 is the reference measurement occasion, i.e. no linking/equating is necessary
 itemT1<- itemFromRes(resT1)
 
-# Second step: drawing plausible values separately for each country (= each country).
-# A two-dimensional model is specified for each person group (each country) with item
-# parameters fixed at their calibration values. Moreover, a latent regression model is
-# used (in the actual 'Laendervergleich', regressors are principal components). We use
-# 'sex', 'ses' and 'language' as regressors. For convenience, 'ses' is scaled
+# Second step: drawing plausible values separately for each country.
+# A two-dimensional (reading/listening) model is specified separately for each
+# person group (= each country) with item parameters fixed at their calibration
+# values. Moreover, a latent regression model is used (in the actual 'Laendervergleich',
+# regressors are principal components). We use 'sex', 'ses' and 'language' as regressors.
+# For convenience, 'ses' is scaled (mean = 0, sd = 1)
 datT1[,"ses_scaled"] <- scale(datT1[,"ses"])[,1]
+
+# have a look at 'sex' and 'language at home':
+table(datT1[,"sex"])
+table(datT1[,"language"])
 
 # Running second step: split models according to person groups
 # ('all.persons' must be FALSE, otherwise the whole group would be treated as
@@ -841,17 +854,17 @@ datT1[,"ses_scaled"] <- scale(datT1[,"ses"])[,1]
 modT1P<- splitModels ( person.groups = datT1[,c("idstud", "country")],
          all.persons = FALSE, nCores = 1)
 
-# define the 2 country-specific 2-dimensional models, specifying latent regression 
+# define the 2 country-specific 2-dimensional models, specifying latent regression
 # model and fixed item parameters.
 defT1P<- defineModel(dat = datT1, items = itemT1[,"item"], id = "idstud",
          check.for.linking = TRUE, splittedModels = modT1P, qMatrix = qMat,
          anchor = itemT1[,c("item", "est")],
          HG.var = c("sex", "ses_scaled", "language"),  software = "tam")
 
-# run the 2 models 
+# run the 2 models (estimation needs approx. 20 seconds)
 runT1P<- runModel(defT1P)
 
-# get the results 
+# get the results
 resT1P<- getResults(runT1P)
 
 # equating is not necessary, as the models run with fixed item parameters
@@ -862,7 +875,7 @@ ankT1P<- equat1pl ( results = resT1P)
 # transformation to the 'bista' metric
 # Note: if the sample was drawn from the reference population, mean and SD
 # are not yet known. So we ignore the 'refPop' argument in 'transformToBista'
-# and simply define the cut scores. 
+# and simply define the cut scores.
 cuts  <- list ( domainreading = list ( values = 390+0:3*75),
          domainlistening = list ( values = 360+0:3*85))
 
@@ -871,10 +884,10 @@ dfrT1P<- transformToBista ( equatingList = ankT1P, cuts=cuts, vera=FALSE )
 
 
 ################################################################################
-###           Example 6a: Extend example 6 with trend estimation             ###
+###     Example 6a: Extend example 6 with trend estimation (now for t2)      ###
 ################################################################################
 
-# Example 6a needs the objects created in example 6
+# Example 6a needs the objects (Q matrix, item parameters, ...) created in example 6
 # Preparation: assume time of measurement 't2'.
 datT2<- reshape2::dcast(subset ( trends, year == 2015),
         idstud+country+sex+ses+language~item, value.var="value")
@@ -882,7 +895,8 @@ datT2<- reshape2::dcast(subset ( trends, year == 2015),
 # First step: item calibration in separate unidimensional models for each domain
 modsT2<- splitModels ( qMatrix = qMat, nCores = 1)
 
-# define 2 models. Items which occur only in the Q matrix will be ignored.
+# define 2 models. Items which occur only in the Q matrix but not in the data
+# will be ignored.
 defT2 <- defineModel(dat = datT2, id = "idstud", check.for.linking = TRUE,
          splittedModels = modsT2, software = "tam")
 
@@ -907,10 +921,10 @@ L.t1t2<- equat1pl ( results = resT2, prmNorm = itemT1[,c("item", "est")],
 # We now need to specify the 'refPop' argument. We use the values from 't1' which
 # serves as the reference.
 ref   <- dfrT1P[["refPop"]]
-T.t1t2<- transformToBista ( equatingList = L.t1t2, refPop=,ref, cuts = cuts, vera=FALSE)
+T.t1t2<- transformToBista ( equatingList = L.t1t2, refPop=ref, cuts = cuts, vera=FALSE)
 
 # The object 'T.t1t2' now contains transformed person and item parameters with
-# original and transformed linking errors. See for example:
+# original and transformed linking errors. See for example person parameter:
 head(T.t1t2$personpars)
 
 # Fourth step: drawing plausible values for 't2'. We use the transformed item
@@ -925,13 +939,14 @@ modT2P<- splitModels ( person.groups = datT2[,c("idstud", "country")] ,
 # define the 2 country-specific 2-dimensional models, specifying latent regression
 # model and fixed item parameters. We used the transformed item parameters (captured
 # in 'T.t1t2[["itempars"]]' --- using the 'estTransf' column) for anchoring.
+# Again, 'ses' is scaled (mean = 0, sd = 1)
 datT2[,"ses_scaled"] <- scale(datT2[,"ses"])[,1]
 defT2P<- defineModel(dat = datT2, items = itemT2[,"item"], id = "idstud",
          check.for.linking = TRUE, splittedModels = modT2P, qMatrix = qMat,
          anchor = T.t1t2[["itempars"]][,c("item", "estTransf")],
          HG.var = c("sex", "ses_scaled", "language"), software = "tam")
 
-# run the 2 models
+# run the 2 models (estimation takes approx. 29 seconds)
 runT2P<- runModel(defT2P)
 
 # get the results
@@ -945,162 +960,248 @@ ankT2P<- equat1pl ( results = resT2P)
 # transformation to the 'bista' metric, using the previously defined cut scores
 dfrT2P<- transformToBista ( equatingList = ankT2P, refPop=ref, cuts=cuts, vera=FALSE)
 
-# prepare data for jackknifing and trend estimation via 'eatRep'
-dTrend<- prepRep ( calibT2 = T.t1t2, bistaTransfT1 = dfrT1P, bistaTransfT2 = dfrT2P,
-         makeIdsUnique = FALSE)
+
+################################################################################
+###     Example 6b: Extend example 6a with trend estimation (now for t3)     ###
+################################################################################
+
+# Example 6b needs the objects (Q matrix, item parameters, ...) created in example 6
+# and 6a. Preparation: assume time of measurement 't3'.
+datT3<- reshape2::dcast(subset ( trends, year == 2020),
+        idstud+country+sex+ses+language~item, value.var="value")
+
+# First step: item calibration in separate unidimensional models for each domain
+modsT3<- splitModels ( qMatrix = qMat, nCores = 1)
+
+# define 2 models. Items which occur only in the Q matrix but not in the data
+# will be ignored.
+defT3 <- defineModel(dat = datT3, id = "idstud", check.for.linking = TRUE,
+         splittedModels = modsT3, software = "tam")
+
+# run 2 models
+runT3 <- runModel(defT3)
+
+# get the results
+resT3 <- getResults(runT3)
+
+# collect item parameters
+itemT3<- itemFromRes(resT3)
+
+# Second step: compute linking constant. We link the items of 't3' to the items
+# of 't2' which are already transformed to the metric of 't1' (we use the item
+# parameter which were used for plausible values imputation at 't2' as norm
+# parameters)
+L.t2t3<- equat1pl ( results = resT3, prmNorm = T.t1t2[["itempars"]][,c("item", "estTransf")],
+         excludeLinkingDif = TRUE, difBound = 0.64, iterativ = TRUE)
+
+# linking constant is negative: students performance at T3 is worse than T1
+# Third step: transform item parameters of 't3' to the common metric of 't1'
+# We already know the 'refPop' values.
+ref   <- dfrT1P[["refPop"]]
+T.t2t3<- transformToBista ( equatingList = L.t2t3, refPop=ref, cuts = cuts, vera=FALSE)
+
+# Fourth step: drawing plausible values for 't3'. We use the transformed item
+# parameters (captured in 'T.t2t3') for anchoring
+
+# Running second step: split models according to person groups (countries)
+# ('all.persons' must be FALSE, otherwise the whole group would be treated as
+# a separate distinct group.)
+modT3P<- splitModels ( person.groups = datT3[,c("idstud", "country")] ,
+         all.persons = FALSE, nCores = 1)
+
+# define the 2 country-specific 2-dimensional models, specifying latent regression
+# model and fixed item parameters. We used the transformed item parameters (captured
+# in 'T.t2t3[["itempars"]]' --- using the 'estTransf' column) for anchoring.
+# Again, 'ses' is scaled (mean = 0, sd = 1)
+datT3[,"ses_scaled"] <- scale(datT3[,"ses"])[,1]
+defT3P<- defineModel(dat = datT3, items = itemT3[,"item"], id = "idstud",
+         check.for.linking = TRUE, splittedModels = modT3P, qMatrix = qMat,
+         anchor = T.t2t3[["itempars"]][,c("item", "estTransf")],
+         HG.var = c("sex", "ses_scaled", "language"), software = "tam")
+
+# run the 2 models (estimation takes approx. 20 seconds)
+runT3P<- runModel(defT3P)
+
+# get the results
+resT3P<- getResults(runT3P)
+
+# equating is not necessary, as the models run with fixed item parameters
+# However, to prepare for the transformation on the 'bista' metric, run
+# 'equat1pl' with empty arguments
+ankT3P<- equat1pl ( results = resT3P)
+
+# transformation to the 'bista' metric, using the previously defined cut scores
+dfrT3P<- transformToBista ( equatingList = ankT3P, refPop=ref, cuts=cuts, vera=FALSE)
 
 
 ################################################################################
-###                   Example 6b: trend analyses (repMean)                   ###
+###                 Example 6c: Prepare trend estimation                     ###
 ################################################################################
 
-# Example 6b needs the objects created in example 6a
-# We use the 'dTrend' object to perform some trend analyses.
+# Example 6c needs the objects (Q matrix, item parameters, ...) created in example 6,
+# 6a, and 6b.
+# Collect the person parameter estimates (plausible values) from t1, t2, and t3
+# in a common data.frame. The person estimates are collected in the object created
+# by 'transformToBista()'. Not all columns are necessary.
 
-# load the 'eatRep' package ... note: needs eatRep version 0.9.2 or higher
+# plausibles values of measurement occasion 1 ('t1')
+persT1<- data.frame ( year = 2010,
+         dfrT1P[["personpars"]][,c("idstud", "dimension", "imp", "value", "valueTransfBista", "traitLevel")],
+         stringsAsFactors = FALSE)
+
+# plausibles values of measurement occasion 2 ('t2')
+persT2<- data.frame ( year = 2015,
+         dfrT2P[["personpars"]][,c("idstud", "dimension", "imp", "value", "valueTransfBista", "traitLevel")],
+         stringsAsFactors = FALSE)
+
+# plausibles values of measurement occasion 3 ('t3')
+persT3<- data.frame ( year = 2020,
+         dfrT3P[["personpars"]][,c("idstud", "dimension", "imp", "value", "valueTransfBista", "traitLevel")],
+         stringsAsFactors = FALSE)
+
+# bind together in a common data.frame
+pers  <- rbind(persT1, persT2, persT3)
+
+# merge background variables to plausible values data
+# first we have to create the 'domain' column in plausible values data
+pers[,"domain"] <- car::recode(pers[,"dimension"], "'domainlistening'='listening'; 'domainreading'='reading'")
+pers[,"dimension"] <- NULL
+pers  <- eatTools::mergeAttr(unique(trends[,c("year", "idclass", "idstud", "domain", "country", "language", "ses", "sex")]),
+         pers, by = c("year", "idstud", "domain"), all = FALSE)
+
+# collect and transform linking errors
+# t1 vs. t2: linking errors were computed in example 6a. Extract linking errors and
+# appropriately reshape the data.frame
+let1t2<- unique(T.t1t2[["itempars"]][,c("dimension", "traitLevel", grep("^linkingError", colnames(T.t1t2[["itempars"]]), value=TRUE))])
+
+# create a classification table: which linking error term belongs to which dependent variable?
+leInfo<- data.frame(depVar = c("value", "valueTransfBista", "traitLevel"),
+         linkErrorTerm = c("linkingError", "linkingErrorTransfBista", "linkingErrorTraitLevel"),
+         stringsAsFactors = FALSE)
+
+# create linking error data.frame for t1 vs. t2
+t1t2  <- apply(leInfo, MARGIN = 1, FUN = function ( line ) {
+         if (line[["depVar"]] == "traitLevel") {prm <- let1t2[,"traitLevel"] } else {prm <- "mean"}
+         unique(data.frame ( trendLevel1 = 2010, trendLevel2 = 2015, depVar = line[["depVar"]],
+              domain = let1t2[,"dimension"],  parameter = prm,
+              linkingError = let1t2[,line[["linkErrorTerm"]]], stringsAsFactors = FALSE))})
+t1t2  <- do.call("rbind", t1t2)
+
+# collect and transform linking errors
+# t2 vs. t3: linking errors were computed in example 6b. Extract linking errors and
+# appropriately reshape the data.frame
+let2t3<- unique(T.t2t3[["itempars"]][,c("dimension", "traitLevel", grep("^linkingError", colnames(T.t2t3[["itempars"]]), value=TRUE))])
+
+# create linking error data.frame for t2 vs. t3
+t2t3  <- apply(leInfo, MARGIN = 1, FUN = function ( line ) {
+         if (line[["depVar"]] == "traitLevel") {prm <- let2t3[,"traitLevel"] } else {prm <- "mean"}
+         unique(data.frame ( trendLevel1 = 2015, trendLevel2 = 2020, depVar = line[["depVar"]],
+              domain = let2t3[,"dimension"],  parameter = prm,
+              linkingError = let2t3[,line[["linkErrorTerm"]]], stringsAsFactors = FALSE))})
+t2t3  <- do.call("rbind", t2t3)
+
+# collect and transform linking errors
+# t1 vs. t3: linking errors were not yet computed: link t3 to t1 to create linking error template
+L.t1t3<- equat1pl ( results = resT3, prmNorm = itemT1[,c("item", "est")],
+         excludeLinkingDif = TRUE, difBound = 0.64, iterativ = TRUE)
+
+# indirect linking ('chained' linking)
+chain <- multiEquatError (x1=resT1, x2=resT2, x3=resT3, difBound = 0.64, verbose = TRUE )
+
+# replace direct linking errors with indirect linking errors
+L.t1t3<- replaceLinkingError (equatingList =L.t1t3, multiEquatError_output=chain)
+
+# transform linking errors
+ref   <- dfrT1P[["refPop"]]
+tle   <- transformToBista ( equatingList = L.t1t3, refPop=ref, cuts = cuts, vera=FALSE)
+tle   <- unique(tle[["itempars"]][,c("dimension", "traitLevel", grep("^linkingError", colnames(tle[["itempars"]]), value=TRUE))])
+
+# create linking error data.frame for t1 vs. t3
+t1t3  <- apply(leInfo, MARGIN = 1, FUN = function ( line ) {
+         if (line[["depVar"]] == "traitLevel") {prm <- tle[,"traitLevel"] } else {prm <- "mean"}
+         unique(data.frame ( trendLevel1 = 2010, trendLevel2 = 2020, depVar = line[["depVar"]],
+              domain = tle[,"dimension"],  parameter = prm,
+              linkingError = tle[,line[["linkErrorTerm"]]], stringsAsFactors = FALSE))})
+t1t3  <- do.call("rbind", t1t3)
+
+# bind all linking errors in a common data.frame
+lErr  <- rbind(t1t2, t2t3, t1t3)
+lErr[,"domain"] <- car::recode(lErr[,"domain"], "'domainlistening'='listening'; 'domainreading'='reading'")
+
+
+################################################################################
+###  Example 6d: eatRep estimation with plausible values and linking errors  ###
+################################################################################
+
+# Example 6d needs the objects ('pers', 'lErr') created in example 6c
+# load the 'eatRep' package ... note: needs eatRep version 0.14.0 or higher
 library(eatRep)
-
-# merge background variables from original data to the 'dTrend' frame
-# first reshape 'trends' into wide format
-sw    <- reshape2::dcast(trends, idstud+idclass+year+country+sex+ses+language~1,
-         value.var="value")
-dTrend<- merge(sw, dTrend, by = "idstud", all.x = FALSE, all.y = TRUE)
 
 # compute means for both countries with trend, for both domains separately,
 # using replications methods (jackknife-1)
-means <- by(data = dTrend, INDICES = dTrend[,"dimension"], FUN = function ( dim ) {
+means <- by(data = pers, INDICES = pers[,"domain"], FUN = function ( dim ) {
          m <- repMean(datL = dim, ID="idstud", PSU = "idclass", type = "jk1",
               imp = "imp", groups = "country", dependent = "valueTransfBista",
-              trend = "year", linkErr = "trendErrorTransfBista")
-         r <- report(m, add = list(domain = as.character(dim[,"dimension"])[1]))
+              trend = "year", linkErr = lErr[which(lErr[,"domain"] == dim[1,"domain"]),])
+         r <- report(m, add = list(domain = dim[1,"domain"]))
          return(r)})
 means <- do.call("rbind", means)
-         
+
 # additionally: differ the sex-specific means in each country from the sex-specific means
 # in the whole population? Are the differences (male vs. female) in each country different
 # from the difference (male vs. female) in the whole population?
-means2<- by(data = dTrend, INDICES = dTrend[,"dimension"], FUN = function ( dim ) {
+means2<- by(data = pers, INDICES = pers[,"domain"], FUN = function ( dim ) {
          m <- repMean(datL = dim, ID="idstud", PSU = "idclass", type = "jk1",
               imp = "imp", groups = c("country","sex"), group.differences.by = "sex",
               group.splits = 0:1, cross.differences = TRUE,crossDiffSE.engine= "lm",
               dependent = "valueTransfBista", trend = "year",
-              linkErr = "trendErrorTransfBista")
-         r <- report(m, add = list(domain = as.character(dim[,"dimension"])[1]))
+              linkErr = lErr[which(lErr[,"domain"] == dim[1,"domain"]),])
+         r <- report(m, add = list(domain = dim[1,"domain"]))
          return(r)})
 means2<- do.call("rbind", means2)
 
 
 ################################################################################
-###                  Example 6c: trend analyses (repTable)                   ###
+###  Example 6e: eatRep (repTable) with plausible values and linking errors  ###
 ################################################################################
 
-# Example 6c needs the objects created in example 6a. Additionally, the merged
-# 'dTrend' frame created in Example 6a and augmented in 6b is necessary.
-
-# load the 'eatRep' package ... note: needs eatRep version 0.9.2 or higher
+# Example 6e needs the objects ('pers', 'lErr') created in example 6c
+# load the 'eatRep' package ... note: needs eatRep version 0.14.0 or higher
 library(eatRep)
 
-# compute frequencies for trait levels, only for domain 'reading', without trend
-# create 'reading' subsample
-subSam<- dTrend[intersect(which(dTrend[,"dimension"] == "domainreading"),
-         which(dTrend[,"year"] == 2010)),]
-freq01<- repTable(datL = subSam, ID="idstud", imp = "imp", groups = "model",
-         dependent = "traitLevel")
-res01 <- report(freq01, add = list(domain = "reading"))
-
-# now additionally using replication methods (jk1)
-freq03<- repTable(datL = subSam, ID="idstud", imp = "imp", groups = "model", type = "jk1",
-         PSU = "idclass", dependent = "traitLevel")
-res03 <- report(freq03, add = list(domain = "reading"))
+# compute frequencies for trait levels, for both domains, with trend
+freqs <- by(data = pers, INDICES = pers[,"domain"], FUN = function ( dim ) {
+         m <- repTable(datL = dim, ID="idstud", PSU = "idclass", type = "jk1",
+              imp = "imp", groups = "country", dependent = "traitLevel",
+              trend = "year", linkErr = lErr[which(lErr[,"domain"] == dim[1,"domain"]),])
+         r <- report(m, add = list(domain = dim[1,"domain"]))
+         return(r)})
+freqs <- do.call("rbind", freqs)
 
 # additionally: sex differences in each country, using 'group.differences.by' argument
 # Note: for frequency tables group differences may result in a chi square test or in
 # a difference of each categories' frequency.
 # first: request chi square test
-freq04<- repTable(datL = subSam, ID="idstud", imp = "imp", groups = c("model", "sex"),
-         type = "jk1", group.differences.by = "sex", chiSquare = TRUE,
-         PSU = "idclass", dependent = "traitLevel")
-res04 <- report(freq04, add = list(domain = "reading"))
+freqs1<- by(data = pers, INDICES = pers[,"domain"], FUN = function ( dim ) {
+         m <- repTable(datL = dim, ID="idstud", PSU = "idclass", type = "jk1",
+              imp = "imp", groups = c("country","sex"), group.differences.by = "sex",
+              chiSquare = TRUE,dependent = "traitLevel", trend = "year",
+              linkErr = lErr[which(lErr[,"domain"] == dim[1,"domain"]),])
+         r <- report(m, add = list(domain = dim[1,"domain"]))
+         return(r)})
+freqs1<- do.call("rbind", freqs1)
 
-# now request differences for each trait level category
-freq05<- repTable(datL = subSam, ID="idstud", imp = "imp", groups = c("model", "sex"),
-         type = "jk1", group.differences.by = "sex", chiSquare = FALSE,
-         PSU = "idclass", dependent = "traitLevel")
-res05 <- report(freq05, add = list(domain = "reading"))
-
-# additionally: differ the sex-specific means in each country from the sex-specific means
-# in the whole population? Are the differences (male vs. female) in each country different
-# from the difference (male vs. female) in the whole population?
-freq06<- repTable(datL = subSam, ID="idstud", imp = "imp", groups = c("model", "sex"),
-         type = "jk1", group.differences.by = "sex", cross.differences = TRUE, chiSquare = FALSE,
-         PSU = "idclass", dependent = "traitLevel")
-res06 <- report(freq06, add = list(domain = "reading"))
-
-# additionally: trend estimation for each country- and sex-specific mean, each country-
-# specific sex differences and each difference between country-specific sex difference
-# and the sex difference in the whole population
-
-# create a new sub sample with both---the data of 2010 and 2015 ... only for domain
-# 'reading'. Note: if no linking error is defined, linking error of 0 is assumed.
-subS2 <- dTrend[which(dTrend[,"dimension"] == "domainreading"),]
-freq07<- repTable(datL = subS2, ID="idstud", imp = "imp", groups = c("model", "sex"),
-         type = "jk1", group.differences.by = "sex", cross.differences = TRUE, chiSquare = FALSE,
-         PSU = "idclass", trend = "trend", linkErr = "trendErrorTraitLevel",
-         dependent = "traitLevel")
-res07 <- report(freq07, add = list(domain = "reading"))
-
-# additionally: repeat this analysis for both domains, 'knowledge' and 'procedural',
-# using a 'by'-loop. Now we use the whole 'dTrend' data instead of subsamples
-freq08<- by ( data = dTrend, INDICES = as.character(dTrend[,"dimension"]),
-         FUN = function ( subdat ) {
-         f08 <- repTable(datL = subdat, ID="idstud", imp = "imp", groups = c("model", "sex"),
-                type = "jk1", group.differences.by = "sex", cross.differences = TRUE, chiSquare = FALSE,
-                PSU = "idclass", trend = "trend", linkErr = "trendErrorTraitLevel",
-                dependent = "traitLevel")
-         return(f08)})
-res08 <- lapply(names(freq08), FUN = function (domain) { report(freq08[[domain]], add = list(domain = domain))})
-res08 <- do.call("rbind", res08)
-
-
-################################################################################
-###                   Example 6d: trend analyses (repGlm)                    ###
-################################################################################
-
-# Example 6c needs the objects created in example 6a. Additionally, the merged
-# 'dTrend' frame created in Example 6a and augmented in 6b is necessary.
-
-# load the 'eatRep' package ... note: needs eatRep version 0.9.2 or higher
-library(eatRep)
-
-# regress procedural compentence on knowledge competence ... it's necessary to
-# reshape the data
-datGlm<- reshape2::dcast(dTrend, value.var = "valueTransfBista",
-         formula = idstud+imp+idclass+model+trend+sex+ses+language~dimension)
-
-# first example: only for year 2003
-dat03 <- datGlm[which(datGlm[,"trend"] == "T1"),]
-m08   <- repGlm(datL = dat03, ID="idstud", imp="imp", PSU="idclass",
-         type = "jk1", formula = domainreading~domainlistening)
-res08 <- report(m08)
-
-# compute regression with two regressors separately for each country
-m09   <- repGlm(datL = dat03, ID="idstud", imp="imp", PSU="idclass",
-         type = "jk1", groups = "model", formula = domainreading~sex+ses+language)
-res09 <- report(m09)
-
-# differ country-specific regression coefficients from the regression coefficents
-# in the whole population?
-m10   <- repGlm(datL = dat03, ID="idstud", imp="imp", PSU="idclass",
-         type = "jk1", groups = "model", group.splits = 0:1,
-         cross.differences = TRUE, formula = domainreading~sex+domainlistening)
-res10 <- report(m10)
-
-# differ country-specific regression coefficients from the regression coefficents
-# in the whole population? Are these differences different for 2003 vs. 2013?
-m11   <- repGlm(datL = datGlm, ID="idstud", imp="imp", PSU="idclass",
-         type = "jk1", groups = "model", group.splits = 0:1,
-         cross.differences = TRUE, trend = "trend", formula = domainreading~sex+domainlistening)
-res11 <- report(m11, trendDiffs = TRUE)
+# differences for each competence level (chiSquare = FALSE)
+# (for faster computation, we omit jackknife procedure)
+freqs2<- by(data = pers, INDICES = pers[,"domain"], FUN = function ( dim ) {
+         m <- repTable(datL = dim, ID="idstud", type = "none", imp = "imp",
+              groups = c("country","sex"), group.differences.by = "sex",
+              chiSquare = FALSE,dependent = "traitLevel", trend = "year",
+              linkErr = lErr[which(lErr[,"domain"] == dim[1,"domain"]),],
+              group.splits = 0:2, cross.differences = TRUE)
+         r <- report(m, add = list(domain = dim[1,"domain"]))
+         return(r)})
+freqs2<- do.call("rbind", freqs2)
 
 
 ################################################################################
@@ -1161,96 +1262,5 @@ runT1P<- runModel(defT1P)
 
 # get the results
 resT1P<- getResults(runT1P, Q3 = FALSE)
-
-
-################################################################################
-###       Example 8: Trend estimation for third measurement time point       ###
-################################################################################
-
-# This example mimics the routines necessary for the 'Bildungstrend' at the
-# Institute for Educational Progress (IQB) with three times of measurement.
-# Expanding the analyses, example 8 needs the objects created in example 6 and 6a.
-datT3<- reshape2::dcast(subset ( trends, year == 2020),
-        idstud+country+sex+ses+language~item, value.var="value")
-
-# First step: item calibration in separate unidimensional models for each domain
-modsT3<- splitModels ( qMatrix = qMat, nCores = 1)
-
-# define 2 models. Items which occur only in the Q matrix will be ignored.
-defT3 <- defineModel(dat = datT3, id = "idstud", check.for.linking = TRUE,
-         splittedModels = modsT3, software = "tam")
-
-# run 2 models
-runT3 <- runModel(defT3)
-
-# get the results
-resT3 <- getResults(runT3)
-
-# collect item parameters
-itemT3<- itemFromRes(resT3)
-
-# Second step: compute linking constant between 't2' and 't3' with the iterative
-# exclusion of linking DIF items and computation of linking error. We link 't3' to
-# the parameters of 't2' which are already equated to the metric of 't1' (we link
-# to the parameters which were used for plausible value imputation in 't2').
-L.t2t3<- equat1pl ( results = resT3,
-         prmNorm = T.t1t2[["itempars"]][,c("item", "estTransf")],
-         excludeLinkingDif = TRUE, difBound = 0.64, iterativ = TRUE)
-         
-# linking constant is negative: students performance at T3 is worse than T1
-# Third step: transform item parameters of 't3' to the metric of 't1'
-# We now need to specify the 'refPop' argument. We use the values from 't1' which
-# serves as the reference. 'cuts' remain unchainged.
-ref   <- dfrT1P[["refPop"]]
-T.t1t3<- transformToBista ( equatingList = L.t2t3, refPop=,ref, cuts = cuts, vera=FALSE)
-
-# The object 'T.t1t3' now contains transformed person and item parameters
-# Fourth step: drawing plausible values for 't3'. We use the transformed item
-# parameters (captured in 'T.t1t3') for anchoring
-# split models according to person groups (countries; 'all.persons' must be FALSE,
-# otherwise the whole group would be treated as a separate distinct group.)
-modT3P<- splitModels ( person.groups = datT3[,c("idstud", "country")] ,
-         all.persons = FALSE, nCores = 1)
-
-# define the 2 country-specific 2-dimensional models, specifying latent regression
-# model and fixed item parameters. We used the transformed item parameters (captured
-# in 'T.t1t2[["itempars"]]' --- using the 'estTransf' column) for anchoring.
-datT3[,"ses_scaled"] <- scale(datT3[,"ses"])[,1]
-defT3P<- defineModel(dat = datT3, items = itemT3[,"item"], id = "idstud",
-         check.for.linking = TRUE, splittedModels = modT3P, qMatrix = qMat,
-         anchor = T.t1t3[["itempars"]][,c("item", "estTransf")],
-         HG.var = c("sex", "ses_scaled", "language"), software = "tam")
-
-# run the 2 models
-runT3P<- runModel(defT3P)
-
-# get the results
-resT3P<- getResults(runT3P)
-
-# equating is not necessary, as the models run with fixed item parameters
-# However, to prepare for the transformation on the 'bista' metric, run
-# 'equat1pl' with empty arguments
-ankT3P<- equat1pl ( results = resT3P)
-
-# transformation to the 'bista' metric, using the previously defined cut scores
-dfrT3P<- transformToBista ( equatingList = ankT3P, refPop=ref, cuts=cuts, vera=FALSE)
-
-# prepare data for jackknifing and trend estimation via 'eatRep'
-trend3<- prepRep ( calibT2 = T.t1t3, bistaTransfT1 = dfrT2P, bistaTransfT2 = dfrT3P,
-         makeIdsUnique = FALSE)
-
-# all trends
-trend3[,"trend"] <- car::recode(trend3[,"trend"], "'T2'='T3'; 'T1'='T2'")
-sw    <- reshape2::dcast(trends, idstud+idclass+year+country+sex+ses+language~1,
-         value.var="value")
-trend3<- merge(sw, subset ( trend3, trend == "T3"), by = "idstud", all.x = FALSE, all.y = TRUE)
-trendA<- rbind(dTrend, trend3)
-
-# mittelwerte fuer drei Zeitpunkte
-means3<- do.call("rbind", by(data =trendA, INDICES = trendA[,c("trend", "group", "country")], FUN = function ( x) {
-         m <- repMean(datL = x, ID="idstud", PSU = "idclass", type = "jk1",
-              imp = "imp", dependent = "valueTransfBista")
-         r <- report(m, add = list(trend = x[1,"trend"], domain = as.character(x[,"group"])[1], country = x[1,"country"]))
-         return(r)}))
 }
 
