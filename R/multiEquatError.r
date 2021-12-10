@@ -65,11 +65,12 @@ tripleEquatError <- function(e1, e2, e3, dependentDIF, testletStr) {
         e1223$dif12 <- e1223[,3] - e1223[,4]
         e1223$dif23 <- e1223[,5] - e1223[,6]
         res1 <- NULL
+        # no real jk but hotfix
         for(un in e1223$unit) {
           p1223 <- e1223[e1223[,1] != un,]
           res1 <- c(cov(p1223$dif12,p1223$dif23),res1)
         }
-        cov1223a <- mean(res1)
+        cov1223a <- mean(res1, na.rm=TRUE)
         if(cov1223a < 0) cov1223a <- 0
         cov1223 <- sqrt(cov1223a)/sqrt(length(p1223$dif12))
         if((l12^2 + l23^2 - 2*cov1223^2) < 0) {
@@ -89,7 +90,7 @@ checkInput <- function(inputlist) {
      cls <- lapply(inputlist, class)
      if(!all.equal(cls[[1]], cls[[2]], cls[[3]])) {stop("'x1', 'x2', and 'x3' must have the same class.")}
      if(!is.data.frame(inputlist[[1]])) {stop("'x1', 'x2', and 'x3' must be of class 'data.frame'.")} }
-     
+
 
 prepareAndCheckEatModelObject <- function ( liste, difBound, verbose ) {
     ### all models unidim?
@@ -143,7 +144,7 @@ prepareAndCheckEatModelObject <- function ( liste, difBound, verbose ) {
            }
        }
        return(its)}
-       
+
 ### checkfunktion
 checkInputConsistency <- function(e1,e2,e3,testletStr) {
     ### alle data.frames zwei Spalten?
