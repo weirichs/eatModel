@@ -501,7 +501,8 @@ Sebastian Weirich
 ################################################################################
 
 # load example data
-# (these are simulated achievement test data)
+# data set 'trends' contains item response data for three measurement occasions
+# in a single data.frame
 data(trends)
 
 # first reshape the data for the first time of measurement set into wide format
@@ -807,9 +808,14 @@ head(dfr$personpars)
 # to t1. Example 6b demonstrates routines for the third measurement occasion (t3)
 # which is linked to the common scale of t1 and t2.
 
+# data set 'trends' contains item response data for three measurement occasions
+# in a single data.frame
+data(trends)
+
 # Preparation: assume time of measurement 't1' corresponds to the year 2010.
 # This is the year of the reference population. We consider both domains,
-# rading and listening in a single call.
+# reading and listening in a single call. Hence, the data.frame 'datT1' contains
+# items of both domains
 datT1<- reshape2::dcast(subset ( trends, year == 2010),
         idstud+country+sex+ses+language~item, value.var="value")
 
@@ -840,8 +846,8 @@ itemT1<- itemFromRes(resT1)
 # A two-dimensional (reading/listening) model is specified separately for each
 # person group (= each country) with item parameters fixed at their calibration
 # values. Moreover, a latent regression model is used (in the actual 'Laendervergleich',
-# regressors are principal components). We use 'sex', 'ses' and 'language' as regressors.
-# For convenience, 'ses' is scaled (mean = 0, sd = 1)
+# regressors are principal components of previously imputed background variables). We use 'sex',
+# 'ses' and 'language' as regressors. For convenience, 'ses' is scaled (mean = 0, sd = 1)
 datT1[,"ses_scaled"] <- scale(datT1[,"ses"])[,1]
 
 # have a look at 'sex' and 'language at home':
@@ -875,12 +881,16 @@ ankT1P<- equat1pl ( results = resT1P)
 # transformation to the 'bista' metric
 # Note: if the sample was drawn from the reference population, mean and SD
 # are not yet known. So we ignore the 'refPop' argument in 'transformToBista'
-# and simply define the cut scores.
+# and simply define the cut scores. The function then assumes that the parameter
+# stem from the reference population and estimates its mean and sd.
 cuts  <- list ( domainreading = list ( values = 390+0:3*75),
          domainlistening = list ( values = 360+0:3*85))
 
-# transformation
+# transformation: omit 'refPop' argument
 dfrT1P<- transformToBista ( equatingList = ankT1P, cuts=cuts, vera=FALSE )
+
+# mean and sd of the reference population (population of 't1')
+dfrT1P[["refPop"]]
 
 
 ################################################################################
@@ -911,8 +921,8 @@ itemT2<- itemFromRes(resT2)
 
 # Second step: compute linking constant between 't1' and 't2' with the iterative
 # exclusion of linking DIF items and computation of linking error. We use the
-# 'itemT1' object created in example 6. The linking procedure is executed
-# consecutively for listening and reading.
+# 'itemT1' object created in example 6 for reference item parameters. The linking
+# procedure is executed consecutively for listening and reading.
 L.t1t2<- equat1pl ( results = resT2, prmNorm = itemT1[,c("item", "est")],
          excludeLinkingDif = TRUE, difBound = 0.64, iterativ = TRUE)
 
@@ -958,6 +968,7 @@ resT2P<- getResults(runT2P)
 ankT2P<- equat1pl ( results = resT2P)
 
 # transformation to the 'bista' metric, using the previously defined cut scores
+# and the reference population mean and sd from 't1'
 dfrT2P<- transformToBista ( equatingList = ankT2P, refPop=ref, cuts=cuts, vera=FALSE)
 
 
@@ -1031,6 +1042,7 @@ resT3P<- getResults(runT3P)
 ankT3P<- equat1pl ( results = resT3P)
 
 # transformation to the 'bista' metric, using the previously defined cut scores
+# and the reference population mean and sd from 't1'
 dfrT3P<- transformToBista ( equatingList = ankT3P, refPop=ref, cuts=cuts, vera=FALSE)
 
 
@@ -1041,20 +1053,20 @@ dfrT3P<- transformToBista ( equatingList = ankT3P, refPop=ref, cuts=cuts, vera=F
 # Example 6c needs the objects (Q matrix, item parameters, ...) created in example 6,
 # 6a, and 6b.
 # Collect the person parameter estimates (plausible values) from t1, t2, and t3
-# in a common data.frame. The person estimates are collected in the object created
-# by 'transformToBista()'. Not all columns are necessary.
+# in a common data.frame. The person estimates are already collected in the object
+# previously created by 'transformToBista()'. Not all columns are necessary.
 
-# plausibles values of measurement occasion 1 ('t1')
+# plausibles values of measurement occasion 1 ('t1'): add the year to the data.frame
 persT1<- data.frame ( year = 2010,
          dfrT1P[["personpars"]][,c("idstud", "dimension", "imp", "value", "valueTransfBista", "traitLevel")],
          stringsAsFactors = FALSE)
 
-# plausibles values of measurement occasion 2 ('t2')
+# plausibles values of measurement occasion 2 ('t2'): add the year to the data.frame
 persT2<- data.frame ( year = 2015,
          dfrT2P[["personpars"]][,c("idstud", "dimension", "imp", "value", "valueTransfBista", "traitLevel")],
          stringsAsFactors = FALSE)
 
-# plausibles values of measurement occasion 3 ('t3')
+# plausibles values of measurement occasion 3 ('t3'): add the year to the data.frame
 persT3<- data.frame ( year = 2020,
          dfrT3P[["personpars"]][,c("idstud", "dimension", "imp", "value", "valueTransfBista", "traitLevel")],
          stringsAsFactors = FALSE)
