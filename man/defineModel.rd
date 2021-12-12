@@ -1000,7 +1000,7 @@ itemT3<- itemFromRes(resT3)
 
 # Second step: compute linking constant. We link the items of 't3' to the items
 # of 't2' which are already transformed to the metric of 't1' (we use the item
-# parameter which were used for plausible values imputation at 't2' as norm
+# parameters which were used for plausible values imputation at 't2' as norm
 # parameters)
 L.t2t3<- equat1pl ( results = resT3, prmNorm = T.t1t2[["itempars"]][,c("item", "estTransf")],
          excludeLinkingDif = TRUE, difBound = 0.64, iterativ = TRUE)
@@ -1078,7 +1078,7 @@ pers  <- rbind(persT1, persT2, persT3)
 # first we have to create the 'domain' column in plausible values data
 pers[,"domain"] <- car::recode(pers[,"dimension"], "'domainlistening'='listening'; 'domainreading'='reading'")
 pers[,"dimension"] <- NULL
-pers  <- eatTools::mergeAttr(unique(trends[,c("year", "idclass", "idstud", "domain", "country", "language", "ses", "sex")]),
+pers  <- eatAnalysis::mergeAttr(unique(trends[,c("year", "idclass", "idstud", "domain", "country", "language", "ses", "sex")]),
          pers, by = c("year", "idstud", "domain"), all = FALSE)
 
 # collect and transform linking errors
