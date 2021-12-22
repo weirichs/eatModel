@@ -1006,7 +1006,7 @@ L.t2t3<- equat1pl ( results = resT3, prmNorm = T.t1t2[["itempars"]][,c("item", "
          excludeLinkingDif = TRUE, difBound = 0.64, iterativ = TRUE)
 
 # linking constant is negative: students performance at T3 is worse than T1
-# Third step: transform item parameters of 't3' to the common metric of 't1'
+# Third step: transform item parameters of 't3' to the common metric of 't1' and 't2'
 # We already know the 'refPop' values.
 ref   <- dfrT1P[["refPop"]]
 T.t2t3<- transformToBista ( equatingList = L.t2t3, refPop=ref, cuts = cuts, vera=FALSE)
@@ -1052,8 +1052,8 @@ dfrT3P<- transformToBista ( equatingList = ankT3P, refPop=ref, cuts=cuts, vera=F
 
 # Example 6c needs the objects (Q matrix, item parameters, ...) created in example 6,
 # 6a, and 6b.
-# Collect the person parameter estimates (plausible values) from t1, t2, and t3
-# in a common data.frame. The person estimates are already collected in the object
+# We now collect the person parameter estimates (plausible values) from t1, t2, and t3
+# in a common data.frame. The person estimates are already collected in the objects
 # previously created by 'transformToBista()'. Not all columns are necessary.
 
 # plausibles values of measurement occasion 1 ('t1'): add the year to the data.frame
