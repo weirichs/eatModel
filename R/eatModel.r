@@ -1543,25 +1543,25 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                       per0  <- NULL; perA <- NULL
                       if(length(allFal)>0) {
                          num <- rowSums(datMax[ which ( datMax[,1] %in% allFal), -1], na.rm = TRUE)
-                         numF<- data.frame ( id = allFal, anzahl = num)
-                         numF<- data.frame(numF[sort(numF[,"anzahl"],decreasing=FALSE,index.return=TRUE)$ix,])
+                         numF<- data.frame ( id = allFal, itemsVisited = num)
+                         numF<- data.frame(numF[sort(numF[,"itemsVisited"],decreasing=FALSE,index.return=TRUE)$ix,])
                          if ( nrow( numF) > 5) { auswahl  <- numF[c(1, round(nrow(numF)/2), nrow(numF)),] }  else { auswahl <- na.omit(numF[c(1, 2, nrow(numF)),]) }
-                         cat(paste( length(allFal), " subject(s) do not solve any item:\n   ", paste(auswahl[,"id"], " (",auswahl[,"anzahl"]," false)",sep="",collapse=", ")," ... \n",sep=""))
+                         cat(paste( length(allFal), " subject(s) do not solve any item:\n   ", paste(auswahl[,"id"], " (",auswahl[,"itemsVisited"]," false)",sep="",collapse=", ")," ... \n",sep=""))
                          weg0<- na.omit(match(allFal, dat[,all.Names[["ID"]]]))
-                         per0<- dat[weg0, all.Names[["ID"]] ]
-                         if (remove.failures == TRUE)  {
+                         per0<- data.frame ( numF, itemsSolved = 0, stringsAsFactors = FALSE)
+                         if (isTRUE(remove.failures))  {
                              cat("   Remove subjects without any correct response.\n"); flush.console()
                              dat <- dat[-weg0,]
                          }
                       }
                       if(length(allTru)>0) {
                          num <- rowSums(datMax[ which ( datMax[,1] %in% allTru), -1], na.rm = TRUE)
-                         numT<- data.frame ( id = allTru, anzahl = num)
-                         numT<- data.frame(numT[sort(numT[,"anzahl"],decreasing=FALSE,index.return=TRUE)$ix,])
+                         numT<- data.frame ( id = allTru, itemsVisited = num, itemsSolved = num)
+                         numT<- data.frame(numT[sort(numT[,"itemsSolved"],decreasing=FALSE,index.return=TRUE)$ix,])
                          if ( nrow( numT) > 5) { auswahl  <- numT[c(1, round(nrow(numT)/2), nrow(numT)),] }  else { auswahl <- na.omit(numT[c(1, 2, nrow(numT)),]) }
-                         cat(paste( length(allTru), " subject(s) solved each item: ", paste(auswahl[,"id"], " (",auswahl[,"anzahl"] ," correct)",sep="", collapse=", ")," ... \n",sep=""))
+                         cat(paste( length(allTru), " subject(s) solved each item: ", paste(auswahl[,"id"], " (",auswahl[,"itemsSolved"] ," correct)",sep="", collapse=", ")," ... \n",sep=""))
                          alle<- na.omit(match(allTru, dat[,all.Names[["ID"]]]))
-                         perA<- dat[alle, all.Names[["ID"]] ]
+                         perA<- numT
                       }
                       rm(datMin); rm(datMax); rm(datW); gc()                    ### Speicher sparen
      ### Sektion 'Verlinkung pruefen' ###
