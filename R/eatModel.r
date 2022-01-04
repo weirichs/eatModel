@@ -738,7 +738,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                                 }
                                 msdFok <- c(msdF[intersect(which(msdF[,"parameter"] == "mean"), which(msdF[,"coefficient"] == "est")),"value"], msdF[intersect(which(msdF[,"parameter"] == "sd"), which(msdF[,"coefficient"] == "est")),"value"])
                             }  else  {
-                                cat("Results object does not contain any plausibel values. Skip transformation of linking error for competence levels.\n")
+                                cat("Results object does not contain any plausible values. Skip transformation of linking error for competence levels.\n")
                             }
                             if ( !is.null(pv) && !is.null ( itFrame )) {        ### Cuts mit Schwelle nach unten und nach oben offen
                                 if ( cutsMis == FALSE & !is.null ( equatingList[["items"]] )) {
@@ -800,7 +800,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                             rp  <- cbind ( model = mod, rp, focusMean = msdFok[1], focusSD = msdFok[2])
                             return(list ( itempars = itFrame, personpars = pv, rp = rp))
                       }  })
-              itempars<- do.call("rbind", lapply ( dimN, FUN = function ( x ) { x[["itempars"]]}))
+              itempars<- do.call(plyr::rbind.fill, lapply ( dimN, FUN = function ( x ) { x[["itempars"]]}))
               perspar <- do.call("rbind", lapply ( dimN, FUN = function ( x ) { x[["personpars"]]}))
               rp      <- do.call("rbind", lapply ( dimN, FUN = function ( x ) { x[["rp"]]}))
               return( list ( itempars = itempars, personpars = perspar, rp=rp)) } )
