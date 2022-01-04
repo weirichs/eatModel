@@ -2558,7 +2558,7 @@ itemFromRes<- function ( resultsObj ) {                                         
                                                            return(res)}) ) )
                                        return(res)}))
                      }
-                     sel  <- do.call("rbind", by(sel, INDICES = sel[,"group"], FUN = function ( gr ) {
+                     sel  <- do.call(plyr::rbind.fill, by(sel, INDICES = sel[,"group"], FUN = function ( gr ) {
      ### erstmal ohne schulformspezifische p-Werte (die kommen spaeter dazu)
                              sfp  <- intersect ( which ( gr[,"par"] == "itemP"), which ( !is.na(gr[,"var2"])))
                              if ( length ( sfp ) > 0 ) {
