@@ -39,7 +39,6 @@ des1 <- data.frame ( booklet = paste0("B", 1:6),
 test1<- checkLinking(design = des1, bookletColumn = "booklet")
 
 # second example: use the original design of the 'IQB Bildungstrend 2016'
-# use the 'read_excel' function to import excel design table
 data(des2)
 # design contains three dimensions -- reading, listening and orthography
 # linking check must be conducted for each dimension separately. If linking should be checked
