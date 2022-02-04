@@ -923,7 +923,7 @@ itemT2<- itemFromRes(resT2)
 # exclusion of linking DIF items and computation of linking error. We use the
 # 'itemT1' object created in example 6 for reference item parameters. The linking
 # procedure is executed consecutively for listening and reading.
-T.t1t2<- equat1pl ( results = resT2, prmNorm = itemT1[,c("item", "est")],
+L.t1t2<- equat1pl ( results = resT2, prmNorm = itemT1[,c("item", "est")],
          excludeLinkingDif = TRUE, difBound = 0.64, iterativ = TRUE)
 
 # linking constant is negative: students performance at T2 is worse than T1
