@@ -572,7 +572,62 @@ adaptEatRepVersion <- function ( x ) {
            return(x)
      } }
 
-transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defaultM = 500, defaultSD = 100, roman = FALSE, vera = TRUE, idVarName = NULL ) {
+### Hilfsfuntion fuer "transformToBista"
+createLinkingErrorObject <- function (itempars, years) {
+     res <- do.call("rbind", by(data = itempars, INDICES = itempars[,"dimension"], FUN = function (d) {
+            r1 <- do.call("rbind", lapply(c("value", "valueTransfBista", "traitLevel"), FUN = function (av) {
+                  if ( av %in% c("value", "valueTransfBista")) {
+                      prm <- "mean"
+                      le  <- unique(d[,car::recode(av, "'value'='linkingError'; 'valueTransfBista'='linkingErrorTransfBista'")])
+                      stopifnot(length(le) == length(prm))
+                  } else {
+                      dat <- unique(d[,c("traitLevel", "linkingErrorTraitLevel")])
+                      stopifnot(length(dat[,1]) == length(unique(dat[,1])))
+                      prm <- dat[,"traitLevel"]
+                      le  <- dat[,"linkingErrorTraitLevel"]
+                  }
+                  dfr <- data.frame ( trendLevel1 = years[1], trendLevel2 = years[2], depVar = av, domain = d[1,"dimension"], parameter = prm, linkingError = le, stringsAsFactors = FALSE)
+                  return(dfr)}))
+            return(r1)}))
+     return(res)}
+     
+### Hilfsfuntion fuer "transformToBista"
+createItemVeraObj <- function(itempars, roman){
+       pCols      <- colnames(itempars)[grep("^itemP", colnames(itempars))]
+       allCols    <- na.omit(match ( c("dimension","item", pCols, "itemDiscrim", "estTransf", "infit", "estTransfBista", "traitLevel"), colnames(itempars)))
+       itemVera   <- itempars[,allCols]
+       colnames(itemVera) <- car::recode ( colnames(itemVera), "'dimension'='domain'; 'item'='iqbitem_id'; 'itemDiscrim'='trennschaerfe'; 'estTransf'='logit'; 'estTransfBista'='bista'; 'traitLevel'='kstufe'")
+       colnames(itemVera)[match(pCols, colnames(itemVera))] <- paste0("lh", eatTools::removePattern ( string = pCols, pattern = "^itemP"))
+       if ( roman == TRUE ) {                                                   ### sollen roemische Zahlen fuer Kompetenzstufen verwendet werden?
+            if (!all(itemVera[,"kstufe"] %in% c("1a", "1b", 1:5))) {stop(paste("Competence levels do not match allowed values. '1a', '1b', '1', '2', '3', '4', '5' is allowed. '",paste(names(table(itemVera[,"kstufe"])), collapse = "', '"),"' was found.\n",sep=""))}
+            itemVera[,"kstufe"] <- car::recode (itemVera[,"kstufe"], "'1a'='Ia'; '1b'='Ib'; '1'='I'; '2'='II'; '3'='III'; '4'='IV'; '5'='V'")
+       }
+    ### jetzt den scheiss reshapen fuer vera-3 mathe, wenn es separate werte fuer global- und domaenenspezifische modelle gibt
+       if ( length ( unique ( itemVera[,"iqbitem_id"])) != length ( itemVera[,"iqbitem_id"]) ) {
+            cat("Found duplicated entries in 'item-ID' column. This should only occur for subject 'math' in grade 3.\n")
+    ### vorher rauskriegen, ob jedes item nur zu einer domaene und einem globalmodell gehoert, dann 'domain' umbenennen, um NAs im Ergebnis zu vermeiden
+            tab  <- table(itemVera[,c("domain", "iqbitem_id")])
+            if ( !"GL" %in% rownames(tab)) {
+                 cat("Cannot find 'global' entry in the 'domain' column. Cancel reshaping.\n")
+            }  else  {
+                 if ( !sum(tab[which(rownames(tab) == "GL"),]) == ncol(tab)) {  ### hat jedes Item einen Wert auf 'global'?
+                     cat("Found items without values on the 'global' domain. Cancel reshaping.\n")
+                 }  else  {
+                     if ( !all(colSums(tab) == 2) ) {
+                         cat("Found items which do not have one 'global' and one domain-specific parameter. Cancel reshaping.\n")
+                     }  else  {
+                         itemVera[,"dummy"] <- car::recode ( itemVera[,"domain"], "'GL'='GL'; else = 'domain'")
+                         colsValid <- c("lh", "trennschaerfe", "logit", "infit", "bista", "kstufe")
+                         colsValid <- colsValid[which(colsValid %in% colnames(itemVera))]
+                         long      <- reshape2::melt ( itemVera, id.vars = c("iqbitem_id", "dummy"), measure.vars = colsValid, na.rm=TRUE)
+                         suppressWarnings(itemVera  <- eatTools::asNumericIfPossible(reshape2::dcast ( long , iqbitem_id ~ dummy + variable, value.var = "value"), force.string = FALSE))
+                     }
+                 }
+            }
+       }
+       return(itemVera) }
+
+transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defaultM = 500, defaultSD = 100, roman = FALSE, vera = TRUE, idVarName = NULL, years = NULL ) {
     ### wenn equatet wurde, sollte auch 'refPop' definiert sein (es sei denn, es wurde verankert skaliert)
     ### wenn 'refPop' fehlt, wird es fuer alle gegebenen Dimensionen anhand der Gesamtstichprobe berechnet
        mr  <- FALSE                                                             ### default: 'refPop' fehlt nicht. Wenn doch, wird es aus Daten generiert und spaeter
@@ -799,7 +854,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                             colnames(rp) <- c("domain", "refMean", "refSD", "bistaMean", "bistaSD")
                             rp  <- cbind ( model = mod, rp, focusMean = msdFok[1], focusSD = msdFok[2])
                             return(list ( itempars = itFrame, personpars = pv, rp = rp))
-                      }  })
+                      }  })                                                     ### untere Zeile: hier muss man rbind.fill nehmen, das gibt sonst im LV2021 einen Fehler, wenn bei der PV-Ziehung manche Items verankert sind, andere nicht
               itempars<- do.call(plyr::rbind.fill, lapply ( dimN, FUN = function ( x ) { x[["itempars"]]}))
               perspar <- do.call("rbind", lapply ( dimN, FUN = function ( x ) { x[["personpars"]]}))
               rp      <- do.call("rbind", lapply ( dimN, FUN = function ( x ) { x[["rp"]]}))
@@ -811,41 +866,17 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
        if ( vera == FALSE ) {
            itemVera <- NULL
        }  else  {
-           pCols      <- colnames(itempars)[grep("^itemP", colnames(itempars))]
-           allCols    <- na.omit(match ( c("dimension","item", pCols, "itemDiscrim", "estTransf", "infit", "estTransfBista", "traitLevel"), colnames(itempars)))
-           itemVera   <- itempars[,allCols]
-           colnames(itemVera) <- car::recode ( colnames(itemVera), "'dimension'='domain'; 'item'='iqbitem_id'; 'itemDiscrim'='trennschaerfe'; 'estTransf'='logit'; 'estTransfBista'='bista'; 'traitLevel'='kstufe'")
-           colnames(itemVera)[match(pCols, colnames(itemVera))] <- paste0("lh", eatTools::removePattern ( string = pCols, pattern = "^itemP"))
-           if ( roman == TRUE ) {                                                   ### sollen roemische Zahlen fuer Kompetenzstufen verwendet werden?
-                if (!all(itemVera[,"kstufe"] %in% c("1a", "1b", 1:5))) {stop(paste("Competence levels do not match allowed values. '1a', '1b', '1', '2', '3', '4', '5' is allowed. '",paste(names(table(itemVera[,"kstufe"])), collapse = "', '"),"' was found.\n",sep=""))}
-                itemVera[,"kstufe"] <- car::recode (itemVera[,"kstufe"], "'1a'='Ia'; '1b'='Ib'; '1'='I'; '2'='II'; '3'='III'; '4'='IV'; '5'='V'")
-           }
-    ### jetzt den scheiss reshapen fuer vera-3 mathe, wenn es separate werte fuer global- und domaenenspezifische modelle gibt
-           if ( length ( unique ( itemVera[,"iqbitem_id"])) != length ( itemVera[,"iqbitem_id"]) ) {
-                cat("Found duplicated entries in 'item-ID' column. This should only occur for subject 'math' in grade 3.\n")
-    ### vorher rauskriegen, ob jedes item nur zu einer domaene und einem globalmodell gehoert, dann 'domain' umbenennen, um NAs im Ergebnis zu vermeiden
-                tab  <- table(itemVera[,c("domain", "iqbitem_id")])
-                if ( !"GL" %in% rownames(tab)) {
-                     cat("Cannot find 'global' entry in the 'domain' column. Cancel reshaping.\n")
-                }  else  {
-                     if ( !sum(tab[which(rownames(tab) == "GL"),]) == ncol(tab)) {  ### hat jedes Item einen Wert auf 'global'?
-                         cat("Found items without values on the 'glbal' domain. Cancel reshaping.\n")
-                     }  else  {
-                         if ( !all(colSums(tab) == 2) ) {
-                             cat("Found items which do not have one 'global' and one domain-specific parameter. Cancel reshaping.\n")
-                         }  else  {
-                             itemVera[,"dummy"] <- car::recode ( itemVera[,"domain"], "'GL'='GL'; else = 'domain'")
-                             colsValid <- c("lh", "trennschaerfe", "logit", "infit", "bista", "kstufe")
-                             colsValid <- colsValid[which(colsValid %in% colnames(itemVera))]
-                             long      <- reshape2::melt ( itemVera, id.vars = c("iqbitem_id", "dummy"), measure.vars = colsValid, na.rm=TRUE)
-                             suppressWarnings(itemVera  <- eatTools::asNumericIfPossible(reshape2::dcast ( long , iqbitem_id ~ dummy + variable, value.var = "value"), force.string = FALSE))
-                         }
-                     }
-                }
-           }
+           itemVera <- createItemVeraObj(itempars=itempars, roman=roman)
+       }
+    ### optional: separate linkingfehlerobjekte erzeugen
+       if (!is.null(years)) {
+           stopifnot(length(years) == 2 && length(unique(years)) == 2)
+           leo  <- createLinkingErrorObject(itempars=itempars, years=years)
+       }  else  {
+           leo  <- NULL
        }
        context    <- equatingList[["results"]][which(equatingList[["results"]][,"type"]=="tech"),]
-       ret        <- list ( itempars = itempars, personpars = personpars, refPop = refPop, means = rp, all.Names = context, itemparsVera = itemVera)
+       ret        <- list ( itempars = itempars, personpars = personpars, refPop = refPop, means = rp, all.Names = context, itemparsVera = itemVera, linkingErrors = leo)
        class(ret) <- c("list", "transfBista")
        return( ret ) }
 

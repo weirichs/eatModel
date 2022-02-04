@@ -7,7 +7,8 @@ one for the item parameters on the bista metric and one for the person parameter
 (PVs) on the bista metric.}
 \usage{
 transformToBista ( equatingList, refPop, cuts, weights = NULL, defaultM = 500, 
-                   defaultSD = 100, roman = FALSE, vera = TRUE, idVarName = NULL)}
+                   defaultSD = 100, roman = FALSE, vera = TRUE, idVarName = NULL,
+                   years=NULL)}
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{equatingList}{
@@ -65,6 +66,11 @@ Logical: Prepare item parameter list according to the guidelines of the ``Vergle
 Optional: character vector of individual student id. This is only to provide compatibility
 with older package versions. Specification of this argument is only necessary if the function
 gives an error.
+}
+  \item{years}{
+%%     ~~Describe \code{file} here~~
+Optional: numeric vector with two elements, indicating the both years of assessment.
+Only necessary if additional linking error object should be created.
 }
 }
 \value{

@@ -923,15 +923,17 @@ itemT2<- itemFromRes(resT2)
 # exclusion of linking DIF items and computation of linking error. We use the
 # 'itemT1' object created in example 6 for reference item parameters. The linking
 # procedure is executed consecutively for listening and reading.
-L.t1t2<- equat1pl ( results = resT2, prmNorm = itemT1[,c("item", "est")],
+T.t1t2<- equat1pl ( results = resT2, prmNorm = itemT1[,c("item", "est")],
          excludeLinkingDif = TRUE, difBound = 0.64, iterativ = TRUE)
 
 # linking constant is negative: students performance at T2 is worse than T1
 # Third step: transform item parameters of 't2' to the metric of 't1'
 # We now need to specify the 'refPop' argument. We use the values from 't1' which
-# serves as the reference.
+# serves as the reference. To capture linking errors in a separate data.frame
+# within the returned list, we define the years of assessment
 ref   <- dfrT1P[["refPop"]]
-T.t1t2<- transformToBista ( equatingList = L.t1t2, refPop=ref, cuts = cuts, vera=FALSE)
+T.t1t2<- transformToBista ( equatingList = L.t1t2, refPop=ref, cuts = cuts,
+         vera=FALSE, years = c(2010,2015))
 
 # The object 'T.t1t2' now contains transformed person and item parameters with
 # original and transformed linking errors. See for example person parameter:
@@ -1009,7 +1011,8 @@ L.t2t3<- equat1pl ( results = resT3, prmNorm = T.t1t2[["itempars"]][,c("item", "
 # Third step: transform item parameters of 't3' to the common metric of 't1' and 't2'
 # We already know the 'refPop' values.
 ref   <- dfrT1P[["refPop"]]
-T.t2t3<- transformToBista ( equatingList = L.t2t3, refPop=ref, cuts = cuts, vera=FALSE)
+T.t2t3<- transformToBista ( equatingList = L.t2t3, refPop=ref, cuts = cuts,
+         vera=FALSE, years = c(2015,2020))
 
 # Fourth step: drawing plausible values for 't3'. We use the transformed item
 # parameters (captured in 'T.t2t3') for anchoring
@@ -1078,41 +1081,16 @@ pers  <- rbind(persT1, persT2, persT3)
 # first we have to create the 'domain' column in plausible values data
 pers[,"domain"] <- car::recode(pers[,"dimension"], "'domainlistening'='listening'; 'domainreading'='reading'")
 pers[,"dimension"] <- NULL
-pers  <- eatAnalysis::mergeAttr(unique(trends[,c("year", "idclass", "idstud", "domain", "country", "language", "ses", "sex")]),
+pers  <- eatTools::mergeAttr(unique(trends[,c("year", "idclass", "idstud", "domain", "country", "language", "ses", "sex")]),
          pers, by = c("year", "idstud", "domain"), all = FALSE)
 
-# collect and transform linking errors
-# t1 vs. t2: linking errors were computed in example 6a. Extract linking errors and
-# appropriately reshape the data.frame
-let1t2<- unique(T.t1t2[["itempars"]][,c("dimension", "traitLevel", grep("^linkingError", colnames(T.t1t2[["itempars"]]), value=TRUE))])
+# collect linking errors
+# t1 vs. t2: linking errors were computed in example 6a.
+let1t2<- T.t1t2[["linkingErrors"]]
 
-# create a classification table: which linking error term belongs to which dependent variable?
-leInfo<- data.frame(depVar = c("value", "valueTransfBista", "traitLevel"),
-         linkErrorTerm = c("linkingError", "linkingErrorTransfBista", "linkingErrorTraitLevel"),
-         stringsAsFactors = FALSE)
+# t2 vs. t3: linking errors were computed in example 6b.
+let2t3<- T.t2t3[["linkingErrors"]]
 
-# create linking error data.frame for t1 vs. t2
-t1t2  <- apply(leInfo, MARGIN = 1, FUN = function ( line ) {
-         if (line[["depVar"]] == "traitLevel") {prm <- let1t2[,"traitLevel"] } else {prm <- "mean"}
-         unique(data.frame ( trendLevel1 = 2010, trendLevel2 = 2015, depVar = line[["depVar"]],
-              domain = let1t2[,"dimension"],  parameter = prm,
-              linkingError = let1t2[,line[["linkErrorTerm"]]], stringsAsFactors = FALSE))})
-t1t2  <- do.call("rbind", t1t2)
-
-# collect and transform linking errors
-# t2 vs. t3: linking errors were computed in example 6b. Extract linking errors and
-# appropriately reshape the data.frame
-let2t3<- unique(T.t2t3[["itempars"]][,c("dimension", "traitLevel", grep("^linkingError", colnames(T.t2t3[["itempars"]]), value=TRUE))])
-
-# create linking error data.frame for t2 vs. t3
-t2t3  <- apply(leInfo, MARGIN = 1, FUN = function ( line ) {
-         if (line[["depVar"]] == "traitLevel") {prm <- let2t3[,"traitLevel"] } else {prm <- "mean"}
-         unique(data.frame ( trendLevel1 = 2015, trendLevel2 = 2020, depVar = line[["depVar"]],
-              domain = let2t3[,"dimension"],  parameter = prm,
-              linkingError = let2t3[,line[["linkErrorTerm"]]], stringsAsFactors = FALSE))})
-t2t3  <- do.call("rbind", t2t3)
-
-# collect and transform linking errors
 # t1 vs. t3: linking errors were not yet computed: link t3 to t1 to create linking error template
 L.t1t3<- equat1pl ( results = resT3, prmNorm = itemT1[,c("item", "est")],
          excludeLinkingDif = TRUE, difBound = 0.64, iterativ = TRUE)
@@ -1125,19 +1103,12 @@ L.t1t3<- replaceLinkingError (equatingList =L.t1t3, multiEquatError_output=chain
 
 # transform linking errors
 ref   <- dfrT1P[["refPop"]]
-tle   <- transformToBista ( equatingList = L.t1t3, refPop=ref, cuts = cuts, vera=FALSE)
-tle   <- unique(tle[["itempars"]][,c("dimension", "traitLevel", grep("^linkingError", colnames(tle[["itempars"]]), value=TRUE))])
-
-# create linking error data.frame for t1 vs. t3
-t1t3  <- apply(leInfo, MARGIN = 1, FUN = function ( line ) {
-         if (line[["depVar"]] == "traitLevel") {prm <- tle[,"traitLevel"] } else {prm <- "mean"}
-         unique(data.frame ( trendLevel1 = 2010, trendLevel2 = 2020, depVar = line[["depVar"]],
-              domain = tle[,"dimension"],  parameter = prm,
-              linkingError = tle[,line[["linkErrorTerm"]]], stringsAsFactors = FALSE))})
-t1t3  <- do.call("rbind", t1t3)
+tle   <- transformToBista ( equatingList = L.t1t3, refPop=ref, cuts = cuts,
+         vera=FALSE, years = c(2010,2020))
+let1t3<- tle[["linkingErrors"]]
 
 # bind all linking errors in a common data.frame
-lErr  <- rbind(t1t2, t2t3, t1t3)
+lErr  <- rbind(let1t2, let2t3, let1t3)
 lErr[,"domain"] <- car::recode(lErr[,"domain"], "'domainlistening'='listening'; 'domainreading'='reading'")
 
 
