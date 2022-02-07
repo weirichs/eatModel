@@ -307,7 +307,7 @@ transformItemParListIntoResults <- function(results, prmNorm, itemF, domainF, te
            return(list(results=results, dims=dims))}
 
 ### hilfsfunktion fuer equat1pl: baut leeres results objekt, falls equating nur durchgeschleift werden soll
-buildEmptyResultsObject <- function (d, method ) {
+buildEmptyResultsObject <- function (d, method, results ) {
            it  <- itemFromRes(d)
            if ( "estOffset" %in% colnames ( it ) ) {
                  d[,"par"] <- car::recode ( d[,"par"], "'offset'='est'")
@@ -478,7 +478,7 @@ equat1pl<- function ( results , prmNorm , item = NULL, domain = NULL, testlet = 
                     cat("No norm parameter defined ('prmNorm' is missing). Treat current sample as drawn from the reference population.\n")
     ### Kein equating: baue 'leeres' Rueckgabeobjekt
                     items <- by ( data = results, INDICES = results[,"model"], FUN = function ( d ) {
-                             dimN <- buildEmptyResultsObject(d=d, method = method)
+                             dimN <- buildEmptyResultsObject(d=d, method = method, results=results)
                              return(dimN)}, simplify = FALSE)
                     ret   <- list(items = items, results = results)             ### die Klasse des Rueckgabeobjekts heisst hier "eq2tom", das ist das Equatingobjekt
                     class(ret) <- c("eq2tom", class(ret))                       ### fuer 2 Messzeitpunkte (time of measurement)
@@ -1048,40 +1048,45 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
 ### Hilfsfunktiuon fuer 'defineModel': Jetzt wird die aufbereitete Liste aus 'splitModels' abgearbeitet. ACHTUNG: Argumente in 'splittedModels' ueberschreiben default- und vom Nutzer gesetzte Argumente in 'defineModel'!
 ### Der Funktionsaufruf von 'doAufb' variiert je nach single- oder multicore handling. hier: single core
 doAufb <- function ( m, matchCall, anf, verbose ) {
-          for ( i in 1:length(matchCall) ) { assign ( names(matchCall)[i], matchCall[[i]]) }
-          matchL <- match(m, unlist(lapply(splittedModels[["models.splitted"]], FUN = function ( l ) { l[["model.no"]] } )))
+          matchL <- match(m, unlist(lapply(matchCall[["splittedModels"]][["models.splitted"]], FUN = function ( l ) { l[["model.no"]] } )))
           mess1  <- NULL                                                        ### Nachrichtenobjekt initialisieren
-          if(!is.null(splittedModels[["models.splitted"]][[matchL]][["qMatrix"]])) {
+          if(!is.null(matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["qMatrix"]])) {
      ### check: wenn superSplitter BERUHEND AUF ITEM GROUPING genutzt wird, wird 'items'-Argument von 'defineModel' ignoriert; wenn das also im 'matchCall' NICHT NULL ist, wird es ignoriert
              if ( !is.null(matchCall[["items"]]) )  {                           ### Warnung nur beim ersten Schleifendurchlauf anzeigen!
                   if(m == anf) { mess1 <- c(mess1, cat("Warning: 'defineModel' was called using 'splitModels' argument. Model split according to item groups is intended. Item selection is defined \n    via 'splittedModels' object. Hence, 'items' argument is expected to be missed in 'defineModel()' and will be ignored.\n")) }
              }
-             itemMis<- setdiff ( splittedModels[["models.splitted"]][[matchL]][["qMatrix"]][,1], colnames(dat))
+             itemMis<- setdiff ( matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["qMatrix"]][,1], colnames(matchCall[["dat"]]))
              if( length ( itemMis ) > 0) {
-                  mess1 <- c(mess1, paste( "Warning! Model No. ",splittedModels[["models.splitted"]][[matchL]][["model.no"]], ", model name: '",splittedModels[["models.splitted"]][[matchL]][["model.name"]],"': ", length(itemMis) ," from ",nrow(splittedModels[["models.splitted"]][[matchL]][["qMatrix"]])," items listed the Q matrix not found in data:\n    ", paste(itemMis,collapse=", "),"\n",sep=""))
+                  mess1 <- c(mess1, paste( "Warning! Model No. ",matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["model.no"]], ", model name: '",matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["model.name"]],"': ", length(itemMis) ," from ",nrow(matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["qMatrix"]])," items listed the Q matrix not found in data:\n    ", paste(itemMis,collapse=", "),"\n",sep=""))
              }
-             itemSel<- intersect ( splittedModels[["models.splitted"]][[matchL]][["qMatrix"]][,1], colnames(dat))
-             qMatrix<- splittedModels[["models.splitted"]][[matchL]][["qMatrix"]]
+             itemSel<- intersect ( matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["qMatrix"]][,1], colnames(matchCall[["dat"]]))
+             qMatrix<- matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["qMatrix"]]
           }  else  {
-             if ( is.null(matchCall[["items"]]) )  { stop(paste("Model no. ",m," ('",splittedModels[["models.splitted"]][[matchL]][["model.name"]],"'): no items defined.\n",sep=""))}
-             itemSel<- items                                                    ### itemSel = "items selected"
+             if ( is.null(matchCall[["items"]]) )  { stop(paste0("Model no. ",m," ('",matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["model.name"]],"'): no items defined.\n"))}
+             itemSel<- matchCall[["items"]]                                     ### itemSel = "items selected"
           }
      ### Personen im Datensatz selektieren: Achtung: wenn keine Personen in "person.grouping", nimm alle!
-          if(!is.null(splittedModels[["models.splitted"]][[matchL]][["person.grouping"]])) {
-             persMis<- setdiff ( splittedModels[["models.splitted"]][[matchL]][["person.grouping"]][,1], dat[,id])
+          if(!is.null(matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["person.grouping"]])) {
+             persMis<- setdiff ( matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["person.grouping"]][,1], matchCall[["dat"]][,matchCall[["id"]]])
              if( length ( persMis ) > 0) {
-                 mess1 <- c(mess1, paste( "Warning: ",length(persMis) ," from ",nrow(splittedModels[["models.splitted"]][[matchL]][["person.grouping"]])," persons not found in data.\n",sep=""))
+                 mess1 <- c(mess1, paste0( "Warning: ",length(persMis) ," from ",nrow(matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["person.grouping"]])," persons not found in data.\n"))
              }
-             persons<- intersect ( splittedModels[["models.splitted"]][[matchL]][["person.grouping"]][,1], dat[,id])
-             datSel <- dat[match(persons, dat[,id]),]
-          }  else  { datSel <- dat }
+             persons<- intersect ( matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["person.grouping"]][,1], matchCall[["dat"]][,matchCall[["id"]]])
+             datSel <- matchCall[["dat"]][match(persons, matchCall[["dat"]][,matchCall[["id"]]]),]
+          }  else  { datSel <- matchCall[["dat"]] }
      ### Unterverzeichnisse definieren
-          if(is.null(matchCall[["dir"]])) { dirI <- NULL }  else  { dirI   <- file.path(dir, substring(splittedModels[["models.splitted"]][[matchL]][["model.subpath"]],3)) }
-          nameI  <- splittedModels[["models.splitted"]][[matchL]][["model.name"]]
-          if(!exists("qMatrix") ) { nDim <- 1; qMatrix <- NULL } else { nDim <- ncol(qMatrix)-1 }
+          if(is.null(matchCall[["dir"]])) { dirI <- NULL }  else  { dirI   <- file.path(dir, substring(matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["model.subpath"]],3)) }
+          nameI  <- matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["model.name"]]
+          if(!exists("qMatrix") && is.null(matchCall[["qMatrix"]]) ) {
+             nDim    <- 1
+             qMatrix <- NULL
+          }   else   {
+             if(!exists("qMatrix") ) { qMatrix <- matchCall[["qMatrix"]]}
+             nDim <- ncol(qMatrix)-1
+          }
      ### Aufruf von 'defineModel' generieren, Teil 1. Achtung: wenn der Nutzer eigenhaendig neue Argumente in <models>[["models"]] einfuegt, muessen die hier in <models>[["models.splitted"]] uebernommen werden!
           overwr1<- list( dat=datSel, items = itemSel, qMatrix = qMatrix, analysis.name = nameI, dir = dirI)
-          overwrF<- setdiff ( colnames(splittedModels[["models"]]), c("model.no", "model.name", "model.subpath", "dim", "Ndim", "group", "Ngroup"))
+          overwrF<- setdiff ( colnames(matchCall[["splittedModels"]][["models"]]), c("model.no", "model.name", "model.subpath", "dim", "Ndim", "group", "Ngroup"))
           if(length(overwrF)>0) {                                               ### wenn der Nutzer zusaetzliche Spalten in <models>$models spezifiziert, muessen
              notAllow <- setdiff ( overwrF, names(formals(defineModel)))        ### die Spaltennamen zu Argumenten von 'defineModel' passen, sonst werden die ignoriert
              if ( length ( notAllow ) > 0 ) {
@@ -1105,8 +1110,8 @@ doAufb <- function ( m, matchCall, anf, verbose ) {
              }                                                                  ### wenn nach den ganzen checks immer noch zusaetzliche Argumente uebrig sind, werden die jetzt
              if ( length ( overwrF ) > 0 ) {                                    ### in 'overwr1' ergaenzt ... und in 'splittedModels' fuer die 'sprechenden Ausgaben'
                   for ( hh in overwrF ) {
-                        overwr1[[hh]] <- splittedModels[["models"]][which(splittedModels[["models"]][,"model.no"] == m),hh]
-                        splittedModels[["models.splitted"]][[matchL]][[hh]] <- splittedModels[["models"]][which(splittedModels[["models"]][,"model.no"] == m),hh]
+                        overwr1[[hh]] <- matchCall[["splittedModels"]][["models"]][which(matchCall[["splittedModels"]][["models"]][,"model.no"] == m),hh]
+                        matchCall[["splittedModels"]][["models.splitted"]][[matchL]][[hh]] <- matchCall[["splittedModels"]][["models"]][which(matchCall[["splittedModels"]][["models"]][,"model.no"] == m),hh]
                   }
              }
           }  else  { overwrF <-  NULL }
@@ -1116,14 +1121,14 @@ doAufb <- function ( m, matchCall, anf, verbose ) {
      ### sprechende Ausgaben, wenn verbose == TRUE
           if(exists("items"))   {allVars<- list(variablen=items)}
           if(exists("itemSel")) {allVars<- list(variablen=itemSel)}             ### Hotfix: anzahl der Items bestimmen
-          allNams<- lapply(allVars, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = dat, variable=ii)})
-          overwr3<- data.frame ( arg = c("Model name", "Number of items", "Number of persons", "Number of dimensions"), eval = as.character(c(splittedModels[["models.splitted"]][[matchL]][["model.name"]],length(allNams[["variablen"]]), nrow(datSel) , nDim)), stringsAsFactors = FALSE)
+          allNams<- lapply(allVars, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = matchCall[["dat"]], variable=ii)})
+          overwr3<- data.frame ( arg = c("Model name", "Number of items", "Number of persons", "Number of dimensions"), eval = as.character(c(matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["model.name"]],length(allNams[["variablen"]]), nrow(datSel) , nDim)), stringsAsFactors = FALSE)
            if ( length ( overwrF) > 0 )  {
-                zusatz <- lapply ( overwrF, FUN = function ( y ) { splittedModels[["models"]][which(splittedModels[["models"]][,"model.no"] == m),y] })
+                zusatz <- lapply ( overwrF, FUN = function ( y ) { matchCall[["splittedModels"]][["models"]][which(matchCall[["splittedModels"]][["models"]][,"model.no"] == m),y] })
                 zusatz <- data.frame ( arg = overwrF, eval = as.character ( zusatz ) )
                 overwr3<- rbind ( overwr3, zusatz)
            }
-           overwr3["leerz"] <- max (nchar(overwr3[,"arg"])) - nchar(overwr3[,"arg"]) + 1
+           overwr3[,"leerz"] <- max (nchar(overwr3[,"arg"])) - nchar(overwr3[,"arg"]) + 1
            txt    <- apply(overwr3, MARGIN = 1, FUN = function ( j ) { paste("\n    ", j[["arg"]], ":", paste(rep(" ", times = j[["leerz"]]), sep="", collapse=""), j[["eval"]], sep="")})
            nDots  <- max(nchar(overwr3[,"arg"])) + max(nchar(overwr3[,"eval"])) + 6
            if(verbose == TRUE ) {
@@ -1131,7 +1136,7 @@ doAufb <- function ( m, matchCall, anf, verbose ) {
               if(!is.null(mess1)) { cat(mess1)}
            }
      ### Achtung! Rueckgabe haengt davon ab, ob multicore Handling stattfinden soll! zuerst single core
-          if(is.null ( splittedModels[["nCores"]] ) | splittedModels[["nCores"]] == 1 ) {
+          if(is.null ( matchCall[["splittedModels"]][["nCores"]] ) | matchCall[["splittedModels"]][["nCores"]] == 1 ) {
              ret    <- do.call("defineModel", args = overwr1)                   ### single core handling: die verschiedenen Modelle werden
           }  else  {                                                            ### bereits jetzt an "defineModel" zurueckgegeben und seriell verarbeitet
              ret    <- overwr1                                                  ### multicore: die verschiedenen Modelle werden noch nicht weiter verarbeitet,
