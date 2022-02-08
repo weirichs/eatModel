@@ -118,16 +118,16 @@ getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c(
             if("runMultiple" %in% class(runModelObj)) {                         ### Mehrmodellfall
                 if(is.null ( attr(runModelObj, "split")[["nCores"]] ) || attr(runModelObj, "split")[["nCores"]] == 1 ) {
                    res <- lapply( runModelObj, FUN = function ( r ) {           ### erstmal single core auswertung
-                          do  <- paste ( "ret <- getResults ( ", paste(names(formals(getResults)), car::recode(names(formals(getResults)), "'runModelObj'='r'"), sep =" = ", collapse = ", "), ")",sep="")
-                          eval(parse(text=do))
+                          do  <- paste ( "getResults ( ", paste(names(formals(getResults)), car::recode(names(formals(getResults)), "'runModelObj'='r'"), sep =" = ", collapse = ", "), ")",sep="")
+                          ret <- eval(parse(text=do))
                           return(ret)})
                    }  else  {
                           # if(!exists("detectCores"))   {library(parallel)}    ### jetzt multicore: muss dasselbe Objekt zurueckgeben!
                           doIt<- function (laufnummer,  ... ) {
                                  if(!exists("getResults"))  { library(eatModel) }
                                  if(!exists("tam.mml") &  length(grep("tam.", class(runModelObj[[1]])))>0 ) {library(TAM, quietly = TRUE)}
-                                 do    <- paste ( "ret <- getResults ( ", paste(names(formals(getResults)), car::recode(names(formals(getResults)), "'runModelObj'='runModelObj[[laufnummer]]'"), sep =" = ", collapse = ", "), ")",sep="")
-                                 eval(parse(text=do))
+                                 do  <- paste ( "getResults ( ", paste(names(formals(getResults)), car::recode(names(formals(getResults)), "'runModelObj'='runModelObj[[laufnummer]]'"), sep =" = ", collapse = ", "), ")",sep="")
+                                 ret <- eval(parse(text=do))
                                  return(ret)}
                           beg <- Sys.time()
                           if ( attr(runModelObj, "split")[["mcPackage"]] == "parallel") {
@@ -326,7 +326,7 @@ buildEmptyResultsObject <- function (d, method, results ) {
            return(dimN)}
 
 ### hilfsfunktion fuer equat1pl: schreibt Informationen auf die Konsole
-printToConsole <- function(d, nMods, it, prmDim, eq, allN, method, estimation, eqh) {
+printToConsole <- function(d, nMods, it, prmDim, eq, allN, method, estimation, eqh, eqr) {
            cat(paste("\n",paste(rep("=",100),collapse=""),"\n \nModel No. ",match(d[1,"model"], names(nMods)),"\n    Model name:                ",d[1,"model"],"\n    Number of dimension(s):    ",length(unique(it[,"dimension"])),"\n    Name(s) of dimension(s):   ", paste( names(table(as.character(it[,"dimension"]))), collapse = ", "),"\n",sep=""))
            if  ( length(names(table(as.character(it[,"dimension"])))) > 1) {  cat(paste("    Name of current dimension: ",names(table(prmDim[,"dimension"]))," \n",sep=""))}
            cat(paste("    Number of linking items:   " , eq[["descriptives"]][["N.Items"]],"\n",sep=""))
@@ -375,7 +375,7 @@ handleLinkingDif <- function(prmDim,prbl, eq, difBound, dif, method, excludeLink
                return(list(eq=eq, info=info))}
                
 ### hilfsfunktion fuer equat1pl: wenn es keine Linking-Dif Items gibt bzw. wenn methode 'robust' ist
-noLinkingDif <- function (method=method, eq=eq, eqr=eqr, eqh=eqh) {
+noLinkingDif <- function (method, eq, eqr, eqh) {
               if (method %in% c("Mean.Mean", "Haebara", "Stocking.Lord")) {
                    info <- data.frame ( linking.constant = eq[["B.est"]][[method]], linkerror = eq[["descriptives"]][["linkerror"]] )
               }
@@ -524,7 +524,7 @@ equat1pl<- function ( results , prmNorm , item = NULL, domain = NULL, testlet = 
                                        if ( eq[["descriptives"]][["N.Items"]] == 0) { eqr <- eqh <- NULL}
                                    }
     ### Konsolenoutput (Teil 1) erstellen
-                                   foo <- printToConsole(d=d, nMods=nMods, it=it, prmDim=prmDim, eq=eq, allN=allN, method=method, estimation=estimation, eqh=eqh)
+                                   foo <- printToConsole(d=d, nMods=nMods, it=it, prmDim=prmDim, eq=eq, allN=allN, method=method, estimation=estimation, eqh=eqh, eqr=eqr)
     ### Gibt es Items mit linking dif?
                                    if ( method != "robust" && method != "Haberman" && length( prbl ) > 0 ) {
                                         eld  <- handleLinkingDif(prmDim=prmDim,prbl=prbl, eq=eq, difBound=difBound, dif=dif, method=method, excludeLinkingDif=excludeLinkingDif, iterativ=iterativ,prmM=prmM, allN=allN)
@@ -917,76 +917,76 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
                    return ( defineModelObj )
                 }
                 if("defineTam" %in% class(defineModelObj)) {                    ### exportiere alle Objekte aus defineModelObj in environment
-                   for ( i in names( defineModelObj )) { assign(i, defineModelObj[[i]]) }
+                   # for ( i in names( defineModelObj )) { assign(i, defineModelObj[[i]]) }
                    if ( show.output.on.console == TRUE ) { control$progress <- TRUE }
                    # if(!exists("tam.mml"))       {library(TAM, quietly = TRUE)}  ### March, 2, 2013: fuer's erste ohne DIF, ohne polytome Items, ohne mehrgruppenanalyse, ohne 2PL
-                   if(!is.null(anchor)) {
-                       stopifnot(ncol(anchor) == 2 )                            ### Untere Zeile: Wichtig! Sicherstellen, dass Reihenfolge der Items in Anker-Statement
-                       notInData   <- setdiff(anchor[,1], all.Names[["variablen"]])
+                   if(!is.null(defineModelObj[["anchor"]])) {
+                       stopifnot(ncol(defineModelObj[["anchor"]]) == 2 )        ### Untere Zeile: Wichtig! Sicherstellen, dass Reihenfolge der Items in Anker-Statement
+                       notInData   <- setdiff(defineModelObj[["anchor"]][,1], defineModelObj[["all.Names"]][["variablen"]])
                        if(length(notInData)>0)  {
                           cat(paste("Found following ", length(notInData)," item(s) in anchor list which are not in the data:\n",sep=""))
                           cat(paste(notInData, collapse = ", ")); cat("\n")
                           cat("Delete missing item(s) from anchor list.\n")
-                          anchor <- anchor[-match(notInData, anchor[,1]),]
+                          defineModelObj[["anchor"]] <- defineModelObj[["anchor"]][-match(notInData, defineModelObj[["anchor"]][,1]),]
                        }
-                       anchor[,1]    <- match(as.character(anchor[,1]), all.Names[["variablen"]])
+                       defineModelObj[["anchor"]][,1]    <- match(as.character(defineModelObj[["anchor"]][,1]), defineModelObj[["all.Names"]][["variablen"]])
                    }
-                   if(length( all.Names[["HG.var"]])>0)     { Y <- daten[,all.Names[["HG.var"]], drop=FALSE] } else { Y <- NULL }
-                   if(length( all.Names[["weight.var"]])>0) { wgt <- as.vector(daten[,all.Names[["weight.var"]]])} else {wgt <- NULL}
-                   if(length( all.Names[["group.var"]])>0)  { group <- as.vector(daten[,all.Names[["group.var"]]])} else {group <- NULL}
-                   stopifnot(all(qMatrix[,1] == all.Names[["variablen"]]))
-                   if(length(all.Names[["DIF.var"]]) == 0 ) {
-                      if( irtmodel %in% c("1PL", "PCM", "PCM2", "RSM")) {
-                          if ( fitTamMmlForBayesian == TRUE ) {
-                               mod  <- tam.mml(resp = daten[,all.Names[["variablen"]]], constraint = constraint, pid = daten[,"ID"], Y = Y, Q = qMatrix[,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = irtmodel, pweights = wgt, control = control, group=group)
+                   if(length( defineModelObj[["all.Names"]][["HG.var"]])>0)     { Y <- defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["HG.var"]], drop=FALSE] } else { Y <- NULL }
+                   if(length( defineModelObj[["all.Names"]][["weight.var"]])>0) { wgt <- as.vector(defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["weight.var"]]])} else {wgt <- NULL}
+                   if(length( defineModelObj[["all.Names"]][["group.var"]])>0)  { group <- as.vector(defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["group.var"]]])} else {group <- NULL}
+                   stopifnot(all(defineModelObj[["qMatrix"]][,1] == defineModelObj[["all.Names"]][["variablen"]]))
+                   if(length(defineModelObj[["all.Names"]][["DIF.var"]]) == 0 ) {
+                      if( defineModelObj[["irtmodel"]] %in% c("1PL", "PCM", "PCM2", "RSM")) {
+                          if ( isTRUE(defineModelObj[["fitTamMmlForBayesian"]]) ) {
+                               mod  <- tam.mml(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], constraint = defineModelObj[["constraint"]], pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = defineModelObj[["anchor"]], irtmodel = defineModelObj[["irtmodel"]], pweights = wgt, control = defineModelObj[["control"]], group=group)
                           }  else  {
-                               mod  <- tamObjForBayesianPV (anchor = anchor, qMatrix = qMatrix, resp = daten[,all.Names[["variablen"]]], pid = daten[,"ID"], Y=Y)
+                               mod  <- tamObjForBayesianPV (anchor = defineModelObj[["anchor"]], qMatrix = defineModelObj[["qMatrix"]], resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y=Y)
                           }
                       }
-                      if( irtmodel %in% c("2PL", "GPCM", "2PL.groups", "GPCM.design", "3PL") )  {
-                          if(!is.null(est.slopegroups))  {
-                              weg1            <- setdiff(all.Names[["variablen"]], est.slopegroups[,1])
+                      if( defineModelObj[["irtmodel"]] %in% c("2PL", "GPCM", "2PL.groups", "GPCM.design", "3PL") )  {
+                          if(!is.null(defineModelObj[["est.slopegroups"]]))  {
+                              weg1  <- setdiff(defineModelObj[["all.Names"]][["variablen"]], defineModelObj[["est.slopegroups"]][,1])
                               if(length(weg1)>0) {stop("Items in dataset which are not defined in design matrix for item groups with common slopes ('est.slopegroups').\n")}
-                              weg2            <- setdiff(est.slopegroups[,1], all.Names[["variablen"]])
+                              weg2  <- setdiff(defineModelObj[["est.slopegroups"]][,1], defineModelObj[["all.Names"]][["variablen"]])
                               if(length(weg2)>0) {
                                  cat(paste("Following ",length(weg2), " Items in design matrix for item groups with common slopes ('est.slopegroups') which are not in dataset:\n",sep=""))
                                  cat("   "); cat(paste(weg2, collapse=", ")); cat("\n")
                                  cat("Remove these item(s) from design matrix.\n")
-                                 est.slopegroups <- est.slopegroups[-match(weg2,est.slopegroups[,1]),]
+                                 defineModelObj[["est.slopegroups"]] <- defineModelObj[["est.slopegroups"]][-match(weg2,defineModelObj[["est.slopegroups"]][,1]),]
                               }                                                 ### untere zeile: pruefen, ob keine fehlenden oder leeren Eintraege in der Liste sind
-                              weg3            <- c(which(is.na(est.slopegroups[,2])), which(est.slopegroups[,2] ==""))
+                              weg3  <- c(which(is.na(defineModelObj[["est.slopegroups"]][,2])), which(defineModelObj[["est.slopegroups"]][,2] ==""))
                               if(length(weg3)>0) {stop("Items in 'est.slopegroups' with missing or empty values.\n")}
-                              est.slopegroups <- as.numeric(as.factor(as.character(est.slopegroups[match(all.Names[["variablen"]], est.slopegroups[,1]),2])))
+                              defineModelObj[["est.slopegroups"]] <- as.numeric(as.factor(as.character(defineModelObj[["est.slopegroups"]][match(defineModelObj[["all.Names"]][["variablen"]], defineModelObj[["est.slopegroups"]][,1]),2])))
                           }
-                          if(!is.null(fixSlopeMat))  {                          ### Achtung: wenn Items identifiers NICHT unique sind (z.B., Item gibt es global und domaenenspezifisch,
-                              fixSlopeMat <- eatTools::facToChar(fixSlopeMat)   ### dann wird jetzt 'fixSlopeMat' auf die Dimension in der Q Matrix angepasst ... das ist nur erlaubt, wenn es ein eindimensionales Modell ist!!
-                              if(!is.null( slopeMatDomainCol ) ) {
-                                  allV <- list(slopeMatDomainCol=slopeMatDomainCol , slopeMatItemCol=slopeMatItemCol, slopeMatValueCol =slopeMatValueCol)
-                                  all.Names <- c(all.Names, lapply(allV, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = fixSlopeMat, variable=ii)}))
-                                  if ( ncol(qMatrix) != 2) { stop ( "Duplicated item identifiers in 'fixSlopeMat' are only allowed for unidimensional models.\n") }
-                                  mtch <- eatTools::whereAre( colnames(qMatrix)[2], fixSlopeMat[, all.Names[["slopeMatDomainCol"]]], verbose=FALSE)
-                                  if ( length( mtch) < 2 ) { stop(cat(paste ( "Cannot found dimension '",colnames(qMatrix)[2],"' in 'fixSlopeMat'. Found following values in '",all.Names[["slopeMatDomainCol"]],"' column of 'fixSlopeMat': \n    '", paste( sort(unique(fixSlopeMat[, all.Names[["slopeMatDomainCol"]] ])), collapse="', '"),"'.\n",sep="")))}
-                                  fixSlopeMat <- fixSlopeMat[mtch, c(all.Names[["slopeMatItemCol"]],all.Names[["slopeMatValueCol"]])]
+                          if(!is.null(defineModelObj[["fixSlopeMat"]]))  {      ### Achtung: wenn Items identifiers NICHT unique sind (z.B., Item gibt es global und domaenenspezifisch, dann wird jetzt 'fixSlopeMat' auf die Dimension in der Q Matrix angepasst ... das ist nur erlaubt, wenn es ein eindimensionales Modell ist!!
+                              defineModelObj[["fixSlopeMat"]] <- eatTools::facToChar(defineModelObj[["fixSlopeMat"]])
+                              if(!is.null( defineModelObj[["slopeMatDomainCol"]] ) ) {
+                                  allV <- list(slopeMatDomainCol=defineModelObj[["slopeMatDomainCol"]] , slopeMatItemCol=defineModelObj[["slopeMatItemCol"]], slopeMatValueCol =defineModelObj[["slopeMatValueCol"]])
+                                  defineModelObj[["all.Names"]] <- c(defineModelObj[["all.Names"]], lapply(allV, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = defineModelObj[["fixSlopeMat"]], variable=ii)}))
+                                  if ( ncol(defineModelObj[["qMatrix"]]) != 2) { stop ( "Duplicated item identifiers in 'fixSlopeMat' are only allowed for unidimensional models.\n") }
+                                  mtch <- eatTools::whereAre( colnames(defineModelObj[["qMatrix"]])[2], defineModelObj[["fixSlopeMat"]][, defineModelObj[["all.Names"]][["slopeMatDomainCol"]]], verbose=FALSE)
+                                  if ( length( mtch) < 2 ) { stop(cat(paste ( "Cannot found dimension '",colnames(defineModelObj[["qMatrix"]])[2],"' in 'fixSlopeMat'. Found following values in '",defineModelObj[["all.Names"]][["slopeMatDomainCol"]],"' column of 'fixSlopeMat': \n    '", paste( sort(unique(defineModelObj[["fixSlopeMat"]][, defineModelObj[["all.Names"]][["slopeMatDomainCol"]] ])), collapse="', '"),"'.\n",sep="")))}
+                                  defineModelObj[["fixSlopeMat"]] <- defineModelObj[["fixSlopeMat"]][mtch, c(defineModelObj[["all.Names"]][["slopeMatItemCol"]],defineModelObj[["all.Names"]][["slopeMatValueCol"]])]
                               }
                               cat ( "W A R N I N G:  To date, fixing slopes only works for dichotomous unidimensional or between-item multidimensional models.\n")
-                              estVar          <- TRUE
-                              weg2            <- setdiff(fixSlopeMat[,1], all.Names[["variablen"]])
+                              estVar   <- TRUE
+                              weg2     <- setdiff(defineModelObj[["fixSlopeMat"]][,1], defineModelObj[["all.Names"]][["variablen"]])
                               if(length(weg2)>0) {
-                                 cat(paste("Following ",length(weg2), " Items in matrix for items with fixed slopes ('fixSlopeMat') which are not in dataset:\n",sep=""))
+                                 cat(paste("Following ",length(weg2), " items in matrix for items with fixed slopes ('fixSlopeMat') which are not in dataset:\n",sep=""))
                                  cat("   "); cat(paste(weg2, collapse=", ")); cat("\n")
                                  cat("Remove these item(s) from 'fixSlopeMat' matrix.\n")
-                                 fixSlopeMat <- fixSlopeMat[-match(weg2,fixSlopeMat[,1]),]
-                              }                                                 ### Achtung, grosser Scheiss: wenn man nicht (wie oben) eine Reihenfolgespalte angibt,
-                              if ( nrow(fixSlopeMat) != length(unique(fixSlopeMat[,1])) ) { stop ( "Item identifiers in 'fixSlopeMat' are not unique.\n")}
-                              fixSlopeMat[,"reihenfolge"] <- 1:nrow(fixSlopeMat)### aendert die untere 'by'-Schleife die Sortierung!
-                              dims  <- (1:ncol(qMatrix))[-1]                    ### Slopematrix muss itemweise zusammengebaut werden
-                              slopMa<- do.call("rbind", by ( data = fixSlopeMat, INDICES = fixSlopeMat[,"reihenfolge"], FUN = function (zeile ) {
+                                 defineModelObj[["fixSlopeMat"]] <- defineModelObj[["fixSlopeMat"]][-match(weg2,defineModelObj[["fixSlopeMat"]][,1]),]
+                              }                                                 ### Achtung, grosser Scheiss: wenn man nicht (wie oben) eine Reihenfolgespalte angibt, aendert die untere 'by'-Schleife die Sortierung!
+                              if ( nrow(defineModelObj[["fixSlopeMat"]]) != length(unique(defineModelObj[["fixSlopeMat"]][,1])) ) { stop ( "Item identifiers in 'fixSlopeMat' are not unique.\n")}
+                              defineModelObj[["fixSlopeMat"]][,"reihenfolge"] <- 1:nrow(defineModelObj[["fixSlopeMat"]])
+                              dims  <- (1:ncol(defineModelObj[["qMatrix"]]))[-1]### Slopematrix muss itemweise zusammengebaut werden
+                              slopMa<- do.call("rbind", by ( data = defineModelObj[["fixSlopeMat"]], INDICES = defineModelObj[["fixSlopeMat"]][,"reihenfolge"], FUN = function (zeile ) {
                                        zeile <- zeile[,-ncol(zeile)]
                                        stopifnot ( nrow(zeile) == 1 )
-                                       qSel  <- qMatrix[which( qMatrix[,1] == zeile[[1]]),]
-                                       anzKat<- length(unique(na.omit(daten[,as.character(zeile[[1]])])))
+                                       qSel  <- defineModelObj[["qMatrix"]][which( defineModelObj[["qMatrix"]][,1] == zeile[[1]]),]
+                                       anzKat<- length(unique(na.omit(defineModelObj[["daten"]][,as.character(zeile[[1]])])))
                                        zeilen<- anzKat * length(dims)           ### fuer jedes Items gibt es [Anzahl Kategorien] * [Anzahl Dimensionen] Zeilen in der TAM matrix
-                                       block <- cbind ( rep ( match(zeile[[1]], all.Names[["variablen"]]), times = zeilen), rep ( 1:anzKat, each = length(dims) ), dimsI <- rep ( 1:length(dims), times = anzKat), rep(0, zeilen))
+                                       block <- cbind ( rep ( match(zeile[[1]], defineModelObj[["all.Names"]][["variablen"]]), times = zeilen), rep ( 1:anzKat, each = length(dims) ), dimsI <- rep ( 1:length(dims), times = anzKat), rep(0, zeilen))
                                        matchD<- which ( qSel[,-1] != 0 )
                                        stopifnot ( length( matchD ) == 1)
                                        match2<- intersect(which(block[,2] == max(block[,2])), which(block[,3] == (matchD)))
@@ -994,43 +994,43 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
                                        block[match2,4] <- as.numeric(zeile[[2]])
                                        return(block) }))
                           }  else  {
-                              estVar          <- FALSE
-                              slopMa          <- NULL
+                              estVar   <- FALSE
+                              slopMa   <- NULL
                           }
-                          if( irtmodel == "3PL") {
-                              if(!is.null(guessMat)) {
-                                 weg1          <- setdiff(all.Names[["variablen"]], guessMat[,1])
+                          if( defineModelObj[["irtmodel"]] == "3PL") {
+                              if(!is.null(defineModelObj[["guessMat"]])) {
+                                 weg1          <- setdiff(defineModelObj[["all.Names"]][["variablen"]], defineModelObj[["guessMat"]][,1])
                                  if(length(weg1)>0) {cat(paste(length(weg1), " item(s) in dataset which are not defined in guessing matrix. No guessing parameter will be estimated for these/this item(s).\n",sep="")) }
-                                 weg2          <- setdiff(guessMat[,1], all.Names[["variablen"]])
+                                 weg2          <- setdiff(defineModelObj[["guessMat"]][,1], defineModelObj[["all.Names"]][["variablen"]])
                                  if(length(weg2)>0) {
                                     cat(paste(length(weg2), " item(s) in guessing matrix missing in dataset. Remove these items from guessing matrix.\n",sep=""))
-                                    guessMat   <- guessMat[-match( weg2, guessMat[,1])  ,]
+                                    defineModelObj[["guessMat"]]   <- defineModelObj[["guessMat"]][-match( weg2, defineModelObj[["guessMat"]][,1])  ,]
                                  }
-                                 gues <- guessMat[ match( all.Names[["variablen"]], guessMat[,1]) , "guessingGroup"]
+                                 gues <- defineModelObj[["guessMat"]][ match( defineModelObj[["all.Names"]][["variablen"]], defineModelObj[["guessMat"]][,1]) , "guessingGroup"]
                                  gues[which(is.na(gues))] <- 0
                               }  else  { gues <- NULL }
-                              if ( fitTamMmlForBayesian == TRUE ) {
-                                   mod  <- tam.mml.3pl(resp = daten[,all.Names[["variablen"]]], pid = daten[,"ID"], Y = Y, Q = qMatrix[,-1,drop=FALSE], xsi.fixed = anchor, pweights = wgt, est.guess =gues,  est.variance = estVar, control = control, group=group)
+                              if ( isTRUE(defineModelObj[["fitTamMmlForBayesian"]]) ) {
+                                   mod  <- tam.mml.3pl(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = defineModelObj[["anchor"]], pweights = wgt, est.guess =gues,  est.variance = estVar, control = defineModelObj[["control"]], group=group)
                               }  else  {
-                                   mod  <- tamObjForBayesianPV (anchor = anchor, qMatrix = qMatrix, resp = daten[,all.Names[["variablen"]]], pid = daten[,"ID"], Y=Y, slopeMatrix = fixSlopeMat)
+                                   mod  <- tamObjForBayesianPV (anchor = defineModelObj[["anchor"]], qMatrix = defineModelObj[["qMatrix"]], resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y=Y, slopeMatrix = defineModelObj[["fixSlopeMat"]])
                               }
                           }  else {
-                              if ( fitTamMmlForBayesian == TRUE ) {
-                                   mod  <- tam.mml.2pl(resp = daten[,all.Names[["variablen"]]], pid = daten[,"ID"], Y = Y, Q = qMatrix[,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = irtmodel, est.slopegroups=est.slopegroups,pweights = wgt, B.fixed = slopMa, est.variance = estVar, control = control, group=group)
+                              if ( defineModelObj[["fitTamMmlForBayesian"]] == TRUE ) {
+                                   mod  <- tam.mml.2pl(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = defineModelObj[["anchor"]], irtmodel = defineModelObj[["irtmodel"]], est.slopegroups=defineModelObj[["est.slopegroups"]],pweights = wgt, B.fixed = slopMa, est.variance = estVar, control = defineModelObj[["control"]], group=group)
                               }  else  {
-                                   mod  <- tamObjForBayesianPV (anchor = anchor, qMatrix = qMatrix, resp = daten[,all.Names[["variablen"]]], pid = daten[,"ID"], Y=Y, slopeMatrix = fixSlopeMat)
+                                   mod  <- tamObjForBayesianPV (anchor = defineModelObj[["anchor"]], qMatrix = defineModelObj[["qMatrix"]], resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y=Y, slopeMatrix = defineModelObj[["fixSlopeMat"]])
                               }
                           }
                       }
                    } else {
-                     assign(paste("DIF_",all.Names[["DIF.var"]],sep="") , as.data.frame (daten[,all.Names[["DIF.var"]]]) )
-                     formel   <- as.formula(paste("~item - ",paste("DIF_",all.Names[["DIF.var"]],sep="")," + item * ",paste("DIF_",all.Names[["DIF.var"]],sep=""),sep=""))
-                     facetten <- as.data.frame (daten[,all.Names[["DIF.var"]]])
-                     colnames(facetten) <- paste("DIF_",all.Names[["DIF.var"]],sep="")
-                     if ( fitTamMmlForBayesian == TRUE ) {
-                          mod  <- tam.mml.mfr(resp = daten[,all.Names[["variablen"]]], facets = facetten, constraint = constraint, formulaA = formel, pid = daten[,"ID"], Y = Y, Q = qMatrix[,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = irtmodel, pweights = wgt, control = control, group=group)
+                     assign(paste("DIF_",defineModelObj[["all.Names"]][["DIF.var"]],sep="") , as.data.frame (defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["DIF.var"]]]) )
+                     formel   <- as.formula(paste("~item - ",paste("DIF_",defineModelObj[["all.Names"]][["DIF.var"]],sep="")," + item * ",paste("DIF_",defineModelObj[["all.Names"]][["DIF.var"]],sep=""),sep=""))
+                     facetten <- as.data.frame (defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["DIF.var"]]])
+                     colnames(facetten) <- paste("DIF_",defineModelObj[["all.Names"]][["DIF.var"]],sep="")
+                     if ( isTRUE(defineModelObj[["fitTamMmlForBayesian"]]) ) {
+                          mod  <- tam.mml.mfr(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], facets = facetten, constraint = defineModelObj[["constraint"]], formulaA = formel, pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = defineModelObj[["anchor"]], irtmodel = defineModelObj[["irtmodel"]], pweights = wgt, control = defineModelObj[["control"]], group=group)
                      }  else  {
-                          mod  <- tamObjForBayesianPV (anchor = anchor, qMatrix = qMatrix, resp = daten[,all.Names[["variablen"]]], pid = daten[,"ID"], Y=Y, slopeMatrix = fixSlopeMat)
+                          mod  <- tamObjForBayesianPV (anchor = defineModelObj[["anchor"]], qMatrix = defineModelObj[["qMatrix"]], resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y=Y, slopeMatrix = defineModelObj[["fixSlopeMat"]])
                      }
                    }
                    attr(mod, "qMatrix")      <- defineModelObj[["qMatrix"]]     ### hier werden fuer 'tam' zusaetzliche Objekte als Attribute an das Rueckgabeobjekt angehangen
@@ -1119,8 +1119,8 @@ doAufb <- function ( m, matchCall, anf, verbose ) {
           zusatz <- setdiff ( setdiff ( names(matchCall), "splittedModels"), names( overwr1))
           if ( length ( zusatz ) > 0 ) { overwr1 <- c(overwr1, matchCall[zusatz]) }
      ### sprechende Ausgaben, wenn verbose == TRUE
-          if(exists("items"))   {allVars<- list(variablen=items)}
-          if(exists("itemSel")) {allVars<- list(variablen=itemSel)}             ### Hotfix: anzahl der Items bestimmen
+          if(!is.null(matchCall[["items"]])) {allVars<- list(variablen=matchCall[["items"]])}
+          if(exists("itemSel"))              {allVars<- list(variablen=itemSel)}### Hotfix: anzahl der Items bestimmen
           allNams<- lapply(allVars, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = matchCall[["dat"]], variable=ii)})
           overwr3<- data.frame ( arg = c("Model name", "Number of items", "Number of persons", "Number of dimensions"), eval = as.character(c(matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["model.name"]],length(allNams[["variablen"]]), nrow(datSel) , nDim)), stringsAsFactors = FALSE)
            if ( length ( overwrF) > 0 )  {
@@ -1733,7 +1733,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                         if ( suppressAbort == FALSE ) {
                              stop(paste("Error: ",type," Variable '",varname,"' without any values.",sep=""))
                         }  else  {
-                             warning(paste0(type," Variable '",varname,"' without any values. '",varname,"' will be removed."))
+                             cat(paste0("Warning: ", type," Variable '",varname,"' without any values. '",varname,"' will be removed.\n"))
                              toRemove <- varname
                         }
                      }
@@ -1741,7 +1741,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                         if ( suppressAbort == FALSE ) {
                              stop(paste("Error: ",type," Variable '",varname,"' is a constant.",sep=""))
                         }  else  {
-                             warning(paste0(type," Variable '",varname,"' is a constant. '",varname,"' will be removed.",sep=""))
+                             cat(paste0(type," Variable '",varname,"' is a constant. '",varname,"' will be removed.\n"))
                              toRemove <- varname
                         }
                      }
@@ -2355,7 +2355,7 @@ getTamPVs <- function ( runModelObj, qMatrix, leseAlles, omitPV, pvMethod, tam.p
          for ( i in names( tam.pv.arguments )) { assign(i, tam.pv.arguments[[i]]) }
          if(leseAlles == TRUE ) {
             if ( pvMethod == "regular" ) {                                      ### konventionell
-                 do   <- paste ( "pv <- tam.pv ( ", paste(names(formals(tam.pv)), car::recode ( names(formals(tam.pv)), "'tamobj'='runModelObj'"), sep =" = ", collapse = ", "), ")",sep="")
+                 do   <- paste ( "tam.pv ( ", paste(names(formals(tam.pv)), car::recode ( names(formals(tam.pv)), "'tamobj'='runModelObj'"), sep =" = ", collapse = ", "), ")",sep="")
             } else {                                                            ### bayesianisch, aber mit vorhandedem 'tam.mml'-Objekt
                  if ( is.null ( attr(runModelObj, "Y") ) ) {
                       warning("Conditioning model was not defined ('Y' is NULL).")
@@ -2363,14 +2363,14 @@ getTamPVs <- function ( runModelObj, qMatrix, leseAlles, omitPV, pvMethod, tam.p
                  } else {
                       Y1 <- data.frame ( intercpt = 1, attr(runModelObj, "Y"))
                  }
-                 do   <- paste ( "pv <- tam.pv.mcmc ( ", paste(names(formals(tam.pv.mcmc)), car::recode ( names(formals(tam.pv.mcmc)), "'tamobj'='runModelObj'; 'Y'='Y1'"), sep =" = ", collapse = ", "), ")",sep="")
+                 do   <- paste ( "tam.pv.mcmc ( ", paste(names(formals(tam.pv.mcmc)), car::recode ( names(formals(tam.pv.mcmc)), "'tamobj'='runModelObj'; 'Y'='Y1'"), sep =" = ", collapse = ", "), ")",sep="")
             }
          }  else  {                                                             ### PV-Ziehung ohne vorhandenes 'tam.mml'-Objekt
             class(runModelObj) <- "list"                                        ### gibt sonst eine komische Warnung bei TAM
             stopifnot ( pvMethod == "bayesian")
-            do   <- paste ( "pv <- tam.pv.mcmc ( ", paste(names(formals(tam.pv.mcmc)), car::recode ( names(formals(tam.pv.mcmc)), "'tamobj'='runModelObj'; 'Y'='runModelObj[[\"Y\"]]'; 'nplausible'='attr(runModelObj, \"n.plausible\")'"), sep =" = ", collapse = ", "), ")",sep="")
+            do   <- paste ( "tam.pv.mcmc ( ", paste(names(formals(tam.pv.mcmc)), car::recode ( names(formals(tam.pv.mcmc)), "'tamobj'='runModelObj'; 'Y'='runModelObj[[\"Y\"]]'; 'nplausible'='attr(runModelObj, \"n.plausible\")'"), sep =" = ", collapse = ", "), ")",sep="")
          }
-         eval(parse(text=do))
+         pv   <- eval(parse(text=do))
          pvL  <- reshape2::melt(pv$pv, id.vars = "pid", na.rm=TRUE)
          pvL[,"PV.Nr"] <- as.numeric(eatTools::removePattern(string = unlist(lapply(strsplit(as.character(pvL[,"variable"]),"\\."), FUN = function (l) {l[1]})), pattern = "PV"))
          pvL[,"group"] <- colnames(qMatrix)[as.numeric(eatTools::removePattern(string = unlist(lapply(strsplit(as.character(pvL[,"variable"]),"\\."), FUN = function (l) {l[2]})), pattern = "Dim"))+1]
@@ -3532,7 +3532,7 @@ plotDevianceConquest <- function ( logFile, omitUntil = 1, reverse = TRUE, chang
            if(omitUntil>0)  {
               dc<- mat[-c(1:omitUntil),2]                                       ### 'dc' = 'deviance chance'
            } else {
-              dc<- dmat[,2]
+              dc<- mat[,2]
            }
            if ( change ){
               dc<- diff(dc)
