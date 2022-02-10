@@ -7,18 +7,23 @@ multiEquatError <- function (x1, x2, x3, difBound = 1, dependentDIF =FALSE, test
     ### what kind of input?                                                     ### specific checks for 'eatModelResults' object
        if ( "derived.par" %in% colnames(x1) ) {                                 ### diese Funktion checkt das 'defModelObjList' Objekt und passt es so an, dass damit 'tripleEquatError' ausgefuehrt werden kann
             obj  <- prepareAndCheckEatModelObject(liste, difBound=difBound, verbose=verbose)
-            link <- lapply(names(obj), FUN = function (dim ) { tripleEquatError(e1=obj[[dim]][[1]][,c("item", "est")], e2=obj[[dim]][[2]][,c("item", "est")], e3= obj[[dim]][[3]][,c("item", "est")], dependentDIF=dependentDIF, testletStr=testletStr)})
+            link <- lapply(names(obj), FUN = function (dim ) { tripleEquatError(e1=obj[[dim]][[1]][,c("item", "est")], e2=obj[[dim]][[2]][,c("item", "est")], e3= obj[[dim]][[3]][,c("item", "est")], dependentDIF=dependentDIF, testletStr=testletStr, difBound=difBound, calledForEatModel = TRUE)})
             names(link) <- names(obj)
        } else {                                                                 ### specific checks for 'data.frame' object
-            link <- tripleEquatError(e1=x1, e2=x2, e3=x3, dependentDIF=dependentDIF, testletStr=testletStr)
+            link <- tripleEquatError(e1=x1, e2=x2, e3=x3, dependentDIF=dependentDIF, testletStr=testletStr, difBound=difBound, calledForEatModel = FALSE)
        }
        return(link) }
 
 
 # hilfsfunktion (nicht auf NAMESPACE exportieren)
-tripleEquatError <- function(e1, e2, e3, dependentDIF, testletStr) {
-    ### checks
-      chk1 <- checkInputConsistency(e1=e1,e2=e2,e3=e3,testletStr=testletStr)
+tripleEquatError <- function(e1, e2, e3, dependentDIF, testletStr, difBound, calledForEatModel) {
+    ### checks                                                                  ### wenn der Input das Rueckgabeobjekt von eatModel ist, wird ja zunaechst paarweise 'equat1pl' aufgerufen,
+      chk1 <- checkInputConsistency(e1=e1,e2=e2,e3=e3,testletStr=testletStr)    ### und Items mit DIF werden entfernt. Das passiert (noch) nicht, wenn man nur Itemparameterlisten uebergibt. Deshalb
+      if (isFALSE(calledForEatModel)) {                                         ### passiert das jetzt in 'checkIPD', aber nur, wenn der Input nicht aus eatModel kommt. Aber Achtung! Noch nicht fuer Testletstruktur!
+           chk2 <- checkIPD(e1=e1,e2=e2,e3=e3,testletStr=chk1, difBound=difBound)## Achtung! bei 'checkIPD()' wird 'chk1' reingeschrieben statt 'testletStr', da das Objekt ggf. von der check-Funktion veraendert wird
+           if ( length(chk2[["e1_weg"]])>0) {e1 <- e1[-which(e1[,1] %in% chk2[["e1_weg"]]),]}
+           if ( length(chk2[["e3_weg"]])>0) {e3 <- e3[-which(e3[,1] %in% chk2[["e3_weg"]]),]}
+      }
       el21 <- equ.rasch(e2,e1)
       el31 <- equ.rasch(e3,e1)
       el32 <- equ.rasch(e3,e2)
@@ -65,7 +70,6 @@ tripleEquatError <- function(e1, e2, e3, dependentDIF, testletStr) {
         e1223$dif12 <- e1223[,3] - e1223[,4]
         e1223$dif23 <- e1223[,5] - e1223[,6]
         res1 <- NULL
-        # no real jk but hotfix
         for(un in e1223$unit) {
           p1223 <- e1223[e1223[,1] != un,]
           res1 <- c(cov(p1223$dif12,p1223$dif23),res1)
@@ -90,7 +94,7 @@ checkInput <- function(inputlist) {
      cls <- lapply(inputlist, class)
      if(!all.equal(cls[[1]], cls[[2]], cls[[3]])) {stop("'x1', 'x2', and 'x3' must have the same class.")}
      if(!is.data.frame(inputlist[[1]])) {stop("'x1', 'x2', and 'x3' must be of class 'data.frame'.")} }
-
+     
 
 prepareAndCheckEatModelObject <- function ( liste, difBound, verbose ) {
     ### all models unidim?
@@ -144,7 +148,7 @@ prepareAndCheckEatModelObject <- function ( liste, difBound, verbose ) {
            }
        }
        return(its)}
-
+       
 ### checkfunktion
 checkInputConsistency <- function(e1,e2,e3,testletStr) {
     ### alle data.frames zwei Spalten?
@@ -288,7 +292,22 @@ prob_raschtype_genlogis <- function( theta, b, alpha1, alpha2, fixed.a=1+0*b,  Q
   pm <- sirt::pgenlogis(x=XX, alpha1=alpha1, alpha2=alpha2 )
   pm <- matrix( pm, ncol=length(b))
   return(pm)}
-
+  
+checkIPD <- function(e1,e2,e3,testletStr, difBound){
+    ### mzp1 vs. mzp2
+       eq1  <- equat1pl(results=e2, itemF = colnames(e2)[1], valueF = colnames(e2)[2], prmNorm = e1, difBound=difBound, iterativ=TRUE)
+       eq2  <- equat1pl(results=e3, itemF = colnames(e3)[1], valueF = colnames(e3)[2], prmNorm = e2, difBound=difBound, iterativ=TRUE)
+       if ( "itemExcluded" %in% colnames(eq1[["items"]][["global"]][["global"]][["info"]])) {
+            e1_weg <- setdiff(eq1[["items"]][["global"]][["global"]][["info"]][,"itemExcluded"], "")
+       }  else  {
+            e1_weg <- NULL
+       }
+       if ( "itemExcluded" %in% colnames(eq2[["items"]][["global"]][["global"]][["info"]])) {
+            e3_weg <- setdiff(eq2[["items"]][["global"]][["global"]][["info"]][,"itemExcluded"], "")
+       }  else  {
+            e3_weg <- NULL
+       }
+       return(list(e1_weg = e1_weg, e3_weg = e3_weg))}
 
 #multiEquatError <- function (defModelObjList, nCores=1 ){
 #    ### checks

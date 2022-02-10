@@ -1081,7 +1081,7 @@ pers  <- rbind(persT1, persT2, persT3)
 # first we have to create the 'domain' column in plausible values data
 pers[,"domain"] <- car::recode(pers[,"dimension"], "'domainlistening'='listening'; 'domainreading'='reading'")
 pers[,"dimension"] <- NULL
-pers  <- eatTools::mergeAttr(unique(trends[,c("year", "idclass", "idstud", "domain", "country", "language", "ses", "sex")]),
+pers  <- merge(unique(trends[,c("year", "idclass", "idstud", "domain", "country", "language", "ses", "sex")]),
          pers, by = c("year", "idstud", "domain"), all = FALSE)
 
 # collect linking errors
