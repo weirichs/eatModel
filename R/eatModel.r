@@ -287,21 +287,20 @@ checkItemParLists <- function (prmNorm, item, domain, testlet, value, dims = NUL
 ### hilfsfunktion fuer equat1pl: transformiert itemparameterliste in results-objekt, wenn nicht das Rueckgabeobjekt von getResults()
 ### die Fokusparameter enthaelt, sondern ein einfacher data.frame
 transformItemParListIntoResults <- function(results, itemF, domainF, testletF, valueF){
-           chk2 <- checkItemParLists(prmNorm =results, item = itemF, domain = domainF, testlet = testletF, value = valueF)
-           allF <- list(itemF=itemF, domainF = domainF, testletF = testletF, valueF = valueF)
-           allF <- lapply(allF, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = results, variable=ii)})
-           if (!is.null(allF[["domainF"]])) {
-                dims <- names(table(results[,allF[["domainF"]]]))
+           allF <- checkItemParLists(prmNorm =results, item = itemF, domain = domainF, testlet = testletF, value = valueF)
+           if (!is.null(allF[["domain"]])) {
+                dims <- names(table(results[,allF[["domain"]]]))
            }  else  {
-                allF[["domainF"]] <- "domaene"
-                results[, allF[["domainF"]]] <- dims <- "global"
+                allF[["domain"]] <- "domaene"
+                results[, allF[["domain"]]] <- dims <- "global"
            }
-           results[,"model"] <- results[, allF[["domainF"]]]
+           results[,"model"] <- results[, allF[["domain"]]]
            weg  <- intersect ( colnames (results ) , setdiff  ( c("item", "dimension", "est"), unlist(allF) ))
            if ( length ( weg ) > 0 )  {                                         ### damit keine Spalten durch 'recode' doppelt benannt werden,
                 results <- results[, -match(weg, colnames(results))]            ### muessen spalten, die sich durch die Recodierung aendern
            }                                                                    ### und zugleich schon im datensatz 'results' vergeben sind, raus
-           toRec<- lapply(names(allF), FUN = function ( ff ) { paste ( "'",allF[[ff]],"'='",car::recode(ff, "'itemF'='item'; 'domainF'='dimension'; 'valueF'='est'"),"'",sep="")})
+           allF <- allF[which(!sapply(allF, is.null))]
+           toRec<- lapply(names(allF), FUN = function ( ff ) { paste ( "'",allF[[ff]],"'='",car::recode(ff, "'item'='item'; 'domain'='dimension'; 'value'='est'"),"'",sep="")})
            toRec<- paste(toRec, collapse = "; ")
            colnames(results) <- car::recode (colnames(results), toRec)
            return(list(results=results, dims=dims))}
