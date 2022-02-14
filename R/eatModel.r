@@ -1071,6 +1071,7 @@ doAufb <- function ( m, matchCall, anf, verbose ) {
      ### Unterverzeichnisse definieren
           if(is.null(matchCall[["dir"]])) { dirI <- NULL }  else  { dirI   <- file.path(dir, substring(matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["model.subpath"]],3)) }
           nameI  <- matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["model.name"]]
+          if ( !is.null(matchCall[["qMatrix"]]) ) {qMatrix <- matchCall[["qMatrix"]]}
           if(!exists("qMatrix") && is.null(matchCall[["qMatrix"]]) ) {
              nDim    <- 1
              qMatrix <- NULL
