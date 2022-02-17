@@ -2496,6 +2496,28 @@ eapFromRes <- function ( resultsObj, idVarName = NULL, verbose = TRUE ) {
              return(sel)
           }  }
 
+regcoefFromRes <- function (resultsObj, digits = NULL){
+          regRo<- which(resultsObj[,"type"] == "regcoef")
+          if(length(regRo)==0) {
+              cat("No regression coefficients found in results object.\n")
+              return(NULL)
+          }  else  {
+              re <- resultsObj[regRo,]
+              re <- by(re, INDICES = re[,"model"], FUN = function (m) {
+                    mw <- reshape2::dcast(m, var1~group+derived.par, value.var="value")
+                    colnames(mw) <- gsub("_NA$", "_est", colnames(mw))          ### 'do' = domain names
+                    do <- unique(eatTools::halveString(colnames(mw)[-1], "_", first=FALSE)[,1])
+                    for ( u in do) {                                            ### 'xp' statt 'p', damit die Spaltensortierung einfacher klappt (wird am Ende wieder richtig zurueckbenannt)
+                         mw[,paste0(u, "_xp")]   <- 2*(1-pnorm(abs(mw[,paste0(u,"_est")] / mw[,paste0(u,"_se")])))
+                         mw[,paste0(u, "_ysig")] <- eatTools::num.to.cat(mw[,paste0(u, "_xp")], cut.points = c(0.001, 0.01, 0.05), cat.values = c("***", "**", "**", ""))
+                    }
+                    mw <- mw[,c(colnames(mw)[1], sort(colnames(mw)[-1]))]
+                    colnames(mw) <- gsub("_ysig$", "_sig", gsub("_xp$", "_p", colnames(mw)))
+                    if(!is.null(digits)) {mw <- eatTools::roundDF(mw, digits =digits)}
+                    return(mw)})
+              return(re)
+          }}
+
 pvFromRes  <- function ( resultsObj, toWideFormat = TRUE, idVarName = NULL, verbose=TRUE) {
           pvRow<- intersect( which(resultsObj[,"par"] == "pv"),which(resultsObj[,"indicator.group"] == "persons"))
           if ( length ( pvRow ) == 0 ) {
