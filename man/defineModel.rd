@@ -223,8 +223,8 @@ for further details.
 The number of plausible values which are to be drawn from the conditioning model.
 }
   \item{seed}{
-%%     ~~Describe \code{dif.term} here~~
-Optional: Set seed value for analysis.
+Optional: Set seed value for analysis. The value will be used in Conquest syntax file ('set seed'-statement,
+see conquest manual, p. 225) or in TAM (control$seed). Note that seed only occurs for stochastic integration.
 }
   \item{conquest.folder}{
 %%     ~~Describe \code{dif.term} here~~

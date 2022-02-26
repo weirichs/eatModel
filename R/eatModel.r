@@ -460,7 +460,8 @@ equat1pl<- function ( results , prmNorm , item = NULL, domain = NULL, testlet = 
                      dims <- unique(na.omit(results[,"group"]))
                      warning(paste0("Cannot extract dimensions from 'results' object. This should only occur for bayesian plausible values imputation. Assume following dimensions: \n    '",paste(dims, collapse = "', '"),"'."))
                 }
-    ### jetzt beginnt der Fall, dass einfach nur zwei Itemparameterlisten equatet werden sollen. Dazu transformiert die Funktion den Input 'results' in das benoetigte Format
+    ### jetzt beginnt der Fall, dass einfach nur zwei Itemparameterlisten equatet werden sollen. Dazu transformiert die Funktion den Input 'results' in das
+    ### Format, das die Funktion 'itemFromRes()' erzeugt. Zusaetzlich wird eie weitere Spalte 'model' ergaenzt, damit die by-Funktion darueber schleifen kann
            }  else  {
                 resList <- transformItemParListIntoResults (results = results, itemF = itemF, domainF = domainF, testletF = testletF, valueF = valueF)
                 results <- resList[["results"]]
@@ -1475,7 +1476,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                             }                                                   ### Warnung wenn mehr als 100 HG-Variablen und Conquest
                             dat <- data.frame ( dat, ind )
                          }
-                         hg.info <- lapply(all.Names[["HG.var"]], FUN = function(ii) {.checkContextVars(x = dat[,ii], varname=ii, type="HG", itemdaten=dat[,all.Names[["variablen"]], drop = FALSE], suppressAbort = TRUE )})
+                         hg.info <- lapply(all.Names[["HG.var"]], FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="HG", itemdata=dat[,all.Names[["variablen"]], drop = FALSE], suppressAbort = TRUE, internal=TRUE )})
                          for ( i in 1:length(hg.info)) { dat[, hg.info[[i]][["varname"]] ] <- hg.info[[i]]$x }
                          wegVar  <- unlist(lapply(hg.info, FUN = function ( uu ) { uu[["toRemove"]] }))
                          if(length(wegVar)>0) { all.Names[["HG.var"]] <- setdiff ( all.Names[["HG.var"]], wegVar) }
@@ -1490,14 +1491,14 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                          }
                       }
                       if(length(all.Names$group.var)>0)  {
-                         group.info <- lapply(all.Names$group.var, FUN = function(ii) {.checkContextVars(x = dat[,ii], varname=ii, type="group", itemdaten=dat[,all.Names[["variablen"]], drop = FALSE])})
+                         group.info <- lapply(all.Names$group.var, FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="group", itemdata=dat[,all.Names[["variablen"]], drop = FALSE], internal=TRUE)})
                          for ( i in 1:length(group.info)) { dat[, group.info[[i]]$varname ] <- group.info[[i]]$x }
                          weg.group  <- unique(unlist(lapply(group.info, FUN = function ( y ) {y$weg})))
                          if(length(weg.group)>0)                                ### untere Zeile: dies geschieht erst etwas spaeter, wenn datensatz zusammengebaut ist
                            {cat(paste("Remove ",length(weg.group)," cases with missings on group variable.\n",sep=""))}
                       }
                       if(length(all.Names$DIF.var)>0)  {
-                         dif.info <- lapply(all.Names$DIF.var, FUN = function(ii) {.checkContextVars(x = dat[,ii], varname=ii, type="DIF", itemdaten=dat[,all.Names[["variablen"]], drop = FALSE])})
+                         dif.info <- lapply(all.Names$DIF.var, FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="DIF", itemdata=dat[,all.Names[["variablen"]], drop = FALSE], internal = TRUE)})
                          if ( remove.vars.DIF.missing == TRUE ) {
                               for ( uu in 1:length(dif.info)) { if (length(dif.info[[uu]]$wegDifMis) >0) {
                                     cat(paste("Remove item(s) which only have missing values in at least one group of DIF variable '",dif.info[[uu]]$varname,"'.\n", sep=""))
@@ -1515,7 +1516,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                       }
                       if(length(all.Names$weight.var)>0)  {
                          if(length(all.Names$weight.var)!=1) {stop("Use only one weight variable.")}
-                         weight.info <- lapply(all.Names$weight.var, FUN = function(ii) {.checkContextVars(x = dat[,ii], varname=ii, type="weight", itemdaten=dat[,all.Names[["variablen"]], drop = FALSE])})
+                         weight.info <- lapply(all.Names$weight.var, FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="weight", itemdata=dat[,all.Names[["variablen"]], drop = FALSE], internal = TRUE)})
                          for ( i in 1:length(weight.info)) { dat[, weight.info[[i]]$varname ] <- weight.info[[i]]$x }
                          weg.weight  <- unique(unlist(lapply(weight.info, FUN = function ( y ) {y$weg})))
                          if(length(weg.weight)>0)                               ### untere Zeile: dies geschieht erst etwas spaeter, wenn datensatz zusammengebaut ist
@@ -1600,7 +1601,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                          if(linkNaKeep == FALSE & linkNaOmit == TRUE )  {cat("Note: Dataset is not completely linked. This is probably only due to missings on all cases.\n")}
                          if(linkNaKeep == TRUE )                        {cat("Dataset is completely linked.\n")}
                       }
-     ### Sektion 'Anpassung der Methode (gauss, monte carlo) und der Nodes'
+     ### Sektion 'Anpassung der Methode (gauss, monte carlo) und der nodes'
                       if(method == "quasiMontecarlo" && software == "conquest") {
                          cat("Method 'quasiMontecarlo' is not available for software 'conquest'. Set method to 'montecarlo'.\n")
                          method <- "montecarlo"
@@ -1621,9 +1622,6 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
     				                 if ( software == "tam" )      { nodes <- seq(-6,6,len=20); snodes <- 0; QMC <- FALSE }
     				            }  else {
      				                 if ( software == "tam" )      { nodes <- seq(-6,6,len=nodes); snodes <- 0; QMC <- FALSE }
-                        }
-    				            if ( !is.null(seed)) {
-                              if ( software == "conquest" ) {  warning("'seed'-Parameter is appropriate only in Monte Carlo estimation method. (see conquest manual, p. 225) Recommend to set 'seed' to NULL.") }
                         }
     			           }
      ### Sektion 'Datensaetze softwarespezifisch aufbereiten: Conquest' ###
@@ -1709,9 +1707,11 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                           return ( ret )    }   }  }
 
 ### Hilfsfunktionen fuer defineModel
-.checkContextVars <- function(x, varname, type, itemdaten, suppressAbort = FALSE)   {
+checkContextVars <- function(x, varname, type = c("weight", "DIF", "group", "HG"), itemdata, suppressAbort = FALSE, internal = FALSE)   {
+                     type <- match.arg(arg = type, choices = c("weight", "DIF", "group", "HG"))
+                     stopifnot(length(x) == nrow(itemdata))
                      if(missing(varname))  {varname <- "ohne Namen"}
-                     if(class(x) != "numeric")  {                               ### ist Variable numerisch?
+                     if(!"numeric" %in% class(x) && isTRUE(internal))  {        ### ist Variable numerisch?
                         if (type == "weight") {stop(paste(type, " variable has to be 'numeric' necessarily. Automatic transformation is not recommended. Please transform by yourself.\n",sep=""))}
                         cat(paste(type, " variable has to be 'numeric'. Variable '",varname,"' of class '",class(x),"' will be transformed to 'numeric'.\n",sep=""))
                         suppressWarnings(x <- unlist(eatTools::asNumericIfPossible(x = data.frame(x, stringsAsFactors = FALSE), transform.factors = TRUE, maintain.factor.scores = FALSE, force.string = FALSE)))
@@ -1739,33 +1739,40 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                              toRemove <- varname
                         }
                      }
-                     if(type == "DIF" | type == "group") {if(mis > 10)   {warning(paste0(type," Variable '",varname,"' with more than 10 categories. Recommend recoding."))}}
-                     wegDifMis <- NULL; wegDifConst <- NULL; char <- 1; weg <- which(is.na(1:12))
+                     if(type == "DIF" | type == "group") {
+                        if(mis > 10 && isTRUE(internal))   {warning(paste0(type," Variable '",varname,"' with more than 10 categories. Recommend recoding."))}
+                     }
+                     wegDifMis <- NULL; wegDifConst <- NULL; char <- 1; weg <- which(is.na(1:12)); info <- NULL
                      if ( is.null(toRemove)) {
                           char    <- max(nchar(as.character(na.omit(x))))
                           weg     <- which(is.na(x))
                           if(length(weg) > 0 ) {warning(paste0("Found ",length(weg)," cases with missing on ",type," variable '",varname,"'. Conquest probably will collapse unless cases are not deleted.\n"))}
                           if(type == "DIF" ) {
-                                        if(mis > 2 )   {cat(paste(type, " Variable '",varname,"' does not seem to be dichotomous.\n",sep=""))}
-                                        n.werte <- lapply(itemdaten, FUN=function(iii){by(iii, INDICES=list(x), FUN=table)})
+                                        if(mis > 2 && isTRUE(internal))   {cat(paste(type, " Variable '",varname,"' does not seem to be dichotomous.\n",sep=""))}
+                                        y       <- paste0("V", x)               ### wenn x numerisch ist, sind die Spaltennamen in completeMissingGroupwise nicht mehr den levels von x zuweisbar, da haengt R dann ein X ran
+                                        n.werte <- lapply(itemdata, FUN=function(iii){by(iii, INDICES=list(y), FUN=table)})
                                         completeMissingGroupwise <- data.frame(t(sapply(n.werte, function(ll){lapply(ll, FUN = function (uu) { length(uu[uu>0])}  )})), stringsAsFactors = FALSE)
                                         for (iii in seq(along=completeMissingGroupwise)) {
                                              missingCat.i <- which(completeMissingGroupwise[,iii] == 0)
                                              if(length(missingCat.i) > 0) {
-                                                cat(paste("Warning: Following items with no values in ",type," variable '",varname,"', group ",iii,": \n",sep=""))
+                                                cat(paste("Warning: Following ",length(missingCat.i)," items with no values in ",type," variable '",varname,"', group ",substring(colnames(completeMissingGroupwise)[iii],2),": \n",sep=""))
                                                 wegDifMis <- c(wegDifMis, rownames(completeMissingGroupwise)[missingCat.i] )
-                                                cat(paste(rownames(completeMissingGroupwise)[missingCat.i],collapse=", ")); cat("\n")
+                                                cat(paste0("   ", paste(rownames(completeMissingGroupwise)[missingCat.i],collapse=", "), "\n"))
+                                                info      <- plyr::rbind.fill(info, data.frame ( varname = varname, varlevel = substring(colnames(completeMissingGroupwise)[iii],2), nCases = table(y)[colnames(completeMissingGroupwise)[iii]], type = "missing", vars =rownames(completeMissingGroupwise)[missingCat.i], stringsAsFactors = FALSE))
                                              }
-                                             constantCat.i <- which(completeMissingGroupwise[,iii] == 1)
+                                             constantCat.i<- which(completeMissingGroupwise[,iii] == 1)
                                              if(length(constantCat.i) > 0) {
-                                                cat(paste("Warning: Following items are constants in ",type," variable '",varname,"', group ",iii,":\n",sep=""))
-                                                wegDifConst <- c(wegDifConst, rownames(completeMissingGroupwise)[constantCat.i] )
-                                                cat(paste(rownames(completeMissingGroupwise)[constantCat.i],collapse=", ")); cat("\n")
+                                                cat(paste("Warning: Following ",length(constantCat.i)," items are constants in ",type," variable '",varname,"', group ",substring(colnames(completeMissingGroupwise)[iii],2),":\n",sep=""))
+                                                wegDifConst<- c(wegDifConst, rownames(completeMissingGroupwise)[constantCat.i] )
+                                                values    <- n.werte[rownames(completeMissingGroupwise)[constantCat.i]]
+                                                values    <- lapply(values, FUN = function(v){v[[colnames(completeMissingGroupwise)[iii]]]})
+                                                cat(paste0("   ", paste(rownames(completeMissingGroupwise)[constantCat.i],collapse=", "), "\n"))
+                                                info      <- plyr::rbind.fill(info, data.frame ( varname = varname, varlevel = substring(colnames(completeMissingGroupwise)[iii],2), nCases = table(y)[colnames(completeMissingGroupwise)[iii]], type = "constant", vars =names(values), value =  sapply(values, names), nValue = unlist(values), stringsAsFactors = FALSE))
                                              }
                                         }
                           }
                      }
-                     return(list(x = x, char = char, weg = weg, varname=varname, wegDifMis = wegDifMis, wegDifConst = wegDifConst, toRemove = toRemove))}
+                     return(list(x = x, char = char, weg = weg, varname=varname, wegDifMis = wegDifMis, wegDifConst = wegDifConst, toRemove = toRemove, info=info))}
 
 .substituteSigns <- function(dat, variable, all.Names = NULL ) {
                     if(!is.null(variable)) {
@@ -2513,6 +2520,10 @@ regcoefFromRes <- function (resultsObj, digits = NULL){
                     }
                     mw <- mw[,c(colnames(mw)[1], sort(colnames(mw)[-1]))]
                     colnames(mw) <- gsub("_ysig$", "_sig", gsub("_xp$", "_p", colnames(mw)))
+                    if(length(do) ==1) {                                        ### Namen des Kompetenzbereichs aus Spaltennamen entfernen, wenn es nur einen gibt
+                       colnames(mw) <- gsub(paste0("^", do, "_"), "",colnames(mw))
+                    }
+                    colnames(mw)[1] <- "parameter"
                     if(!is.null(digits)) {mw <- eatTools::roundDF(mw, digits =digits)}
                     return(mw)})
               return(re)
