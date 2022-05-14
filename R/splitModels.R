@@ -1,4 +1,6 @@
 splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "qMatrix" , "person.groups" ) , add = NULL , cross = NULL , all.persons = TRUE , all.persons.lab = "all" , person.split.depth = 0:length(person.groups[,-1,drop=FALSE]), full.model.names = TRUE , model.name.elements = c ( "dim" , "group" , "cross" ) , include.var.name = FALSE , env = FALSE , nCores=NULL , mcPackage = c("future", "parallel"), GBcore=NULL , verbose = TRUE ) {
+    if(!is.null(qMatrix))       {qMatrix      <- checkQmatrixConsistency (qMatrix)}
+    if(!is.null(person.groups)) {person.groups<- checkPersonGroupsConsistency (person.groups)}
     mcPackage <- match.arg(mcPackage)
     # Funktion: person.groups nach person.grouping
 		pg2pgr <- function ( x , nam ) {
@@ -474,3 +476,16 @@ splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "q
 				flush.console()
 		}
 		return ( r )}
+
+checkPersonGroupsConsistency <- function (d) {
+             if(!"data.frame" %in% class(d) || "tbl" %in% class(d) ) {d     <- data.frame(d, stringsAsFactors = FALSE)}
+    ### Eintraege in erster Spalte muessen unique sein und duerfen keine missings enthalten
+             if(any(is.na(d[,1]))) {stop("Person identifier in first column of 'person.groups' has missing values.")}
+             if(length(d[,1]) != length(unique(d[,1]))) {stop("Person identifier in first column of 'person.groups' is not unique.")}
+    ### die naechsten checks erfolgen jeweils fuer alle weiteren spalten
+             chk1 <- lapply(colnames(d)[-1], FUN = function (x) {
+    ### gruppierungsvariablen duerfen nicht konstant sein und keine fehlenden Werte haben
+                     if(length(unique(d[,x])) == 1) {stop(paste0("Column '",x,"' of 'person.groups' is constant."))}
+                     if(any(is.na(d[,x]))) {stop(paste0("Column '",x,"' of 'person.groups' has missing values."))}})
+             return(d)}
+

@@ -660,7 +660,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                  }  else  {
                     if ( !class ( weights ) %in% "data.frame") {
                          cat("'weights' has to be of class 'data.frame'. 'weights' object will be converted.\n")
-                         weights <- data.frame ( weights )
+                         weights <- data.frame ( weights , stringsAsFactors = FALSE)
                     }
                     nd  <- setdiff ( rex[,id] , weights[,1])
                     if ( length(nd) > 0 ) {
@@ -757,7 +757,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
     ### Deltamethode, wie in eatTrend (Funktion 'seKompstuf'). Dazu wird MW und SD der Fokuspopulation benoetigt! (wurde oben als 'msd' berechnet)
     ### das ganze findet nur statt, wenn sowohl cut scores bereits definiert sind und wenn equatet wurde (denn nur dann gibt es einen Linkingfehler, den man transformieren kann)
                             }
-                            pv  <- pvFromRes(resMD, toWideFormat = FALSE, idVarName=idVarName, verbose=FALSE)
+                            pv  <- data.frame(pvFromRes(resMD, toWideFormat = FALSE, idVarName=idVarName, verbose=FALSE), stringsAsFactors = FALSE)
                             equ <- equatingList[["items"]][[mod]][[dims]][["eq"]][["B.est"]][[ equatingList[["items"]][[mod]][[dims]][["method"]] ]]
     ### Hotfix fuer bayesianisch
                             if (!exists("mat")) { mat <- match(dims,  refPop[,1]) }
@@ -770,7 +770,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                                 }  else  {
                                      if ( !class ( weights ) %in% "data.frame") {
                                           cat("'weights' has to be of class 'data.frame'. 'weights' object will be converted.\n")
-                                          weights <- data.frame ( weights )
+                                          weights <- data.frame ( weights , stringsAsFactors = FALSE)
                                      }
                                      nd  <- setdiff ( pv[,id] , weights[,1])
                                      if ( length(nd) > 0 ) {
@@ -3233,7 +3233,7 @@ anker <- function(lab, prm, qMatrix, domainCol, itemCol, valueCol )  {
                   ind <- intersect(lab[,"item"],prm[,"item"])
                   if(length(ind) == 0) {stop("No common items found in 'anchor' list and data frame.\n")}
                   if(length(ind) > 0)  {cat(paste(length(ind), " common items found in 'anchor' list and data frame.\n",sep="")) }
-                  resT<- merge(lab, prm, by = "item", sort = FALSE, all = FALSE)
+                  resT<- mergeAttr(lab, prm, by = "item", sort = FALSE, all = FALSE, setAttr = FALSE, unitName = "item", xName = "data set", yName = "anchor list")
                   res <- data.frame(resT[sort(resT[,2],decreasing=FALSE,index.return=TRUE)$ix,], stringsAsFactors = FALSE)[,-1]
                   stopifnot(nrow(res) == length(ind))
                   return(list ( resConquest = res, resTam = resT[,-2]))}
