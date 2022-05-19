@@ -21,7 +21,7 @@ tamObjForBayesianPV <- function(anchor, qMatrix, slopeMatrix = NULL, resp, pid, 
 
 ### prueft, ob Design verlinkt ist: checkLinking(design[1:15,c(1:5,ncol(design))], bookletColumn = "TH")
 checkLinking <- function ( design, bookletColumn) {
-      if (!all(sapply(design, class)=="character")) { design <- data.frame(lapply(design, as.character), stringsAsFactors=FALSE)}
+      if (!all(sapply(design, inherits, what="character"))) { design <- data.frame(lapply(design, as.character), stringsAsFactors=FALSE)}
       if ( length(bookletColumn) != 1) {stop("Argument 'bookletColumn' must be of length 1.")}
       book  <- eatTools::existsBackgroundVariables(dat = design, variable=bookletColumn)
       items <- setdiff(colnames(design), book)                                  ### zeilen loeschen, die ausschliesslich NA sind
@@ -98,16 +98,20 @@ nObsItemPairs <- function ( responseMatrix, q3MinType) {
 
 ### neue Version derselben Funktion 
 simEquiTable <- function ( anchor, mRef, sdRef, addConst = 500, multConst = 100, cutScores) {
-                if ( length(which ( duplicated(anchor[,1])))>0) {
-                     cat(paste0("Remove ",length(duplicated(anchor[,1]))," entries in the anchor parameter frame.\n"))
-                     anchor <- anchor[!duplicated(anchor[,1]),]
-                }                                                               ### untere Zeile: temporaerer Datensatz mit allen moeglichen Summenscores
-                dtmp <- data.frame(rbind(1*(lower.tri(matrix(1, nrow = nrow(anchor), ncol = nrow(anchor)))),1))
-                dtmp <- data.frame(dtmp, score = rowSums(dtmp) , irtoys::wle(dtmp, cbind(1, anchor[,2], 0)), stringsAsFactors = FALSE)
+                anchor<- eatTools::makeDataFrame(anchor)
+    ### various checks ...
+                if ( ncol(anchor) != 2) {
+                     warning(paste0("'anchor' has ",ncol(anchor)," columns. First column is used as item ID, second column is used as item parameter."))
+                }
+                if(!inherits(anchor[,2], c("integer", "numeric"))) {stop("Item parameter column must be numeric.")}
+                if(length(unique(anchor[,1])) != nrow(anchor)) {stop("Item ID column has duplicated entries.")}
+    ### temporaeren Datensatz mit allen moeglichen Summenscores erzeugen
+                dtmp  <- data.frame(rbind(1*(lower.tri(matrix(1, nrow = nrow(anchor), ncol = nrow(anchor)))),1))
+                dtmp  <- data.frame(dtmp, score = rowSums(dtmp) , irtoys::wle(dtmp, cbind(1, anchor[,2], 0)), stringsAsFactors = FALSE)
                 dtmp[,"bista"] <- (dtmp[,"est"] - mRef) / sdRef * multConst + addConst
                 dtmp[,"ks"]    <- eatTools::num.to.cat ( x = dtmp[,"bista"], cut.points = cutScores[["values"]], cat.values = cutScores[["labels"]])
     ### jetzt noch die shortversion der Aequivalenztabelle erzeugen
-                shrt <- do.call("rbind", by ( data = dtmp, INDICES = dtmp[,"ks"], FUN = function ( sks ) { data.frame ( score = paste(c(min(sks[,"score"]), max(sks[,"score"])), collapse=" bis "), estimate = paste(round(c(min(sks[,"est"]), max(sks[,"est"])),digits=2), collapse=" bis "), bista = paste(round(c(min(sks[,"bista"]), max(sks[,"bista"])),digits=0), collapse=" bis "), ks=unique(sks[,"ks"]), stringsAsFactors=FALSE)}))
+                shrt  <- do.call("rbind", by ( data = dtmp, INDICES = dtmp[,"ks"], FUN = function ( sks ) { data.frame ( score = paste(c(min(sks[,"score"]), max(sks[,"score"])), collapse=" bis "), estimate = paste(round(c(min(sks[,"est"]), max(sks[,"est"])),digits=2), collapse=" bis "), bista = paste(round(c(min(sks[,"bista"]), max(sks[,"bista"])),digits=0), collapse=" bis "), ks=unique(sks[,"ks"]), stringsAsFactors=FALSE)}))
                 return(list ( complete = dtmp[,c("score", "est", "bista", "ks")], short = shrt))}
 
 
@@ -115,7 +119,7 @@ getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c(
               nplausible = NULL, ntheta = 2000, normal.approx = FALSE, samp.regr = FALSE, theta.model=FALSE, np.adj=8, group = NULL, beta_groups = TRUE, level = .95, n.iter = 1000, n.burnin = 500, adj_MH = .5, adj_change_MH = .05, refresh_MH = 50, accrate_bound_MH = c(.45, .55),	sample_integers=FALSE, theta_init=NULL, print_iter = 20, verbose = TRUE, calc_ic=TRUE, omitUntil=1) {
             q3MinType<- match.arg(q3MinType)
             q3theta  <- match.arg(q3theta )
-            if("runMultiple" %in% class(runModelObj)) {                         ### Mehrmodellfall
+            if(inherits(runModelObj, "runMultiple")) {                          ### Mehrmodellfall
                 if(is.null ( attr(runModelObj, "split")[["nCores"]] ) || attr(runModelObj, "split")[["nCores"]] == 1 ) {
                    res <- lapply( runModelObj, FUN = function ( r ) {           ### erstmal single core auswertung
                           do  <- paste ( "getResults ( ", paste(names(formals(getResults)), car::recode(names(formals(getResults)), "'runModelObj'='r'"), sep =" = ", collapse = ", "), ")",sep="")
@@ -147,7 +151,7 @@ getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c(
             }  else {                                                           ### Einmodellfall
                if ( is.null(runModelObj)) {return(NULL)}
                isTa  <- FALSE
-               if( "runConquest" %in% class(runModelObj) ) {                    ### wurde mit Conquest gerechnet?
+               if(inherits(runModelObj, "runConquest")) {                       ### wurde mit Conquest gerechnet?
                     if ( isTRUE(Q3) ) {
                         if ( ncol ( runModelObj[["qMatrix"]]) !=2 ) {
                             cat("Q3 is only available for unidimensional models. Estimation will be skipped.\n")
@@ -251,7 +255,7 @@ getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c(
 
 ### Hilfsfunktion fuer equat1pl: konsistenzpruefungen fuer den itemparameter-Dataframe
 checkItemParLists <- function (prmNorm, item, domain, testlet, value, dims = NULL) {
-           if ( !"data.frame" %in% class(prmNorm)) {stop("'prmNorm' must be of class 'data.frame'.")}
+           prmNorm<- eatTools::makeDataFrame(prmNorm)
     ### wenn data.frame zwei spalten hat, muessen die Item- und value-Spalten nicht explizit benannt werden
            if ( ncol ( prmNorm ) == 2 ) {
                 if ( is.null(item) && is.null(value) ) {
@@ -518,14 +522,14 @@ equAux  <- function ( x, y ) {
 
 ### Hilfsfuntion fuer "transformToBista", solange eatrep im Uebergangsstadium ist
 adaptEatRepVersion <- function ( x ) {
-     if ( "data.frame" %in% class(x) ) {
+     if ( inherits(x, "data.frame"))  {
            return ( x )
      }  else  {
            x <- x[[1]][[1]]
-           stopifnot ( "data.frame" %in% class(x) )
+           stopifnot ( inherits(x, "data.frame") )
            return(x)
      } }
-     
+
 ### Hilfsfuntion fuer "transformToBista"
 createLinkingErrorObject <- function (itempars, years) {
      res <- do.call("rbind", by(data = itempars, INDICES = itempars[,"dimension"], FUN = function (d) {
@@ -821,7 +825,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
 
 
 runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.console = TRUE, wait = TRUE) {
-            if ("defineMultiple" %in% class( defineModelObj ) ) {               ### erstmal fuer den Multimodellfall: nur dafuer wird single core und multicore unterschieden
+            if (inherits(defineModelObj, "defineMultiple") ) {                  ### erstmal fuer den Multimodellfall: nur dafuer wird single core und multicore unterschieden
                 if(is.null ( attr(defineModelObj, "split")[["nCores"]] ) || attr(defineModelObj, "split")[["nCores"]] == 1 ) {
                    res <- lapply(defineModelObj, FUN = function ( r ) {         ### erstmal: single core
                           ret <- runModel ( defineModelObj = r, show.output.on.console = show.output.on.console, show.dos.console = show.dos.console, wait = wait)
@@ -846,7 +850,7 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
                 attr(res, "split") <- attr(defineModelObj, "split")
                 return(res)
             } else {                                                            ### ab hier fuer den single model Fall
-                if("defineConquest" %in% class(defineModelObj)) {               ### hier fuer conquest
+                if(inherits(defineModelObj, "defineConquest")) {                 ### hier fuer conquest
                    oldPfad <- getwd()
                    setwd(defineModelObj$dir)
                    suppressWarnings(system(paste(defineModelObj$conquest.folder," ",defineModelObj$input,sep=""),invisible=!show.dos.console,show.output.on.console=show.output.on.console, wait=wait) )
@@ -855,7 +859,7 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
                    class(defineModelObj) <- c("runConquest", "list")
                    return ( defineModelObj )
                 }
-                if("defineTam" %in% class(defineModelObj)) {
+                if(inherits(defineModelObj, "defineTam")) {
                    if ( show.output.on.console == TRUE ) { control$progress <- TRUE }
                    if(length( defineModelObj[["all.Names"]][["HG.var"]])>0)     { Y <- defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["HG.var"]], drop=FALSE] } else { Y <- NULL }
                    if(length( defineModelObj[["all.Names"]][["weight.var"]])>0) { wgt <- as.vector(defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["weight.var"]]])} else {wgt <- NULL}
@@ -1153,7 +1157,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                         if(missing(analysis.name)) {analysis.name <- "not_specified"}
                      }
                      if(length(model.statement)!=1)            {stop("'model.statement' has to be of length 1.\n")}
-                     if(class(model.statement)!="character")   {stop("'model.statement' has to be of class 'character'.\n")}
+                     if(!inherits(model.statement, "character"))   {stop("'model.statement' has to be of class 'character'.\n")}
                      if(missing(dat))   {stop("No dataset specified.\n") }      ### 11.04.2014: nutzt Hilfsfunktionen von repMean etc.
                      if(is.null(items)) {stop("Argument 'items' must not be NULL.\n",sep="")}
                      if(length(items) == 0 ) {stop("Argument 'items' has no elements.\n",sep="")}
@@ -1403,11 +1407,11 @@ checkContextVars <- function(x, varname, type = c("weight", "DIF", "group", "HG"
                      type <- match.arg(arg = type, choices = c("weight", "DIF", "group", "HG"))
                      stopifnot(length(x) == nrow(itemdata))
                      if(missing(varname))  {varname <- "ohne Namen"}
-                     if(!"numeric" %in% class(x) && isTRUE(internal))  {        ### ist Variable numerisch?
+                     if(!inherits(x, "numeric") && isTRUE(internal))  {         ### ist Variable numerisch?
                         if (type == "weight") {stop(paste(type, " variable has to be 'numeric' necessarily. Automatic transformation is not recommended. Please transform by yourself.\n",sep=""))}
                         cat(paste(type, " variable has to be 'numeric'. Variable '",varname,"' of class '",class(x),"' will be transformed to 'numeric'.\n",sep=""))
                         x <- suppressWarnings(unlist(eatTools::asNumericIfPossible(x = data.frame(x, stringsAsFactors = FALSE), transform.factors = TRUE, maintain.factor.scores = FALSE, force.string = FALSE)))
-                        if(class(x) != "numeric")  {                            ### erst wenn asNumericIfPossible fehlschlaegt, wird mit Gewalt numerisch gemacht, denn fuer Conquest MUSS es numerisch sein
+                        if(!inherits(x, "numeric"))  {                          ### erst wenn asNumericIfPossible fehlschlaegt, wird mit Gewalt numerisch gemacht, denn fuer Conquest MUSS es numerisch sein
                            x <- as.numeric(as.factor(x))
                         }
                         cat(paste("    '", varname, "' was converted into numeric variable of ",length(table(x))," categories. Please check whether this was intended.\n",sep=""))
@@ -1600,10 +1604,10 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
           if (length( zahl ) == 0 )  { stop("Please use numeric values for item responses.\n")}
           if (length( noZahl ) > 0 ) { cat(paste(" W A R N I N G !  Found ",sum(n.werte[noZahl])," non-numeric values in the item responses. These values will be treated as missing responses!\n",sep="")) }
           klasse  <- unlist( lapply(dat[,allNam[["variablen"]], drop = FALSE], class) )
-          if( "character" %in% klasse | "factor" %in% klasse | "logical" %in% klasse ) {
+          if(any(unlist(lapply(dat[,allNam[["variablen"]], drop = FALSE], inherits, what=c("integer", "numeric"))) == FALSE)) {
                cat(paste(" W A R N I N G !  Found unexpected class type(s) in item response columns: '",paste(setdiff(klasse, c("numeric", "integer")), collapse = "', '"), "'\n",sep=""))
                cat("                  All item columns will be transformed to be 'numeric'. Recommend to edit your data manually prior to analysis.\n")
-               for ( uu in allNam[["variablen"]] ) { dat[,uu] <- as.numeric(dat[,uu])}
+               for ( uu in allNam[["variablen"]] ) { dat[,uu] <- as.numeric(as.character(dat[,uu]))}
           }
           values  <- lapply(dat[,allNam[["variablen"]], drop = FALSE], FUN = function ( ii ) { table(ii)})
           isDichot<- unlist(lapply(values, FUN = function ( vv ) { identical(c("0","1"), names(vv)) }))
@@ -1815,13 +1819,12 @@ adaptMethod <- function(method, software,nodes){
 
 checkQmatrixConsistency <-  function(qmat) {
              qmat  <- eatTools::makeDataFrame(qmat, name = "Q matrix")
-             if(class(qmat[,1]) != "character") { qmat[,1] <- as.character(qmat[,1])}
-             nClass<- sapply(qmat, class)
+             if(!inherits(qmat[,1], "character")) { qmat[,1] <- as.character(qmat[,1])}
+             nClass<- sapply(qmat[,-1,drop=FALSE], inherits, what=c("numeric", "integer"))
     ### alle Spalten ausser der ersten muessen numerisch oder integer sein
-             ind   <- which (!nClass %in% c("integer", "numeric"))
-             if ( length ( ind ) > 1) {
-                  warning(paste0("Found non-numeric indicator column(s) in the Q matrix. Transform column(s) '",paste(colnames(qmat)[ind[-1]], collapse = "', '") ,"' into numeric format."))
-                  for ( a in ind[-1] ) { qmat[,a] <- as.numeric(as.character(qmat[,a] ))}
+             if ( !all(nClass)) {
+                  warning(paste0("Found non-numeric indicator column(s) in the Q matrix. Transform column(s) '",paste(colnames(qmat)[ which(nClass==FALSE)+1], collapse = "', '") ,"' into numeric format."))
+                  qmat <- data.frame ( qmat[,1,drop=FALSE], eatTools::asNumericIfPossible(qmat[,-1,drop=FALSE]), stringsAsFactors = FALSE)
              }
     ### es duerfen nur werte von 0 und 1 auftreten (keine missings)
              werte <- eatTools::tableUnlist(qmat[,-1,drop=FALSE], useNA="always")
@@ -2014,11 +2017,11 @@ getConquestAdditionalTerms <- function(model.name, qMatrix, shw, shwFile){
                    }  else {
                       gr <- colnames(qMatrix)[2]
                    }
-                   for ( u in c("ESTIMATE", "MNSQ", "MNSQ.1", "ERROR")) {       ### Hotfix
-                         if ( !class ( shw[[i]][,u] ) %in% c("numeric", "integer")) {
-                              warning(paste0("Expect column '",u,"' in file '",shwFile,"' (statement '",i,"') to be numeric. Current column format is: '",class ( shw[[i]][,u] ),"'. Column will be transformed."))
-                              shw[[i]][,u] <- as.numeric(shw[[i]][,u])
-                         }
+                   vars<- c("ESTIMATE", "MNSQ", "MNSQ.1", "ERROR")
+                   cls <- sapply(shw[[i]][,vars], inherits, what=c("numeric", "integer"))
+                   if ( !all(cls) ) {
+                        warning(paste0("Expect column(s) '",paste(vars[which(cls==FALSE)],collapse= "', '"), "' in file '",shwFile,"' (statement '",i,"') to be numeric. Current column format is: '",paste(sapply(shw[[i]][,vars[which(cls==FALSE)]],class), collapse="', '"),"'. Column will be transformed."))
+                        shw[[i]] <- eatTools::set.col.type(shw[[i]], col.type = list("numeric.if.possible" = names(cls[which(cls==FALSE)])), maintain.factor.scores = TRUE)
                    }
                    shwE <- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = NA, value = shw[[i]][,"ESTIMATE"], stringsAsFactors = FALSE)
                    shwE2<- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "infit", value = shw[[i]][,"MNSQ.1"], stringsAsFactors = FALSE)
@@ -2445,7 +2448,7 @@ getTamResults     <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV, n
          qL     <- reshape2::melt(qMatrix, id.vars = colnames(qMatrix)[1], variable.name = "dimensionName", na.rm=TRUE)
          qL     <- qL[which(qL[,"value"] != 0 ) , ]
          varName<- colnames(qMatrix)[1]                                         ### untere Zeile: Standardfehler auslesen, falls vorhanden
-         if( omitRegr == FALSE && !"tamBayes" %in% class(runModelObj)) {
+         if( omitRegr == FALSE && !inherits(runModelObj, "tamBayes")) {
              txt <- capture.output ( regr <- tam.se(runModelObj))               ### Namen der Regressoren stehen nicht im tam-Output 'reg' drin, nur Ziffern
              stopifnot ( nrow(regr$beta) == ncol(attr(runModelObj, "Y") )+1)    ### die Namen muessen daher jetzt wieder aus den Spaltennamen der Y-Matrix rekonstruiert werden
              rownames(regr$beta) <- c("(Intercept)", colnames(attr(runModelObj, "Y")))
@@ -2453,7 +2456,7 @@ getTamResults     <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV, n
              regr <- NULL
          }
     ### wenn PVs bayesianisch gezogen werden sollen ohne dass 'tam.mml' aufgerufen wurde, muessen alle Schritte bis zur PV-Ziehung nun uebersprungen werden
-         if ( !"tamBayes" %in% class(runModelObj) ) {leseAlles <- TRUE} else {leseAlles <- FALSE}
+         if ( !inherits(runModelObj, "tamBayes") ) {leseAlles <- TRUE} else {leseAlles <- FALSE}
          ret    <- NULL                                                       ### Rueckgabeobjekt initialisieren, und untere Zeile: Itemparameter auslesen
          resItem<- getTamItempars(runModelObj=runModelObj, qL=qL, qMatrix=qMatrix, leseAlles = leseAlles)
          ret    <- rbind(ret, resItem[["shw1"]], resItem[["shw2"]])
@@ -3197,8 +3200,7 @@ gen.syntax     <- function(Name,daten, all.Names, namen.all.hg = NULL, all.hg.ch
                    if(anchored == TRUE)  {ind.2 <- grep("^set constraints",syntax)# wenn ANKER gesetzt, setze constraints auf "none"
                                         if(match.arg(constraints) != "none") { cat("Anchorparameter were defined. Set constraints to 'none'.\n")}
                                         syntax[ind.2]  <- "set constraints=none;"}
-                   classes.export <- sapply(export, FUN = function(ii) {class(ii)})
-                   if(!all(classes.export == "logical"))  {stop("All list elements of argument 'export' have to be of class 'logical'.\n")}
+                   if(!all(sapply(export, inherits, what="logical"))) {stop("All list elements of argument 'export' have to be of class 'logical'.")}
                    export <- as.list(userSpecifiedList ( l = export, l.default = export.default ))
                    weg <- names(export[which(export == FALSE)])
                    if(length(weg)>0)    {                                       ### hier wird, was nicht exportiert werden soll, aus Syntax geloescht.
@@ -3401,7 +3403,7 @@ userSpecifiedList <- function ( l, l.default ) {
 
 ### Funktion komplett neu geschrieben, 1. Dezember 2011; nutzt Funktion "table.muster"
 desk.irt <- function(daten, itemspalten, na=NA,percent=FALSE,reduce=TRUE,codebook=list(datei=NULL,item=NULL,value=NULL,lab=NULL, komp=NULL), quiet = FALSE ) {
-            if( !"data.frame" %in% class(daten) ) {stop("'daten' must be of class 'data.frame'.\n")}
+             daten <- eatTools::makeDataFrame(daten)
              if(!missing(itemspalten)) {daten <- daten[,itemspalten,drop=FALSE]}
              if (is.na(na[1])==FALSE) {                                         ### wenn spezifiziert, werden hier missings recodiert
                  recode.statement <- paste(na,"= NA",collapse="; ")
@@ -3451,9 +3453,9 @@ item.diskrim <- function(daten, itemspalten, streng = TRUE) {
                  
 ### foo <- prepRep( T.t1t2, dfrT1P, dfrT2P)
 prepRep <- function ( calibT2, bistaTransfT1, bistaTransfT2, makeIdsUnique = TRUE) {
-           if ( !"transfBista" %in% class(calibT2) ) { stop("'calibT2' object must be of class 'transfBista'.\n")}
-           if ( !"transfBista" %in% class(bistaTransfT1) ) { stop("'bistaTransfT2' object must be of class 'transfBista'.\n")}
-           if ( !"transfBista" %in% class(bistaTransfT2) ) { stop("'bistaTransfT2' object must be of class 'transfBista'.\n")}
+           if ( !inherits(calibT2, "transfBista" )) { stop("'calibT2' object must be of class 'transfBista'.\n")}
+           if ( !inherits(bistaTransfT1, "transfBista" )) { stop("'bistaTransfT2' object must be of class 'transfBista'.\n")}
+           if ( !inherits(bistaTransfT2, "transfBista") ) { stop("'bistaTransfT2' object must be of class 'transfBista'.\n")}
            if (!nrow(calibT2[["itempars"]]) < nrow(bistaTransfT1[["itempars"]])) { stop("Mismatch between 'calibT2' and 'bistaTransfT1'. \n")}
            if (!nrow(calibT2[["itempars"]]) < nrow(bistaTransfT2[["itempars"]])) { stop("Mismatch between 'calibT2' and 'bistaTransfT2'. \n")}
      ### check: heissen die ID-Variablen etc. in beiden Datensaetzen gleich? ... falls nicht, misslingt unten das 'rbind' ... ggf. neue ID (falls nicht identisch in beiden Datensaetzen)
@@ -3532,7 +3534,7 @@ plotICC <- function ( resultsObj, defineModelObj, item = NULL, personPar = c("WL
                   plot (x, y, type = "l", main = paste("Item '",as.character(i[["item"]]),"'\n\n",sep=""), xlim = c(-6,6), ylim = c(0,1), xlab = "theta", ylab = "P(X=1)", col = "darkred", cex = 8, lwd = 2)
                   graphics::mtext( paste("Model = ",i[["model"]],"  |  Dimension = ",i[["dimension"]], "  |  difficulty = ",round(i[["est"]], digits = 3),"  |  Infit = ",round(i[["infit"]], digits = 3),"\n",sep=""))
                   eap <- eapA[intersect ( which (eapA[,"dimension"] == i[["dimension"]]) , which (eapA[,"model"] == i[["model"]])),]
-                  if ( "defineMultiple" %in% class (defineModelObj)) {          ### Problem: je nachdem ob modelle gesplittet wurden oder nicht, muss der Itemdatensatz woanders gesucht werden ... Hotfix
+                  if ( inherits(defineModelObj, "defineMultiple")) {            ### Problem: je nachdem ob modelle gesplittet wurden oder nicht, muss der Itemdatensatz woanders gesucht werden ... Hotfix
                        woIst<- which ( lapply ( defineModelObj, FUN = function ( g ) {   g[["analysis.name"]] == i[["model"]] }) == TRUE)
                        stopifnot(length(woIst) == 1)
                        dat  <-defineModelObj[[woIst]][["daten"]]
@@ -3560,7 +3562,7 @@ plotICC <- function ( resultsObj, defineModelObj, item = NULL, personPar = c("WL
            if ( !is.null(pdfFolder)) { grDevices::dev.off() } }
 
 plotDevianceConquest <- function ( logFile, omitUntil = 1, reverse = TRUE, change = TRUE ) {
-           if ( class(logFile) == "character") {lf <- logFile}  else  { lf <- file.path(logFile[["path"]], paste0(logFile[["analysis.name"]], ".log"))}
+           if ( inherits(logFile, "character")) {lf <- logFile}  else  { lf <- file.path(logFile[["path"]], paste0(logFile[["analysis.name"]], ".log"))}
            input<- scan(lf,what="character",sep="\n",quiet=TRUE)
            ind  <- grep("eviance=", input)
            mat  <- data.frame ( iter = 1:length(ind), as.numeric(eatTools::crop(substring(input[ind], 13))))
@@ -3589,7 +3591,7 @@ plotDevianceConquest <- function ( logFile, omitUntil = 1, reverse = TRUE, chang
            if ( cex < 0.40 ) {
                 cex <- 0.40
            }
-           if (class(logFile) == "list") {
+           if (inherits(logFile,"list")) {
                titel <- paste0("Deviance Change Plot for model '",logFile[["analysis.name"]],"'\n")
            }  else  {
                titel <- "Deviance Change Plot\n"
