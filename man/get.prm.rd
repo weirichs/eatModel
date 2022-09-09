@@ -24,6 +24,7 @@ A data frame with three columns:
 \item{item}{Identifier for this item }
 \item{parameter}{parameter estimate for this item}
 }
-\author{
-Sebastian Weirich
+\examples{
+file <- system.file("extdata", "twodim.prm", package = "eatModel")
+prm  <- get.prm(file)
 }

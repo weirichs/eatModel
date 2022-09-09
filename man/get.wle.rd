@@ -33,6 +33,7 @@ indicates the dimension the WLE or MLE estimate belongs to.}
 See pp. 230 of Wu, M.L., Adams, R.J., Wilson, M.R., & Haldane, S.A. (2007). \emph{ACER ConQuest
 Version 2.0. Generalised Item Response Modeling Software.} Camberwell, Victoria: ACER Press.
 }
-\author{
-Sebastian Weirich
+\examples{
+file <- system.file("extdata", "twodim.wle", package = "eatModel")
+wle  <- get.wle(file)
 }

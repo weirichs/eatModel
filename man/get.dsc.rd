@@ -33,6 +33,9 @@ dimensions as well as (in a separate row) their standard errors.}
 See pp. 162 of Wu, M.L., Adams, R.J., Wilson, M.R., & Haldane, S.A. (2007). \emph{ACER ConQuest
 Version 2.0. Generalised Item Response Modeling Software.} Camberwell, Victoria: ACER Press.
 }
-\author{
-Sebastian Weirich
+\examples{
+file <- system.file("extdata", "twodim_pvl.dsc", package = "eatModel")
+dscPV<- get.dsc(file)
+file <- system.file("extdata", "twodim_wle.dsc", package = "eatModel")
+dscWL<- get.dsc(file)
 }

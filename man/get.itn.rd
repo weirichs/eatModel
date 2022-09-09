@@ -46,6 +46,7 @@ gave the respective response will be shown for each dimension.
 See pp. 193 of Wu, M.L., Adams, R.J., Wilson, M.R., & Haldane, S.A. (2007). \emph{ACER ConQuest
 Version 2.0. Generalised Item Response Modeling Software.} Camberwell, Victoria: ACER Press.
 }
-\author{
-Sebastian Weirich
+\examples{
+file <- system.file("extdata", "twodim.itn", package = "eatModel")
+itn  <- get.itn(file)
 }

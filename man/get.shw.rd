@@ -81,6 +81,7 @@ Regressor names, regression coefficients and its standard errors are given for e
 Rows represent the regressors, columns represent the latent dimension to which the regression is
 fitted.
 }
-\author{
-Sebastian Weirich
+\examples{
+file <- system.file("extdata", "twodim.shw", package = "eatModel")
+shw  <- get.shw(file)
 }

@@ -254,9 +254,10 @@ See Conquest manual pp.167 for details on population distributions.
 }
   \item{method}{
 %%     ~~Describe \code{dif.term} here~~
-A character string indicating which method should be used for analysis. Possible 
-options are \code{"gauss"} (default), \code{"quadrature"} and \code{"montecarlo"}. See Conquest manual 
-pp.225 for details on these methods. When using \code{software = "tam"}, \code{"gauss"} and 
+A character string indicating which method should be used for numerical integration.
+Possible options are \code{"gauss"} (Gauss-Hermmite quadrature: default),
+\code{"quadrature"} (Bock/Aitken quadrature) and \code{"montecarlo"}. See Conquest manual
+pp.167 for details on these methods. When using \code{software = "tam"}, \code{"gauss"} and
 \code{"quadrature"} essentially leads to numerical integration, i.e TAM is called with
 \code{control$snodes = 0} and with \code{control$nodes = seq(-6,6,len=nn)}, where
 \code{nn} equals the number of nodes specified in the \code{nodes} argument of

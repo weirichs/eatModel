@@ -37,6 +37,7 @@ For example, eap_Dim.2 refers to the eap estimate of the second dimension.}
 \item{se.eap}{Standard error of the EAP estimate. Columns are named se.eap_Dim.[number of dimension].
 For example, se.eap_Dim.2 refers to the standard error of the EAP estimate of the second dimension.}
 }
-\author{
-Sebastian Weirich
+\examples{
+file <- system.file("extdata", "twodim.pvl", package = "eatModel")
+pv   <- get.plausible(file)
 }

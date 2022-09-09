@@ -1,8 +1,8 @@
 \name{simEquiTable}
 \alias{simEquiTable}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Computes equivalence table based on simulated data}
-\description{Function provides the equivalence table for unidimensional models, 
+\title{Computes equivalence table for the Rasch model}
+\description{Function provides the equivalence table for unidimensional 1pl models,
 specifying the individual competence level for each total score of the test.}
 \usage{simEquiTable  ( anchor, mRef, sdRef, addConst = 500, multConst = 100, 
 cutScores )}
@@ -54,7 +54,6 @@ the following 5 columns.
 Johannes Schult
 }
 \examples{
-\dontrun{
 # create arbitrary anchor parameter
 anchor <- data.frame ( item = paste("i",1:20,sep=""), 
           par = rnorm(20, mean = -.1, sd = 1.5))
@@ -65,6 +64,4 @@ cuts   <- list ( values = 330+0:4*75, labels = c("1a", "1b", 2:5) )
 
 # create the equivalence table
 ret <- simEquiTable( anchor = anchor, cutScores = cuts , mRef = -0.05, sdRef = 0.9)
-View(ret$short)       
-}
 }

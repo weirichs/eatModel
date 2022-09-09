@@ -529,7 +529,7 @@ adaptEatRepVersion <- function ( x ) {
            stopifnot ( inherits(x, "data.frame") )
            return(x)
      } }
-
+     
 ### Hilfsfuntion fuer "transformToBista"
 createLinkingErrorObject <- function (itempars, years) {
      res <- do.call("rbind", by(data = itempars, INDICES = itempars[,"dimension"], FUN = function (d) {
@@ -1156,7 +1156,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                      }  else  {
                         if(missing(analysis.name)) {analysis.name <- "not_specified"}
                      }
-                     if(length(model.statement)!=1)            {stop("'model.statement' has to be of length 1.\n")}
+                     if(length(model.statement)!=1)                {stop("'model.statement' has to be of length 1.\n")}
                      if(!inherits(model.statement, "character"))   {stop("'model.statement' has to be of class 'character'.\n")}
                      if(missing(dat))   {stop("No dataset specified.\n") }      ### 11.04.2014: nutzt Hilfsfunktionen von repMean etc.
                      if(is.null(items)) {stop("Argument 'items' must not be NULL.\n",sep="")}
@@ -2231,9 +2231,17 @@ getConquestResults<- function(path, analysis.name, model.name, qMatrix, all.Name
 ### Teilfunktionen fuer 'getTamResults()' zum Auslesen der Itemparameter (Schwierigkeiten, p-Werte) auslesen
 getTamItempars    <- function(runModelObj, qL, qMatrix, leseAlles) {
          if(leseAlles == FALSE) {return(NULL)}
-         xsis <- merge(data.frame ( item = rownames(runModelObj[["xsi"]]), runModelObj[["xsi"]]), qL[,-match("value", colnames(qL))],  by.x = "item", by.y = colnames(qMatrix)[1], all = TRUE)
+         if ( is.null(attr(runModelObj, "all.Names")[["DIF.var"]])) {           ### wenn kein DIF: konventionell mergen
+              xsis <- merge(data.frame ( item = rownames(runModelObj[["xsi"]]), runModelObj[["xsi"]], stringsAsFactors = FALSE), qL[,-match("value", colnames(qL))],  by.x = "item", by.y = colnames(qMatrix)[1], all = TRUE)
+         }  else  {                                                             ### bei DIF anders mergen
+              xsis <- mergeDimensionIfDIF (dat = data.frame ( item = rownames(runModelObj[["xsi"]]), runModelObj[["xsi"]], stringsAsFactors = FALSE), qmatLong = qL[,-match("value", colnames(qL))], datMergingVar="item", remove = "toMerge")
+         }
          shw1 <- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = xsis[,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = xsis[,"dimensionName"], par = "est",  derived.par = NA, value = xsis[,"xsi"], stringsAsFactors = FALSE)
          shw2 <- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = xsis[,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = xsis[,"dimensionName"], par = "est",  derived.par = "se", value = xsis[,"se.xsi"], stringsAsFactors = FALSE)
+         if ( !is.null(attr(runModelObj, "all.Names")[["DIF.var"]])) {          ### wenn DIF: items umbenennen
+               shw1 <- renameDifParameters (dat=shw1, qmatLong = qL[,-match("value", colnames(qL))])
+               shw2 <- renameDifParameters (dat=shw2, qmatLong = qL[,-match("value", colnames(qL))])
+         }
          toOff<- shw2[ which(shw2[,"value"] == 0 ), "var1"]                     ### verankerte Parameter identifizieren
          if(length(toOff)>0) {
             shw1[match(toOff, shw1[,"var1"]), "par"] <- "offset"
@@ -2288,6 +2296,32 @@ getTam2plDiscrim <- function(runModelObj, qMatrix, leseAlles, regr, omitRegr) {
                  return(rbind(shw6D, shw6se)) }))
          return(shw6)}
 
+### Hilfsfunktion fuer getTamInfit() und andere
+mergeDimensionIfDIF <- function(dat, qmatLong, datMergingVar, remove) {
+         dat[,datMergingVar]    <- as.character(dat[,datMergingVar])
+         dat[,"toMerge"] <- eatTools::halveString(dat[,datMergingVar], ":", first=TRUE)[,1]
+         dat  <- merge(dat, qmatLong[,c("item", "dimensionName")], by.x = "toMerge", by.y = "item", all.x = TRUE)
+         dat  <- dat[,-match(remove, colnames(dat))]
+         return(dat)}
+
+### Hilfsfunktion fuer getTamInfit() und andere
+renameDifParameters <- function(dat, qmatLong) {
+         indD5<- setdiff( 1:nrow(dat), grep(":DIF", dat[,"var1"]))
+         indD5<- setdiff( dat[indD5,"var1"], qmatLong[,"item"])
+         to   <- eatTools::removePattern(string = indD5, pattern = "DIF_")
+         to1  <- eatTools::removeNumeric(to)
+         to2  <- eatTools::removeNonNumeric(to)
+         indD5<- data.frame ( from = indD5, to = paste(to1, to2, sep="_"), stringsAsFactors = FALSE)
+         recSt<- paste("'",indD5[,"from"] , "' = '" , indD5[,"to"],"'", collapse="; ",sep="")
+         indD <- grep(":DIF", dat[,"var1"])
+         indD2<- eatTools::halveString(dat[indD,"var1"], pattern = ":DIF_", first=TRUE)
+         indD3<- eatTools::removeNumeric(indD2[,2])
+         indD4<- eatTools::removeNonNumeric(indD2[,2])
+         dat[indD,"var1"] <- paste("item_", indD2[,1], "_X_", paste(indD3, indD4, sep="_"), sep="")
+         dat[,"var1"]     <- car::recode(dat[,"var1"], recSt)
+         return(dat)}
+
+
 getTamInfit    <- function(runModelObj, qL, qMatrix, leseAlles, omitFit) {
          if(leseAlles == FALSE || omitFit == TRUE ) {return(NULL)}
          infit<- tam.fit(runModelObj, progress=FALSE)                           ### Achtung: wenn DIF-Analyse, dann misslingt untere Zeile: Workarond!
@@ -2298,24 +2332,9 @@ getTamInfit    <- function(runModelObj, qL, qMatrix, leseAlles, omitFit) {
          }  else  {                                                             ### wenn DIF: workaround ... DIF-Parameter umbenennen, so dass es konsistent zu "getConquestResults" ist
               ret  <- rbind(data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = infit$itemfit[,"parameter"], var2 = NA , type = "fixed", indicator.group = "items", group = NA, par = "est",  derived.par = "infit", value = infit$itemfit[,"Infit"], stringsAsFactors = FALSE),
                             data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = infit$itemfit[,"parameter"], var2 = NA , type = "fixed", indicator.group = "items", group = NA, par = "est",  derived.par = "outfit", value = infit$itemfit[,"Outfit"], stringsAsFactors = FALSE) )
-              ret[,"var1"]    <- as.character(ret[,"var1"])
-              ret[,"toMerge"] <- eatTools::halveString(ret[,"var1"], ":", first=TRUE)[,1]
-              ret  <- merge(ret, qL[,c("item", "dimensionName")], by.x = "toMerge", by.y = "item", all.x = TRUE)
-              ret  <- ret[,-match(c("group", "toMerge"), colnames(ret))]
+              ret  <- mergeDimensionIfDIF(dat=ret, qmatLong=qL[,-match("value", colnames(qL))], datMergingVar="var1", remove = c("group", "toMerge"))
               colnames(ret) <- car::recode(colnames(ret), "'dimensionName'='group'")
-              indD5<- setdiff( 1:nrow(ret), grep(":DIF", ret[,"var1"]))
-              indD5<- setdiff( ret[indD5,"var1"], qL[,"item"])
-              to   <- eatTools::removePattern(string = indD5, pattern = "DIF_")
-              to1  <- eatTools::removeNumeric(to)
-              to2  <- eatTools::removeNonNumeric(to)
-              indD5<- data.frame ( from = indD5, to = paste(to1, to2, sep="_"), stringsAsFactors = FALSE)
-              recSt<- paste("'",indD5[,"from"] , "' = '" , indD5[,"to"],"'", collapse="; ",sep="")
-              indD <- grep(":DIF", ret[,"var1"])
-              indD2<- eatTools::halveString(ret[indD,"var1"], pattern = ":DIF_", first=TRUE)
-              indD3<- eatTools::removeNumeric(indD2[,2])
-              indD4<- eatTools::removeNonNumeric(indD2[,2])
-              ret[indD,"var1"] <- paste("item_", indD2[,1], "_X_", paste(indD3, indD4, sep="_"), sep="")
-              ret[,"var1"]     <- car::recode(ret[,"var1"], recSt)
+              ret  <- renameDifParameters(dat=ret, qmatLong=qL[,-match("value", colnames(qL))])
          }
          return(ret)}
 
@@ -3023,7 +3042,7 @@ get.dsc <- function(file) {
 get.equ <- function(file)  {
             input       <- scan(file,what="character",sep="\n",quiet = TRUE)
             dimensionen <- grep("Equivalence Table for",input)
-            cat(paste("Finde ",length(dimensionen), " Dimension(en).\n",sep=""))
+            cat(paste("Found ",length(dimensionen), " dimension(s).\n",sep=""))
             ende        <- grep("================",input)
             ende        <- sapply(dimensionen, FUN=function(ii) {ende[ende>ii][1]})
             tabellen    <- lapply(1:length(dimensionen), FUN=function(ii)

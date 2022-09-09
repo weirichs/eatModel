@@ -30,6 +30,7 @@ The last element of the list give some sparse information about the model specif
 See pp. 162 of Wu, M.L., Adams, R.J., Wilson, M.R., & Haldane, S.A. (2007). \emph{ACER ConQuest
 Version 2.0. Generalised Item Response Modeling Software.} Camberwell, Victoria: ACER Press.
 }
-\author{
-Sebastian Weirich
+\examples{
+file <- system.file("extdata", "twodim.equ", package = "eatModel")
+equ  <- get.equ(file)
 }
