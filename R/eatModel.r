@@ -255,7 +255,6 @@ getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c(
 
 ### Hilfsfunktion fuer equat1pl: konsistenzpruefungen fuer den itemparameter-Dataframe
 checkItemParLists <- function (prmNorm, item, domain, testlet, value, dims = NULL) {
-           prmNorm<- eatTools::makeDataFrame(prmNorm)
     ### wenn data.frame zwei spalten hat, muessen die Item- und value-Spalten nicht explizit benannt werden
            if ( ncol ( prmNorm ) == 2 ) {
                 if ( is.null(item) && is.null(value) ) {
@@ -278,6 +277,8 @@ checkItemParLists <- function (prmNorm, item, domain, testlet, value, dims = NUL
     ### items muessen unique sein
            tab  <- table(prmNorm[,c(allF[["item"]], allF[["domain"]]), drop=FALSE])
            if (!all(tab %in% 0:1)) {stop("Items must be unique for each domain in reference parameter frame 'prmNorm'.")}
+    ### value-Spalte muss numerisch sein
+           if(!inherits(prmNorm[,allF[["value"]]], "numeric")) {stop("Parameter value column in 'prmNorm' must be numeric.")}
     ### check: match domain names
            if (!is.null ( allF[["domain"]]) && !is.null(dims) ) {
                 mis <- setdiff ( dims,  names(table(prmNorm[, allF[["domain"]] ])) )
@@ -356,13 +357,15 @@ handleLinkingDif <- function(prmDim,prbl, eq, difBound, dif, method, excludeLink
                           qp1 <- prmM[-match ( dskr[,"item"], prmM[,allN[["item"]]]),]
                           eq1 <- equAux ( x=prmDim[ ,c("item", "est")], y = qp1[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])] )
                           info<- data.frame ( method = "nonIterativ", rbind ( data.frame ( itemExcluded = "" , linking.constant = eq[["B.est"]][[method]], linkerror = eq[["descriptives"]][["linkerror"]] ), data.frame ( itemExcluded = paste ( prmM[match ( dskr[,"item"], prmM[,allN[["item"]]]),allN[["item"]]] , collapse = ", "), linking.constant = eq1[["B.est"]][[method]], linkerror = eq1[["descriptives"]][["linkerror"]] ) ))
-                          eq  <- eq1
+                          eq  <- eq1                                            ### Achtung! das muss stehen bleiben, da in obere Zeile noch Elemente aus 'eq' abgerufen werden!
     ### hier beginnt iterativer Ausschluss von Linking-DIF
                     }  else  {
-                          info<- data.frame ( method = "iterativ", iter = 0 , itemExcluded = "" , linking.constant = eq[["B.est"]][[method]], linkerror = eq[["descriptives"]][["linkerror"]] )
+                          info<- data.frame ( method = "iterativ", iter = 0 , itemExcluded = "" , DIF.excluded="", linking.constant = eq[["B.est"]][[method]], linkerror = eq[["descriptives"]][["linkerror"]] )
                           qp1 <- prmM
                           iter<- 1
-                          while  ( length ( prbl ) > 0 ) {
+                          while  ( length ( prbl ) > 0 ) {                      ### untere Zeile: finde maximalen dif-wert
+                                   maxV<- eq[["anchor"]][,"TransfItempar.Gr1"] - eq[["anchor"]][,"Itempar.Gr2"]
+                                   maxV<- maxV[which(abs(maxV) == max(abs(maxV)))]
                                    maxD<- which ( abs ( eq[["anchor"]][,"TransfItempar.Gr1"] - eq[["anchor"]][,"Itempar.Gr2"] ) == max ( abs (eq[["anchor"]][,"TransfItempar.Gr1"] - eq[["anchor"]][,"Itempar.Gr2"])) )
                                    wegI<- eq[["anchor"]][maxD,"item"]
                                    cat ( paste ( "   Iteration ", iter,": Exclude item '",wegI,"'.\n",sep=""))
@@ -370,13 +373,13 @@ handleLinkingDif <- function(prmDim,prbl, eq, difBound, dif, method, excludeLink
                                    eq  <- equAux ( x = prmDim[ ,c("item", "est")], y = qp1[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])] )
                                    dif <- eq[["anchor"]][,"TransfItempar.Gr1"] - eq[["anchor"]][,"Itempar.Gr2"]
                                    prbl<- which ( abs ( dif ) > difBound )
-                                   info<- rbind(info, data.frame ( method = "iterativ", iter = iter , itemExcluded = wegI, linking.constant = round ( eq[["B.est"]][[method]],digits = 3), linkerror = round ( eq[["descriptives"]][["linkerror"]], digits = 3) ))
+                                   info<- rbind(info, data.frame ( method = "iterativ", iter = iter , itemExcluded = wegI, DIF.excluded=as.character(round(maxV,digits=3)), linking.constant = round ( eq[["B.est"]][[method]],digits = 3), linkerror = round ( eq[["descriptives"]][["linkerror"]], digits = 3) ))
                                    iter<- iter + 1
                           }
                     }
                }
-               return(list(eq=eq, info=info))}
-               
+               return(list(eq=eq, info=info, info2=dskr))}
+
 ### hilfsfunktion fuer equat1pl: wenn es keine Linking-Dif Items gibt bzw. wenn methode 'robust' ist
 noLinkingDif <- function (method, eq, eqr, eqh) {
               if (method %in% c("Mean.Mean", "Haebara", "Stocking.Lord")) {
@@ -443,7 +446,8 @@ equat1pl<- function ( results , prmNorm , item = NULL, domain = NULL, testlet = 
                 return(ret)
     ### Equating: baue 'befuelltes' Rueckgabeobjekt
            }  else {                                                            ### plausibility checks
-                allN  <- checkItemParLists(prmNorm =prmNorm, item = item, domain = domain, testlet = testlet, value = value, dims=dims)
+                prmNorm<- eatTools::makeDataFrame(prmNorm)
+                allN   <- checkItemParLists(prmNorm =prmNorm, item = item, domain = domain, testlet = testlet, value = value, dims=dims)
     ### Fuer jedes Modell und jede Dimension innerhalb jedes Modells findet Equating separat statt
                 items <- by ( data = results, INDICES = results[,"model"], FUN = function ( d ) {
                        if ( isRunM  ) {
@@ -490,6 +494,10 @@ equat1pl<- function ( results , prmNorm , item = NULL, domain = NULL, testlet = 
                                     eld  <- noLinkingDif(method=method, eq=eq, eqr=eqr, eqh=eqh)
                                }
     ### Konsolenoutput (Teil 2) ausgeben lassen
+                               if( isFALSE(iterativ) && excludeLinkingDif && !is.null(eld[["info2"]])) {
+                                   cat("\nItems with DIF:\n")
+                                   print(eatTools::roundDF(eld[["info2"]][,1:2], digits = 3)); flush.console()
+                               }
                                cat("\n")
                                print(eatTools::roundDF(eld[["info"]])); flush.console()
                                cat("\n")
