@@ -2701,14 +2701,20 @@ itemFromRes<- function ( resultsObj ) {                                         
           }))
           return (res )}
 
-q3FromRes<- function ( resultsObj ) {
+q3FromRes<- function ( resultsObj, out = c("wide", "long" )) {
+       out   <- match.arg(arg = out, choices = c("wide", "long" ))
        selM  <- by(data = resultsObj, INDICES = resultsObj[,"model"], FUN = function ( mr ) {
                 sel  <- mr[which(mr[,"par"] == "q3"),]
                 if ( nrow(sel)>0) {
-                     sel  <- reshape2::dcast( sel, var1~var2, value.var = "value")
+                     if ( out == "wise") {
+                          sel  <- reshape2::dcast( sel, var1~var2, value.var = "value")
+                     }  else  {
+                          sel  <- sel[,c("var1", "var2", "value")]
+                     }
                 } else  { sel <- NULL }
-                return(sel)})}
-
+                return(sel)})
+       return(selM)}
+       
 wleRelFromRes <- function(resultsObj) {
           ret <- resultsObj[intersect(which(resultsObj[,"derived.par"] == "rel"), which(resultsObj[,"par"] == "wle")),c("model", "group", "value")]
           colnames(ret) <- car::recode(colnames(ret), "'value'='rel'; 'group'='domain'")

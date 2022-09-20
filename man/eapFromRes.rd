@@ -18,5 +18,12 @@ Print messages to console?
 }
 }
 \value{
-A data frame in the wide format with ten columns.
+A data frame with several columns, model name, student ID, dimension name,
+group name, EAP and the corresponding standard error.
+}
+\examples{
+### read exemplary results object
+file <- system.file("extdata", "results.rda", package = "eatModel")
+load(file)
+eap  <- eapFromRes(res)
 }

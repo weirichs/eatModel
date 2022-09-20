@@ -4,25 +4,24 @@
 \title{Extracts the Q3 matrices from the object returned by getResults()}
 \description{Collects Q3 matrices in a list of data frames. }
 \usage{
-q3FromRes(resultsObj)}
-%- maybe also 'usage' for other objects documented here.
+q3FromRes(resultsObj, out = c("wide", "long" ))}
 \arguments{
   \item{resultsObj}{
 %%     ~~Describe \code{file} here~~
 The object returned by \code{\link{getResults}}.
 }
+  \item{out}{
+Specifies the output format. \code{"wide"} gives a triangular matrix,
+\code{"long"} gives a long format table with the residual correlation in
+a separate column.
+}
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-A list of data frames.
-}
-\author{
-Sebastian Weirich
+A list of data frames, one data.frame per model.
 }
 \examples{
-# see examples in the help file of defineModel()
+### read exemplary results object
+file <- system.file("extdata", "results.rda", package = "eatModel")
+load(file)
+q3   <- q3FromRes(res)
 }

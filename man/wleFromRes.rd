@@ -18,11 +18,16 @@ Print messages to console?
 }
 }
 \value{
-A data frame in the wide format with ten columns.
+A data frame with several columns, model name, student ID, dimension name (several
+deimensions are grouped among each other), number of solved items per student,
+total number of items visited per student, WLE estimate and standard error.
 }
 \author{
 Sebastian Weirich
 }
 \examples{
-# see examples in the help file of defineModel()
+### read exemplary results object
+file <- system.file("extdata", "results.rda", package = "eatModel")
+load(file)
+wles <- wleFromRes(res)
 }

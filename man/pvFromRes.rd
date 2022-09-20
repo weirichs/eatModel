@@ -22,8 +22,12 @@ Print messages to console?
 }
 }
 \value{
-A data frame in the wide format with ten columns.
+A data frame in the wide or long format with several columns, containing model name,
+model dimension(s), student ID, and several columns with the plausible values.
 }
 \examples{
-# see examples in the help file of defineModel()
+### read exemplary results object
+file <- system.file("extdata", "results.rda", package = "eatModel")
+load(file)
+pv   <- pvFromRes(res)
 }

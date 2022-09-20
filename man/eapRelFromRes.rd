@@ -13,5 +13,12 @@ The object returned by \code{\link{getResults}}.
 }
 }
 \value{
-A data frame with three columns.
+A data frame with three columns, model name, domain name, and the
+EAP reliability.
+}
+\examples{
+### read exemplary results object
+file <- system.file("extdata", "results.rda", package = "eatModel")
+load(file)
+eapRel <- eapRelFromRes(res)
 }

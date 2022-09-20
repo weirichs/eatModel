@@ -13,5 +13,12 @@ The object returned by \code{\link{getResults}}.
 }
 }
 \value{
-A data frame with three columns.
+A data frame with three columns, containing model name, dimension name, and
+the corresponding WLE reliability.
+}
+\examples{
+### read exemplary results object
+file <- system.file("extdata", "results.rda", package = "eatModel")
+load(file)
+wleRel <- wleRelFromRes(res)
 }

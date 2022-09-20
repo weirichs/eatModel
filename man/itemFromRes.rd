@@ -13,11 +13,14 @@ The object returned by \code{\link{getResults}}.
 }
 }
 \value{
-A data frame in the wide format with ten columns.
-}
-\author{
-Sebastian Weirich
+A data frame in the wide format with several columns, containing model name,
+item name, dimension, number of valid responses per item, percentage of correct
+responses, item discrimination, item difficulty parameter, optional 2pl discrimination
+parameters, standard errors, infit and outfit.
 }
 \examples{
-# see examples in the help file of defineModel()
+### read exemplary results object
+file <- system.file("extdata", "results.rda", package = "eatModel")
+load(file)
+items<- itemFromRes(res)
 }

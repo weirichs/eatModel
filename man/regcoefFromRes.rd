@@ -17,5 +17,12 @@ Optional: integer value if coefficients should be rounded.
 }
 }
 \value{
-A data frame with three columns.
+A data frame with three columns, containing model name, dimension name, and
+the corresponding regression coefficients.
+}
+\examples{
+### read exemplary results object
+file <- system.file("extdata", "results.rda", package = "eatModel")
+load(file)
+regs <- regcoefFromRes(res)
 }
