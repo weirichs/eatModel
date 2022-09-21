@@ -20,19 +20,50 @@ tamObjForBayesianPV <- function(anchor, qMatrix, slopeMatrix = NULL, resp, pid, 
 
 
 ### prueft, ob Design verlinkt ist: checkLinking(design[1:15,c(1:5,ncol(design))], bookletColumn = "TH")
-checkLinking <- function ( design, bookletColumn) {
-      if (!all(sapply(design, inherits, what="character"))) { design <- data.frame(lapply(design, as.character), stringsAsFactors=FALSE)}
-      if ( length(bookletColumn) != 1) {stop("Argument 'bookletColumn' must be of length 1.")}
-      book  <- eatTools::existsBackgroundVariables(dat = design, variable=bookletColumn)
-      items <- setdiff(colnames(design), book)                                  ### zeilen loeschen, die ausschliesslich NA sind
-      weg   <- which(rowSums(do.call("rbind", plyr::alply(design[,items], .margins = 1, .fun = is.na))) == ncol(design[,items]))
-      if ( length(weg)>0) { design <- design[-weg,]}                            ### untere zeile: unerlaubte Zeichen aus Blockbezeichnung entfernen und Buchstabe vorabstellen
-      for ( i in items) {                                                       ### das wird nur gemacht, wenn die Spalte nicht ausschliesslich NAs enthaelt
-          if (!all(is.na(design[,i]))) {design[which(!is.na(design[,i])),i] <- paste0("B", eatTools::removePattern(eatTools::removePattern(as.character(design[which(!is.na(design[,i])),i]), " "), "-"))}
-      }  
-      dat   <- do.call(plyr::rbind.fill, apply( design, MARGIN = 1, FUN = simDat, booklet = book))
-      link  <- checkLink(dataFrame = dat[,-1, drop = FALSE], remove.non.responser = TRUE, verbose = TRUE )
-      return(link)}
+checkLinking <- function(design, blocks=NULL, bookletColumn=NULL, verbose=FALSE) {
+  if(!all(sapply(design, inherits, what="character"))) design <- data.frame(lapply(design, as.character), stringsAsFactors=FALSE)
+  if(!is.null(bookletColumn)) {
+    if(length(bookletColumn) != 1) stop("Argument 'bookletColumn' must be of length 1.")
+    book  <- eatTools::existsBackgroundVariables(dat = design, variable=bookletColumn)
+  } else {
+    design$bl <- paste0("T", 1:nrow(design))
+    book <- "bl"
+  }
+  items <- setdiff(colnames(design), book)
+  if(!is.null(blocks)) {
+    stopifnot(is.vector(blocks))
+    stopifnot(length(intersect(unlist(design), blocks)) > 0)
+    if(any(grepl("[[:punct:]]", blocks))) if(verbose) message("Special characters and spaces will be removed from names in 'blocks'")
+    blocks <- paste0("B", gsubAll(as.character(blocks), old=c(" ", "[[:punct:]]"), new=c("", "")))
+  }
+  design <-	removeNAd(design, items)
+  items <- setdiff(colnames(design), book)
+  if(any(grepl("[[:punct:]]", unlist(design[,items])))) if(verbose) message("Special characters and spaces will be removed from block identifiers in 'design'")
+  design[,items] <- data.frame(lapply(design[,items], function(g) paste0("B", gsubAll(g, old=c(" ", "[[:punct:]]"), new=c("", "")))))
+  if(!is.null(blocks)) {
+    desd <- do.call("rbind", plyr::alply(design[,items], .margins = 1, .fun = function(k) {
+      if(any(k %in% blocks)) {
+        return(k[k %in% blocks])
+      } else {
+        return(rep(NA, length(k)))
+      }}))
+    design <- cbind(design[,book,drop=FALSE], desd)
+    items <- setdiff(colnames(design), book)
+    design <-	removeNAd(design, items)
+    items <- setdiff(colnames(design), book)
+  }
+  dat   <- do.call(plyr::rbind.fill, apply(design, MARGIN = 1, FUN = simDat, booklet = book))
+  link  <- checkLink(dataFrame = dat[,-1, drop = FALSE], remove.non.responser = TRUE, verbose = TRUE)
+  return(link)
+}
+
+removeNAd <- function(design, items) {
+  weg   <- which(rowSums(do.call("rbind", plyr::alply(design[,items], .margins = 1, .fun = is.na))) == ncol(design[,items]))
+  if(length(weg)>0) design <- design[-weg,]
+  weg2   <- which(colSums(do.call("rbind", plyr::alply(design, .margins = 1, .fun = is.na))) == nrow(design))
+  if(length(weg2)>0) design <- design[,-weg2]
+  return(design)
+}
 
 ### Hilfsfunktion fuer 'checkLinking'
 simDat <- function ( z, booklet ) {                                             ### erzeugt Datensatz aus einer Zeile des Designs
@@ -96,7 +127,7 @@ nObsItemPairs <- function ( responseMatrix, q3MinType) {
 ### Test:
 ### ret <- simEquiTable( anchor = data.frame ( item = paste("i",1:20,sep=""), par = rnorm(20, mean = -.1, sd = 1.5)), mRef = -0.05, sdRef = 0.9, cutScores = list ( values = 330+0:4*75, labels = c("1a", "1b", 2:5) ), dir = "c:/users/weirichs/test", conquest.folder = "N:/console_Feb2007.exe")
 
-### neue Version derselben Funktion 
+### neue Version derselben Funktion
 simEquiTable <- function ( anchor, mRef, sdRef, addConst = 500, multConst = 100, cutScores) {
                 anchor<- eatTools::makeDataFrame(anchor)
     ### various checks ...
@@ -396,7 +427,7 @@ noLinkingDif <- function (method, eq, eqr, eqh) {
                    info <- data.frame ( linking.constant = wert, linkerror = NA, stringsAsFactors=FALSE)
               }
               return(list(eq=eq, info=info))}
-              
+
 ### hilfsfunktion fuer equat1pl
 createOutput <- function (method, eqr, prm, eqh, info){
               if (method == "robust") {
@@ -537,7 +568,7 @@ adaptEatRepVersion <- function ( x ) {
            stopifnot ( inherits(x, "data.frame") )
            return(x)
      } }
-     
+
 ### Hilfsfuntion fuer "transformToBista"
 createLinkingErrorObject <- function (itempars, years) {
      res <- do.call("rbind", by(data = itempars, INDICES = itempars[,"dimension"], FUN = function (d) {
@@ -556,7 +587,7 @@ createLinkingErrorObject <- function (itempars, years) {
                   return(dfr)}))
             return(r1)}))
      return(res)}
-     
+
 ### Hilfsfuntion fuer "transformToBista"
 createItemVeraObj <- function(itempars, roman){
        pCols      <- colnames(itempars)[grep("^itemP", colnames(itempars))]
@@ -1592,7 +1623,7 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
                dat    <- dat[-weg.all,]
             }
             return(list(dat=dat, allNam=allNam, namen.items.weg=namen.items.weg,perExHG=perExHG, namen.all.hg=namen.all.hg))}
-            
+
 ### Hilfsfunktion fuer defineModel
 checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, removeMinNperItem, minNperItem, remove.constant.items, model.statement){
           namen.items.weg <- NULL                                               ### initialisieren
@@ -1670,7 +1701,7 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
              }
           }
           return(list(dat=dat,allNam=allNam, namen.items.weg=namen.items.weg))}
-          
+
 ### Hilfsfunktion fuer defineModel
 checkID_consistency <- function(dat, allNam, software){
           dat[,allNam[["ID"]] ] <- as.character(dat[,allNam[["ID"]] ])
@@ -1687,7 +1718,7 @@ checkID_consistency <- function(dat, allNam, software){
               }
           }
           return(dat)}
-          
+
 ### Hilfsfunktion fuer defineModel
 checkDir <- function(dir, software) {
             if(!is.null(dir)) {                                                 ### Sofern ein verzeichnis angegeben wurde (nicht NULL),
@@ -1700,7 +1731,7 @@ checkDir <- function(dir, software) {
                 if (software == "conquest") {stop("Argument 'dir' must be specified if software = 'conquest'.\n")}
             }
             return(dir)}
-            
+
 ### Hilfsfunktion fuer defineModel
 checkBoundary <- function(dat, allNam, boundary, remove.boundary) {
           datL.valid  <- reshape2::melt(dat, id.vars = allNam[["ID"]], measure.vars = allNam[["variablen"]], na.rm=TRUE)
@@ -1718,7 +1749,7 @@ checkBoundary <- function(dat, allNam, boundary, remove.boundary) {
              }
           }
           return(dat)}
-          
+
 ### Hilfsfunktion fuer defineModel
 personWithoutValidValues <- function (dat, allNam, remove.no.answers){
           if(inherits(try(datL  <- reshape2::melt(data = dat, id.vars = unique(unlist(allNam[-match("variablen", names(allNam))])), measure.vars = allNam[["variablen"]], na.rm=TRUE)  ),"try-error"))  {
@@ -1742,7 +1773,7 @@ personWithoutValidValues <- function (dat, allNam, remove.no.answers){
              }
           }
           return(list(dat=dat, perNA=perNA, datL=datL))}
-          
+
 ### Hilfsfunktion fuer defineModel
 checkPersonSumScores <- function(datL, allNam, dat, remove.failures){
           minMax<- do.call("rbind", by ( data = datL, INDICES = datL[,"variable"], FUN = function ( v ) {
@@ -1778,7 +1809,7 @@ checkPersonSumScores <- function(datL, allNam, dat, remove.failures){
              perA<- numT
           }
           return(list(dat=dat, per0=per0, perA=perA))}
-          
+
 ### Hilfsfunktion fuer defineModel
 adaptMethod <- function(method, software,nodes){
         snodes <- NULL; QMC <- NULL                                             ### initialisieren
@@ -1974,7 +2005,7 @@ getConquestShw <- function (model.name, qMatrix, qL, shw, altN){
             shw2  <- shw2[-which(is.na(shw2[,"value"])),]                       ### entferne Zeilen aus shw2, die in der "value"-Spalte NA haben
          }
          return(list(shw1=shw1, shw2=shw2))}
-         
+
 getConquestDesc <- function ( model.name, deskRes, qMatrix, qL, isPoly){
          shw3 <- shw31 <- NULL                                                  ### initialisieren
          if(is.null ( deskRes ) ) { return(NULL)}
@@ -2099,7 +2130,7 @@ getConquestWles <- function ( model.name, analysis.name, qMatrix, allFiles, omit
          rels <- do.call("rbind", by(wleW, INDICES = wleW[,"group"], FUN = function ( g ) { data.frame (dim = g[1,"group"], rel = 1 - mean(g[,"se"]^2)/var(g[,"est"]), stringsAsFactors = FALSE)}))
          res  <- rbind ( res, data.frame ( model = model.name, source = "conquest", var1 = c(wleL[,"ID"],rep(NA,nrow(rels))), var2 = NA , type = c(rep("indicator",nrow(wleL)), rep("tech",nrow(rels))), indicator.group = "persons", group = c(wleL[,"group"],rels[,"dim"]), par = c(wleL[,"par"],rep("wle",nrow(rels))),  derived.par = c(wleL[,"derived.par"],rep("rel", nrow(rels))), value = c(wleL[,"value"] ,rels[,"rel"]) , stringsAsFactors = FALSE))
          return(list(res=res, wle=wle))   }
-         
+
 getConquestPVs <- function ( model.name, analysis.name, omitPV, altN, path, allFiles){
          pvFile<- paste(analysis.name, "pvl", sep=".")
          if ( omitPV == TRUE ) {return(NULL)}
@@ -2431,7 +2462,7 @@ getTamPVs <- function ( runModelObj, qMatrix, leseAlles, omitPV, pvMethod, tam.p
          pvL[,"group"] <- colnames(qMatrix)[as.numeric(eatTools::removePattern(string = unlist(lapply(strsplit(as.character(pvL[,"variable"]),"\\."), FUN = function (l) {l[2]})), pattern = "Dim"))+1]
          res <- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = pvL[,"pid"], var2 = NA , type = "indicator", indicator.group = "persons", group = pvL[,"group"], par = "pv",  derived.par = paste("pv", pvL[,"PV.Nr"],sep=""), value = pvL[,"value"] , stringsAsFactors = FALSE)
          return(res)}
-         
+
 getTamEAPs <- function ( runModelObj, qMatrix, leseAlles = leseAlles) {
          if(leseAlles == FALSE ) {return(NULL)}
          eaps <- runModelObj[["person"]]                                        ### Achtung: im eindimensionalen Fall enthalten die Spaltennamen keine Benennung der Dimension
@@ -2449,7 +2480,7 @@ getTamEAPs <- function ( runModelObj, qMatrix, leseAlles = leseAlles) {
          if (ncol(qMatrix)>2) { grp  <- names(runModelObj[["EAP.rel"]]) } else { stopifnot(length(unique(eaps[,"group"])) == 1); grp <- unique(eaps[,"group"]) }
          res  <- rbind(res, data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = NA, var2 = NA , type = "tech", indicator.group = "persons", group = grp, par = "eap", derived.par = "rel", value = runModelObj[["EAP.rel"]] , stringsAsFactors = FALSE) )
          return(res)}
-         
+
 
 getTamQ3 <- function(runModelObj, leseAlles, shw1, Q3, q3MinObs, q3MinType){
          if(leseAlles == FALSE || Q3 == FALSE) {return(NULL)}
@@ -2714,7 +2745,7 @@ q3FromRes<- function ( resultsObj, out = c("wide", "long" )) {
                 } else  { sel <- NULL }
                 return(sel)})
        return(selM)}
-       
+
 wleRelFromRes <- function(resultsObj) {
           ret <- resultsObj[intersect(which(resultsObj[,"derived.par"] == "rel"), which(resultsObj[,"par"] == "wle")),c("model", "group", "value")]
           colnames(ret) <- car::recode(colnames(ret), "'value'='rel'; 'group'='domain'")
@@ -3483,7 +3514,7 @@ item.diskrim <- function(daten, itemspalten, streng = TRUE) {
                  if(!missing(itemspalten))  {daten <- daten[,itemspalten]}      ### Trennschaerfe ist eigentlich Korrelation des Items mit dem Summenscore ohne dieses Item.
                  trenn <- suppressWarnings(eatTools::pwc(daten))                ### Dieses macht die Option "streng = T"; die andere berechnet Korrelation mit Summenscore einschliesslich dieses Items
                  if(streng) {return(data.frame(item.name=trenn[,"item"],item.diskrim = trenn[,"partWholeCorr"],stringsAsFactors = FALSE))} else {return(data.frame(item.name=trenn[,"item"],item.diskrim = trenn[,"corr"],stringsAsFactors = FALSE))}}
-                 
+
 ### foo <- prepRep( T.t1t2, dfrT1P, dfrT2P)
 prepRep <- function ( calibT2, bistaTransfT1, bistaTransfT2, makeIdsUnique = TRUE) {
            if ( !inherits(calibT2, "transfBista" )) { stop("'calibT2' object must be of class 'transfBista'.\n")}

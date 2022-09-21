@@ -5,17 +5,25 @@
 \description{Function checks whether all blocks in a complete or incomplete block
 design are linked to each other.}
 \usage{
-checkLinking ( design, bookletColumn) }
+checkLinking(design, blocks=NULL, bookletColumn=NULL, verbose=FALSE) }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{design}{
 %%     ~~Describe \code{file} here~~
-A data frame with the test design. All columns (except the \code{booklet} column) are
+A data frame with the test design. All columns (except for the \code{booklet} identifier column) are
 expected to contain blocks.
+}
+  \item{blocks}{
+%%     ~~Describe \code{file} here~~
+Optional. To check whether a subdomain is completely linked add here all the blocks that belong to this subdomain in a character vector.
 }
   \item{bookletColumn}{
 %%     ~~Describe \code{file} here~~
-Number or name of the booklet column in the design data frame
+Optional. Number or name of the booklet identifier column in the design data frame.
+}
+  \item{verbose}{
+%%     ~~Describe \code{file} here~~
+Optional. If \code{TRUE} the function gives more messages.
 }
 }
 \details{
@@ -29,43 +37,37 @@ Number or name of the booklet column in the design data frame
 A logical value (TRUE/FALSE)
 }
 \author{
-Sebastian Weirich
+Sebastian Weirich, Karoline Sachse
 }
 \examples{
-# first and very simple example
-des1 <- data.frame ( booklet = paste0("B", 1:6),
-        matrix(data = c(1:2,rep(NA,4), 3, 4, 1,rep(NA,6), 2, 1, 3, rep(NA,4), 4, 2),
-        nrow = 6, ncol = 4, byrow = TRUE), stringsAsFactors = FALSE)
-test1<- checkLinking(design = des1, bookletColumn = "booklet")
+# 1. first examples
+# a) design linked
+des1a <- data.frame(booklet = paste0("B", 1:4),
+       Pos1 = c("blockA", "blockB", "blockC", "blockD"),
+       Pos2 = c("blockB", "blockC", "blockD", "blockE"),
+       Pos3 = c("blockC", "blockD", "blockE", "blockF"))
+test1 <- checkLinking(design = des1a, bookletColumn = "booklet")
 
-# second example: use the original design of the 'IQB Bildungstrend 2016'
+# b) design not linked:
+des1b <- data.frame(Pos1 = c("blockA", "blockH", "blockC", "blockF"),
+       Pos2 = c("blockB", "blockC", "blockD", "blockA"),
+       Pos3 = c("blockF", "blockG", "blockH", "blockB"))
+test2 <- checkLinking(design = des1b)
+
+# 2. second examples: use a 'IQB Bildungstrend 2016'-like design
 data(des2)
+
 # design contains three dimensions -- reading, listening and orthography
-# linking check must be conducted for each dimension separately. If linking should be checked
-# for listening, reading and orthography cells must be set to NA
-listening <- des2
-for ( i in 2:ncol(listening)) { listening[grep("^D-R|^D-L", listening[,i]),i] <- NA}
-test2<- checkLinking(design = listening, bookletColumn = "TH")
-# for reading, listening and orthography cells must be set to NA
-reading <- des2
-for ( i in 2:ncol(reading)) { reading[grep("^D-R|^D-H", reading[,i]),i] <- NA}
-test3<- checkLinking(design = reading, bookletColumn = "TH")
+# linking check must be conducted for each dimension separately.
 
-# third example: use the original design of the 'IQB Bildungstrend 2018'
-data(des3)
-cols <- paste0("X", 1:6)
-mathe<- des3[which(des3[,3] == "Mathe"),]
-test4<- checkLinking(design = mathe[,c("Label", cols)], bookletColumn = "Label")
+# a) domain reading (blocks contain "-L")
+readblocks <- grep("-L", unique(unlist(des2[,-1])), value=TRUE)
+test3 <- checkLinking(design = des2, blocks =readblocks, bookletColumn = "TH")
 
-# sciences
-nawi <- des3[which(des3[,3] == "Nawi"),]
-# choose 'physik fachwissen'
-phyfw<- nawi
-for ( i in cols) { phyfw[which(substr(phyfw[,i], 1, 5) != "PhyFw"),i] <- NA}
-test5<- checkLinking(design = phyfw[,c("Label", cols)], bookletColumn = "Label")
-# choose 'biologie Erkenntnisgewinnung'
-bioeg<- nawi
-for ( i in cols) { bioeg[which(substr(bioeg[,i], 1, 5) != "BioEg"),i] <- NA}
-test6<- checkLinking(design = bioeg[,c("Label", cols)], bookletColumn = "Label")
-}
+# b) domain listening (blocks contain "-H")
+listenblocks <- grep("-H", unique(unlist(des2[,-1])), value=TRUE)
+test4 <- checkLinking(design = des2[,-1], blocks =listenblocks)
 
+# c) domain orthography (blocks contain "-R")
+orthoblocks <- grep("-R", unique(unlist(des2[,-1])), value=TRUE)
+test5 <- checkLinking(design = des2[,-1], blocks =orthoblocks)
