@@ -41,12 +41,7 @@ checkLinking <- function(design, blocks=NULL, bookletColumn=NULL, verbose=FALSE)
   if(any(grepl("[[:punct:]]", unlist(design[,items])))) if(verbose) message("Special characters and spaces will be removed from block identifiers in 'design'")
   design[,items] <- data.frame(lapply(design[,items], function(g) paste0("B", gsubAll(g, old=c(" ", "[[:punct:]]"), new=c("", "")))))
   if(!is.null(blocks)) {
-    desd <- do.call("rbind", plyr::alply(design[,items], .margins = 1, .fun = function(k) {
-      if(any(k %in% blocks)) {
-        return(k[k %in% blocks])
-      } else {
-        return(rep(NA, length(k)))
-      }}))
+    desd <- apply(design[,items], 2, function(k) ifelse(k %in% blocks, k, NA))
     design <- cbind(design[,book,drop=FALSE], desd)
     items <- setdiff(colnames(design), book)
     design <-	removeNAd(design, items)
@@ -56,6 +51,7 @@ checkLinking <- function(design, blocks=NULL, bookletColumn=NULL, verbose=FALSE)
   link  <- checkLink(dataFrame = dat[,-1, drop = FALSE], remove.non.responser = TRUE, verbose = TRUE)
   return(link)
 }
+
 
 removeNAd <- function(design, items) {
   weg   <- which(rowSums(do.call("rbind", plyr::alply(design[,items], .margins = 1, .fun = is.na))) == ncol(design[,items]))
