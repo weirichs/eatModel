@@ -26,38 +26,38 @@ checkLinking <- function(design, blocks=NULL, bookletColumn=NULL, verbose=FALSE)
     if(length(bookletColumn) != 1) stop("Argument 'bookletColumn' must be of length 1.")
     book  <- eatTools::existsBackgroundVariables(dat = design, variable=bookletColumn)
   } else {
-    design$bl <- paste0("T", 1:nrow(design))
-    book <- "bl"
+    book <- "bl"                                                                ### dieses komplizierte Zeug, weil der Name der Bookletspalte nicht bereits
+    while (book %in% colnames(design)) {book <- paste0(book, sample(0:9,1))}    ### im Designobjekt vergeben sein darf
+    design[,book] <- paste0("T", 1:nrow(design))
   }
-  items <- setdiff(colnames(design), book)
   if(!is.null(blocks)) {
     stopifnot(is.vector(blocks))
+    if(!inherits(blocks, "character")) {stop("'block' must be a character vector.")}
     stopifnot(length(intersect(unlist(design), blocks)) > 0)
-    if(any(grepl("[[:punct:]]", blocks))) if(verbose) message("Special characters and spaces will be removed from names in 'blocks'")
+    notInDe<- setdiff(blocks,as.vector(unlist(design)))
+    if(length(notInDe)>0) {warning(paste0(length(notInDe), " elements of 'blocks' vector missing in design."))}
+    if(any(grepl("[[:punct:]]", blocks))) {if(verbose) {message("Special characters and spaces will be removed from names in 'blocks'")}}
     blocks <- paste0("B", eatTools::gsubAll(as.character(blocks), old=c(" ", "[[:punct:]]"), new=c("", "")))
   }
-  design <-	removeNAd(design, items)
-  items <- setdiff(colnames(design), book)
-  if(any(grepl("[[:punct:]]", unlist(design[,items])))) if(verbose) message("Special characters and spaces will be removed from block identifiers in 'design'")
-  design[,items] <- data.frame(lapply(design[,items], function(g) paste0("B", eatTools::gsubAll(g, old=c(" ", "[[:punct:]]"), new=c("", "")))))
+  design <-	removeNAd(design, items = -match(book, colnames(design)))
+  if(any(grepl("[[:punct:]]", as.vector(unlist(design[,-match(book, colnames(design))]))))) {if(verbose) {message("Special characters and spaces will be removed from block identifiers in 'design'")}}
+  design[,-match(book, colnames(design))] <- data.frame(lapply(design[,-match(book, colnames(design)), drop=FALSE], FUN = function(g) {paste0("B", eatTools::gsubAll(g, old=c(" ", "[[:punct:]]"), new=c("", "")))}))
   if(!is.null(blocks)) {
-    desd <- apply(design[,items], 2, function(k) ifelse(k %in% blocks, k, NA))
+    desd <- apply(design[,-match(book, colnames(design)), drop=FALSE], 2, FUN = function(k) {ifelse(k %in% blocks, k, NA)})
     design <- cbind(design[,book,drop=FALSE], desd)
-    items <- setdiff(colnames(design), book)
-    design <-	removeNAd(design, items)
-    items <- setdiff(colnames(design), book)
+    design <-	removeNAd(design, -match(book, colnames(design)))
   }
   dat   <- do.call(plyr::rbind.fill, apply(design, MARGIN = 1, FUN = simDat, booklet = book))
   link  <- checkLink(dataFrame = dat[,-1, drop = FALSE], remove.non.responser = TRUE, verbose = TRUE)
   return(link)
 }
 
-
+### Funktion loescht Zeilen mit ausschliesslich NA und Spalten mit ausschliesslich NA aus data.frame
 removeNAd <- function(design, items) {
-  weg   <- which(rowSums(do.call("rbind", plyr::alply(design[,items], .margins = 1, .fun = is.na))) == ncol(design[,items]))
-  if(length(weg)>0) design <- design[-weg,]
+  weg   <- which(rowSums(do.call("rbind", plyr::alply(design[,items, drop=FALSE], .margins = 1, .fun = is.na))) == ncol(design[,items, drop=FALSE]))
+  if(length(weg)>0) {design <- design[-weg,]}
   weg2   <- which(colSums(do.call("rbind", plyr::alply(design, .margins = 1, .fun = is.na))) == nrow(design))
-  if(length(weg2)>0) design <- design[,-weg2]
+  if(length(weg2)>0) {design <- design[,-weg2]}
   return(design)
 }
 

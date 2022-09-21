@@ -71,3 +71,4 @@ test4 <- checkLinking(design = des2[,-1], blocks =listenblocks)
 # c) domain orthography (blocks contain "-R")
 orthoblocks <- grep("-R", unique(unlist(des2[,-1])), value=TRUE)
 test5 <- checkLinking(design = des2[,-1], blocks =orthoblocks)
+}
