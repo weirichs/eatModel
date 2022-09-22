@@ -21,45 +21,30 @@ tamObjForBayesianPV <- function(anchor, qMatrix, slopeMatrix = NULL, resp, pid, 
 
 ### prueft, ob Design verlinkt ist: checkLinking(design[1:15,c(1:5,ncol(design))], bookletColumn = "TH")
 checkLinking <- function(design, blocks=NULL, bookletColumn=NULL, verbose=FALSE) {
-  if(!all(sapply(design, inherits, what="character"))) design <- data.frame(lapply(design, as.character), stringsAsFactors=FALSE)
-  if(!is.null(bookletColumn)) {
-    if(length(bookletColumn) != 1) stop("Argument 'bookletColumn' must be of length 1.")
-    book  <- eatTools::existsBackgroundVariables(dat = design, variable=bookletColumn)
-  } else {
-    book <- "bl"                                                                ### dieses komplizierte Zeug, weil der Name der Bookletspalte nicht bereits
-    while (book %in% colnames(design)) {book <- paste0(book, sample(0:9,1))}    ### im Designobjekt vergeben sein darf
-    design[,book] <- paste0("T", 1:nrow(design))
-  }
-  if(!is.null(blocks)) {
-    stopifnot(is.vector(blocks))
-    if(!inherits(blocks, "character")) {stop("'block' must be a character vector.")}
-    stopifnot(length(intersect(unlist(design), blocks)) > 0)
-    notInDe<- setdiff(blocks,as.vector(unlist(design)))
-    if(length(notInDe)>0) {warning(paste0(length(notInDe), " elements of 'blocks' vector missing in design."))}
-    if(any(grepl("[[:punct:]]", blocks))) {if(verbose) {message("Special characters and spaces will be removed from names in 'blocks'")}}
-    blocks <- paste0("B", eatTools::gsubAll(as.character(blocks), old=c(" ", "[[:punct:]]"), new=c("", "")))
-  }
-  design <-	removeNAd(design, items = -match(book, colnames(design)))
-  if(any(grepl("[[:punct:]]", as.vector(unlist(design[,-match(book, colnames(design))]))))) {if(verbose) {message("Special characters and spaces will be removed from block identifiers in 'design'")}}
-  design[,-match(book, colnames(design))] <- data.frame(lapply(design[,-match(book, colnames(design)), drop=FALSE], FUN = function(g) {paste0("B", eatTools::gsubAll(g, old=c(" ", "[[:punct:]]"), new=c("", "")))}))
-  if(!is.null(blocks)) {
-    desd <- apply(design[,-match(book, colnames(design)), drop=FALSE], 2, FUN = function(k) {ifelse(k %in% blocks, k, NA)})
-    design <- cbind(design[,book,drop=FALSE], desd)
-    design <-	removeNAd(design, -match(book, colnames(design)))
-  }
-  dat   <- do.call(plyr::rbind.fill, apply(design, MARGIN = 1, FUN = simDat, booklet = book))
-  link  <- checkLink(dataFrame = dat[,-1, drop = FALSE], remove.non.responser = TRUE, verbose = TRUE)
-  return(link)
-}
-
-### Funktion loescht Zeilen mit ausschliesslich NA und Spalten mit ausschliesslich NA aus data.frame
-removeNAd <- function(design, items) {
-  weg   <- which(rowSums(do.call("rbind", plyr::alply(design[,items, drop=FALSE], .margins = 1, .fun = is.na))) == ncol(design[,items, drop=FALSE]))
-  if(length(weg)>0) {design <- design[-weg,]}
-  weg2   <- which(colSums(do.call("rbind", plyr::alply(design, .margins = 1, .fun = is.na))) == nrow(design))
-  if(length(weg2)>0) {design <- design[,-weg2]}
-  return(design)
-}
+      if(!all(sapply(design, inherits, what="character"))) {design <- data.frame(lapply(design, as.character), stringsAsFactors=FALSE)}
+      if(!is.null(bookletColumn)) {
+          if(length(bookletColumn) != 1) {stop("Argument 'bookletColumn' must be of length 1.")}
+          book  <- eatTools::existsBackgroundVariables(dat = design, variable=bookletColumn)
+      } else {
+          book <- "bl"                                                          ### dieses komplizierte Zeug, weil der Name der Bookletspalte nicht bereits
+          while (book %in% colnames(design)) {book <- paste0(book, sample(0:9,1))}# im Designobjekt vergeben sein darf
+          design[,book] <- paste0("T", 1:nrow(design))
+      }                                                                         ### untere zeile: langformat mit na.rm = TRUE erspart einem das 'removeNAd()'
+      desL  <- eatTools::facToChar(reshape2::melt(design, id.vars = book, na.rm=TRUE, variable.name="blockPos", value.name="blockName"))
+      if(!is.null(blocks)) {
+          stopifnot(is.vector(blocks))
+          if(!inherits(blocks, "character")) {stop("'block' must be a character vector.")}
+          stopifnot(length(intersect(unlist(design), blocks)) > 0)
+          notInDe<- setdiff(blocks,unique(desL[,"blockName"]))
+          if(length(notInDe)>0) {warning(paste0(length(notInDe), " elements of 'blocks' vector missing in design."))}
+          desL   <- desL[which(desL[,"blockName"] %in% blocks),]                ### geht einfacher zu selektieren
+      }
+      if(any(grepl("[[:punct:]]", desL[,"blockName"]))) {if(verbose) {message("Special characters and spaces will be removed from names in 'blocks'")}}
+      desL[,"blockName"] <- paste0("B", eatTools::gsubAll(desL[,"blockName"], old=c(" ", "[[:punct:]]"), new=c("", "")))
+      desW  <- reshape2::dcast(desL, as.formula(paste0(book, " ~ blockPos")), value.var="blockName")
+      dat   <- do.call(plyr::rbind.fill, apply(desW, MARGIN = 1, FUN = simDat, booklet = book))
+      link  <- checkLink(dataFrame = dat[,-1, drop = FALSE], remove.non.responser = TRUE, verbose = TRUE)
+      return(link)}
 
 ### Hilfsfunktion fuer 'checkLinking'
 simDat <- function ( z, booklet ) {                                             ### erzeugt Datensatz aus einer Zeile des Designs
