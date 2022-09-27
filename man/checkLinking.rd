@@ -46,13 +46,13 @@ des1a <- data.frame(booklet = paste0("B", 1:4),
        Pos1 = c("blockA", "blockB", "blockC", "blockD"),
        Pos2 = c("blockB", "blockC", "blockD", "blockE"),
        Pos3 = c("blockC", "blockD", "blockE", "blockF"))
-test1 <- checkLinking(design = des1a, bookletColumn = "booklet")
+test1 <- checkLinking(design = des1a, bookletColumn = "booklet", verbose=TRUE)
 
 # b) design not linked:
 des1b <- data.frame(Pos1 = c("blockA", "blockH", "blockC", "blockF"),
        Pos2 = c("blockB", "blockC", "blockD", "blockA"),
        Pos3 = c("blockF", "blockG", "blockH", "blockB"))
-test2 <- checkLinking(design = des1b)
+test2 <- checkLinking(design = des1b, verbose=TRUE)
 
 # 2. second examples: use a 'IQB Bildungstrend 2016'-like design
 data(des2)
@@ -62,13 +62,13 @@ data(des2)
 
 # a) domain reading (blocks contain "-L")
 readblocks <- grep("-L", unique(unlist(des2[,-1])), value=TRUE)
-test3 <- checkLinking(design = des2, blocks =readblocks, bookletColumn = "TH")
+test3 <- checkLinking(design = des2, blocks =readblocks, bookletColumn = "TH", verbose=TRUE)
 
 # b) domain listening (blocks contain "-H")
 listenblocks <- grep("-H", unique(unlist(des2[,-1])), value=TRUE)
-test4 <- checkLinking(design = des2[,-1], blocks =listenblocks)
+test4 <- checkLinking(design = des2[,-1], blocks =listenblocks, verbose=TRUE)
 
 # c) domain orthography (blocks contain "-R")
 orthoblocks <- grep("-R", unique(unlist(des2[,-1])), value=TRUE)
-test5 <- checkLinking(design = des2[,-1], blocks =orthoblocks)
+test5 <- checkLinking(design = des2[,-1], blocks =orthoblocks, verbose=TRUE)
 }
