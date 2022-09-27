@@ -93,6 +93,36 @@ checkLinking <- function(design, blocks=NULL, bookletColumn=NULL, verbose=FALSE)
 }
 
 
+checkLinking2 <- function(design, blocks=NULL, bookletColumn=NULL, verbose=FALSE) {
+      if(!all(sapply(design, inherits, what="character"))) {design <- data.frame(lapply(design, as.character), stringsAsFactors=FALSE)}
+      if(!is.null(bookletColumn)) {
+          if(length(bookletColumn) != 1) {stop("Argument 'bookletColumn' must be of length 1.")}
+          book  <- eatTools::existsBackgroundVariables(dat = design, variable=bookletColumn)
+      } else {
+          book <- "bl"                                                          ### dieses komplizierte Zeug, weil der Name der Bookletspalte nicht bereits
+          while (book %in% colnames(design)) {book <- paste0(book, sample(0:9,1))}# im Designobjekt vergeben sein darf
+          design[,book] <- paste0("T", 1:nrow(design))
+      }                                                                         ### untere zeile: langformat mit na.rm = TRUE erspart einem das 'removeNAd()'
+      desL  <- eatTools::facToChar(reshape2::melt(design, id.vars = book, na.rm=TRUE, variable.name="blockPos", value.name="blockName"))
+      if(!is.null(blocks)) {
+          stopifnot(is.vector(blocks))
+          if(!inherits(blocks, "character")) {stop("'block' must be a character vector.")}
+          stopifnot(length(intersect(unlist(design), blocks)) > 0)
+          notInDe<- setdiff(blocks,unique(desL[,"blockName"]))
+          if(length(notInDe)>0) {warning(paste0(length(notInDe), " elements of 'blocks' vector missing in design."))}
+          desL   <- desL[which(desL[,"blockName"] %in% blocks),]                ### geht einfacher zu selektieren
+      }
+      if(any(grepl("[[:punct:]]", desL[,"blockName"]))) {if(verbose) {message("Special characters and spaces will be removed from names in 'blocks'")}}
+      desL[,"blockName"] <- paste0("B", eatTools::gsubAll(desL[,"blockName"], old=c(" ", "[[:punct:]]"), new=c("", "")))
+    ### an welcher Position kommt welcher Block mit welcher Haeufigkeit vor?
+      blPos <- reshape2::dcast(desL, blockName~blockPos, value.var="blockName", fun.aggregate=length)
+    ### welche Kombinationen von Bloecken kommen wie oft vor?
+      kombs <- data.frame(do.call("rbind", combinat::combn(unique(desL[,"blockName"]),2, simplify=FALSE)), stringsAsFactors=FALSE)
+      kombs[,"freq"] <- apply(kombs, MARGIN = 1, FUN = function(z){ sum(as.vector(by(data = desL, INDICES = desL[,book], FUN = function (b) { all(z %in% b[,"blockName"])})))})
+      desW  <- reshape2::dcast(desL, as.formula(paste0(book, " ~ blockPos")), value.var="blockName")
+      dat   <- do.call(plyr::rbind.fill, apply(desW, MARGIN = 1, FUN = simDat, booklet = book))
+      link  <- checkLink(dataFrame = dat[,-1, drop = FALSE], remove.non.responser = TRUE, verbose = TRUE)
+      return(list(completelyLinked=link, occuringBlockCombinations=kombs, blockPositions =blPos))}
 
 ### Hilfsfunktion fuer 'checkLinking'
 simDat <- function ( z, booklet ) {                                             ### erzeugt Datensatz aus einer Zeile des Designs
