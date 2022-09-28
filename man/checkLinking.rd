@@ -31,13 +31,15 @@ Optional. If \code{TRUE} the function gives more messages.
 \value{
 %%  ~Describe the value returned
 %%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
+
 %% ...
-A logical value (TRUE/FALSE)
+A list. Containing information about linking diagnostics:
+\item{completelyLinked}{A logical value (TRUE/FALSE). Whether design is completely linked.}
+\item{occuringBlockCombinations}{A data.frame containing the occureng frequencies of block pairs.}
+\item{blockPositions}{A data.frame containing information about how often each block occurs at each position.}
 }
 \author{
-Sebastian Weirich, Karoline Sachse
+Sebastian Weirich and Karoline Sachse
 }
 \examples{
 # 1. first examples
