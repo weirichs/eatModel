@@ -19,33 +19,7 @@ tamObjForBayesianPV <- function(anchor, qMatrix, slopeMatrix = NULL, resp, pid, 
       return(tamObj)}
 
 
-outersect <- function(x, y) {
-  sort(c(setdiff(x, y),
-         setdiff(y, x)))
-}
-chkkombi <- function(des, blo) {
-  vgl <- t(combn(1:dim(des)[2],2))
-  resD <- data.frame()
-  for(ll in 1:dim(vgl)[1]) {
-    resD <- rbind(resD, unname(t(apply(des[,vgl[ll,]], 1, function(zeile) sort(zeile[1:2])))))
-  }
-  resD$kombi <- paste(resD[,1], resD[,2], sep="_")
-  resD1 <- resD[intersect(which(resD[,1] %in% blo),which(resD[,2] %in% blo)),]
 
-  kombs <- paste(data.frame(t(apply(data.frame(t(combn(blo,2))),1,function(zeile) sort(zeile[1:2]))))[,1],data.frame(t(apply(data.frame(t(combn(blo,2))),1,function(zeile) sort(zeile[1:2]))))[,2], sep="_")
-
-  res1 <- data.frame(table(resD1$kombi)[sort(names(table(resD1$kombi)))])
-  resk <- data.frame(Var1=kombs)
-  if(!all(kombs %in% res1[,1])) {
-    res1 <- mergeData("Var1", list(res1, resk),verbose=FALSE)
-    res1[which(is.na(res1[,2])),2] <- 0
-  }
-  names(res1)[1] <- "blockPair"
-  return(res1)
-}
-
-
-### prueft, ob Design verlinkt ist: checkLinking(design[1:15,c(1:5,ncol(design))], bookletColumn = "TH")
 checkLinking <- function(design, blocks=NULL, bookletColumn=NULL, verbose=FALSE) {
       if(!all(sapply(design, inherits, what="character"))) {design <- data.frame(lapply(design, as.character), stringsAsFactors=FALSE)}
       if(!is.null(bookletColumn)) {
@@ -64,65 +38,27 @@ checkLinking <- function(design, blocks=NULL, bookletColumn=NULL, verbose=FALSE)
           notInDe<- setdiff(blocks,unique(desL[,"blockName"]))
           if(length(notInDe)>0) {warning(paste0(length(notInDe), " elements of 'blocks' vector missing in design."))}
           desL   <- desL[which(desL[,"blockName"] %in% blocks),]                ### geht einfacher zu selektieren
-      } else {
-        blocks <- unique(unlist(design[,!names(design) %in% book]))
       }
-      if(any(grepl("[[:punct:]]", desL[,"blockName"]))) {if(verbose) {message("Special characters and spaces will be removed from names in 'blocks'")}}
-      desL[,"blockName"] <- paste0("B", eatTools::gsubAll(desL[,"blockName"], old=c(" ", "[[:punct:]]"), new=c("", "")))
-      desW  <- reshape2::dcast(desL, as.formula(paste0(book, " ~ blockPos")), value.var="blockName")
-      dat   <- do.call(plyr::rbind.fill, apply(desW, MARGIN = 1, FUN = simDat, booklet = book))
-      link  <- checkLink(dataFrame = dat[,-1, drop = FALSE], remove.non.responser = TRUE, verbose = TRUE)
-      chkkom <- chkkombi(design[,!names(design) %in% book], blocks)
-      res <- list()
-      res[["completelyLinked"]] <- link
-      res[["occuringBlockCombinations"]] <- chkkom
-      tabs <- lapply(design[,!names(design) %in% book],table)
-      nami <- unname(unlist(lapply(tabs, names)))
-      pdat <- data.frame(block=unique(nami),Pos=NA)
-      plist <- lapply(tabs, function(xx) {pdat[match(names(xx),pdat[,1]),2] <- xx; return(pdat)})
-      for(i in 1:length(tabs)) names(plist[[i]])[2] <- paste0(names(plist[[i]])[2],i)
-      pdat <- mergeData("block",plist,verbose=FALSE)
-      pdat[is.na(pdat)] <- "0"
-      pdat <- pdat[pdat$block %in% blocks,]
-      res[["blockPositions"]] <- pdat
-      if(verbose) {
-        print(chkkom)
-        print(res[["blockPositions"]])
-      }
-      return(res)
-}
-
-
-checkLinking2 <- function(design, blocks=NULL, bookletColumn=NULL, verbose=FALSE) {
-      if(!all(sapply(design, inherits, what="character"))) {design <- data.frame(lapply(design, as.character), stringsAsFactors=FALSE)}
-      if(!is.null(bookletColumn)) {
-          if(length(bookletColumn) != 1) {stop("Argument 'bookletColumn' must be of length 1.")}
-          book  <- eatTools::existsBackgroundVariables(dat = design, variable=bookletColumn)
-      } else {
-          book <- "bl"                                                          ### dieses komplizierte Zeug, weil der Name der Bookletspalte nicht bereits
-          while (book %in% colnames(design)) {book <- paste0(book, sample(0:9,1))}# im Designobjekt vergeben sein darf
-          design[,book] <- paste0("T", 1:nrow(design))
-      }                                                                         ### untere zeile: langformat mit na.rm = TRUE erspart einem das 'removeNAd()'
-      desL  <- eatTools::facToChar(reshape2::melt(design, id.vars = book, na.rm=TRUE, variable.name="blockPos", value.name="blockName"))
-      if(!is.null(blocks)) {
-          stopifnot(is.vector(blocks))
-          if(!inherits(blocks, "character")) {stop("'block' must be a character vector.")}
-          stopifnot(length(intersect(unlist(design), blocks)) > 0)
-          notInDe<- setdiff(blocks,unique(desL[,"blockName"]))
-          if(length(notInDe)>0) {warning(paste0(length(notInDe), " elements of 'blocks' vector missing in design."))}
-          desL   <- desL[which(desL[,"blockName"] %in% blocks),]                ### geht einfacher zu selektieren
-      }
-      if(any(grepl("[[:punct:]]", desL[,"blockName"]))) {if(verbose) {message("Special characters and spaces will be removed from names in 'blocks'")}}
+      if(verbose) {message("Special characters and spaces will be removed from names in 'blocks' and prefix 'B' will be added.")}
       desL[,"blockName"] <- paste0("B", eatTools::gsubAll(desL[,"blockName"], old=c(" ", "[[:punct:]]"), new=c("", "")))
     ### an welcher Position kommt welcher Block mit welcher Haeufigkeit vor?
       blPos <- reshape2::dcast(desL, blockName~blockPos, value.var="blockName", fun.aggregate=length)
+      names(blPos)[2:ncol(blPos)] <- paste0("Pos", 1:(ncol(blPos)-1))
     ### welche Kombinationen von Bloecken kommen wie oft vor?
       kombs <- data.frame(do.call("rbind", combinat::combn(unique(desL[,"blockName"]),2, simplify=FALSE)), stringsAsFactors=FALSE)
-      kombs[,"freq"] <- apply(kombs, MARGIN = 1, FUN = function(z){ sum(as.vector(by(data = desL, INDICES = desL[,book], FUN = function (b) { all(z %in% b[,"blockName"])})))})
+      kombs[,"pairFreq"] <- apply(kombs, MARGIN = 1, FUN = function(z){ sum(as.vector(by(data = desL, INDICES = desL[,book], FUN = function (b) { all(z %in% b[,"blockName"])})))})
+      names(kombs)[1:2] <- c("block.X", "block.Y")
+      kombs <- kombs[order(kombs$pairFreq, decreasing = TRUE),]
       desW  <- reshape2::dcast(desL, as.formula(paste0(book, " ~ blockPos")), value.var="blockName")
       dat   <- do.call(plyr::rbind.fill, apply(desW, MARGIN = 1, FUN = simDat, booklet = book))
       link  <- checkLink(dataFrame = dat[,-1, drop = FALSE], remove.non.responser = TRUE, verbose = TRUE)
-      return(list(completelyLinked=link, occuringBlockCombinations=kombs, blockPositions =blPos))}
+      res <- list(completelyLinked=link, occuringBlockCombinations=kombs, blockPositions =blPos)
+      if(verbose) {
+        print(kombs)
+        print(res[["blockPositions"]])
+      }
+      return(res)
+      }
 
 ### Hilfsfunktion fuer 'checkLinking'
 simDat <- function ( z, booklet ) {                                             ### erzeugt Datensatz aus einer Zeile des Designs
@@ -132,121 +68,6 @@ simDat <- function ( z, booklet ) {                                             
           mat  <- data.frame ( id = pers, matrix ( sample ( 0:1, size = length(pers) * length(items), replace = TRUE), ncol = length(items), nrow = length(pers)))
           colnames(mat)[-1] <- items
           return(mat)}
-
-mergeData <- function(newID, datList, oldIDs=NULL, addMbd = FALSE, verbose=TRUE) {
-
-  stopifnot(is.list(datList))
-  stopifnot(is.character(newID))
-
-  if(is.null(oldIDs)) {oldIDs <- rep(newID, length(datList))}
-  stopifnot(is.numeric(oldIDs) | is.character(oldIDs))
-
-  stopifnot(length(datList) == length(oldIDs))
-
-
-  if(length(datList) > 0) {
-
-    fkNam <- list()
-    for(i in seq(along = datList)) {
-
-      stopifnot(is.data.frame(datList[[i]]))
-
-      if(any(unlist(lapply(datList[[i]], class)) == "factor")) {
-        fkNam[[i]] <- names(which(unlist(lapply(datList[[i]], class)) == "factor"))
-        datList[[i]] <- eatTools::set.col.type(datList[[i]], col.type = list ( "character" = fkNam[[i]] ))
-      }
-
-      if(verbose) message("Start merging of dataset ", i, ".")
-
-      if(i==1) {
-
-        if(is.character(oldIDs)) {IDname1 <- oldIDs[i]}
-        if(is.numeric(oldIDs)) {IDname1 <- colnames(datList[[i]])[oldIDs[i]]}
-
-        if(is.character(IDname1) & IDname1 %in% names(datList[[i]])) {
-          if(any(is.na(datList[[i]][,IDname1]))) {
-            warning("Found missing value in ID variable in dataset ", i, ". Output may not be as desired.")
-          }
-          if(length(na.omit(datList[[i]][,IDname1])) != length(na.omit(unique(datList[[i]][,IDname1])))) {
-            doppelt <- na.omit(unique(datList[[i]][,IDname1][duplicated(datList[[i]][,IDname1])]))
-            message("Multiple IDs in dataset ", i, " in " ,length(doppelt)," cases.")
-            stop("Multiple IDs: ", paste(doppelt, collapse = ", "))
-          }
-          names(datList[[i]])[names(datList[[i]]) == IDname1] <- newID
-          mergedData <- datList[[i]]
-        } else {
-          stop("Did not find ID variable in dataset ", i)
-        }
-
-      } else {
-
-        if(is.character(oldIDs)) {IDname2 <- oldIDs[i]}
-        if(is.numeric(oldIDs)) {IDname2 <- colnames(datList[[i]])[oldIDs[i]]}
-
-        if(is.character(IDname2) & IDname2 %in% names(datList[[i]])) {
-          if(any(is.na(datList[[i]][,IDname2]))) {
-            warning("Found missing values in ID variable in dataset ", i, ". Output may not be as desired.")
-          }
-          if(length(na.omit(datList[[i]][,IDname2])) != length(na.omit(unique(datList[[i]][,IDname2])))) {
-            doppelt <- na.omit(unique(datList[[i]][,IDname2][duplicated(datList[[i]][,IDname2])]))
-            message("Multiple IDs in dataset ", i, " in " ,length(doppelt)," cases.")
-            stop("Multiple IDs: ", paste(doppelt, collapse = ", "))
-          }
-
-          names(datList[[i]])[names(datList[[i]]) == IDname2] <- newID
-
-          dat2 <- dplyr::full_join(mergedData, datList[[i]], by=newID)
-          srtn <- unique(gsub(".[x|y]$","",names(dat2)))
-          compar <- gsub(".[x|y]$","",names(dat2)[which(duplicated(gsub(".[x|y]$", "", names(dat2))))])
-          if(length(compar) > 0) {
-            ncompar <- setdiff(gsub(".[x|y]$","",names(dat2)),compar)
-            bb <- data.frame(lapply(compar, function(gg)   {
-              x <- dat2[,paste0(gg, ".x")]
-              y <- dat2[,paste0(gg, ".y")]
-              z <- ifelse(is.na(x),y,x)
-              b <- which(x[!is.na(x) & !is.na(y)] != y[!is.na(x) & !is.na(y)])
-              a <- cbind(x[!is.na(x) & !is.na(y)],y[!is.na(x) & !is.na(y)])[b,]
-              b <- which(x!=y)
-              if(verbose & length(a) > 0) {
-                if(dim(data.frame(a))[2] == 1) {
-                  ab <- paste(a,collapse="&")
-                } else {
-                  ab <- paste(apply(data.frame(a),1, function(vv) paste(vv, collapse=("&"))),collapse=", ")
-                }
-                message("Multiple different valid codes in variable: ",gg," in dataset ",i,": \n The first value has been kept. \n IDs: ", paste(dat2[,newID][b],collapse=", "),"\n Values: ", ab)
-              }
-              return(z)
-            }))
-            names(bb) <- compar
-            partialdata <- cbind(dat2[,ncompar, drop=FALSE], bb)
-          } else {
-            partialdata <- dat2
-          }
-          mergedData  <- partialdata[,srtn]
-
-        } else {
-          stop("Did not find ID variable in dataset ", i)
-        }
-      }
-    }
-
-    mReturn <- mergedData
-
-    if(addMbd == TRUE) {mReturn[is.na(mReturn)] <- "mbd"}
-
-  } else {
-    stop("Found no datasets.")
-  }
-
-  if(is.data.frame(mReturn)) {
-    if(!is.null(unlist(fkNam))) {
-      mReturn <- eatTools::set.col.type(mReturn, col.type = list ( "factor" = unique(unlist(fkNam))))
-    }
-  }
-
-  return(mReturn)
-}
-
 
 ### Hilfsfunktion zur Bestimmung der Anzahl der Beobachtungen je Itempaar
 nObsItemPairs <- function ( responseMatrix, q3MinType) {
