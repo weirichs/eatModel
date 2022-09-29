@@ -30,6 +30,7 @@ checkLinking <- function(design, blocks=NULL, bookletColumn=NULL, verbose=FALSE)
           while (book %in% colnames(design)) {book <- paste0(book, sample(0:9,1))}# im Designobjekt vergeben sein darf
           design[,book] <- paste0("T", 1:nrow(design))
       }                                                                         ### untere zeile: langformat mit na.rm = TRUE erspart einem das 'removeNAd()'
+      colnames(design)[-match(book, colnames(design))] <- paste0("Pos", 1:(ncol(design)-1))
       desL  <- eatTools::facToChar(reshape2::melt(design, id.vars = book, na.rm=TRUE, variable.name="blockPos", value.name="blockName"))
       if(verbose) {message("Special characters and spaces will be removed from names in 'blocks' and prefix 'B' will be added.")}
       desL[,"blockName"] <- paste0("B", eatTools::gsubAll(desL[,"blockName"], old=c(" ", "[[:punct:]]"), new=c("", "")))
