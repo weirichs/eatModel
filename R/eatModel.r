@@ -31,19 +31,22 @@ checkLinking <- function(design, blocks=NULL, bookletColumn=NULL, verbose=FALSE)
           design[,book] <- paste0("T", 1:nrow(design))
       }                                                                         ### untere zeile: langformat mit na.rm = TRUE erspart einem das 'removeNAd()'
       desL  <- eatTools::facToChar(reshape2::melt(design, id.vars = book, na.rm=TRUE, variable.name="blockPos", value.name="blockName"))
+      if(verbose) {message("Special characters and spaces will be removed from names in 'blocks' and prefix 'B' will be added.")}
+      desL[,"blockName"] <- paste0("B", eatTools::gsubAll(desL[,"blockName"], old=c(" ", "[[:punct:]]"), new=c("", "")))
+      ### an welcher Position kommt welcher Block mit welcher Haeufigkeit vor?
+      blPos <- reshape2::dcast(desL, blockName~blockPos, value.var="blockName", fun.aggregate=length)
+      names(blPos)[2:ncol(blPos)] <- paste0("Pos", 1:(ncol(blPos)-1))
       if(!is.null(blocks)) {
           stopifnot(is.vector(blocks))
           if(!inherits(blocks, "character")) {stop("'block' must be a character vector.")}
-          stopifnot(length(intersect(unlist(design), blocks)) > 0)
+          blocks <- paste0("B", eatTools::gsubAll(blocks, old=c(" ", "[[:punct:]]"), new=c("", "")))
+          stopifnot(length(intersect(desL[,"blockName"], blocks)) > 0)
           notInDe<- setdiff(blocks,unique(desL[,"blockName"]))
           if(length(notInDe)>0) {warning(paste0(length(notInDe), " elements of 'blocks' vector missing in design."))}
-          desL   <- desL[which(desL[,"blockName"] %in% blocks),]                ### geht einfacher zu selektieren
+          desL   <- desL[which(desL[,"blockName"] %in% blocks),]
+          blPos <- blPos[blPos$blockName %in% blocks,]
+          blPos <- blPos[order(blPos$blockName),]
       }
-      if(verbose) {message("Special characters and spaces will be removed from names in 'blocks' and prefix 'B' will be added.")}
-      desL[,"blockName"] <- paste0("B", eatTools::gsubAll(desL[,"blockName"], old=c(" ", "[[:punct:]]"), new=c("", "")))
-    ### an welcher Position kommt welcher Block mit welcher Haeufigkeit vor?
-      blPos <- reshape2::dcast(desL, blockName~blockPos, value.var="blockName", fun.aggregate=length)
-      names(blPos)[2:ncol(blPos)] <- paste0("Pos", 1:(ncol(blPos)-1))
     ### welche Kombinationen von Bloecken kommen wie oft vor?
       kombs <- data.frame(do.call("rbind", combinat::combn(unique(desL[,"blockName"]),2, simplify=FALSE)), stringsAsFactors=FALSE)
       kombs[,"pairFreq"] <- apply(kombs, MARGIN = 1, FUN = function(z){ sum(as.vector(by(data = desL, INDICES = desL[,book], FUN = function (b) { all(z %in% b[,"blockName"])})))})
