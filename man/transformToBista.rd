@@ -7,8 +7,8 @@ one for the item parameters on the bista metric and one for the person parameter
 (PVs) on the bista metric.}
 \usage{
 transformToBista ( equatingList, refPop, cuts, weights = NULL, defaultM = 500, 
-                   defaultSD = 100, roman = FALSE, vera = TRUE, idVarName = NULL,
-                   years=NULL)}
+                   defaultSD = 100, q3bound= .2, roman = FALSE, vera = TRUE,
+                   idVarName = NULL, years=NULL)}
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{equatingList}{
@@ -51,6 +51,10 @@ Mean of the reference population on the ``bista'' metric.
   \item{defaultSD}{
 %%     ~~Describe \code{file} here~~
 Standard deviation of the reference population in the ``bista'' metric. 
+}
+  \item{q3bound}{
+Define the absolute boundary of Q3 values which should be captured in the item parameter
+list according to the guidelines of the ``Vergleichsarbeiten''.
 }
   \item{roman}{
 %%     ~~Describe \code{file} here~~

@@ -532,8 +532,8 @@ createLinkingErrorObject <- function (itempars, years) {
             return(r1)}))
      return(res)}
 
-### Hilfsfuntion fuer "transformToBista"
-createItemVeraObj <- function(itempars, roman){
+### Hilfsfunktion fuer "transformToBista"
+createItemVeraObj <- function(itempars, roman, results, q3bound){
        pCols      <- colnames(itempars)[grep("^itemP", colnames(itempars))]
        allCols    <- na.omit(match ( c("dimension","item", pCols, "itemDiscrim", "estTransf", "infit", "estTransfBista", "traitLevel"), colnames(itempars)))
        itemVera   <- itempars[,allCols]
@@ -566,9 +566,27 @@ createItemVeraObj <- function(itempars, roman){
                  }
             }
        }
+    ### jetzt die q3-Werte dranmergen
+       if ( "q3" %in% results[,"par"]) {
+            itemVera   <- addQ3(dfr=itemVera, results=results, q3bound=q3bound)
+       }
        return(itemVera) }
 
-transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defaultM = 500, defaultSD = 100, roman = FALSE, vera = TRUE, idVarName = NULL, years = NULL ) {
+### Hilfsfunktion fuer createItemVeraObj()
+addQ3 <- function (dfr, results, q3bound) {
+       q3  <- q3FromRes(results, out="long")
+       q3  <- do.call(plyr::rbind.fill, lapply(names(q3), FUN = function (nq3) {
+              x <- q3[[nq3]][which(abs(q3[[nq3]][,"value"]) > q3bound),]
+              x <- suppressWarnings(eatTools::asNumericIfPossible(do.call(plyr::rbind.fill, by(x, INDICES = x[,"var1"], FUN = function (y) {
+                   mat <- matrix(as.vector(unlist(t(y[,-1]))), nrow=1)
+                   colnames(mat) <- paste(rep(c("q3item","q3value"), times=ncol(mat)/2), rep(1:(ncol(mat)/2), each=2), sep="_")
+                   ret <- data.frame ( domain = nq3, iqbitem_id = unique(y[,"var1"]),mat, stringsAsFactors=FALSE)
+                   return(ret)})), force.string=FALSE))
+              return(x)}))
+       dfr <- merge(dfr, q3, by=c("domain", "iqbitem_id"), all=TRUE)
+       return(dfr)}
+
+transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defaultM = 500, defaultSD = 100, q3bound = .20, roman = FALSE, vera = TRUE, idVarName = NULL, years = NULL ) {
     ### wenn equatet wurde, sollte auch 'refPop' definiert sein (es sei denn, es wurde verankert skaliert)
     ### wenn 'refPop' fehlt, wird es fuer alle gegebenen Dimensionen anhand der Gesamtstichprobe berechnet
        mr  <- FALSE                                                             ### default: 'refPop' fehlt nicht. Wenn doch, wird es aus Daten generiert und spaeter
@@ -792,7 +810,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
        if ( vera == FALSE ) {
            itemVera <- NULL
        }  else  {
-           itemVera <- createItemVeraObj(itempars=itempars, roman=roman)
+           itemVera <- createItemVeraObj(itempars=itempars, roman=roman, results = equatingList[["results"]], q3bound=q3bound)
        }
     ### optional: separate linkingfehlerobjekte erzeugen
        if (!is.null(years)) {
