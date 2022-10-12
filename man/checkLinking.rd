@@ -73,4 +73,12 @@ test4 <- checkLinking(design = des2[,-1], blocks =listenblocks, verbose=TRUE)
 # c) domain orthography (blocks contain "-R")
 orthoblocks <- grep("-R", unique(unlist(des2[,-1])), value=TRUE)
 test5 <- checkLinking(design = des2[,-1], blocks =orthoblocks, verbose=TRUE)
+
+# reconstruct test design from exemplary data, separately for each year and each domain
+data(trends)
+design<- by(data = trends, INDICES = trends[,c("year", "domain")], FUN = function (d) {
+         rownames(d) <- NULL
+         dw <- reshape2::dcast(unique(d[,c("booklet", "block", "pos")]), booklet~pos, value.var="block")
+         message("\nCondition: \n", eatTools::print_and_capture(d[1,c("year", "domain")]))
+         cl <- checkLinking(design=dw, bookletColumn ="booklet") } )
 }
