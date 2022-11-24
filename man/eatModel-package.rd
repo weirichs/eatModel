@@ -56,20 +56,20 @@
   %%        directly can be imported to the IQB data base for further processing.
   }
 
-  The multi-stage process of model estimation works for one single model as well as for a compilation 
-  of several models in only one call. The estimation of these models may be accelerated using multicore 
-  processing. Depending on the number of available logical CPUs, several models may be estimated 
+  The multi-stage process of model estimation works for one single model as well as for a compilation
+  of several models in only one call. The estimation of these models may be accelerated using multicore
+  processing. Depending on the number of available logical CPUs, several models may be estimated
   simultaneously. The function \code{\link{splitModels}} allows to allocate the analyses to several cores.
   See the examples of \code{\link{splitModels}} for further details. The help page of \code{\link{defineModel}}
   includes a variety of examples which are derived from the context of the IQB ``Laendervergleich''.
-  
+
   Basically, \code{eatModel} is useful for Conquest analyses which are called from R. Alternatively, the R package
   \code{TAM} allows to estimate parameters of the mixed-Coefficients Multinomial Logit Model solely in an
   R environment. \code{eatModel} allows all models to be estimated in \code{TAM} likewise. The \code{software}
   argument in the \code{\link{defineModel}} function allows to choose the desired software.
   Please note that some model specifications (for example, 2pl/3pl) lead to models only TAM is able to
   estimate.
-  
+
   Historically, \code{eatModel} is a \sQuote{reboot} of the package \code{eatRest} formerly known as
   \code{eat}. The first development of some of its main functions started loosely in autumn 2009 at the
   Institute of Educational Progress (IQB). For the first time, any attempts to develop an R package were
@@ -98,8 +98,8 @@
 \tabular{ll}{
 Package: \tab eatModel\cr
 Type: \tab Package\cr
-Version: \tab 0.8.12\cr
-Date: \tab 2022-09-09\cr
+Version: \tab 0.8.13\cr
+Date: \tab 2022-11-24\cr
 License: \tab GPL(>=2)
 }
 }

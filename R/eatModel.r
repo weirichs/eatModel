@@ -2648,7 +2648,7 @@ q3FromRes<- function ( resultsObj, out = c("wide", "long" )) {
        selM  <- by(data = resultsObj, INDICES = resultsObj[,"model"], FUN = function ( mr ) {
                 sel  <- mr[which(mr[,"par"] == "q3"),]
                 if ( nrow(sel)>0) {
-                     if ( out == "wise") {
+                     if ( out == "wide") {
                           sel  <- reshape2::dcast( sel, var1~var2, value.var = "value")
                      }  else  {
                           sel  <- sel[,c("var1", "var2", "value")]
