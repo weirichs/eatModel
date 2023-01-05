@@ -1,6 +1,5 @@
 \name{defineModel}
 \alias{defineModel}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{Prepares IRT analysis for Conquest and TAM}
 \description{Facilitates data analysis using the software Conquest and/or TAM. It automatically
 checks data for IRT consistency, generates Conquest syntax, label, anchor and data files or
@@ -32,34 +31,27 @@ defineModel (dat, items, id, splittedModels = NULL,
    slopeMatValueCol=NULL, progress = FALSE, Msteps = NULL, increment.factor=1 ,
    fac.oldxsi=0, export = list(logfile = TRUE, systemfile = FALSE, history = TRUE,
    covariance = TRUE, reg_coefficients = TRUE, designmatrix = FALSE))}
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{dat}{
-%%     ~~Describe \code{file} here~~
 A data frame containing all variables necessary for analysis.
 }
   \item{items}{
-%%     ~~Describe \code{dif.term} here~~
-Names or column numbers of variables with item responses. Item response values must 
+Names or column numbers of variables with item responses. Item response values must
 be numeric (i.e. 0, 1, 2, 3 ... ). Character values (i.e. A, B, C ... or a, b, c, ...) 
 are not allowed. Class of item columns are expected to be numeric or integer. 
 Columns of class \code{character} will be transformed. 
 }
   \item{id}{
-%%     ~~Describe \code{split.dif} here~~
 Name or column number of the identifier (ID) variable.
 }
   \item{splittedModels}{
-%%     ~~Describe \code{dif.term} here~~
 Optional: Object returned by \code{\link{splitModels}}. Definition for multiple model handling.
 }
   \item{irtmodel}{
-%%     ~~Describe \code{abs.dif.bound} here~~
-Specification of the IRT model. The argument corresponds to the \code{irtmodel} 
+Specification of the IRT model. The argument corresponds to the \code{irtmodel}
 argument of \code{\link[TAM]{tam.mml}}. See the help page of \code{\link[TAM]{tam.mml}} for further details.
 }
   \item{qMatrix}{
-%%     ~~Describe \code{abs.dif.bound} here~~
 Optional: A named data frame indicating how items should be grouped to dimensions. The
 first column contains the unique names of all items and should be named ``item''. The other
 columns contain dimension definitions and should be named with the respective
@@ -69,7 +61,6 @@ item does not load on this dimension. If no q matrix is specified by the user, a
 unidimensional structure is assumed.
 }
   \item{DIF.var}{
-%%     ~~Describe \code{sig.dif.bound} here~~
 Name or column number of one grouping variable for which differential item
 functioning analysis is to be done.
 }
@@ -83,11 +74,9 @@ statistics for WLEs and Plausible Values will be computed separately for each
 group in Conquest.
 }
   \item{weight.var}{
-%%     ~~Describe \code{sig.dif.bound} here~~
 Optional: Name or column number of one weighting variable.
 }
   \item{anchor}{
-%%     ~~Describe \code{sig.dif.bound} here~~
 Optional: A named data frame with anchor parameters. The first column contains the
 names of all items which are used to be anchor items and may be named item.
 The second column contains anchor parameters. Anchor items can be a subset of the
@@ -96,7 +85,6 @@ columns, columns must be named explicitly using the following arguments
 \code{domainCol}, \code{itemCol}, and \code{valueCol}.
 }
   \item{domainCol}{
-%%     ~~Describe \code{sig.dif.bound} here~~
 Optional: Only necessary if the \code{anchor} argument was used to define
 anchor parameters. Moreover, specifying \code{domainCol} is only necessary, if the
 item identifiers in \code{anchor} are not unique---for example, if a specific item
@@ -105,59 +93,48 @@ occurs with two parameters, one domain-specific item parameter and one additiona
 belongs to which domain. 
 }
   \item{itemCol}{
-%%     ~~Describe \code{sig.dif.bound} here~~
 Optional: Only necessary if the \code{anchor} argument was used to define
 anchor parameters. Moreover, specifying \code{itemCol} is only necessary, if the
 \code{anchor} data frame has more than two columns. The \code{itemCol} column than 
 must specify which column contains the item identifier. 
 }
   \item{valueCol}{
-%%     ~~Describe \code{sig.dif.bound} here~~
 Optional: Only necessary if the \code{anchor} argument was used to define
 anchor parameters. Moreover, specifying \code{valueCol} is only necessary, if the
 \code{anchor} data frame has more than two columns. The \code{valueCol} column than 
 must specify which column contains the item parameter values. 
 }
   \item{check.for.linking}{
-%%     ~~Describe \code{sig.dif.bound} here~~
 A logical value indicating whether the items in dataset are checked for being
 connected with each other via design.
 }
   \item{minNperItem}{
-%%     ~~Describe \code{sig.dif.bound} here~~
-Numerical: A message is printed on console if an item has less valid values than the number 
+Numerical: A message is printed on console if an item has less valid values than the number
 defined in \code{minNperItem}.
 }
   \item{removeMinNperItem}{
-%%     ~~Describe \code{sig.dif.bound} here~~
 Logical: Remove items with less valid responses than defined in \code{minNperItem}?
 }
   \item{boundary}{
-%%     ~~Describe \code{sig.dif.bound} here~~
-Numerical: A message is printed on console if a subject has answered less than the number of items 
+Numerical: A message is printed on console if a subject has answered less than the number of items
 defined in boundary. 
 }
   \item{remove.boundary}{
-%%     ~~Describe \code{sig.dif.bound} here~~
 Logical: Remove subjects who have answered less items than defined in the \code{boundary} argument?
 }
   \item{remove.no.answers}{
-%%     ~~Describe \code{sig.dif.bound} here~~
 Logical: Should persons without any item responses being removed prior to analysis?
 }
   \item{remove.no.answersHG}{
-%%     ~~Describe \code{sig.dif.bound} here~~
 Logical: Should persons without any responses on any background variable being removed prior to analysis?
 }
   \item{remove.missing.items}{
-%%     ~~Describe \code{sig.dif.bound} here~~
 Logical: Should items without any item responses being removed prior to analysis?
 }
   \item{remove.constant.items}{
 Logical: Should items without variance being removed prior to analysis?
 }
   \item{remove.failures}{
-%%     ~~Describe \code{sig.dif.bound} here~~
 Logical: Should persons without any correct item response (i.e., only \dQuote{0} responses) being removed prior to analysis?
 }
   \item{remove.vars.DIF.missing}{
@@ -174,52 +151,43 @@ remain in the data.
 A logical value indicating whether messages are printed on the R console.
 }
   \item{software}{
-%%     ~~Describe \code{dif.term} here~~
 The desired estimation software for the analysis.
 }
   \item{dir}{
-%%     ~~Describe \code{dif.term} here~~
-The directory in which the output will be written to. If \code{software = "conquest"}, 
+The directory in which the output will be written to. If \code{software = "conquest"},
 \code{dir} must be specified. If \code{software = "tam"}, \code{dir} is not mandatory.
 }
   \item{analysis.name}{
-%%     ~~Describe \code{dif.term} here~~
-A character string specifying the analysis name. If \code{software = "conquest"}, 
+A character string specifying the analysis name. If \code{software = "conquest"},
 \code{analysis.name} must be specified. All Conquest input and output files will 
 named \code{analysis.name} with their corresponding extensions. If \code{software = "tam"}, 
 \code{analysis.name} is not mandatory. In the case of multiple models estimation, 
 \code{split.models} automatically defines \code{analysis.name} for each model.
 }
   \item{schooltype.var}{
-%%     ~~Describe \code{dif.term} here~~
 Optional: Name or column number of the variable indicating the school type (e.g.
 academic track, non-academic track). Only necessary if \emph{p} values should be 
 computed for each school type separately. 
 }
   \item{model.statement}{
-%%     ~~Describe \code{dif.term} here~~
 Optional: Applies only if \code{software = "conquest"}. A character string given the model
 statement in the Conquest syntax. If omitted, the statement is generated automatically
 with respect to the defined model.
 }
   \item{compute.fit}{
-%%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "conquest"}. Compute item fit statistics?
 }
   \item{pvMethod}{
-%%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "tam"}: Specifies whether PVs should be drawn regularly
 or using a Bayesian algorithm.
 }
   \item{fitTamMmlForBayesian}{
-%%     ~~Describe \code{dif.term} here~~
 Logical, applies only if \code{software = "tam"}: If PVs are drawn using a Bayesian
 algorithm, it is not necessary to fit the model via \code{\link[TAM]{tam.mml}} before. \code{fitTamMmlForBayesian}
 specifies whether the model should be fitted before though. See the help page of \code{tam.pv.mcmc}
 for further details.
 }
   \item{n.plausible}{
-%%     ~~Describe \code{dif.term} here~~
 The number of plausible values which are to be drawn from the conditioning model.
 }
   \item{seed}{
@@ -227,35 +195,30 @@ Optional: Set seed value for analysis. The value will be used in Conquest syntax
 see conquest manual, p. 225) or in TAM (control$seed). Note that seed only occurs for stochastic integration.
 }
   \item{conquest.folder}{
-%%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "conquest"}. A character string with path and name
 of the Conquest console, for example \code{"c:/programme/conquest/console_Feb2007.exe"}.
 In package version 0.7.24 and later, conquest executable file is included in the package,
 so the user needn't to specify this argument.
 }
   \item{constraints}{
-%%     ~~Describe \code{dif.term} here~~
-A character string specifying how the scale should be constrained. Possible options 
+A character string specifying how the scale should be constrained. Possible options
 are \code{"cases"} (default), \code{"items"} and \code{"none"}. When anchor parameter are specified in 
 anchor, constraints will be set to \code{"none"} automatically. In \code{TAM} the option
 \code{"none"} is not allowed. (See the help file of \code{\link[TAM]{tam.mml}} for further details.)
 }
   \item{std.err}{
-%%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "conquest"}. A character string specifying which
 type of standard error should be estimated. Possible options are \code{"full"}, \code{"quick"}
 (default) and \code{"none"}. See Conquest manual pp.167 for details on standard error estimation.
 }
   \item{distribution}{
-%%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "conquest"}. A character string indicating the
 a priori trait distribution. Possible options are \code{"normal"} (default) and \code{"discrete"}.
 See Conquest manual pp.167 for details on population distributions.
 }
   \item{method}{
-%%     ~~Describe \code{dif.term} here~~
-A character string indicating which method should be used for numerical integration.
-Possible options are \code{"gauss"} (Gauss-Hermmite quadrature: default),
+A character string indicating which method should be used for numerical or stochastic
+integration. Possible options are \code{"gauss"} (Gauss-Hermmite quadrature: default),
 \code{"quadrature"} (Bock/Aitken quadrature) and \code{"montecarlo"}. See Conquest manual
 pp.167 for details on these methods. When using \code{software = "tam"}, \code{"gauss"} and
 \code{"quadrature"} essentially leads to numerical integration, i.e TAM is called with
@@ -267,7 +230,8 @@ leads to calling TAM with \code{control$QMC = FALSE} and \code{snodes = nn}, whe
 \code{defineModel}. When using \code{software = "tam"}, \code{"quasiMontecarlo"}
 leads to calling TAM with \code{control$QMC = TRUE} and \code{snodes = nn}, where
 \code{nn} equals the number of nodes specified in the \code{nodes} argument of
-\code{defineModel}.
+\code{defineModel}. To met the \code{software = "tam"} default (numerical integration), use
+\code{software="tam", nodes = 21}.
 }
   \item{n.iterations}{
 %%     ~~Describe \code{dif.term} here~~
@@ -552,7 +516,7 @@ datW[,"sexNum"] <- car::recode ( datW[,"sex"] , "'male'=0; 'female'=1", as.facto
 # means: Everything except column 1 to 3 are item columns
 items<- grep("^T[[:digit:]]{2}", colnames(datW))
 mod1a<- defineModel(dat=datW, items= items, id="idstud", DIF.var = "sexNum",
-        analysis.name = "unidimDIF", software="tam")
+        analysis.name = "unidimDIF", software="tam",fac.oldxsi=.1, increment.factor=1.07)
 
 # run the model
 run1a<- runModel(mod1a)
@@ -579,7 +543,7 @@ aPar <- aPar[,c("item", "est")]
 mod2a<- defineModel(dat=datW, items= grep("^T[[:digit:]]{2}", colnames(datW)),
         id="idstud", analysis.name = "twodim",  qMatrix = qMat,
         HG.var = c("language","sex", "ses"), anchor = aPar, n.plausible = 20,
-        software="tam")
+        software="tam", fac.oldxsi=.1, increment.factor=1.07)
 
 # run the model
 run2a<- runModel(mod2a)
@@ -596,7 +560,7 @@ res2a<- getResults(run2a)
 # defining the model: specifying q matrix now is necessary.
 mod2b<- defineModel(dat=datW, items= grep("^T[[:digit:]]{2}", colnames(datW)),
         id="idstud", analysis.name = "twodim2", qMatrix = qMat,
-        n.plausible = 20, software="tam")
+        n.plausible = 20, software="tam", fac.oldxsi=.1, increment.factor=1.07)
 
 # run the model
 run2b<- runModel(mod2b)

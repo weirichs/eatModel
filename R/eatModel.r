@@ -594,6 +594,12 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
           mr  <- TRUE
           cat("'refPop' was not defined. Treat current sample as drawn from the reference population.\n")
           flush.console()
+       }  else  {
+    ### wenn es refPop gibt, dann hier auf Konsistenz checken
+          refPop <- eatTools::makeDataFrame(refPop)
+          for ( i in 2:ncol(refPop)) {                                          ### ab Spalte 2 muss alles numerisch sein
+                if(!inherits(refPop[,i], c("integer", "numeric"))) {stop("All columns of 'refPop' except for the first one must be numeric.")}
+          }
        }
        if( missing(cuts)) { cutsMis <- TRUE }  else  { cutsMis <- FALSE }
        nam1<- names(equatingList[["items"]])                                    ### hier stehen in der regel die beiden Modellnamen, also quasi names(table(equatingList[["results"]][,"model"]))
@@ -1773,34 +1779,30 @@ checkPersonSumScores <- function(datL, allNam, dat, remove.failures){
           return(list(dat=dat, per0=per0, perA=perA))}
 
 ### Hilfsfunktion fuer defineModel
+### Hilfsfunktion fuer defineModel
 adaptMethod <- function(method, software,nodes){
         snodes <- NULL; QMC <- NULL                                             ### initialisieren
         if(method == "quasiMontecarlo" && software == "conquest") {
            cat("Method 'quasiMontecarlo' is not available for software 'conquest'. Set method to 'montecarlo'.\n")
            method <- "montecarlo"
         }
-        if(method %in% c("montecarlo", "quasiMontecarlo"))  {
-           if(nodes < 500 ) {
-              warning(paste0("Due to user specification, only ",nodes," nodes are used for '",method,"' estimation. Please note or re-specify your analysis."))
-           }
+        if(method %in% c("montecarlo", "quasiMontecarlo"))  {                   ### stochastische Integration
            if(is.null(nodes) )   {
               cat(paste("'",method,"' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 1000.\n",sep=""))
-              if(software == "conquest") {nodes <- 1000}
-              if(software == "tam" )     {nodes <- NULL; snodes <- 1000; QMC <- as.logical(car::recode ( method, "'montecarlo'=FALSE; 'quasiMontecarlo'=TRUE"))}
-           }  else  {
-              if(software == "tam" )     {
-                 snodes <- nodes; nodes <- NULL; QMC <- as.logical(car::recode ( method, "'montecarlo'=FALSE; 'quasiMontecarlo'=TRUE"))
+              nodes <- 1000
+           } else {
+              if (nodes < 500 ) {
+                  warning(paste0("Due to user specification, only ",nodes," nodes are used for '",method,"' estimation. Please note or re-specify your analysis."))
               }
+           }                                                                    ### untere Zeile: Reihenfolge ist wichtig! erst snodes auf nodes setzen, dann nodes auf NULL
+           if ( software == "tam" )   {snodes <- nodes; nodes <- NULL; QMC <- as.logical(car::recode ( method, "'montecarlo'=FALSE; 'quasiMontecarlo'=TRUE"))}
+        }  else {                                                               ### numerische Integration
+           if(is.null(nodes) )   {
+              cat(paste("'",method,"' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.\n",sep=""))
+              nodes <- 20
            }
-        }  else  {
-           if ( is.null(nodes) )   {
-                cat(paste("Number of nodes was not explicitly specified. Set nodes to 20 for method '",method,"'.\n",sep=""))
-                if ( software == "conquest" ) { nodes <- 20; snodes <- NULL; QMC <- NULL }
-  	            if ( software == "tam" )      { nodes <- seq(-6,6,len=20); snodes <- 0; QMC <- FALSE}
-    			}  else {
-                if ( software == "tam" )      { nodes <- seq(-6,6,len=nodes); snodes <- 0; QMC <- FALSE }
-          }
-    		}
+           if ( software == "tam" )   { nodes <- seq(-6,6,len=nodes); snodes <- 0; QMC <- FALSE}
+        }
     		return(list(method=method, nodes=nodes, snodes=snodes, QMC=QMC))}
 
 .substituteSigns <- function(dat, variable, all.Names = NULL ) {
