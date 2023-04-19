@@ -32,6 +32,7 @@ tripleEquatError <- function(e1, e2, e3, dependentDIF, testletStr, difBound, cal
       l32 <- el32$descriptives
       trend3221 <- el32$B.est$Mean.Mean + el21$B.est$Mean.Mean
       trend31 <- el31$B.est$Mean.Mean
+    ### nicht nur wenn testletStr NULL ist, soll auf jackknife verzichtet werden, sondern auch wenn testlets missings haben oder fehlen
     if(is.null(testletStr)) {
      if(dependentDIF) {
        is3221 <- intersect(el21$anchor$item, el32$anchor$item)
@@ -173,9 +174,18 @@ checkInputConsistency <- function(e1,e2,e3,testletStr) {
                 cat(paste0("The 'unit' column in 'testletStr' seemed to be called '",setdiff(colnames(testletStr), "item"),"'. Rename this column into 'unit'.\n"))
                 colnames(testletStr)[setdiff(1:2, match("item", colnames(testletStr)))] <- "unit"
             }
-    ### pruefen, ob alle Item, die es in e1, e2, e3 gibt, auch eine Testletzuordnung haben!
+    ### pruefen, ob alle Item, die es in e1, e2, e3 gibt, auch eine NICHT-FEHLENDE Testletzuordnung haben!
             allI<- unique(unlist(lapply(il, FUN = function (x){x[,"item"]})))
-            if(!all(allI %in% testletStr[,"item"])) {stop(paste0("Following items without testlet definition: '",paste(setdiff(allI,testletStr[,"item"]) , collapse="', '"), "'."))}
+            if(!all(allI %in% testletStr[,"item"])) {
+                message(paste0("Following items without testlet definition: '",paste(setdiff(allI,testletStr[,"item"]) , collapse="', '"), "'.\n    Linking errors will be compute without considering testlets."))
+                testletStr <- NULL
+            }
+            tls <- testletStr[which(testletStr[,"item"] %in% allI),]
+            isna<- length(which(is.na(tls[,setdiff(colnames(tls), "item")])))
+            if(isna>0) {
+                message(paste0("Following ",isna," items without testlet definition: '",paste(tls[which(is.na(tls[,setdiff(colnames(tls), "item")])),"item"] , collapse="', '"), "'.\n    Linking errors will be compute without considering testlets."))
+                testletStr <- NULL
+            }
     ### wenn es testlets gibt, soll das testlet-Objekt zurueckgegeben werden, entweder unveraendert oder veraendert (Spaltenbezeichnung angepasst)
             return(testletStr)
        }  else  {
