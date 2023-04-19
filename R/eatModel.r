@@ -447,8 +447,10 @@ equat1pl<- function ( results , prmNorm , item = NULL, domain = NULL, testlet = 
     ### existiert zwar eine Testletspalte (und der user gibt auch eine an), die hat aber fuer manche Kompetenzbereiche ausschliesslich missings. Wenn das so ist,
     ### sollen nur fuer diesen Kompetenzbereich hier keine Testlets beruecksichtigt werden. Dafuer wird INNERHALB DER SCHLEIFE allN[["testlet"]] auf NULL zurueckgesetzt
                                if (!is.null(allN[["testlet"]])) {
-                                   if(length(which(is.na(prmM[,allN[["testlet"]]]))) > 0) {
-                                      message(paste0("Found ",length(length(which(is.na(prmM[,allN[["testlet"]]])))), " missing values in '",allN[["testlet"]],"' column of 'prmNorm'. Withdraw from incorporating testlets into linking error computation."))
+                                   mrge <- merge(prmDim[,c("item", "dimension")], prmM, by="item", all=FALSE)
+                                   stopifnot(nrow(mrge)>0)
+                                   if(length(which(is.na(mrge[,allN[["testlet"]]]))) > 0) {
+                                      message(paste0("Domain '",prmDim[1,"dimension"],"': Found ",length(which(is.na(prmM[,allN[["testlet"]]]))), " missing values in '",allN[["testlet"]],"' column of 'prmNorm'. Withdraw from incorporating testlets into linking error computation."))
                                       allN[["testlet"]] <- NULL
                                    }
                                }
