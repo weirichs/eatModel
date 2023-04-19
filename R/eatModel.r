@@ -443,6 +443,15 @@ equat1pl<- function ( results , prmNorm , item = NULL, domain = NULL, testlet = 
                                }  else  {
                                    prmM<- prmNorm
                                }
+    ### Achtung! Wenn in 'prmNorm' mehrere Kompetenzbereiche equatet werden, und fuer manche Kompetenzbereiche testlets definiert sind und fuer andere nicht,
+    ### existiert zwar eine Testletspalte (und der user gibt auch eine an), die hat aber fuer manche Kompetenzbereiche ausschliesslich missings. Wenn das so ist,
+    ### sollen nur fuer diesen Kompetenzbereich hier keine Testlets beruecksichtigt werden. Dafuer wird INNERHALB DER SCHLEIFE allN[["testlet"]] auf NULL zurueckgesetzt
+                               if (!is.null(allN[["testlet"]])) {
+                                   if(length(which(is.na(prmM[,allN[["testlet"]]]))) > 0) {
+                                      message(paste0("Found ",length(length(which(is.na(prmM[,allN[["testlet"]]])))), " missing values in '",allN[["testlet"]],"' column of 'prmNorm'. Withdraw from incorporating testlets into linking error computation."))
+                                      allN[["testlet"]] <- NULL
+                                   }
+                               }
     ### items muessen unique sein
                                if ( length(prmDim[, "item"]) != length(unique(prmDim[, "item"])) ) {  stop(paste("Items are not unique for model '",as.character(d[1,"model"]),"'.\n",sep="")) }
                                eq  <- equAux ( x = prmDim[ ,c("item", "est")], y = prmM[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])] )

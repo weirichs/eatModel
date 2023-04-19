@@ -40,7 +40,7 @@ and underestimation of the true linking error.
 Optional: A data.frame with two columns. First column: testlet identifier, should be named \code{unit}.
 Second column: item identifier, should be named \code{item}. Only necessary if linking errors should be
 estimated via jackknife procedure. If items are nested in testlets, Monseur & Berezner, 2007 recommend
-jackknife proceudres for linking error estimation in order to avoid bias.
+jackknife procedures for linking error estimation in order to avoid bias.
 }
   \item{verbose}{
 %%     ~~Describe \code{file} here~~
