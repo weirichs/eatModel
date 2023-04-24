@@ -33,9 +33,9 @@ tripleEquatError <- function(e1, e2, e3, dependentDIF, testletStr, difBound, cal
       trend3221 <- el32$B.est$Mean.Mean + el21$B.est$Mean.Mean
       trend31 <- el31$B.est$Mean.Mean
     ### nicht nur wenn testletStr NULL ist, soll auf jackknife verzichtet werden, sondern auch wenn testlets missings haben oder fehlen
-    if(is.null(testletStr)) {
-     if(dependentDIF) {
-       is3221 <- intersect(el21$anchor$item, el32$anchor$item)
+    if(is.null(chk1)) {                                                         ### hier wird 'chk1' reingeschrieben statt 'testletStr', weil die oben aufgerufene
+     if(dependentDIF) {                                                         ### 'checkInputConsistency'-Funktion das Testletobjekt ggf. aendert oder auf NULL
+       is3221 <- intersect(el21$anchor$item, el32$anchor$item)                  ### setzt, wenn es bspw. missings auf der Testletvariablen gibt
        dif21 <- el21$anchor$TransfItempar.Gr1[match(is3221, el21$anchor$item)] - el21$anchor$Itempar.Gr2[match(is3221, el21$anchor$item)]
        dif32 <- el32$anchor$TransfItempar.Gr1[match(is3221, el32$anchor$item)] - el32$anchor$Itempar.Gr2[match(is3221, el32$anchor$item)]
         cov1223a <- cov(dif21, dif32)
