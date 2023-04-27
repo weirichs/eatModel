@@ -587,7 +587,9 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
        }  else  {
            if ( ncol ( refPop) != 5 ) { stop ( "Invalid 'refPop'.\n") }
        }
-       modN<- lapply(nam1, FUN = function ( mod ) {                             
+       if(!all(dims %in% refPop[,1]))  {warning(paste0("Dimension names in the 'results' object '",paste(dims, collapse="', '"), "' do not match to names in the first columns of 'refPop': '",paste(refPop[,1], collapse="', '"),"."))}
+       if(!all(dims %in% names(cuts))) {warning(paste0("Dimension names in the 'results' object '",paste(dims, collapse="', '"), "' do not match to names in the cut scores object: '",paste(names(cuts), collapse="', '"),"."))}
+       modN<- lapply(nam1, FUN = function ( mod ) {
               nam2 <- names(equatingList[["items"]][[mod]])
               dimN <- lapply(nam2, FUN = function ( dims ) {                    
                       if (isRunM) {
