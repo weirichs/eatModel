@@ -1295,7 +1295,7 @@ checkContextVars <- function(x, varname, type = c("weight", "DIF", "group", "HG"
                           if(type == "DIF" ) {
                                         if(mis > 2 && isTRUE(internal))   {cat(paste(type, " Variable '",varname,"' does not seem to be dichotomous.\n",sep=""))}
                                         y       <- paste0("V", x)               
-                                        n.werte <- lapply(itemdata, FUN=function(iii){by(iii, INDICES=list(y), FUN=table)})
+                                        n.werte <- lapply(itemdata, FUN=function(iii){by(iii, INDICES=list(y), FUN=table, simplify=FALSE)})
                                         completeMissingGroupwise <- data.frame(t(sapply(n.werte, function(ll){lapply(ll, FUN = function (uu) { length(uu[uu>0])}  )})), stringsAsFactors = FALSE)
                                         for (iii in seq(along=completeMissingGroupwise)) {
                                              missingCat.i <- which(completeMissingGroupwise[,iii] == 0)
