@@ -20,7 +20,7 @@ defineModel (dat, items, id, splittedModels = NULL,
    schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE,
    pvMethod = c("regular", "bayesian"), fitTamMmlForBayesian = TRUE,
    n.plausible=5, seed = NULL,
-   conquest.folder= system.file("exec", "console_Feb2007.exe", package = "eatModel"),
+   conquest.folder= NULL,
    constraints=c("cases","none","items"), std.err=c("quick","full","none"),
    distribution=c("normal","discrete"),
    method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo"),
@@ -197,8 +197,9 @@ see conquest manual, p. 225) or in TAM (control$seed). Note that seed only occur
   \item{conquest.folder}{
 Applies only if \code{software = "conquest"}. A character string with path and name
 of the Conquest console, for example \code{"c:/programme/conquest/console_Feb2007.exe"}.
-In package version 0.7.24 and later, conquest executable file is included in the package,
-so the user needn't to specify this argument.
+If \code{NULL}, function tries to retrieve Conquest console from
+\code{"i:/Methoden/00_conquest_console/console_Feb2007.exe"}. If the path is'nt valid,
+the user is requested to specify the path of the console.
 }
   \item{constraints}{
 A character string specifying how the scale should be constrained. Possible options

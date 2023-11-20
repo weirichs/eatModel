@@ -17,7 +17,7 @@ Optional: integer value if coefficients should be rounded.
 }
 }
 \value{
-A data frame with three columns, containing model name, dimension name, and
+A list of data frame(s) with three columns, containing model name, dimension name, and
 the corresponding regression coefficients.
 }
 \examples{

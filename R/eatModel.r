@@ -49,7 +49,7 @@ simEquiTable <- function ( anchor, mRef, sdRef, addConst = 500, multConst = 100,
 
 
 getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c("pv", "wle", "eap"), q3MinObs = 0, q3MinType = c("singleObs", "marginalSum"), omitFit = FALSE, omitRegr = FALSE, omitWle = FALSE, omitPV = FALSE, abs.dif.bound = 0.6, sig.dif.bound = 0.3, p.value = 0.9,
-              nplausible = NULL, ntheta = 2000, normal.approx = FALSE, samp.regr = FALSE, theta.model=FALSE, np.adj=8, group = NULL, beta_groups = TRUE, level = .95, n.iter = 1000, n.burnin = 500, adj_MH = .5, adj_change_MH = .05, refresh_MH = 50, accrate_bound_MH = c(.45, .55),	sample_integers=FALSE, theta_init=NULL, print_iter = 20, verbose = TRUE, calc_ic=TRUE, omitUntil=1) {
+              nplausible = NULL, ntheta = 2000, normal.approx = FALSE, samp.regr = FALSE, theta.model=FALSE, np.adj=8, group = NULL, beta_groups = TRUE, level = .95, n.iter = 1000, n.burnin = 500, adj_MH = .5, adj_change_MH = .05, refresh_MH = 50, accrate_bound_MH = c(.45, .55),	sample_integers=FALSE, theta_init=NULL, print_iter = 20, verbose = TRUE, calc_ic=TRUE, omitUntil=1, seed=NA) {
             q3MinType<- match.arg(q3MinType)
             q3theta  <- match.arg(q3theta )
             if(inherits(runModelObj, "runMultiple")) {                          
@@ -589,7 +589,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
        }
        if(!all(dims %in% refPop[,1]))  {warning(paste0("Dimension names in the 'results' object '",paste(dims, collapse="', '"), "' do not match to names in the first columns of 'refPop': '",paste(refPop[,1], collapse="', '"),"."))}
        if(!all(dims %in% names(cuts))) {warning(paste0("Dimension names in the 'results' object '",paste(dims, collapse="', '"), "' do not match to names in the cut scores object: '",paste(names(cuts), collapse="', '"),"."))}
-       modN<- lapply(nam1, FUN = function ( mod ) {
+       modN<- lapply(nam1, FUN = function ( mod ) {                             
               nam2 <- names(equatingList[["items"]][[mod]])
               dimN <- lapply(nam2, FUN = function ( dims ) {                    
                       if (isRunM) {
@@ -930,15 +930,41 @@ doAufb <- function ( m, matchCall, anf, verbose, dir, multicore ) {
           }                                                                     
           return(ret) }                                                         
 
+
+identifyConquestFolder <- function () {
+    cf <- system.file("extdata", "console_Feb2007.exe", package = "eatModel")
+    if ( nchar(cf)==0) {cf <- system.file("exec", "console_Feb2007.exe", package = "eatModel")} else{return(cf)}
+    if ( nchar(cf)==0) {
+         root <- system.file(package = "eatModel")
+         if ( !file.exists(file.path(root, "exec"))) {dir.create(file.path(root, "exec"))}
+         if ( !file.exists( system.file("exec", "console_Feb2007.exe", package = "eatModel") )) {
+                if ( !file.exists("i:/Methoden/00_conquest_console/console_Feb2007.exe") ) {
+                     packageStartupMessage("Cannot find conquest 2007 executable file. Please choose manually.")
+                     fname <- file.choose()
+                }  else  {
+                     fname <- "i:/Methoden/00_conquest_console/console_Feb2007.exe"
+                }
+                if ( nchar(fname)>0) { foo <- file.copy(from = fname, to = file.path(root, "exec", "console_Feb2007.exe") ) }
+         }
+    } else {
+       return(cf)
+    }
+    return(file.path(root, "exec", "console_Feb2007.exe"))}
+
+
 defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL", "2PL", "PCM", "PCM2", "RSM", "GPCM", "2PL.groups", "GPCM.design", "3PL"),
                qMatrix=NULL, DIF.var=NULL, HG.var=NULL, group.var=NULL, weight.var=NULL, anchor = NULL, domainCol=NULL, itemCol=NULL, valueCol=NULL,check.for.linking = TRUE,
                minNperItem = 50, removeMinNperItem = FALSE, boundary = 6, remove.boundary = FALSE, remove.no.answers = TRUE, remove.no.answersHG = TRUE, remove.missing.items = TRUE, remove.constant.items = TRUE,
                remove.failures = FALSE, remove.vars.DIF.missing = TRUE, remove.vars.DIF.constant = TRUE, verbose=TRUE, software = c("conquest","tam"), dir = NULL,
-               analysis.name, schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE, pvMethod = c("regular", "bayesian"), fitTamMmlForBayesian = TRUE, n.plausible=5, seed = NULL, conquest.folder=system.file("exec", "console_Feb2007.exe", package = "eatModel"),
+               analysis.name, schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE, pvMethod = c("regular", "bayesian"), fitTamMmlForBayesian = TRUE, n.plausible=5, seed = NULL, conquest.folder=NULL,
                constraints=c("cases","none","items"),std.err=c("quick","full","none"), distribution=c("normal","discrete"), method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo"),
                n.iterations=2000,nodes=NULL, p.nodes=2000, f.nodes=2000,converge=0.001,deviancechange=0.0001, equivalence.table=c("wle","mle","NULL"), use.letters=FALSE,
                allowAllScoresEverywhere = TRUE, guessMat = NULL, est.slopegroups = NULL, fixSlopeMat = NULL, slopeMatDomainCol=NULL, slopeMatItemCol=NULL, slopeMatValueCol=NULL,
                progress = FALSE, Msteps = NULL, increment.factor=1 , fac.oldxsi=0, export = list(logfile = TRUE, systemfile = FALSE, history = TRUE, covariance = TRUE, reg_coefficients = TRUE, designmatrix = FALSE) )   {
+                  software <- match.arg(arg = software, choices = c("conquest","tam"))
+                  if ( software == "conquest" && is.null(conquest.folder) ) {   
+                       conquest.folder <- identifyConquestFolder()
+                  }
                   ismc <- attr(dat, "multicore")                                
                   dat  <- eatTools::makeDataFrame(dat, name = "dat")
                   if(!is.null(splittedModels)) {
@@ -1017,7 +1043,6 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                      if ( is.null(Msteps) ) {                                   
                           if ( irtmodel == "3PL" ) { Msteps <- 10 } else { Msteps <- 4 }
                      }
-                     software <- match.arg(software)
                      method   <- match.arg(method)
                      pvMethod <- match.arg(pvMethod)
                      if(software == "conquest") {
@@ -1143,9 +1168,8 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                           gdata::write.fwf(daten , file.path(dir,paste(analysis.name,".dat",sep="")), colnames = FALSE,rownames = FALSE, sep="",quote = FALSE,na=".", width=fixed.width)
                           colnames(lab) <- c("===>","item")                     
                           write.table(lab,file.path(dir,paste(analysis.name,".lab",sep="")),col.names = TRUE,row.names = FALSE, dec = ",", sep = " ", quote = FALSE)
-                          if(!is.null(conquest.folder))     {
-                             batch <- paste( normalize.path(conquest.folder),paste(analysis.name,".cqc",sep=""), sep=" ")
-                             write(batch, file.path(dir,paste(analysis.name,".bat",sep="")))}
+                          batch <- paste( normalize.path(conquest.folder),paste(analysis.name,".cqc",sep=""), sep=" ")
+                          write(batch, file.path(dir,paste(analysis.name,".bat",sep="")))
                           foo <- gen.syntax(Name=analysis.name, daten=daten, all.Names = cbc[["allNam"]], namen.all.hg = cbc[["namen.all.hg"]], all.hg.char = all.hg.char, var.char= max(var.char), model=qMatrix, anchored=anchor, pfad=dir, n.plausible=n.plausible, compute.fit = compute.fit,
                                             constraints=constraints, std.err=std.err, distribution=distribution, method=met[["method"]], n.iterations=n.iterations, nodes=met[["nodes"]], p.nodes=p.nodes, f.nodes=f.nodes, converge=converge,deviancechange=deviancechange, equivalence.table=equivalence.table, use.letters=use.letters, model.statement=model.statement, conquest.folder = conquest.folder, allowAllScoresEverywhere = allowAllScoresEverywhere, seed = seed, export = export)
                           if(!is.null(anchor))  {
@@ -1267,7 +1291,7 @@ checkContextVars <- function(x, varname, type = c("weight", "DIF", "group", "HG"
                         if(length(table(x)) < 12 ) { cat(paste("    Values of '", varname, "' are: ",paste(names(table(x)), collapse = ", "),"\n",sep=""))}
                      }
                      toRemove<- NULL
-                     mis     <- length(table(x))
+                     mis     <- length(unique(x))
                      if(mis == 0 )  {
                         if ( suppressAbort == FALSE ) {
                              stop(paste("Error: ",type," Variable '",varname,"' without any values.",sep=""))
@@ -1378,7 +1402,7 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
                    }
                }
             }
-            if(length(allNam$group.var)>0)  {
+            if(length(allNam[["group.var"]])>0)  {
                 group.info <- lapply(allNam$group.var, FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="group", itemdata=dat[,allNam[["variablen"]], drop = FALSE], internal=TRUE)})
                 for ( i in 1:length(group.info)) { dat[, group.info[[i]]$varname ] <- group.info[[i]]$x }
                 weg.group  <- unique(unlist(lapply(group.info, FUN = function ( y ) {y$weg})))
@@ -1386,8 +1410,8 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
                     cat(paste("Remove ",length(weg.group)," cases with missings on group variable.\n",sep=""))
                 }
             }
-            if(length(allNam$DIF.var)>0)  {
-                dif.info <- lapply(allNam$DIF.var, FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="DIF", itemdata=dat[,allNam[["variablen"]], drop = FALSE], internal = TRUE)})
+            if(length(allNam[["DIF.var"]])>0)  {
+                dif.info <- lapply(allNam[["DIF.var"]], FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="DIF", itemdata=dat[,allNam[["variablen"]], drop = FALSE], internal = TRUE)})
                 if ( remove.vars.DIF.missing == TRUE ) {
                      for ( uu in 1:length(dif.info)) { if (length(dif.info[[uu]]$wegDifMis) >0) {
                            cat(paste("Remove item(s) which only have missing values in at least one group of DIF variable '",dif.info[[uu]]$varname,"'.\n", sep=""))
@@ -1406,9 +1430,9 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
                     cat(paste("Remove ",length(weg.dif)," cases with missings on DIF variable.\n",sep=""))
                 }
             }
-            if(length(allNam$weight.var)>0)  {
-                if(length(allNam$weight.var)!=1) {stop("Use only one weight variable.")}
-                weight.info <- lapply(allNam$weight.var, FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="weight", itemdata=dat[,allNam[["variablen"]], drop = FALSE], internal = TRUE)})
+            if(length(allNam[["weight.var"]])>0)  {
+                if(length(allNam[["weight.var"]])!=1) {stop("Use only one weight variable.")}
+                weight.info <- lapply(allNam[["weight.var"]], FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="weight", itemdata=dat[,allNam[["variablen"]], drop = FALSE], internal = TRUE)})
                 for ( i in 1:length(weight.info)) { dat[, weight.info[[i]]$varname ] <- weight.info[[i]]$x }
                 weg.weight  <- unique(unlist(lapply(weight.info, FUN = function ( y ) {y$weg})))
                 if(length(weg.weight)>0) {                                      
@@ -1416,7 +1440,7 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
                 }
 
             }                                                                   
-            namen.all.hg <- unique(c(allNam$HG.var,allNam$group.var,allNam$DIF.var,allNam$weight.var))
+            namen.all.hg <- unique(c(allNam[["HG.var"]],allNam[["group.var"]],allNam[["DIF.var"]],allNam[["weight.var"]]))
             weg.all <- unique(c(weg.dif, weg.hg, weg.weight, weg.group))
             perExHG <- NULL
             if(length(weg.all)>0) {
@@ -1770,8 +1794,7 @@ getConquestAdditionalTerms <- function(model.name, qMatrix, shw, shwFile){
                    if(length(cols) == 1 ) {
                       var1 <- paste( cols, shw[[i]][,cols],sep="_")
                    } else {
-                      var1 <- unlist(apply(shw[[i]][,cols], MARGIN=1, FUN = function ( y ) {
-                              paste ( unlist(lapply ( 1:length(y), FUN = function ( yy ) { paste(names(y)[yy], y[yy],sep="_")})), sep="", collapse = "_X_")  }))
+                      var1 <- unlist(apply(shw[[i]][,cols], MARGIN=1, FUN = function ( y ) {paste ( unlist(lapply ( 1:length(y), FUN = function ( yy ) { paste(names(y)[yy], y[yy],sep="_")})), sep="", collapse = "_X_")  }))
                    }
                    if(ncol(qMatrix) != 2 ){
                       warning(paste0("Cannot identify the group the term '",i,"' in file '",shwFile,"' belongs to. Insert 'NA' to the 'group' column."))
@@ -2067,9 +2090,9 @@ renameDifParameters <- function(dat, qmatLong) {
          dat[,"var1"]     <- car::recode(dat[,"var1"], recSt)
          return(dat)}
 
-getTamInfit    <- function(runModelObj, qL, qMatrix, leseAlles, omitFit) {
+getTamInfit    <- function(runModelObj, qL, qMatrix, leseAlles, omitFit, seed) {
          if(leseAlles == FALSE || omitFit == TRUE ) {return(NULL)}
-         infit<- tam.fit(runModelObj, progress=FALSE)                           
+         infit<- tam.fit(runModelObj, progress=FALSE, seed=seed)                
          fits <- merge(infit[["itemfit"]], qL[,-match("value", colnames(qL))],  by.x = "parameter", by.y = colnames(qMatrix)[1], all = TRUE)
          if ( is.null(attr(runModelObj, "all.Names")[["DIF.var"]])) {           
               ret  <- rbind(data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = fits[,"parameter"], var2 = NA , type = "fixed", indicator.group = "items", group = fits[,"dimensionName"], par = "est",  derived.par = "infit", value = fits[,"Infit"], stringsAsFactors = FALSE),
@@ -2207,12 +2230,13 @@ getTamQ3 <- function(runModelObj, leseAlles, shw1, Q3, q3MinObs, q3MinType){
 
 
 getTamResults     <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV, nplausible , ntheta , normal.approx, samp.regr, theta.model, np.adj, Q3=Q3, q3MinObs =  q3MinObs, q3MinType = q3MinType,
-                     pvMethod , group, beta_groups , level , n.iter , n.burnin, adj_MH , adj_change_MH , refresh_MH, accrate_bound_MH,	sample_integers, theta_init, print_iter , verbose, calc_ic) {
+                     pvMethod , group, beta_groups , level , n.iter , n.burnin, adj_MH , adj_change_MH , refresh_MH, accrate_bound_MH,	sample_integers, theta_init, print_iter , verbose, calc_ic, seed) {
          qMatrix<- attr(runModelObj, "qMatrix")
          qL     <- reshape2::melt(qMatrix, id.vars = colnames(qMatrix)[1], variable.name = "dimensionName", na.rm=TRUE)
          qL     <- qL[which(qL[,"value"] != 0 ) , ]
          varName<- colnames(qMatrix)[1]                                         
          if( omitRegr == FALSE && !inherits(runModelObj, "tamBayes")) {
+             beg <- Sys.time()
              txt <- capture.output ( regr <- tam.se(runModelObj))               
              stopifnot ( nrow(regr$beta) == ncol(attr(runModelObj, "Y") )+1)    
              rownames(regr$beta) <- c("(Intercept)", colnames(attr(runModelObj, "Y")))
@@ -2226,11 +2250,14 @@ getTamResults     <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV, n
          ret    <- rbind(ret, getTamDescriptives(runModelObj=runModelObj, qL=qL, qMatrix=qMatrix, leseAlles = leseAlles))
          ret    <- rbind(ret, getTamDiscrim(runModelObj=runModelObj, qL=qL, qMatrix = qMatrix, leseAlles = leseAlles))
          ret    <- rbind(ret, getTam2plDiscrim(runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles, regr = regr, omitRegr=omitRegr))
-         ret    <- rbind(ret, getTamInfit(runModelObj=runModelObj, qL=qL, qMatrix = qMatrix, leseAlles = leseAlles, omitFit = omitFit))
+         beg    <- Sys.time()
+         ret    <- rbind(ret, getTamInfit(runModelObj=runModelObj, qL=qL, qMatrix = qMatrix, leseAlles = leseAlles, omitFit = omitFit, seed=seed))
          ret    <- rbind(ret, getTamPopPar(runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles))
          ret    <- rbind(ret, getTamRegPar(runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles, omitRegr = omitRegr, regr=regr))
          ret    <- rbind(ret, getTamModInd(runModelObj=runModelObj, leseAlles = leseAlles))
+         beg    <- Sys.time()
          ret    <- rbind(ret, getTamWles(runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles, omitWle = omitWle))
+         beg    <- Sys.time()
          tamArg <- as.list(match.call(definition = getTamResults))
          weg    <- which(names(tamArg) %in% c("tamobj", "Y", "runModelObj", "qMatrix", "leseAlles", "omitPV", "pvMethod", "omitFit", "omitRegr", "omitWle"))
          if ( length(weg)>0) {tamArg <- tamArg[-weg]}
@@ -2286,22 +2313,31 @@ regcoefFromRes <- function (resultsObj, digits = NULL){
               return(NULL)
           }  else  {
               re <- resultsObj[regRo,]
-              re <- by(re, INDICES = re[,"model"], FUN = function (m) {
-                    mw <- reshape2::dcast(m, var1~group+derived.par, value.var="value")
-                    colnames(mw) <- gsub("_NA$", "_est", colnames(mw))          
-                    do <- unique(eatTools::halveString(colnames(mw)[-1], "_", first=FALSE)[,1])
-                    for ( u in do) {                                            
-                         mw[,paste0(u, "_xp")]   <- 2*(1-pnorm(abs(mw[,paste0(u,"_est")] / mw[,paste0(u,"_se")])))
-                         mw[,paste0(u, "_ysig")] <- eatTools::num.to.cat(mw[,paste0(u, "_xp")], cut.points = c(0.001, 0.01, 0.05), cat.values = c("***", "**", "**", ""))
-                    }
-                    mw <- mw[,c(colnames(mw)[1], sort(colnames(mw)[-1]))]
-                    colnames(mw) <- gsub("_ysig$", "_sig", gsub("_xp$", "_p", colnames(mw)))
-                    if(length(do) ==1) {                                        
-                       colnames(mw) <- gsub(paste0("^", do, "_"), "",colnames(mw))
-                    }
+              re <- by(re, INDICES = re[,c("model", "group")], FUN = function (m) {
+                    m[,"derived.par"] <- car::recode(m[,"derived.par"], "NA='est'")
+                    mw <- reshape2::dcast(m, var1~derived.par, value.var="value")
+                    mw[,"p"]   <- 2*(1-pnorm(abs(mw[,"est"] / mw[,"se"])))
+                    mw[,"sig"] <- eatTools::num.to.cat(mw[,"p"], cut.points = c(0.001, 0.01, 0.05, 0.1), cat.values = c("***", "**", "**", ".", ""))
                     colnames(mw)[1] <- "parameter"
                     if(!is.null(digits)) {mw <- eatTools::roundDF(mw, digits =digits)}
-                    return(mw)})
+                    return(mw)}, simplify=FALSE)
+              nam<- eatTools::facToChar(expand.grid(attr(re, "dimnames")[["model"]], attr(re, "dimnames")[["group"]]))
+              names(re) <- paste0("model: '",nam[,1],"', group: '",nam[,2],"'") 
+              re <- re[lengths(re) != 0]                                        
+              return(re)                                                        
+          }}
+
+correlationFromRes <- function (resultsObj, digits = NULL){
+          corRo<- which(resultsObj[,"par"] == "correlation")
+          if(length(corRo)==0) {
+              cat("No correlation coefficients found in results object.\n")
+              return(NULL)
+          }  else  {
+              re <- resultsObj[corRo,]
+              re <- by(re, INDICES = re[,"model"], FUN = function (m) {
+                    mw <- reshape2::dcast(m, var1~var2, value.var="value")
+                    if(!is.null(digits)) {mw <- eatTools::roundDF(mw, digits =digits)}
+                    return(mw)}, simplify=FALSE)
               return(re)
           }}
 
@@ -2418,13 +2454,14 @@ itemFromRes<- function ( resultsObj ) {
           }))
           return (res )}
 
-q3FromRes<- function ( resultsObj, out = c("wide", "long" )) {
+q3FromRes<- function ( resultsObj, out = c("wide", "long" ), triangular = FALSE ) {
        out   <- match.arg(arg = out, choices = c("wide", "long" ))
        selM  <- by(data = resultsObj, INDICES = resultsObj[,"model"], FUN = function ( mr ) {
                 sel  <- mr[which(mr[,"par"] == "q3"),]
                 if ( nrow(sel)>0) {
                      if ( out == "wide") {
                           sel  <- reshape2::dcast( sel, var1~var2, value.var = "value")
+                          if (triangular ) {sel <- eatTools::makeTria(sel)}
                      }  else  {
                           sel  <- sel[,c("var1", "var2", "value")]
                      }
@@ -2589,7 +2626,7 @@ get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.d
                           namen<- c(namen, rep("add.column",referenzlaenge-length(namen) )) }}
                     input.sel  <- t(sapply(input.sel, FUN=function(ii){ c(ii, rep(NA,referenzlaenge-length(ii))) }))
                     colnames(input.sel) <- namen                                
-                    input.sel  <- suppressWarnings(eatTools::asNumericIfPossible(data.frame( gsub("\\*","",input.sel), stringsAsFactors = FALSE), force.string = FALSE))
+                    input.sel  <- suppressWarnings(eatTools::asNumericIfPossible(data.frame( gsub("NNA", NA, gsub("NA", NA, gsub("\\*","",input.sel))), stringsAsFactors = FALSE), force.string = FALSE))
                     results.sel<- data.frame(input.sel,filename=file,stringsAsFactors = FALSE)
                     if(is.na(as.numeric(results.sel$ESTIMATE[1]))) {cat(paste("'ESTIMATE' column in Outputfile for term '",all.terms[length(all.terms)],"' in file: '",file,"' does not seem to be a numeric value. Please check!\n",sep=""))}
                     if(!missing(dif.term)) {                                    
@@ -2935,37 +2972,12 @@ gen.syntax     <- function(Name,daten, all.Names, namen.all.hg = NULL, all.hg.ch
                    if(!all(sapply(export, inherits, what="logical"))) {stop("All list elements of argument 'export' have to be of class 'logical'.")}
                    export <- as.list(userSpecifiedList ( l = export, l.default = export.default ))
                    weg <- names(export[which(export == FALSE)])
-                   if(length(weg)>0)    {
+                   if(length(weg)>0)    {                                       
                       for (ii in seq(along=weg) ) {
                            ind.x <- grep(paste("export ", weg[ii], sep=""), syntax)
                            stopifnot(length(ind.x) == 1)
                            syntax <- syntax[-ind.x]}}
-                   if(export["history"] == TRUE)  {
-                      if(!is.null(conquest.folder))  {
-                         checkWhetherConquestExeExists(pkgname="eatModel")
-                         cq.version <- getConquestVersion( path.conquest = conquest.folder, path.temp = pfad)
-                         if(cq.version < date::as.date("1Jan2007") )   {
-   									      ind.3 <- grep("^export history",syntax)
-                           stopifnot(length(ind.3) == 1 )
-                           syntax <- syntax[-ind.3]
-                         }
-                      }
-                      if(is.null(conquest.folder)) {warning("Conquest folder was not specified. Unable to detect Conquest version. When you propose to use 2005 version,\nhistory statement will invoke to crash Conquest analysis. Please remove history statement manually if you work with 2005 version.")} }
                    write(syntax,file.path(pfad,paste(Name,".cqc",sep="")),sep="\n")}
-
-checkWhetherConquestExeExists <- function (pkgname) {
-     root <- system.file(package = pkgname)
-     if ( !file.exists(file.path(root, "exec"))) {dir.create(file.path(root, "exec"))}
-     if ( !file.exists( system.file("exec", "console_Feb2007.exe", package = pkgname) )) {
-           if ( !file.exists("i:/Methoden/00_conquest_console/console_Feb2007.exe") ) {
-               packageStartupMessage("Cannot find conquest executable file. Please choose manually.")
-               fname <- file.choose()
-           }  else  {
-               fname <- "i:/Methoden/00_conquest_console/console_Feb2007.exe"
-           }
-           if ( nchar(fname)>0) { foo <- file.copy(from = fname, to = file.path(root, "exec", "console_Feb2007.exe") ) }
-     }
-}
 
 anker <- function(lab, prm, qMatrix, domainCol, itemCol, valueCol, multicore )  {
                   stopifnot(ncol(lab)==2)
@@ -3278,7 +3290,15 @@ plotDevianceConquest <- function ( logFile, omitUntil = 1, reverse = TRUE, chang
            if ( inherits(logFile, "character")) {lf <- logFile}  else  { lf <- file.path(logFile[["path"]], paste0(logFile[["analysis.name"]], ".log"))}
            input<- scan(lf,what="character",sep="\n",quiet=TRUE)
            ind  <- grep("eviance=", input)
-           mat  <- data.frame ( iter = 1:length(ind), as.numeric(eatTools::crop(substring(input[ind], 13))))
+           dev  <- unlist(lapply(input[ind], FUN = function (x) {               
+                   brace <- grep("\\(", x)                                      
+                   if(length(brace)>0) {
+                       weg <- grep("\\(", unlist(strsplit(x, "")))              
+                       x   <- substr(x, 1, weg-1)
+                   }
+                   return(x)}))
+           dev  <- data.frame ( lapply(data.frame ( eatTools::halveString(dev, "\\."), stringsAsFactors = FALSE), eatTools::removeNonNumeric), stringsAsFactors = FALSE)
+           mat  <- data.frame ( iter = 1:length(ind), dev = as.numeric(paste(dev[,1], dev[,2], sep=".")), stringsAsFactors = FALSE)
            if(omitUntil>0)  {
               dc<- mat[-c(1:omitUntil),2]                                       
            } else {
