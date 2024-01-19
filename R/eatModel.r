@@ -96,18 +96,18 @@ getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c(
                     allN<- runModelObj[["all.Names"]]                           
                }  else  {                                                       
                     isTa<- TRUE                                                 
-                    if ( isTRUE(Q3) ) {
-                        if ( ncol ( attr(runModelObj, "qMatrix")) !=2 ) {
+                    if ( Q3 ) {
+                        if ( ncol ( attr(runModelObj, "defineModelObj")[["qMatrix"]]) !=2 ) {
                             cat("Q3 is only available for unidimensional models. Estimation will be skipped.\n")
                             Q3 <- FALSE
                         }
                     }
-                    if(!is.null(nplausible)) { attr(runModelObj, "n.plausible") <- nplausible }  else  { nplausible <- attr(runModelObj, "n.plausible") }
-                    do    <- paste ( "res <- getTamResults ( ", paste(names(formals(getTamResults)), car::recode(names(formals(getTamResults)),"'pvMethod'='attr(runModelObj, \"pvMethod\")'"),  sep =" = ", collapse = ", "), ")",sep="")
+                    if(!is.null(nplausible)) { attr(runModelObj, "defineModelObj")[["n.plausible"]] <- nplausible }  else  { nplausible <- attr(runModelObj, "defineModelObj")[["n.plausible"]] }
+                    do    <- paste ( "res <- getTamResults ( ", paste(names(formals(getTamResults)), car::recode(names(formals(getTamResults)),"'pvMethod'='attr(runModelObj, \"defineModelObj\")[[\"pvMethod\"]]'"),  sep =" = ", collapse = ", "), ")",sep="")
                     eval(parse(text=do))
-                    dir <- attr(runModelObj, "dir")                             
-                    name<- attr(runModelObj, "analysis.name")                   
-                    allN<- attr(runModelObj, "all.Names")                       
+                    dir <- attr(runModelObj, "defineModelObj")[["dir"]]         
+                    name<- attr(runModelObj, "defineModelObj")[["analysis.name"]]
+                    allN<- attr(runModelObj, "defineModelObj")[["all.Names"]]   
                }
                if(!is.null(res)) {                                              
                     stopifnot ( length(unique(res[,"model"])) == 1)             
@@ -121,7 +121,13 @@ getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c(
                     res <- plyr::rbind.fill ( res, data.frame ( res[1,c("model", "source")], alln, stringsAsFactors = FALSE) )
                     difS<- list (abs.dif.bound = abs.dif.bound, sig.dif.bound = sig.dif.bound, p.value = p.value)
                     resD<- data.frame ( res[1,c("model", "source")], type = "tech", par = "dif", derived.par = names(difS), value = unlist(difS), stringsAsFactors = FALSE)
-                    res <- plyr::rbind.fill ( res, resD )
+                    if ( inherits(runModelObj, "runConquest")) {                
+                         resN<- data.frame ( res[1,c("model", "source")], type = "tech", par = c("method",rep("nodes", 3)), derived.par = c(runModelObj[["method"]],"nodes", "p.nodes", "f.nodes"), value = c(1,runModelObj[["nodes"]], runModelObj[["p.nodes"]], runModelObj[["f.nodes"]]), stringsAsFactors = FALSE)
+                    }  else  {                                                  
+                         nNod<- length(attr(runModelObj, "defineModelObj")[["control"]][["nodes"]])
+                         resN<- data.frame ( res[1,c("model", "source")], type = "tech", par = c("QMC",rep("nodes", 1+nNod)), derived.par = c(NA,rep("discrete.theta",nNod), "snodes"), value = c(attr(runModelObj, "defineModelObj")[["control"]][["QMC"]],attr(runModelObj, "defineModelObj")[["control"]][["nodes"]], attr(runModelObj, "defineModelObj")[["control"]][["snodes"]]), stringsAsFactors = FALSE)
+                    }
+                    res <- plyr::rbind.fill ( res, resD, resN )
                     id  <- unique(res[intersect(which(res[,"type"] == "tech"), which(res[,"par"] == "ID")),"derived.par"])
                    if(!is.null(dir)) {
                         stopifnot(length(id)==1)
@@ -778,7 +784,7 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
                 attr(res, "split") <- attr(defineModelObj, "split")
                 return(res)
             } else {                                                            
-                if(inherits(defineModelObj, "defineConquest")) {                 
+                if(inherits(defineModelObj, "defineConquest")) {                
                    oldPfad <- getwd()
                    setwd(defineModelObj$dir)
                    suppressWarnings(system(paste(defineModelObj$conquest.folder," ",defineModelObj$input,sep=""),invisible=!show.dos.console,show.output.on.console=show.output.on.console, wait=wait) )
@@ -825,18 +831,10 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
                           mod  <- tam.mml.mfr(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], facets = facetten, constraint = defineModelObj[["constraint"]], formulaA = formel, pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = defineModelObj[["anchor"]], irtmodel = defineModelObj[["irtmodel"]], pweights = wgt, control = defineModelObj[["control"]], group=group)
                      }  else  {
                           mod  <- tamObjForBayesianPV (anchor = defineModelObj[["anchor"]], qMatrix = defineModelObj[["qMatrix"]], resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y=Y, slopeMatrix = defineModelObj[["fixSlopeMat"]])
-                     }
-                   }
-                   attr(mod, "qMatrix")      <- defineModelObj[["qMatrix"]]     
-                   attr(mod, "n.plausible")  <- defineModelObj[["n.plausible"]] 
-                   attr(mod, "dir")          <- defineModelObj[["dir"]]
-                   attr(mod, "analysis.name")<- defineModelObj[["analysis.name"]]
-                   attr(mod, "all.Names")    <- defineModelObj[["all.Names"]]
-                   attr(mod, "deskRes")      <- defineModelObj[["deskRes"]]
-                   attr(mod, "discrim")      <- defineModelObj[["discrim"]]
-                   attr(mod, "irtmodel")     <- defineModelObj[["irtmodel"]]
-                   attr(mod, "pvMethod")     <- defineModelObj[["pvMethod"]]
-                   attr(mod, "Y")            <- Y
+                     }                                                          
+                   }                                                            
+                   attr(mod, "defineModelObj") <- defineModelObj[-match("daten", names(defineModelObj))]
+                   attr(mod, "Y")              <- Y
                    return(mod)  }  }   }
 
 doAufb <- function ( m, matchCall, anf, verbose, dir, multicore ) {
@@ -1125,7 +1123,8 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                           if(length(no.number)>0) {var.char[no.number] <- 1}    
                           if(use.letters == TRUE)   {                           
                              rec.statement <- paste(0:25,"='",LETTERS,"'",sep="",collapse="; ")
-                             for (i in cbc[["allNam"]][["variablen"]])  {             
+                             daten.temp <- cpsc[["dat"]]                        
+                             for (i in cbc[["allNam"]][["variablen"]])  {       
                                   cpsc[["dat"]][,i] <- car::recode(cpsc[["dat"]][,i], rec.statement)}
                              var.char <- rep(1,length(cbc[["allNam"]][["variablen"]]))}
                       }
@@ -1136,8 +1135,11 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                            cat ( paste ( "Following ",length(crit), " items with less than ",minNperItem," item responses:\n",sep=""))
                            options(width=1000)
                            print(deskRes[crit,-match(c("item.nr", "Label", "KB", "Codes", "Abs.Freq", "Rel.Freq"), colnames(deskRes))], digits = 3)
+                      }                                                         
+                      if(inherits(try(discrim <- item.diskrim(daten,match(cbc[["allNam"]][["variablen"]], colnames(daten)))  ),"try-error"))  {
+                           discrim <- item.diskrim(daten.temp,match(cbc[["allNam"]][["variablen"]], colnames(daten.temp)))
+                           rm(daten.temp)
                       }
-                      discrim <- item.diskrim(daten,match(cbc[["allNam"]][["variablen"]], colnames(daten)))
                       if ( length ( cbc[["allNam"]][["schooltype.var"]] ) > 0 ) { 
                            deskS <- by ( data = cpsc[["dat"]], INDICES = cpsc[["dat"]][, cbc[["allNam"]][["schooltype.var"]] ], FUN = function ( st ) {
                                     drst <- desk.irt(daten = st, itemspalten = match(cbc[["allNam"]][["variablen"]], colnames(st)), percent = TRUE)
@@ -1180,7 +1182,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                              do <- file.rename(from = file.path(dir, paste(analysis.name,".log",sep="")), to = file.path(dir, paste(analysis.name,"_old.log",sep="")))
                           }
                           options(scipen = original.options); flush.console()   
-                          ret <- list ( software = software, input = paste("\"", file.path(dir, paste(analysis.name,"cqc",sep=".")), "\"", sep=""), conquest.folder = paste("\"", conquest.folder, "\"", sep=""), dir=dir, analysis.name=analysis.name, model.name = analysis.name, qMatrix=qMatrix, all.Names=cbc[["allNam"]], deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]], perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], daten=daten)
+                          ret <- list ( software = software, input = paste("\"", file.path(dir, paste(analysis.name,"cqc",sep=".")), "\"", sep=""), conquest.folder = paste("\"", conquest.folder, "\"", sep=""), dir=dir, analysis.name=analysis.name, model.name = analysis.name, qMatrix=qMatrix, all.Names=cbc[["allNam"]], deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]], perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], daten=daten, method=met[["method"]], nodes=met[["nodes"]], p.nodes=p.nodes, f.nodes=f.nodes)
                           class(ret) <-  c("defineConquest", "list")
                           return ( ret )  }
                       if ( software == "tam" )   {
@@ -1789,7 +1791,7 @@ getConquestAdditionalTerms <- function(model.name, qMatrix, shw, shwFile){
          for ( i in names(shw)[read] ) {
                cols <- unlist(isLetter(i))                                      
                if( !all(cols %in% colnames(shw[[i]])) ) {
-                   cat(paste("Cannot identify variable identifier for term '",i,"' in file '",shwFile,"'. Skip procedure.\n",sep=""))
+                   cat(paste("Cannot identify variable identifier for additional term '",i,"' in file '",shwFile,"'. Skip procedure.\n",sep=""))
                }  else  {
                    if(length(cols) == 1 ) {
                       var1 <- paste( cols, shw[[i]][,cols],sep="_")
@@ -2002,15 +2004,15 @@ getConquestResults<- function(path, analysis.name, model.name, qMatrix, all.Name
          return(ret)}
 
 getTamItempars    <- function(runModelObj, qL, qMatrix, leseAlles) {
-         if(leseAlles == FALSE) {return(NULL)}
-         if ( is.null(attr(runModelObj, "all.Names")[["DIF.var"]])) {           
+         if(leseAlles == FALSE) {return(NULL)}                                  
+         if ( is.null(attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.var"]])) {
               xsis <- merge(data.frame ( item = rownames(runModelObj[["xsi"]]), runModelObj[["xsi"]], stringsAsFactors = FALSE), qL[,-match("value", colnames(qL))],  by.x = "item", by.y = colnames(qMatrix)[1], all = TRUE)
          }  else  {                                                             
               xsis <- mergeDimensionIfDIF (dat = data.frame ( item = rownames(runModelObj[["xsi"]]), runModelObj[["xsi"]], stringsAsFactors = FALSE), qmatLong = qL[,-match("value", colnames(qL))], datMergingVar="item", remove = "toMerge")
          }
-         shw1 <- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = xsis[,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = xsis[,"dimensionName"], par = "est",  derived.par = NA, value = xsis[,"xsi"], stringsAsFactors = FALSE)
-         shw2 <- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = xsis[,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = xsis[,"dimensionName"], par = "est",  derived.par = "se", value = xsis[,"se.xsi"], stringsAsFactors = FALSE)
-         if ( !is.null(attr(runModelObj, "all.Names")[["DIF.var"]])) {          
+         shw1 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = xsis[,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = xsis[,"dimensionName"], par = "est",  derived.par = NA, value = xsis[,"xsi"], stringsAsFactors = FALSE)
+         shw2 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = xsis[,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = xsis[,"dimensionName"], par = "est",  derived.par = "se", value = xsis[,"se.xsi"], stringsAsFactors = FALSE)
+         if ( !is.null(attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.var"]])) {          
                shw1 <- renameDifParameters (dat=shw1, qmatLong = qL[,-match("value", colnames(qL))])
                shw2 <- renameDifParameters (dat=shw2, qmatLong = qL[,-match("value", colnames(qL))])
          }
@@ -2021,27 +2023,27 @@ getTamItempars    <- function(runModelObj, qL, qMatrix, leseAlles) {
          return(list ( shw1=shw1, shw2=shw2))}
 
 getTamDescriptives    <- function(runModelObj, qL, qMatrix, leseAlles) {
-         if(leseAlles == FALSE || is.null ( attr(runModelObj, "deskRes") )) {return(NULL)}
-         deskR<- merge(attr(runModelObj, "deskRes"), qL[,-match("value", colnames(qL))],  by.x = "item.name", by.y = colnames(qMatrix)[1], all = TRUE)
-         shw3 <- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = as.character(deskR[,"item.name"]), var2 = NA , type = "fixed", indicator.group = "items", group = deskR[,"dimensionName"], par = "itemP",  derived.par = NA, value = deskR[,"item.p"], stringsAsFactors = FALSE)
-         shw4 <- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = as.character(deskR[,"item.name"]), var2 = NA , type = "fixed", indicator.group = "items", group = deskR[,"dimensionName"], par = "Nvalid",  derived.par = NA, value = deskR[,"valid"], stringsAsFactors = FALSE)
+         if(leseAlles == FALSE || is.null ( attr(runModelObj, "defineModelObj")[["deskRes"]] )) {return(NULL)}
+         deskR<- merge(attr(runModelObj, "defineModelObj")[["deskRes"]], qL[,-match("value", colnames(qL))],  by.x = "item.name", by.y = colnames(qMatrix)[1], all = TRUE)
+         shw3 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = as.character(deskR[,"item.name"]), var2 = NA , type = "fixed", indicator.group = "items", group = deskR[,"dimensionName"], par = "itemP",  derived.par = NA, value = deskR[,"item.p"], stringsAsFactors = FALSE)
+         shw4 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = as.character(deskR[,"item.name"]), var2 = NA , type = "fixed", indicator.group = "items", group = deskR[,"dimensionName"], par = "Nvalid",  derived.par = NA, value = deskR[,"valid"], stringsAsFactors = FALSE)
          cols <- setdiff ( colnames(deskR)[grep("^item.p", colnames(deskR))], "item.p")
          if ( length ( cols ) > 0 ) {
               colsR <- data.frame ( original = cols, reduziert = eatTools::removePattern ( string = cols, pattern = "item.p.") , stringsAsFactors = FALSE)
-              shw31 <- do.call("rbind", apply ( colsR, MARGIN = 1, FUN = function ( zeile ) { data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = as.character(deskR[,"item.name"]), var2 = zeile[["reduziert"]] , type = "fixed", indicator.group = "items", group = deskR[,"dimensionName"], par = "itemP",  derived.par = NA, value = deskR[,zeile[["original"]]], stringsAsFactors = FALSE) }))
+              shw31 <- do.call("rbind", apply ( colsR, MARGIN = 1, FUN = function ( zeile ) { data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = as.character(deskR[,"item.name"]), var2 = zeile[["reduziert"]] , type = "fixed", indicator.group = "items", group = deskR[,"dimensionName"], par = "itemP",  derived.par = NA, value = deskR[,zeile[["original"]]], stringsAsFactors = FALSE) }))
               return(rbind(shw3, shw4, shw31))
          }  else  {
               return(rbind(shw3, shw4))
          } }
 
 getTamDiscrim    <- function(runModelObj, qL, qMatrix, leseAlles) {
-         if(leseAlles == FALSE || is.null ( attr(runModelObj, "discrim") )) {return(NULL)}
-         discR<- merge( attr(runModelObj, "discrim") , qL[,-match("value", colnames(qL))],  by.x = "item.name", by.y = colnames(qMatrix)[1], all = TRUE)
-         shw5 <- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = discR[,"item.name"], var2 = NA , type = "fixed", indicator.group = "items", group = discR[,"dimensionName"], par = "itemDiscrim",  derived.par = NA, value = discR[,"item.diskrim"], stringsAsFactors = FALSE)
+         if(leseAlles == FALSE || is.null ( attr(runModelObj, "defineModelObj")[["discrim"]] )) {return(NULL)}
+         discR<- merge( attr(runModelObj, "defineModelObj")[["discrim"]] , qL[,-match("value", colnames(qL))],  by.x = "item.name", by.y = colnames(qMatrix)[1], all = TRUE)
+         shw5 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = discR[,"item.name"], var2 = NA , type = "fixed", indicator.group = "items", group = discR[,"dimensionName"], par = "itemDiscrim",  derived.par = NA, value = discR[,"item.diskrim"], stringsAsFactors = FALSE)
          return(shw5)}
 
 getTam2plDiscrim <- function(runModelObj, qMatrix, leseAlles, regr, omitRegr) {
-         if(leseAlles == FALSE || !attr(runModelObj, "irtmodel") %in% c("2PL", "2PL.groups", "GPCM", "3PL") ) {return(NULL)}
+         if(leseAlles == FALSE || !attr(runModelObj, "defineModelObj")[["irtmodel"]] %in% c("2PL", "2PL.groups", "GPCM", "3PL") ) {return(NULL)}
          shw6 <- do.call("rbind", lapply (  1 : length ( colnames( qMatrix ) [-1] ) , FUN = function ( dims ) {
                  if ( isFALSE(omitRegr) ) {                                     
                       obj <- regr[["B"]]                                        
@@ -2058,9 +2060,9 @@ getTam2plDiscrim <- function(runModelObj, qMatrix, leseAlles, regr, omitRegr) {
                  tamMat<- obj[,c("item",cols)]
                  weg   <- which(tamMat[,2] == 0)
                  if(length(weg)>0) {tamMat <- tamMat[-weg,]}
-                 shw6D <- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = tamMat[,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = colnames(qMatrix)[dims+1], par = "estSlope",  derived.par = NA, value = tamMat[,2], stringsAsFactors = FALSE)
+                 shw6D <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = tamMat[,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = colnames(qMatrix)[dims+1], par = "estSlope",  derived.par = NA, value = tamMat[,2], stringsAsFactors = FALSE)
                  if (ncol(tamMat) == 3 ) {
-                     shw6se<- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = tamMat[,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = colnames(qMatrix)[dims+1], par = "estSlope",  derived.par = "se", value = tamMat[,3], stringsAsFactors = FALSE)
+                     shw6se<- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = tamMat[,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = colnames(qMatrix)[dims+1], par = "estSlope",  derived.par = "se", value = tamMat[,3], stringsAsFactors = FALSE)
                  }  else  {
                      shw6se<- NULL
                  }
@@ -2094,12 +2096,12 @@ getTamInfit    <- function(runModelObj, qL, qMatrix, leseAlles, omitFit, seed) {
          if(leseAlles == FALSE || omitFit == TRUE ) {return(NULL)}
          infit<- tam.fit(runModelObj, progress=FALSE, seed=seed)                
          fits <- merge(infit[["itemfit"]], qL[,-match("value", colnames(qL))],  by.x = "parameter", by.y = colnames(qMatrix)[1], all = TRUE)
-         if ( is.null(attr(runModelObj, "all.Names")[["DIF.var"]])) {           
-              ret  <- rbind(data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = fits[,"parameter"], var2 = NA , type = "fixed", indicator.group = "items", group = fits[,"dimensionName"], par = "est",  derived.par = "infit", value = fits[,"Infit"], stringsAsFactors = FALSE),
-                            data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = fits[,"parameter"], var2 = NA , type = "fixed", indicator.group = "items", group = fits[,"dimensionName"], par = "est",  derived.par = "outfit", value = fits[,"Outfit"], stringsAsFactors = FALSE))
+         if ( is.null(attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.var"]])) {           
+              ret  <- rbind(data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = fits[,"parameter"], var2 = NA , type = "fixed", indicator.group = "items", group = fits[,"dimensionName"], par = "est",  derived.par = "infit", value = fits[,"Infit"], stringsAsFactors = FALSE),
+                            data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = fits[,"parameter"], var2 = NA , type = "fixed", indicator.group = "items", group = fits[,"dimensionName"], par = "est",  derived.par = "outfit", value = fits[,"Outfit"], stringsAsFactors = FALSE))
          }  else  {                                                             
-              ret  <- rbind(data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = infit$itemfit[,"parameter"], var2 = NA , type = "fixed", indicator.group = "items", group = NA, par = "est",  derived.par = "infit", value = infit$itemfit[,"Infit"], stringsAsFactors = FALSE),
-                            data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = infit$itemfit[,"parameter"], var2 = NA , type = "fixed", indicator.group = "items", group = NA, par = "est",  derived.par = "outfit", value = infit$itemfit[,"Outfit"], stringsAsFactors = FALSE) )
+              ret  <- rbind(data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = infit$itemfit[,"parameter"], var2 = NA , type = "fixed", indicator.group = "items", group = NA, par = "est",  derived.par = "infit", value = infit$itemfit[,"Infit"], stringsAsFactors = FALSE),
+                            data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = infit$itemfit[,"parameter"], var2 = NA , type = "fixed", indicator.group = "items", group = NA, par = "est",  derived.par = "outfit", value = infit$itemfit[,"Outfit"], stringsAsFactors = FALSE) )
               ret  <- mergeDimensionIfDIF(dat=ret, qmatLong=qL[,-match("value", colnames(qL))], datMergingVar="var1", remove = c("group", "toMerge"))
               colnames(ret) <- car::recode(colnames(ret), "'dimensionName'='group'")
               ret  <- renameDifParameters(dat=ret, qmatLong=qL[,-match("value", colnames(qL))])
@@ -2109,7 +2111,7 @@ getTamInfit    <- function(runModelObj, qL, qMatrix, leseAlles, omitFit, seed) {
 getTamPopPar    <- function(runModelObj, qMatrix, leseAlles) {
          if(leseAlles == FALSE ) {return(NULL)}
          if(ncol(qMatrix) == 2) {                                               
-            ret  <- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = colnames(qMatrix)[2], var2 = NA , type = "distrpar", indicator.group = NA, group = "persons", par = "var",  derived.par = NA, value = runModelObj[["variance"]][1,1] , stringsAsFactors = FALSE)
+            ret  <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = colnames(qMatrix)[2], var2 = NA , type = "distrpar", indicator.group = NA, group = "persons", par = "var",  derived.par = NA, value = runModelObj[["variance"]][1,1] , stringsAsFactors = FALSE)
          }  else  {                                                             
             cov1 <- runModelObj[["variance"]]
             colnames(cov1) <- colnames(qMatrix)[-1]
@@ -2119,7 +2121,7 @@ getTamPopPar    <- function(runModelObj, qMatrix, leseAlles) {
                  cor1[ii,ii:ncol(cor1)] <- NA}
             cor1 <- reshape2::melt(cor1, measure.vars = colnames(cor1), na.rm=TRUE)
             vars <- Matrix::diag(cov1)
-            ret  <- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = c(names(vars),as.character(cor1[,"Var1"])) , var2 = c(rep(NA, length(vars)), as.character(cor1[,"Var2"])) , type = "random", indicator.group = NA, group = "persons", par = c(rep("var",length(vars)), rep("correlation", nrow(cor1))) ,  derived.par = NA, value = c(unlist(vars), cor1[,"value"]), stringsAsFactors = FALSE)
+            ret  <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = c(names(vars),as.character(cor1[,"Var1"])) , var2 = c(rep(NA, length(vars)), as.character(cor1[,"Var2"])) , type = "random", indicator.group = NA, group = "persons", par = c(rep("var",length(vars)), rep("correlation", nrow(cor1))) ,  derived.par = NA, value = c(unlist(vars), cor1[,"value"]), stringsAsFactors = FALSE)
          }
          return(ret)}
 
@@ -2129,7 +2131,7 @@ getTamRegPar    <- function(runModelObj, leseAlles, qMatrix, omitRegr, regr) {
              regr <- data.frame ( reg.var = rownames(regr$beta), regr$beta, stringsAsFactors = FALSE)
              regr <- reshape2::melt(regr, id.vars = "reg.var", na.rm=TRUE)
              regr2<- data.frame ( par = "est", derived.par = car::recode(unlist(lapply(strsplit(as.character(regr[,"variable"]),"\\."), FUN = function ( l ) {l[1]})), "'se'='se'; else=NA"), group = colnames(qMatrix)[as.numeric(eatTools::removePattern( string = unlist(lapply(strsplit(as.character(regr[,"variable"]),"\\."), FUN = function ( l ) {l[2]})), pattern = "Dim")) + 1], regr, stringsAsFactors = FALSE)
-             regr3<- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = regr2[,"reg.var"], var2 = NA , type = "regcoef", indicator.group = NA, group = regr2[,"group"], par = regr2[,"par"],  derived.par = regr2[,"derived.par"], value = regr2[,"value"] , stringsAsFactors = FALSE)
+             regr3<- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = regr2[,"reg.var"], var2 = NA , type = "regcoef", indicator.group = NA, group = regr2[,"group"], par = regr2[,"par"],  derived.par = regr2[,"derived.par"], value = regr2[,"value"] , stringsAsFactors = FALSE)
          }  else {
              return(NULL)
          }
@@ -2137,7 +2139,7 @@ getTamRegPar    <- function(runModelObj, leseAlles, qMatrix, omitRegr, regr) {
 
 getTamModInd    <- function(runModelObj, leseAlles) {
          if(leseAlles == FALSE ) {return(NULL)}
-         return(data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = NA, var2 = NA , type = "model", indicator.group = NA, group = NA, par = c("deviance", "Npar", "AIC", "BIC"), derived.par = NA, value = unlist(runModelObj[["ic"]][c("deviance", "Npars", "AIC", "BIC")]), stringsAsFactors = FALSE))}
+         return(data.frame ( model = attr(runModelObj,"defineModelObj")[[ "analysis.name"]], source = "tam", var1 = NA, var2 = NA , type = "model", indicator.group = NA, group = NA, par = c("deviance", "Npar", "AIC", "BIC"), derived.par = NA, value = unlist(runModelObj[["ic"]][c("deviance", "Npars", "AIC", "BIC")]), stringsAsFactors = FALSE))}
 
 getTamWles    <- function(runModelObj, qMatrix, leseAlles, omitWle) {
          if(leseAlles == FALSE || omitWle == TRUE ) {return(NULL)}
@@ -2162,7 +2164,7 @@ getTamWles    <- function(runModelObj, qMatrix, leseAlles, omitWle) {
          }  else  {
                rel[,"uebersetzt"] <- colnames(qMatrix)[-1]
          }
-         res  <- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = c(wleL[,"pid"],rep(NA,nrow(rel))), var2 = NA , type = c(rep("indicator",nrow(wleL)), rep("tech", nrow(rel))), indicator.group = "persons", group = c(wleL[,"group"],rel[,"uebersetzt"]), par = c(wleL[,"par"],rep("wle", nrow(rel))),  derived.par = c(wleL[,"derived.par"],rep("rel",nrow(rel))), value = c(wleL[,"value"] ,rel[,"value"]), stringsAsFactors = FALSE)
+         res  <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = c(wleL[,"pid"],rep(NA,nrow(rel))), var2 = NA , type = c(rep("indicator",nrow(wleL)), rep("tech", nrow(rel))), indicator.group = "persons", group = c(wleL[,"group"],rel[,"uebersetzt"]), par = c(wleL[,"par"],rep("wle", nrow(rel))),  derived.par = c(wleL[,"derived.par"],rep("rel",nrow(rel))), value = c(wleL[,"value"] ,rel[,"value"]), stringsAsFactors = FALSE)
          return(res)}
 
 getTamPVs <- function ( runModelObj, qMatrix, leseAlles, omitPV, pvMethod, tam.pv.arguments) {
@@ -2183,13 +2185,13 @@ getTamPVs <- function ( runModelObj, qMatrix, leseAlles, omitPV, pvMethod, tam.p
          }  else  {                                                             
             class(runModelObj) <- "list"                                        
             stopifnot ( pvMethod == "bayesian")
-            do   <- paste ( "tam.pv.mcmc ( ", paste(names(formals(tam.pv.mcmc)), car::recode ( names(formals(tam.pv.mcmc)), "'tamobj'='runModelObj'; 'Y'='runModelObj[[\"Y\"]]'; 'nplausible'='attr(runModelObj, \"n.plausible\")'"), sep =" = ", collapse = ", "), ")",sep="")
+            do   <- paste ( "tam.pv.mcmc ( ", paste(names(formals(tam.pv.mcmc)), car::recode ( names(formals(tam.pv.mcmc)), "'tamobj'='runModelObj'; 'Y'='runModelObj[[\"Y\"]]'; 'nplausible'='attr(runModelObj, \"defineModelObj\")[[\"n.plausible\"]]'"), sep =" = ", collapse = ", "), ")",sep="")
          }
          pv   <- eval(parse(text=do))
          pvL  <- reshape2::melt(pv$pv, id.vars = "pid", na.rm=TRUE)
          pvL[,"PV.Nr"] <- as.numeric(eatTools::removePattern(string = unlist(lapply(strsplit(as.character(pvL[,"variable"]),"\\."), FUN = function (l) {l[1]})), pattern = "PV"))
          pvL[,"group"] <- colnames(qMatrix)[as.numeric(eatTools::removePattern(string = unlist(lapply(strsplit(as.character(pvL[,"variable"]),"\\."), FUN = function (l) {l[2]})), pattern = "Dim"))+1]
-         res <- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = pvL[,"pid"], var2 = NA , type = "indicator", indicator.group = "persons", group = pvL[,"group"], par = "pv",  derived.par = paste("pv", pvL[,"PV.Nr"],sep=""), value = pvL[,"value"] , stringsAsFactors = FALSE)
+         res <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = pvL[,"pid"], var2 = NA , type = "indicator", indicator.group = "persons", group = pvL[,"group"], par = "pv",  derived.par = paste("pv", pvL[,"PV.Nr"],sep=""), value = pvL[,"value"] , stringsAsFactors = FALSE)
          return(res)}
          
 getTamEAPs <- function ( runModelObj, qMatrix, leseAlles = leseAlles) {
@@ -2205,9 +2207,9 @@ getTamEAPs <- function ( runModelObj, qMatrix, leseAlles = leseAlles) {
          eaps[,"group"] <- colnames(qMatrix)[as.numeric(eatTools::removePattern ( string = eatTools::halveString(string = as.character(eaps[,"variable"]), pattern = "\\.", first = FALSE)[,"X2"], pattern = "Dim"))+1]
          eaps[,"par"]   <- "est"
          eaps[grep("^SD.",as.character(eaps[,"variable"])),"par"]   <- "se"
-         res  <- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = eaps[,"pid"], var2 = NA , type = "indicator", indicator.group = "persons", group = eaps[,"group"], par = "eap", derived.par = eaps[,"par"], value = eaps[,"value"] , stringsAsFactors = FALSE)
+         res  <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = eaps[,"pid"], var2 = NA , type = "indicator", indicator.group = "persons", group = eaps[,"group"], par = "eap", derived.par = eaps[,"par"], value = eaps[,"value"] , stringsAsFactors = FALSE)
          if (ncol(qMatrix)>2) { grp  <- names(runModelObj[["EAP.rel"]]) } else { stopifnot(length(unique(eaps[,"group"])) == 1); grp <- unique(eaps[,"group"]) }
-         res  <- rbind(res, data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = NA, var2 = NA , type = "tech", indicator.group = "persons", group = grp, par = "eap", derived.par = "rel", value = runModelObj[["EAP.rel"]] , stringsAsFactors = FALSE) )
+         res  <- rbind(res, data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = NA, var2 = NA , type = "tech", indicator.group = "persons", group = grp, par = "eap", derived.par = "rel", value = runModelObj[["EAP.rel"]] , stringsAsFactors = FALSE) )
          return(res)}
          
 
@@ -2221,7 +2223,7 @@ getTamQ3 <- function(runModelObj, leseAlles, shw1, Q3, q3MinObs, q3MinType){
               mat  <- tam.modelfit ( tamobj = runModelObj, progress = FALSE )
               matL <- reshapeQ3 (mat = mat$Q3.matr, q3MinObs = q3MinObs, nObs = nObs)
               if( nrow(matL)>0) {
-                  res  <- data.frame ( model = attr(runModelObj, "analysis.name"), source = "tam", var1 = matL[,"Var1"], var2 = matL[,"Var2"] , type = "fixed",indicator.group = "items", group = paste(names(table(shw1[,"group"])), collapse="_"), par = "q3", derived.par = NA, value = matL[,"value"] , stringsAsFactors = FALSE)
+                  res  <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = matL[,"Var1"], var2 = matL[,"Var2"] , type = "fixed",indicator.group = "items", group = paste(names(table(shw1[,"group"])), collapse="_"), par = "q3", derived.par = NA, value = matL[,"value"] , stringsAsFactors = FALSE)
               }  else  {
                   res  <- NULL
               }
@@ -2229,9 +2231,9 @@ getTamQ3 <- function(runModelObj, leseAlles, shw1, Q3, q3MinObs, q3MinType){
          return(res)}
 
 
-getTamResults     <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV, nplausible , ntheta , normal.approx, samp.regr, theta.model, np.adj, Q3=Q3, q3MinObs =  q3MinObs, q3MinType = q3MinType,
+getTamResults <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV, nplausible , ntheta , normal.approx, samp.regr, theta.model, np.adj, Q3=Q3, q3MinObs =  q3MinObs, q3MinType = q3MinType,
                      pvMethod , group, beta_groups , level , n.iter , n.burnin, adj_MH , adj_change_MH , refresh_MH, accrate_bound_MH,	sample_integers, theta_init, print_iter , verbose, calc_ic, seed) {
-         qMatrix<- attr(runModelObj, "qMatrix")
+         qMatrix<- attr(runModelObj, "defineModelObj")[["qMatrix"]]
          qL     <- reshape2::melt(qMatrix, id.vars = colnames(qMatrix)[1], variable.name = "dimensionName", na.rm=TRUE)
          qL     <- qL[which(qL[,"value"] != 0 ) , ]
          varName<- colnames(qMatrix)[1]                                         
@@ -2416,7 +2418,7 @@ itemFromRes<- function ( resultsObj ) {
                                                               crit2 <- !all ( sort ( c ( d[[paste("CI__",pval,"__lb",sep="")]], sdb , d[[paste("CI__",pval,"__ub",sep="")]]), index.return = TRUE)$ix == 1:3 )
                                                               if ( crit1 == TRUE & crit2 == TRUE) { res <- 1 }  else { res <- 0}
                                                               ets   <- "A"
-                                                              ets1  <- d[["absDif"]] > 0.43 & d[["absDif"]] < 0.64
+                                                              ets1  <- d[["absDif"]] > 0.43
                                                               ets2  <- !all ( sort ( c ( d[[paste("CI__",pval,"__lb",sep="")]], 0 , d[[paste("CI__",pval,"__ub",sep="")]]), index.return = TRUE)$ix == 1:3 )
                                                               if ( ets1 == TRUE & ets2 == TRUE) { ets <- "B" }
                                                               etsC1 <- d[["absDif"]] > 0.64
