@@ -802,7 +802,7 @@ defT1 <- defineModel(dat = datT1, id = "idstud", check.for.linking = TRUE,
 runT1 <- runModel(defT1)
 
 # get the results of the two unidimensional models
-resT1 <- getResults(runT1)
+resT1 <- getResults(runT1, omitPV = TRUE, omitWle = TRUE, Q3 = FALSE)
 
 # extract item parameters from the 'results' object
 # t1 is the reference measurement occasion, i.e. no linking/equating is necessary
@@ -816,9 +816,9 @@ itemT1<- itemFromRes(resT1)
 # 'ses' and 'language' as regressors. For convenience, 'ses' is scaled (mean = 0, sd = 1)
 datT1[,"ses_scaled"] <- scale(datT1[,"ses"])[,1]
 
-# have a look at 'sex' and 'language at home':
-table(datT1[,"sex"])
-table(datT1[,"language"])
+# have a look at 'sex' and 'language at home' in each country:
+table(datT1[,c("country", "sex")])
+table(datT1[,c("country", "language")])
 
 # Running second step: split models according to person groups
 # ('all.persons' must be FALSE, otherwise the whole group would be treated as
@@ -836,8 +836,11 @@ defT1P<- defineModel(dat = datT1, items = itemT1[,"item"], id = "idstud",
 # run the 2 models (estimation needs approx. 20 seconds)
 runT1P<- runModel(defT1P)
 
-# get the results
-resT1P<- getResults(runT1P)
+# get the results (to save time, item fit estimation is skipped)
+resT1P<- getResults(runT1P, omitWle = TRUE, Q3 = FALSE)
+
+# latent regression coefficients for the three countries and two dimensions
+regcoefFromRes(resT1P, digits = 3)
 
 # equating is not necessary, as the models run with fixed item parameters
 # However, to prepare for the transformation on the 'bista' metric, run
@@ -876,7 +879,7 @@ modsT2<- splitModels ( qMatrix = qMat, nCores = 1)
 defT2 <- defineModel(dat = datT2, id = "idstud", check.for.linking = TRUE,
          splittedModels = modsT2, software = "tam")
 
-# run 2 models
+# run 2 models for calibration
 runT2 <- runModel(defT2)
 
 # get the results
@@ -893,6 +896,9 @@ L.t1t2<- equat1pl ( results = resT2, prmNorm = itemT1[,c("item", "est")],
          excludeLinkingDif = TRUE, difBound = 0.64, iterativ = TRUE)
 
 # linking constant is negative: students performance at T2 is worse than T1
+# see that DIF is non symmetrical for reading: the four items with the highest
+# amount of DIF have all positive DIF values. DIF exclusion hence shrinks linking
+# constant towards zero.
 # Third step: transform item parameters of 't2' to the metric of 't1'
 # We now need to specify the 'refPop' argument. We use the values from 't1' which
 # serves as the reference. To capture linking errors in a separate data.frame

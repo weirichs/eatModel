@@ -2196,22 +2196,30 @@ getTamPVs <- function ( runModelObj, qMatrix, leseAlles, omitPV, pvMethod, tam.p
          
 getTamEAPs <- function ( runModelObj, qMatrix, leseAlles = leseAlles) {
          if(leseAlles == FALSE ) {return(NULL)}
-         eaps <- runModelObj[["person"]]                                        
-         eind1<- ncol(eaps) == 7                                                
-         if(eind1 == TRUE) {                                                    
-            cols <- grep("EAP$", colnames(eaps))                                
-            stopifnot(length(cols) == 2)                                        
+         eaps <- runModelObj[["person"]]                                        ### Achtung: im eindimensionalen Fall enthalten die Spaltennamen keine Benennung der Dimension
+         eind1<- ncol(eaps) == 7                                                ### (uneinheitlich zu pvs, wo es immer eine Benennung gibt.)
+         if(eind1 == TRUE) {                                                    ### Im eindimensionalen Fall muss Benennung ergaenzt werden
+            cols <- grep("EAP$", colnames(eaps))                                ### zur Sicherheit werden hier zwei Indikatoren fuer Eindimensionalitaet genutzt. Fehlermeldung bei Widerspruch
+            stopifnot(length(cols) == 2)                                        ### ggf. muss diese Passage nach Release neuerer TAM-Versionen korrigiert werden
             colnames(eaps)[cols] <- paste(colnames(eaps)[cols], ".Dim1", sep="")
          }
          eaps <- reshape2::melt(eaps, id.vars = "pid", measure.vars = grep("EAP", colnames(eaps)), na.rm=TRUE)
-         eaps[,"group"] <- colnames(qMatrix)[as.numeric(eatTools::removePattern ( string = eatTools::halveString(string = as.character(eaps[,"variable"]), pattern = "\\.", first = FALSE)[,"X2"], pattern = "Dim"))+1]
-         eaps[,"par"]   <- "est"
+         eaps[,"tam"]      <- eatTools::halveString(string = as.character(eaps[,"variable"]), pattern = "\\.", first = FALSE)[,"X2"]
+         eaps[,"dimnumber"]<- as.numeric(eatTools::removePattern ( eaps[,"tam"], "Dim"))
+         eaps[,"group"]    <- colnames(qMatrix)[eaps[,"dimnumber"] + 1]         ### Zuordnung der Dimensionsnamen
+         checkmate::assert_numeric(unique(eaps[,"dimnumber"]), len = ncol(qMatrix)-1, any.missing = FALSE)
+         eaps[,"par"]      <- "est"
          eaps[grep("^SD.",as.character(eaps[,"variable"])),"par"]   <- "se"
          res  <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = eaps[,"pid"], var2 = NA , type = "indicator", indicator.group = "persons", group = eaps[,"group"], par = "eap", derived.par = eaps[,"par"], value = eaps[,"value"] , stringsAsFactors = FALSE)
-         if (ncol(qMatrix)>2) { grp  <- names(runModelObj[["EAP.rel"]]) } else { stopifnot(length(unique(eaps[,"group"])) == 1); grp <- unique(eaps[,"group"]) }
+         if (ncol(qMatrix)>2) {
+             grp <-  eatTools::recodeLookup(names(runModelObj[["EAP.rel"]]), unique(eaps[,c("tam", "group")]))
+         } else {
+             stopifnot(length(unique(eaps[,"group"])) == 1)
+             grp <- unique(eaps[,"group"])
+         }
          res  <- rbind(res, data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = NA, var2 = NA , type = "tech", indicator.group = "persons", group = grp, par = "eap", derived.par = "rel", value = runModelObj[["EAP.rel"]] , stringsAsFactors = FALSE) )
          return(res)}
-         
+
 
 getTamQ3 <- function(runModelObj, leseAlles, shw1, Q3, q3MinObs, q3MinType){
          if(leseAlles == FALSE || Q3 == FALSE) {return(NULL)}
