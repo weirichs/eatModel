@@ -2511,7 +2511,7 @@ wleFromRes <- function ( resultsObj , idVarName = NULL, verbose=TRUE) {
 
 get.plausible <- function(file, quiet = FALSE, forConquestResults = FALSE)  {
   # checks
-  checkmate::assert_character(file)
+  checkmate::assert_character(file, len = 1)
   lapply(c(quiet, forConquestResults), checkmate::assert_logical, len = 1)
 
                  input           <- scan(file,what="character",sep="\n",quiet=TRUE)
