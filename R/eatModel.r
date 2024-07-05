@@ -2574,7 +2574,6 @@ get.wle <- function(file)      {
 get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.dif.bound = 0.3, p.value = 0.9) {
   # checks
   checkmate::assert_character(file, len = 1)
-  checkmate::assert_character(dif.term, null.ok = TRUE)
   checkmate::assert_logical(split.dif, len = 1)
   lapply(c(abs.dif.bound, sig.dif.bound, p.value), checkmate::assert_numeric, len = 1)
             all.output <- list();   all.terms <- NULL
@@ -2650,6 +2649,7 @@ get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.d
                     results.sel<- data.frame(input.sel,filename=file,stringsAsFactors = FALSE)
                     if(is.na(as.numeric(results.sel$ESTIMATE[1]))) {cat(paste("'ESTIMATE' column in Outputfile for term '",all.terms[length(all.terms)],"' in file: '",file,"' does not seem to be a numeric value. Please check!\n",sep=""))}
                     if(!missing(dif.term)) {
+                      checkmate::assert_character(dif.term, len = 1)
                        if(all.terms[length(all.terms)] == dif.term) {
                           cat(paste("Treat '",all.terms[length(all.terms)],"' as DIF TERM.\n",sep=""))
                           results.sel <- data.frame(results.sel,abs.dif = 2*results.sel$ESTIMATE,stringsAsFactors=FALSE)
