@@ -2572,6 +2572,11 @@ get.wle <- function(file)      {
             return(valid)}
 
 get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.dif.bound = 0.3, p.value = 0.9) {
+  # checks
+  checkmate::assert_character(file, len = 1)
+  checkmate::assert_character(dif.term, null.ok = TRUE)
+  checkmate::assert_logical(split.dif, len = 1)
+  lapply(c(abs.dif.bound, sig.dif.bound, p.value), checkmate::assert_numeric, len = 1)
             all.output <- list();   all.terms <- NULL
             input.all <- scan(file,what="character",sep="\n",quiet=TRUE)
             rowToFind <- c("Final Deviance","Total number of estimated parameters")
