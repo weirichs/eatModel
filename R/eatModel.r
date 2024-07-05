@@ -2513,7 +2513,6 @@ get.plausible <- function(file, quiet = FALSE, forConquestResults = FALSE)  {
   # checks
   checkmate::assert_character(file, len = 1)
   lapply(c(quiet, forConquestResults), checkmate::assert_logical, len = 1)
-
                  input           <- scan(file,what="character",sep="\n",quiet=TRUE)
                  input           <- strsplit(eatTools::crop(gsub("-"," -",input) ) ," +")
                  n.spalten       <- max ( sapply(input,FUN=function(ii){ length(ii) }) )
@@ -2556,6 +2555,8 @@ get.plausible <- function(file, quiet = FALSE, forConquestResults = FALSE)  {
                  return(PV)}}
 
 get.wle <- function(file)      {
+  # checks
+  checkmate::assert_character(file, len = 1)
             input <- eatTools::crop(scan(file, what = "character", sep = "\n", quiet = TRUE))
             input <- strsplit(input," +")
             n.spalten <- max ( sapply(input,FUN=function(ii){ length(ii) }) )
