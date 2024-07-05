@@ -2732,6 +2732,8 @@ get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.d
             return(all.output)}
 
 get.prm <- function(file)   {
+  # checks
+  checkmate::assert_character(file, len = 1)
             input <- scan(file,what="character",sep="\n",quiet=TRUE)
             input <- strsplit( gsub("\\\t"," ",eatTools::crop(input)), "/\\*")
             ret   <- data.frame ( do.call("rbind", strsplit( eatTools::crop(unlist(lapply(input, FUN = function ( l ) {l[1]}))), " +")), stringsAsFactors = FALSE)
@@ -2740,6 +2742,8 @@ get.prm <- function(file)   {
             return(ret)}
 
 get.itn <- function(file)  {
+  # checks
+  checkmate::assert_character(file, len = 1)
             input <- scan(file, what = "character", sep="\n", quiet = TRUE)
             ind.1 <- grep("==========",input)
             items <- grep( "item:", input )
@@ -2787,6 +2791,8 @@ get.itn <- function(file)  {
              return(reihe)}
 
 get.dsc <- function(file) {
+  # checks
+  checkmate::assert_character(file, len = 1)
             input     <- scan(file,what="character",sep="\n",quiet=TRUE)
             n.gruppen    <- grep("Group: ",input)
             gruppennamen <- unlist( lapply( strsplit(input[n.gruppen]," ") , function(ll) {paste(ll[-1],collapse=" ")} ) )
@@ -2814,6 +2820,8 @@ get.dsc <- function(file) {
 
 
 get.equ <- function(file)  {
+  # checks
+  checkmate::assert_character(file, len = 1)
             input       <- scan(file,what="character",sep="\n",quiet = TRUE)
             dimensionen <- grep("Equivalence Table for",input)
             cat(paste("Found ",length(dimensionen), " dimension(s).\n",sep=""))
