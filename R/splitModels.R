@@ -1,5 +1,8 @@
 splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "qMatrix" , "person.groups" ) , add = NULL , cross = NULL , all.persons = TRUE , all.persons.lab = "all" , person.split.depth = 0:length(person.groups[,-1,drop=FALSE]), full.model.names = TRUE , model.name.elements = c ( "dim" , "group" , "cross" ) , include.var.name = FALSE , env = FALSE , nCores=NULL , mcPackage = c("future", "parallel"), GBcore=NULL , verbose = TRUE ) {
-    if(!is.null(qMatrix))       {qMatrix      <- checkQmatrixConsistency (qMatrix)}
+  # checks
+  lapply(c(all.persons, full.model.names, include.var.name, env, verbose), checkmate::assert_logical, len = 1)
+
+  if(!is.null(qMatrix))       {qMatrix      <- checkQmatrixConsistency (qMatrix)}
     if(!is.null(person.groups)) {person.groups<- checkPersonGroupsConsistency (person.groups)}
     mcPackage <- match.arg(mcPackage)
     # Funktion: person.groups nach person.grouping
@@ -34,7 +37,7 @@ splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "q
 		if ( !is.null ( qMatrix ) ) {
 				if ( ncol ( qMatrix ) > 1 ) {
 						not01 <- ! sapply ( qMatrix[,-1,drop=FALSE] , function ( x ) all ( x %in% c(0,1) ) )
-						
+
 						if ( any ( not01 ) ) {
 								warning ( paste0 ( "splitModels: column(s) '" , paste ( names (not01)[not01] , collapse = "', '" ) , "' in qMatrix contain elements that are not 0 or 1; this/these column(s) are ignored" ) , call. = FALSE )
 								qMatrix <- qMatrix[,colnames(qMatrix)[!colnames(qMatrix) %in% names (not01)[not01]],drop=FALSE]
@@ -54,7 +57,7 @@ splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "q
 						person.groups$group <- all.persons.lab
 						all.persons <- FALSE
 				}
-		}		
+		}
 		# qMatrix und person.groups auf Plausibilitaet checken
 		if ( !is.null ( qMatrix ) ) {
 				# hat erste Spalte mehr Elemente als alle anderen
@@ -114,11 +117,11 @@ splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "q
 		if ( !is.null ( i[[1]] ) ) {
 				names ( i ) <- unname ( sapply ( i , function ( x ) paste ( colnames ( x )[-1] , collapse = "_" ) , USE.NAMES = FALSE ) )
 		} else {
-				names ( i ) <- ""				
+				names ( i ) <- ""
 		}
 		if ( "person.groups" %in% split & !is.null ( person.groups ) ) {
 				#  Liste mit allen Kategorien aller Gruppen machen
-				make.pers.l <- function ( v , x , all.persons , all.persons.lab ) { 
+				make.pers.l <- function ( v , x , all.persons , all.persons.lab ) {
 						cats <- unique ( as.character ( v ) )
 						if ( all.persons ) cats <- c ( cats , "all" )
 						d <- data.frame ( cats , stringsAsFactors = FALSE )
@@ -143,7 +146,7 @@ splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "q
 				} else {
 						person.split.depth <- 0:length(person.groups[,-1,drop=FALSE])
 						if ( !is.null ( person.groups ) ) {
-								warning ( paste0 ( "splitModels: parameter person.split.depth is falsely set and will be defaulted to " , person.split.depth[1] , ":" , person.split.depth[length(person.split.depth)] ) , call. = FALSE )						
+								warning ( paste0 ( "splitModels: parameter person.split.depth is falsely set and will be defaulted to " , person.split.depth[1] , ":" , person.split.depth[length(person.split.depth)] ) , call. = FALSE )
 						}
 				}
 				# Tiefe berechnen
@@ -177,7 +180,7 @@ splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "q
 								paste0 ( "person.groups[ " , paste ( c ( str2 , str3 ) , collapse = " & " ) , ",]" )
 						}
 						do1 <- apply ( p , 1 , f1 , all.persons.lab )
-						do1 <- paste0 ( paste0 ( "p2[[" , seq ( along = do1 ) , "]] <- " ) , do1 ) 
+						do1 <- paste0 ( paste0 ( "p2[[" , seq ( along = do1 ) , "]] <- " ) , do1 )
 						eval ( parse ( text = do1 ) )
 				}
 		} else if ( ! "person.groups" %in% split & !is.null ( person.groups ) ) {
@@ -193,7 +196,7 @@ splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "q
 				f2 <- function ( z ) {
 						paste ( mapply ( function ( x , y ) paste0 ( x , "." , y ) , names ( z ) , z , USE.NAMES = FALSE ) , collapse = "_" )
 				}
-				pers.names <- apply ( p , 1 , f2 )			
+				pers.names <- apply ( p , 1 , f2 )
 				names ( p2 ) <- pers.names
 				# nicht vorhandene Kombinationen droppen
 				keep <- sapply ( p2 , nrow ) > 0
@@ -289,7 +292,7 @@ splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "q
 				ad <- Reduce(function(x, y) merge(x, y, all=TRUE,by=NULL),rev(ad.l),accumulate=FALSE )
 		} else {
 				ad <- NULL
-		}		
+		}
 		# Modelle
 		m.l <- list(cr,ad,p.dfr,i.dfr)
 		m.l <- m.l [ ! sapply ( m.l , is.null ) ]
@@ -328,13 +331,13 @@ splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "q
 				# Subpath erzeugen
 				f5 <- function ( z ) {
 						z <- z[!z %in% ""]
-						if ( include.var.name ) z <- paste0 ( names ( z ) , "." , z )						
+						if ( include.var.name ) z <- paste0 ( names ( z ) , "." , z )
 						x <- as.character ( c( "." , unname ( gsub ( "\\s" , "" , z ) ) ) )
 						return ( eval ( parse ( text = paste0 ( "file.path ( " , paste ( paste0("'",x,"'") , collapse = " , " ) , ") " ) ) ) )
 				}
 				m$model.subpath <- apply ( mn , 1 , f5 )
 				# Subpfade ggf. unique machen
-				if ( any ( duplicated ( m$model.subpath ) ) ) m$model.subpath <- make.unique ( m$model.subpath )			
+				if ( any ( duplicated ( m$model.subpath ) ) ) m$model.subpath <- make.unique ( m$model.subpath )
 		} else {
 				m$model.name <- paste0 ( "model" , formatC ( seq ( along = rownames ( m ) ) , format = "fg" , width = nchar ( as.character ( nrow ( m ) ) ) , flag = "0" ) )
 				if ( nrow ( m ) > 1 ) {
@@ -375,7 +378,7 @@ splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "q
 				}
 				# NULL setzen wenn nicht da
 				if ( z["dim"] %in% "" ) {
-						ig <- NULL.char 
+						ig <- NULL.char
 						di <- NULL.char
 				} else {
 						ig <- paste0 ( "i$" , z["dim"] )
@@ -457,7 +460,7 @@ splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "q
 								ret <- c (	ret ,
 											mapply ( f8 , names ( c ( cross , add ) ) , quotes , as.vorn, as.hinten, MoreArgs = list ( z , include.var.name ) )
 										  )
-						}	
+						}
 				}
 				return ( ret )
 		}
