@@ -3,7 +3,9 @@ splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "q
   lapply(c(all.persons, full.model.names, include.var.name, env, verbose), checkmate::assert_logical, len = 1)
   lapply(c(split, model.name.elements), checkmate::assert_character, null.ok = TRUE)
   checkmate::assert_character(all.persons.lab, len = 1)
-
+  checkmate::assert_integer(person.split.depth)
+  checkmate::assert_integer(nCores, len = 1, null.ok = TRUE)
+  checkmate::assert_numeric(GBcore, len = 1, null.ok = TRUE)
 
   assert_data_frame(qMatrix, min.rows = 1, min.cols = 1, null.ok = TRUE)
   assert_data_frame(person.groups, min.rows = 1, min.cols = 1, null.ok = TRUE)
