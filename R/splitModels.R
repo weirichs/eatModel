@@ -18,31 +18,6 @@ splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "q
   checkmate::assert_integer(nCores, len = 1, null.ok = TRUE)
   checkmate::assert_numeric(GBcore, len = 1, null.ok = TRUE)
 
-  assert_data_frame(qMatrix, min.rows = 1, min.cols = 1, null.ok = TRUE)
-  assert_data_frame(person.groups, min.rows = 1, min.cols = 1, null.ok = TRUE)
-
-		# wenn kein data.frame, dann ignorieren
-#		if ( !is.null ( qMatrix ) & !is.data.frame ( qMatrix ) ) {
-#				qMatrix <- NULL
-#				warning ( paste0 ( "splitModels: qMatrix is not a data.frame and will be ignored." ) , call. = FALSE )
-#		}
-#		if ( !is.null ( person.groups ) & !is.data.frame ( person.groups ) ) {
-#				person.groups <- NULL
-#				warning ( paste0 ( "splitModels: person.groups is not a data.frame and will be ignored." ) , call. = FALSE )
-#		}
-		# wenn keine Spalten / Zeilen dann NULL
-#		if ( !is.null ( qMatrix ) ) {
-#				if ( nrow ( qMatrix ) %in% 0 | ncol ( qMatrix ) %in% 0 ) {
-#						warning ( "splitModels: check qMatrix" , call. = FALSE )
-#						qMatrix <- NULL
-#				}
-#		}
-#		if ( !is.null ( person.groups ) ) {
-#				if ( nrow ( person.groups ) %in% 0 | ncol ( person.groups ) %in% 0 ) {
-#						warning ( "splitModels: check person.groups" , call. = FALSE )
-#						person.groups <- NULL
-#				}
-#		}
 		# Dimensionen in qMatrix duerfen nur 0/1 haben
 		if ( test_data_frame(qMatrix, min.cols = 2) ) {
 		  not01 <- ! sapply ( qMatrix[,-1,drop=FALSE] , function ( x ) all ( x %in% c(0,1) ) )
