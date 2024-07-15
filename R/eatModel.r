@@ -1705,12 +1705,12 @@ checkQmatrixConsistency <-  function(qmat) {
                warning ( "qMatrix contains just one column; this is treated as item names" , call. = FALSE )
                qMatrix$dim <- 1
              }
-             # qMatrix und person.groups auf Plausibilitaet checken
+             # qMatrix auf Plausibilitaet checken
              if ( !is.null ( qMatrix ) ) {
                # hat erste Spalte mehr Elemente als alle anderen
                len <- sapply ( qMatrix , function ( x ) length ( unique ( x ) ) )
                len.log <- len < len[1]
-               if ( ! all ( len.log[-1] ) ) warning ( paste0 ( "splitModels: first column of qMatrix might not contain item names; please check\n(number of unique elements is smaller than in another column)" ) , call. = FALSE )
+               if ( ! all ( len.log[-1] ) ) warning ( paste0 ( "first column of qMatrix might not contain item names; please check\n(number of unique elements is smaller than in another column)" ) , call. = FALSE )
              }
 
              return(qmat)}

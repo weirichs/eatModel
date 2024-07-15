@@ -22,12 +22,12 @@ splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "q
 #		if ( test_data_frame(qMatrix, ncols = 1) ) {
 #		  warning ( "splitModels: qMatrix contains just one column; this is treated as item names" , call. = FALSE )
 #			qMatrix$dim <- 1
-		}
-		if ( test_data_frame(person.groups, ncols = 1) ) {
-		  warning ( "splitModels: person.groups contains just one column; this is treated as person ids" , call. = FALSE )
-			person.groups$group <- all.persons.lab
-			all.persons <- FALSE
-		}
+#		}
+#		if ( test_data_frame(person.groups, ncols = 1) ) {
+#		  warning ( "splitModels: person.groups contains just one column; this is treated as person ids" , call. = FALSE )
+#			person.groups$group <- all.persons.lab
+#			all.persons <- FALSE
+#		}
 
 		# qMatrix und person.groups auf Plausibilitaet checken
 #		if ( !is.null ( qMatrix ) ) {
@@ -35,13 +35,13 @@ splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "q
 #				len <- sapply ( qMatrix , function ( x ) length ( unique ( x ) ) )
 #				len.log <- len < len[1]
 #				if ( ! all ( len.log[-1] ) ) warning ( paste0 ( "splitModels: first column of qMatrix might not contain item names; please check\n(number of unique elements is smaller than in another column)" ) , call. = FALSE )
-		}
-		if ( !is.null ( person.groups ) ) {
+#		}
+#		if ( !is.null ( person.groups ) ) {
 				# hat erste Spalte mehr Elemente als alle anderen
-				len <- sapply ( person.groups , function ( x ) length ( unique ( x ) ) )
-				len.log <- len < len[1]
-				if ( ! all ( len.log[-1] ) ) warning ( paste0 ( "splitModels: first column of person.groups might not contain person ids; please check\n(number of unique elements is smaller than in another column)" ) , call. = FALSE )
-		}
+#				len <- sapply ( person.groups , function ( x ) length ( unique ( x ) ) )
+#				len.log <- len < len[1]
+#				if ( ! all ( len.log[-1] ) ) warning ( paste0 ( "splitModels: first column of person.groups might not contain person ids; please check\n(number of unique elements is smaller than in another column)" ) , call. = FALSE )
+#		}
 		# aus Split die Sachen raus, die nicht da sind
 		if ( is.null ( qMatrix ) ) split <- split[!split %in% "qMatrix"]
 		if ( is.null ( person.groups ) ) split <- split[!split %in% "person.groups"]
@@ -461,5 +461,19 @@ checkPersonGroupsConsistency <- function (d) {
     ### gruppierungsvariablen duerfen nicht konstant sein und keine fehlenden Werte haben
                      if(length(unique(d[,x])) == 1) {stop(paste0("Column '",x,"' of 'person.groups' is constant."))}
                      if(any(is.na(d[,x]))) {stop(paste0("Column '",x,"' of 'person.groups' has missing values."))}})
+             # wenn nur eine Spalte wird diese als IDs angenommen
+             if ( test_data_frame(person.groups, ncols = 1) ) {
+               warning ( "person.groups contains just one column; this is treated as person ids" , call. = FALSE )
+               person.groups$group <- all.persons.lab
+               all.persons <- FALSE
+             }
+             # person.groups auf Plausibilitaet checken
+             if ( !is.null ( person.groups ) ) {
+               # hat erste Spalte mehr Elemente als alle anderen
+               len <- sapply ( person.groups , function ( x ) length ( unique ( x ) ) )
+               len.log <- len < len[1]
+               if ( ! all ( len.log[-1] ) ) warning ( paste0 ( "first column of person.groups might not contain person ids; please check\n(number of unique elements is smaller than in another column)" ) , call. = FALSE )
+             }
+
              return(d)}
 
