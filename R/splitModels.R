@@ -1,4 +1,14 @@
 splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "qMatrix" , "person.groups" ) , add = NULL , cross = NULL , all.persons = TRUE , all.persons.lab = "all" , person.split.depth = 0:length(person.groups[,-1,drop=FALSE]), full.model.names = TRUE , model.name.elements = c ( "dim" , "group" , "cross" ) , include.var.name = FALSE , env = FALSE , nCores=NULL , mcPackage = c("future", "parallel"), GBcore=NULL , verbose = TRUE ) {
+  if(!is.null(qMatrix))       {qMatrix      <- checkQmatrixConsistency (qMatrix)}
+  if(!is.null(person.groups)) {person.groups<- checkPersonGroupsConsistency (person.groups)}
+  mcPackage <- match.arg(mcPackage)
+  # Funktion: person.groups nach person.grouping
+  pg2pgr <- function ( x , nam ) {
+    d <- x[,1,drop=FALSE]
+    eval ( parse ( text = paste0 ( "d$'" , nam , "' <- 1 " ) ) )
+    return ( d )
+  }
+
   # checks
   lapply(c(all.persons, full.model.names, include.var.name, env, verbose), checkmate::assert_logical, len = 1)
   checkmate::assert_subset(split, choices = c("qMatrix" , "person.groups"))
@@ -11,15 +21,6 @@ splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "q
   assert_data_frame(qMatrix, min.rows = 1, min.cols = 1, null.ok = TRUE)
   assert_data_frame(person.groups, min.rows = 1, min.cols = 1, null.ok = TRUE)
 
-  if(!is.null(qMatrix))       {qMatrix      <- checkQmatrixConsistency (qMatrix)}
-    if(!is.null(person.groups)) {person.groups<- checkPersonGroupsConsistency (person.groups)}
-    mcPackage <- match.arg(mcPackage)
-    # Funktion: person.groups nach person.grouping
-		pg2pgr <- function ( x , nam ) {
-				d <- x[,1,drop=FALSE]
-				eval ( parse ( text = paste0 ( "d$'" , nam , "' <- 1 " ) ) )
-				return ( d )
-		}
 		# wenn kein data.frame, dann ignorieren
 #		if ( !is.null ( qMatrix ) & !is.data.frame ( qMatrix ) ) {
 #				qMatrix <- NULL
