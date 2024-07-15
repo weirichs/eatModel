@@ -1,7 +1,8 @@
 splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "qMatrix" , "person.groups" ) , add = NULL , cross = NULL , all.persons = TRUE , all.persons.lab = "all" , person.split.depth = 0:length(person.groups[,-1,drop=FALSE]), full.model.names = TRUE , model.name.elements = c ( "dim" , "group" , "cross" ) , include.var.name = FALSE , env = FALSE , nCores=NULL , mcPackage = c("future", "parallel"), GBcore=NULL , verbose = TRUE ) {
   # checks
   lapply(c(all.persons, full.model.names, include.var.name, env, verbose), checkmate::assert_logical, len = 1)
-  lapply(c(split, model.name.elements), checkmate::assert_character, null.ok = TRUE)
+  checkmate::assert_subset(split, choices = c("qMatrix" , "person.groups"))
+  checkmate::assert_subset(model.name.elements, choices = c("dim", "group", "add", "cross"))
   checkmate::assert_character(all.persons.lab, len = 1)
   checkmate::assert_integer(person.split.depth)
   checkmate::assert_integer(nCores, len = 1, null.ok = TRUE)
