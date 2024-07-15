@@ -18,19 +18,10 @@ splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "q
   checkmate::assert_integer(nCores, len = 1, null.ok = TRUE)
   checkmate::assert_numeric(GBcore, len = 1, null.ok = TRUE)
 
-		# Dimensionen in qMatrix duerfen nur 0/1 haben
-		if ( test_data_frame(qMatrix, min.cols = 2) ) {
-		  not01 <- ! sapply ( qMatrix[,-1,drop=FALSE] , function ( x ) all ( x %in% c(0,1) ) )
-
-			if ( any ( not01 ) ) {
-			  warning ( paste0 ( "splitModels: column(s) '" , paste ( names (not01)[not01] , collapse = "', '" ) , "' in qMatrix contain elements that are not 0 or 1; this/these column(s) are ignored" ) , call. = FALSE )
-				qMatrix <- qMatrix[,colnames(qMatrix)[!colnames(qMatrix) %in% names (not01)[not01]],drop=FALSE]
-				}
-		}
 		# wenn nur eine Spalte wird diese als IDs angenommen
-		if ( test_data_frame(qMatrix, ncols = 1) ) {
-		  warning ( "splitModels: qMatrix contains just one column; this is treated as item names" , call. = FALSE )
-			qMatrix$dim <- 1
+#		if ( test_data_frame(qMatrix, ncols = 1) ) {
+#		  warning ( "splitModels: qMatrix contains just one column; this is treated as item names" , call. = FALSE )
+#			qMatrix$dim <- 1
 		}
 		if ( test_data_frame(person.groups, ncols = 1) ) {
 		  warning ( "splitModels: person.groups contains just one column; this is treated as person ids" , call. = FALSE )
@@ -39,11 +30,11 @@ splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "q
 		}
 
 		# qMatrix und person.groups auf Plausibilitaet checken
-		if ( !is.null ( qMatrix ) ) {
+#		if ( !is.null ( qMatrix ) ) {
 				# hat erste Spalte mehr Elemente als alle anderen
-				len <- sapply ( qMatrix , function ( x ) length ( unique ( x ) ) )
-				len.log <- len < len[1]
-				if ( ! all ( len.log[-1] ) ) warning ( paste0 ( "splitModels: first column of qMatrix might not contain item names; please check\n(number of unique elements is smaller than in another column)" ) , call. = FALSE )
+#				len <- sapply ( qMatrix , function ( x ) length ( unique ( x ) ) )
+#				len.log <- len < len[1]
+#				if ( ! all ( len.log[-1] ) ) warning ( paste0 ( "splitModels: first column of qMatrix might not contain item names; please check\n(number of unique elements is smaller than in another column)" ) , call. = FALSE )
 		}
 		if ( !is.null ( person.groups ) ) {
 				# hat erste Spalte mehr Elemente als alle anderen

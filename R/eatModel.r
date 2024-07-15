@@ -1,14 +1,14 @@
-qMatToB <- function(qma, slp) {                                                 
-      zei <- match( qma[,"item"], slp[,1])                                      
+qMatToB <- function(qma, slp) {
+      zei <- match( qma[,"item"], slp[,1])
       for ( i in 1:length(zei) ) {
            ind <- which(qma[i,] ==1 )
-           stopifnot(length(ind)==1, qma[i,"item"] == slp[zei[i],1])            
+           stopifnot(length(ind)==1, qma[i,"item"] == slp[zei[i],1])
            qma[i,ind] <- slp[zei[i],2] }
       return(qma)}
 
 tamObjForBayesianPV <- function(anchor, qMatrix, slopeMatrix = NULL, resp, pid, Y) {
       warning("To date, bayesian plausible values imputation only works for binary between-item dimensionality models.")
-      if ( !is.null(slopeMatrix)) {                                             
+      if ( !is.null(slopeMatrix)) {
            qMatrix <- qMatToB ( qma = qMatrix, slp = slopeMatrix)
       }
       xsi.obj<- as.matrix(data.frame ( V1 = 0, V2 = anchor[,"parameter"] * (-1)))
@@ -52,9 +52,9 @@ getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c(
               nplausible = NULL, ntheta = 2000, normal.approx = FALSE, samp.regr = FALSE, theta.model=FALSE, np.adj=8, group = NULL, beta_groups = TRUE, level = .95, n.iter = 1000, n.burnin = 500, adj_MH = .5, adj_change_MH = .05, refresh_MH = 50, accrate_bound_MH = c(.45, .55),	sample_integers=FALSE, theta_init=NULL, print_iter = 20, verbose = TRUE, calc_ic=TRUE, omitUntil=1, seed=NA) {
             q3MinType<- match.arg(q3MinType)
             q3theta  <- match.arg(q3theta )
-            if(inherits(runModelObj, "runMultiple")) {                          
+            if(inherits(runModelObj, "runMultiple")) {
                 if(is.null ( attr(runModelObj, "split")[["nCores"]] ) || attr(runModelObj, "split")[["nCores"]] == 1 ) {
-                   res <- lapply( runModelObj, FUN = function ( r ) {           
+                   res <- lapply( runModelObj, FUN = function ( r ) {
                           do  <- paste ( "getResults ( ", paste(names(formals(getResults)), car::recode(names(formals(getResults)), "'runModelObj'='r'"), sep =" = ", collapse = ", "), ")",sep="")
                           ret <- eval(parse(text=do))
                           return(ret)})
@@ -79,10 +79,10 @@ getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c(
                class(res) <- c("data.frame", "multipleResults")
                rownames(res) <- NULL
                return(res)
-            }  else {                                                           
+            }  else {
                if ( is.null(runModelObj)) {return(NULL)}
                isTa  <- FALSE
-               if(inherits(runModelObj, "runConquest")) {                       
+               if(inherits(runModelObj, "runConquest")) {
                     if ( isTRUE(Q3) ) {
                         if ( ncol ( runModelObj[["qMatrix"]]) !=2 ) {
                             cat("Q3 is only available for unidimensional models. Estimation will be skipped.\n")
@@ -90,12 +90,12 @@ getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c(
                         }
                     }
                     do    <- paste ( "res <- getConquestResults ( ", paste(names(formals(getConquestResults)), car::recode(names(formals(getConquestResults)), "'path'='runModelObj$dir'; 'analysis.name'='runModelObj$analysis.name'; 'model.name'='runModelObj$model.name'; 'qMatrix'='runModelObj$qMatrix'; 'all.Names'='runModelObj$all.Names'; 'deskRes'='runModelObj$deskRes'; 'discrim'='runModelObj$discrim'; 'daten'='runModelObj$daten'"), sep =" = ", collapse = ", "), ")",sep="")
-                    eval(parse(text=do))                                        
-                    dir <- runModelObj[["dir"]]                                 
-                    name<- runModelObj[["analysis.name"]]                       
-                    allN<- runModelObj[["all.Names"]]                           
-               }  else  {                                                       
-                    isTa<- TRUE                                                 
+                    eval(parse(text=do))
+                    dir <- runModelObj[["dir"]]
+                    name<- runModelObj[["analysis.name"]]
+                    allN<- runModelObj[["all.Names"]]
+               }  else  {
+                    isTa<- TRUE
                     if ( Q3 ) {
                         if ( ncol ( attr(runModelObj, "defineModelObj")[["qMatrix"]]) !=2 ) {
                             cat("Q3 is only available for unidimensional models. Estimation will be skipped.\n")
@@ -105,12 +105,12 @@ getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c(
                     if(!is.null(nplausible)) { attr(runModelObj, "defineModelObj")[["n.plausible"]] <- nplausible }  else  { nplausible <- attr(runModelObj, "defineModelObj")[["n.plausible"]] }
                     do    <- paste ( "res <- getTamResults ( ", paste(names(formals(getTamResults)), car::recode(names(formals(getTamResults)),"'pvMethod'='attr(runModelObj, \"defineModelObj\")[[\"pvMethod\"]]'"),  sep =" = ", collapse = ", "), ")",sep="")
                     eval(parse(text=do))
-                    dir <- attr(runModelObj, "defineModelObj")[["dir"]]         
+                    dir <- attr(runModelObj, "defineModelObj")[["dir"]]
                     name<- attr(runModelObj, "defineModelObj")[["analysis.name"]]
-                    allN<- attr(runModelObj, "defineModelObj")[["all.Names"]]   
+                    allN<- attr(runModelObj, "defineModelObj")[["all.Names"]]
                }
-               if(!is.null(res)) {                                              
-                    stopifnot ( length(unique(res[,"model"])) == 1)             
+               if(!is.null(res)) {
+                    stopifnot ( length(unique(res[,"model"])) == 1)
                     alln<- do.call("rbind", lapply(names(allN), FUN = function ( x ) {
                            if ( length( allN[[x]] ) > 0 ) {
                                 res <- data.frame ( type = "tech", par = x, derived.par = allN[[x]])
@@ -121,9 +121,9 @@ getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c(
                     res <- plyr::rbind.fill ( res, data.frame ( res[1,c("model", "source")], alln, stringsAsFactors = FALSE) )
                     difS<- list (abs.dif.bound = abs.dif.bound, sig.dif.bound = sig.dif.bound, p.value = p.value)
                     resD<- data.frame ( res[1,c("model", "source")], type = "tech", par = "dif", derived.par = names(difS), value = unlist(difS), stringsAsFactors = FALSE)
-                    if ( inherits(runModelObj, "runConquest")) {                
+                    if ( inherits(runModelObj, "runConquest")) {
                          resN<- data.frame ( res[1,c("model", "source")], type = "tech", par = c("method",rep("nodes", 3)), derived.par = c(runModelObj[["method"]],"nodes", "p.nodes", "f.nodes"), value = c(1,runModelObj[["nodes"]], runModelObj[["p.nodes"]], runModelObj[["f.nodes"]]), stringsAsFactors = FALSE)
-                    }  else  {                                                  
+                    }  else  {
                          nNod<- length(attr(runModelObj, "defineModelObj")[["control"]][["nodes"]])
                          resN<- data.frame ( res[1,c("model", "source")], type = "tech", par = c("QMC",rep("nodes", 1+nNod)), derived.par = c(NA,rep("discrete.theta",nNod), "snodes"), value = c(attr(runModelObj, "defineModelObj")[["control"]][["QMC"]],attr(runModelObj, "defineModelObj")[["control"]][["nodes"]], attr(runModelObj, "defineModelObj")[["control"]][["snodes"]]), stringsAsFactors = FALSE)
                     }
@@ -136,8 +136,8 @@ getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c(
                              cat(paste("Item results cannot be saved, file '",  file.path(dir, paste(name, "_items.csv",sep="")),"' already exists.\n    Please remove/rename existing file or use 'overwrite=TRUE'.\n",sep=""))
                         }  else  {
                              write.csv2(item, file.path(dir, paste(name, "_items.csv",sep="")), na="", row.names = FALSE)
-                        }                                                       
-                        txt <- capture.output ( wle <- wleFromRes(res) )        
+                        }
+                        txt <- capture.output ( wle <- wleFromRes(res) )
                         if (!is.null ( wle ) ) {
                              wleL<- reshape2::melt ( wle, id.vars = c(id, "dimension"), measure.vars = c("wle_est", "wle_se"), na.rm = TRUE)
                              form<- as.formula ( paste ( id, "~dimension+variable",sep=""))
@@ -154,9 +154,9 @@ getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c(
                              eapL<- reshape2::melt ( eap, id.vars = c(id, "dimension"), measure.vars = c("EAP", "SE.EAP"), na.rm = TRUE)
                              form<- as.formula ( paste ( id, "~dimension+variable",sep=""))
                              eapW<- reshape2::dcast ( eapL, form, value.var = "value" )
-                        }                                                       
-                        alls<- list ( wle, pv, eap )                            
-                        allP<- NULL                                             
+                        }
+                        alls<- list ( wle, pv, eap )
+                        allP<- NULL
                         notN<- which ( unlist(lapply ( alls, FUN = function ( x ) { !is.null(x)})) )
                         if ( length( notN ) >= 1 ) { allP <- alls[[notN[1]]] }
                         if ( length( notN ) > 1 )  {
@@ -172,7 +172,7 @@ getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c(
                               }
                         }
                         if ( Q3 == TRUE ) {
-                              q3m <- q3FromRes ( res )                          
+                              q3m <- q3FromRes ( res )
                               stopifnot(length(q3m)==1)
                               q3m <- q3m[[1]]
                               if ( file.exists(file.path(dir, paste(name, "_q3.csv",sep=""))) & overwrite == FALSE) {
@@ -213,7 +213,7 @@ checkItemParLists <- function (prmNorm, item, domain, testlet, value, dims = NUL
                 if ( length( mis ) > 0 ) { stop ( paste ( "Domain '",mis,"' is missing in 'prmNorm'.\n",sep="")) }
                 uni <- by ( data = prmNorm, INDICES = prmNorm[, allF[["domain"]] ], FUN = function ( g ) {
                        if (!length(g[,allF[["item"]]]) == length(unique(g[,allF[["item"]]]))) { stop(paste ( "Item identifiers are not unique in 'prmNorm' for domain '",g[1,allF[["domain"]]],"'.\n",sep=""))}
-                       }, simplify = FALSE)                                     
+                       }, simplify = FALSE)
            }
            return(allF)}
 
@@ -227,9 +227,9 @@ transformItemParListIntoResults <- function(results, itemF, domainF, testletF, v
            }
            results[,"model"] <- results[, allF[["domain"]]]
            weg  <- intersect ( colnames (results ) , setdiff  ( c("item", "dimension", "est"), unlist(allF) ))
-           if ( length ( weg ) > 0 )  {                                         
-                results <- results[, -match(weg, colnames(results))]            
-           }                                                                    
+           if ( length ( weg ) > 0 )  {
+                results <- results[, -match(weg, colnames(results))]
+           }
            allF <- allF[which(!sapply(allF, is.null))]
            toRec<- lapply(names(allF), FUN = function ( ff ) { paste ( "'",allF[[ff]],"'='",car::recode(ff, "'item'='item'; 'domain'='dimension'; 'value'='est'"),"'",sep="")})
            toRec<- paste(toRec, collapse = "; ")
@@ -246,7 +246,7 @@ buildEmptyResultsObject <- function (d, method, results ) {
                  dimN <- by ( data = it, INDICES = it[,"dimension"], FUN = function ( prmDim ) {
                          eq <- list(B.est = c(Mean.Mean=0 , Haebara =0, Stocking.Lord=0), descriptives = c(N.Items =0, SD=NA,  Var=NA, linkerror=NA))
                          return ( list ( eq = eq, items = prmDim, method = method ) ) }, simplify = FALSE)
-           }  else  {                                                           
+           }  else  {
                  resX <- results[which(!is.na(results[,"group"])),]
                  dimN <- by ( data = results, INDICES = results[,"group"], FUN = function ( prmDim ) {
                          eq <- list(B.est = c(Mean.Mean=0 , Haebara =0, Stocking.Lord=0), descriptives = c(N.Items =0, SD=NA,  Var=NA, linkerror=NA))
@@ -281,12 +281,12 @@ handleLinkingDif <- function(prmDim,prbl, eq, difBound, dif, method, excludeLink
                           qp1 <- prmM[-match ( dskr[,"item"], prmM[,allN[["item"]]]),]
                           eq1 <- equAux ( x=prmDim[ ,c("item", "est")], y = qp1[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])] )
                           info<- data.frame ( method = "nonIterativ", rbind ( data.frame ( itemExcluded = "" , linking.constant = eq[["B.est"]][[method]], linkerror = eq[["descriptives"]][["linkerror"]] ), data.frame ( itemExcluded = paste ( prmM[match ( dskr[,"item"], prmM[,allN[["item"]]]),allN[["item"]]] , collapse = ", "), linking.constant = eq1[["B.est"]][[method]], linkerror = eq1[["descriptives"]][["linkerror"]] ) ))
-                          eq  <- eq1                                            
+                          eq  <- eq1
                     }  else  {
                           info<- data.frame ( method = "iterativ", iter = 0 , itemExcluded = "" , DIF.excluded="", linking.constant = eq[["B.est"]][[method]], linkerror = eq[["descriptives"]][["linkerror"]] )
                           qp1 <- prmM
                           iter<- 1
-                          while  ( length ( prbl ) > 0 ) {                      
+                          while  ( length ( prbl ) > 0 ) {
                                    maxV<- eq[["anchor"]][,"TransfItempar.Gr1"] - eq[["anchor"]][,"Itempar.Gr2"]
                                    maxV<- maxV[which(abs(maxV) == max(abs(maxV)))]
                                    maxD<- which ( abs ( eq[["anchor"]][,"TransfItempar.Gr1"] - eq[["anchor"]][,"Itempar.Gr2"] ) == max ( abs (eq[["anchor"]][,"TransfItempar.Gr1"] - eq[["anchor"]][,"Itempar.Gr2"])) )
@@ -302,7 +302,7 @@ handleLinkingDif <- function(prmDim,prbl, eq, difBound, dif, method, excludeLink
                     }
                }
                return(list(eq=eq, info=info, info2=dskr))}
-               
+
 noLinkingDif <- function (method, eq, eqr, eqh) {
               if (method %in% c("Mean.Mean", "Haebara", "Stocking.Lord")) {
                    info <- data.frame ( linking.constant = eq[["B.est"]][[method]], linkerror = eq[["descriptives"]][["linkerror"]] )
@@ -318,7 +318,7 @@ noLinkingDif <- function (method, eq, eqr, eqh) {
                    info <- data.frame ( linking.constant = wert, linkerror = NA, stringsAsFactors=FALSE)
               }
               return(list(eq=eq, info=info))}
-              
+
 createOutput <- function (method, eqr, prm, eqh, info){
               if (method == "robust") {
                   wert<- list(eqr[["meanpars"]][[names(eqr[["ind.kopt"]])]], eqr[["se"]][[names(eqr[["ind.kopt"]])]])
@@ -350,16 +350,16 @@ equat1pl<- function ( results , prmNorm , item = NULL, domain = NULL, testlet = 
                 results <- resList[["results"]]
                 dims    <- nMods <- resList[["dims"]]
            }
-           if ( missing ( prmNorm) ) {                                          
+           if ( missing ( prmNorm) ) {
                 if ( isFALSE(isRunM) ) { stop("No norm parameter defined ('prmNorm' is missing).\n")}
                 cat("No norm parameter defined ('prmNorm' is missing). Treat current sample as drawn from the reference population.\n")
                 items <- by ( data = results, INDICES = results[,"model"], FUN = function ( d ) {
                          dimN <- buildEmptyResultsObject(d=d, method = method, results=results)
                          return(dimN)}, simplify = FALSE)
-                ret   <- list(items = items, results = results)                 
-                class(ret) <- c("eq2tom", class(ret))                           
+                ret   <- list(items = items, results = results)
+                class(ret) <- c("eq2tom", class(ret))
                 return(ret)
-           }  else {                                                            
+           }  else {
                 prmNorm<- eatTools::makeDataFrame(prmNorm)
                 allN   <- checkItemParLists(prmNorm =prmNorm, item = item, domain = domain, testlet = testlet, value = value, dims=dims)
                 items <- by ( data = results, INDICES = results[,"model"], FUN = function ( d ) {
@@ -379,13 +379,13 @@ equat1pl<- function ( results , prmNorm , item = NULL, domain = NULL, testlet = 
                                }  else  {
                                    prmM<- prmNorm
                                }
-                               mess1 <- NULL                                    
+                               mess1 <- NULL
                                if (!is.null(allN[["testlet"]])) {
                                    mrge <- merge(prmDim[,c("item", "dimension")], prmM, by="item", all=FALSE)
                                    stopifnot(nrow(mrge)>0)
                                    if(length(which(is.na(mrge[,allN[["testlet"]]]))) > 0) {
                                        mess1 <- paste0("Domain '",prmDim[1,"dimension"],"': Found ",length(which(is.na(mrge[,allN[["testlet"]]]))), " missing values in '",allN[["testlet"]],"' column of 'prmNorm'. Withdraw from incorporating testlets into linking error computation.")
-                                       allN[["testlet"]] <- NULL                
+                                       allN[["testlet"]] <- NULL
                                    }
                                }
                                if ( length(prmDim[, "item"]) != length(unique(prmDim[, "item"])) ) {  stop(paste("Items are not unique for model '",as.character(d[1,"model"]),"'.\n",sep="")) }
@@ -393,9 +393,9 @@ equat1pl<- function ( results , prmNorm , item = NULL, domain = NULL, testlet = 
                                if ( eq[["descriptives"]][["N.Items"]] > 0) {
                                      if ( method == "robust") {
                                          prm<- merge(prmM[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])], prmDim[ ,c("item", "est")], by.y="item", by.x = allN[["item"]], all=FALSE)
-                                         eqr<- sirt::linking.robust(prm)        
-                                     }                                          
-                                     if ( method == "Haberman") {               
+                                         eqr<- sirt::linking.robust(prm)
+                                     }
+                                     if ( method == "Haberman") {
                                          prm<- rbind ( data.frame ( study = "norm", item = prmM[,allN[["item"]]], a=1, b = prmM[,allN[["value"]]], stringsAsFactors = FALSE), data.frame ( study = "focus", item = prmDim[ ,"item"], a=1, b = prmDim[ ,"est"], stringsAsFactors = FALSE))
                                          eqh<- sirt::linking.haberman(prm, progress = FALSE, estimation = estimation, b_trim=b_trim, lts_prop=lts_prop)
                                      }
@@ -409,7 +409,7 @@ equat1pl<- function ( results , prmNorm , item = NULL, domain = NULL, testlet = 
                                foo <- printToConsole(d=d, nMods=nMods, it=it, prmDim=prmDim, eq=eq, allN=allN, method=method, estimation=estimation, eqh=eqh, eqr=eqr, mess1=mess1)
                                if ( method != "robust" && method != "Haberman" && length( prbl ) > 0 ) {
                                     eld  <- handleLinkingDif(prmDim=prmDim,prbl=prbl, eq=eq, difBound=difBound, dif=dif, method=method, excludeLinkingDif=excludeLinkingDif, iterativ=iterativ,prmM=prmM, allN=allN)
-                               }  else  {                                       
+                               }  else  {
                                     eld  <- noLinkingDif(method=method, eq=eq, eqr=eqr, eqh=eqh)
                                }
                                if( isFALSE(iterativ) && excludeLinkingDif && !is.null(eld[["info2"]])) {
@@ -426,14 +426,14 @@ equat1pl<- function ( results , prmNorm , item = NULL, domain = NULL, testlet = 
                                ret <- list ( eq = eld[["eq"]], items = prmDim, info = eld[["info"]], method = method )
                                return ( ret ) }, simplify =FALSE)
                        return(dimN) }, simplify = FALSE)
-              ret  <- list ( items = items, results = results)                  
-              class(ret) <- c("eq2tom", class(ret))                             
-              return(ret)                                                       
+              ret  <- list ( items = items, results = results)
+              class(ret) <- c("eq2tom", class(ret))
+              return(ret)
               }  }
 
 equAux  <- function ( x, y ) {
-           eq  <- sirt::equating.rasch(x = x, y = y[,1:2])                      
-           if ( ncol(y)==3) {                                                   
+           eq  <- sirt::equating.rasch(x = x, y = y[,1:2])
+           if ( ncol(y)==3) {
                 colnames(x)[1] <- colnames(y)[1] <- "item"
                 dfr <- merge( x, y, by = "item", all = FALSE)
                 stopifnot ( ncol ( dfr ) == 4 )
@@ -453,7 +453,7 @@ adaptEatRepVersion <- function ( x ) {
            stopifnot ( inherits(x, "data.frame") )
            return(x)
      } }
-     
+
 createLinkingErrorObject <- function (itempars, years) {
      res <- do.call("rbind", by(data = itempars, INDICES = itempars[,"dimension"], FUN = function (d) {
             r1 <- do.call("rbind", lapply(c("value", "valueTransfBista", "traitLevel"), FUN = function (av) {
@@ -471,14 +471,14 @@ createLinkingErrorObject <- function (itempars, years) {
                   return(dfr)}))
             return(r1)}))
      return(res)}
-     
+
 createItemVeraObj <- function(itempars, roman, results, q3bound){
        pCols      <- colnames(itempars)[grep("^itemP", colnames(itempars))]
        allCols    <- na.omit(match ( c("dimension","item", pCols, "itemDiscrim", "estTransf", "infit", "estTransfBista", "traitLevel"), colnames(itempars)))
        itemVera   <- itempars[,allCols]
        colnames(itemVera) <- car::recode ( colnames(itemVera), "'dimension'='domain'; 'item'='iqbitem_id'; 'itemDiscrim'='trennschaerfe'; 'estTransf'='logit'; 'estTransfBista'='bista'; 'traitLevel'='kstufe'")
        colnames(itemVera)[match(pCols, colnames(itemVera))] <- paste0("lh", eatTools::removePattern ( string = pCols, pattern = "^itemP"))
-       if ( roman == TRUE ) {                                                   
+       if ( roman == TRUE ) {
             if (!all(itemVera[,"kstufe"] %in% c("1a", "1b", 1:5))) {stop(paste("Competence levels do not match allowed values. '1a', '1b', '1', '2', '3', '4', '5' is allowed. '",paste(names(table(itemVera[,"kstufe"])), collapse = "', '"),"' was found.\n",sep=""))}
             itemVera[,"kstufe"] <- car::recode (itemVera[,"kstufe"], "'1a'='Ia'; '1b'='Ib'; '1'='I'; '2'='II'; '3'='III'; '4'='IV'; '5'='V'")
        }
@@ -488,7 +488,7 @@ createItemVeraObj <- function(itempars, roman, results, q3bound){
             if ( !"GL" %in% rownames(tab)) {
                  cat("Cannot find 'global' entry in the 'domain' column. Cancel reshaping.\n")
             }  else  {
-                 if ( !sum(tab[which(rownames(tab) == "GL"),]) == ncol(tab)) {  
+                 if ( !sum(tab[which(rownames(tab) == "GL"),]) == ncol(tab)) {
                      cat("Found items without values on the 'global' domain. Cancel reshaping.\n")
                  }  else  {
                      if ( !all(colSums(tab) == 2) ) {
@@ -522,14 +522,14 @@ addQ3 <- function (dfr, results, q3bound) {
        return(dfr)}
 
 transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defaultM = 500, defaultSD = 100, q3bound = .20, roman = FALSE, vera = TRUE, idVarName = NULL, years = NULL ) {
-       mr  <- FALSE                                                             
-       if(missing(refPop)) {                                                    
+       mr  <- FALSE
+       if(missing(refPop)) {
           mr  <- TRUE
           cat("'refPop' was not defined. Treat current sample as drawn from the reference population.\n")
           flush.console()
        }  else  {
           refPop <- eatTools::makeDataFrame(refPop)
-          for ( i in 2:ncol(refPop)) {                                          
+          for ( i in 2:ncol(refPop)) {
                 if(!inherits(refPop[,i], c("integer", "numeric"))) {stop("All columns of 'refPop' except for the first one must be numeric.")}
           }
        }
@@ -557,14 +557,14 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
            }
            refList<- lapply ( dims, FUN = function (dimname) {
                      rex  <- pvFromRes(equatingList[["results"]][unique(c(which(equatingList[["results"]][,"group"] == dimname),which(equatingList[["results"]][,"type"] == "tech"))), ], toWideFormat = FALSE, idVarName=idVarName, verbose=FALSE)
-                     if (is.null(rex)) {return(NULL)}                               
+                     if (is.null(rex)) {return(NULL)}
                      if ( is.null(weights) ) {
                           txt <- capture.output ( msd <- eatRep::repMean ( datL = rex, ID = id, imp = "imp", dependent = "value", na.rm = TRUE))
-                          msd <- adaptEatRepVersion(msd)                            
-                     }  else  {                                                     
+                          msd <- adaptEatRepVersion(msd)
+                     }  else  {
                         rex <- eatTools::mergeAttr ( rex, weights , by.x = id, by.y = colnames(weights)[1], all.x = TRUE, all.y = FALSE,  setAttr = FALSE, unitName = "cases", xName = paste0("plausible values for dimension ",dimname), yName = "weights", verbose = c("match", "dataframe"))
                         mis <- which(is.na(rex[,colnames(weights)[2]]))
-                        if ( length(mis) > 0 ) {                                    
+                        if ( length(mis) > 0 ) {
                              if(length(mis) == nrow(rex)) {stop(paste("Mergin of weights and plausible values for '", dimname, "' failed. No common units."))}
                              cat(paste ( "Found ",length(mis)," missing values in the 'weights' frame.\n    Cases with missing values on weighting variable will be ignored for transformation.\n",sep=""))
                              rex <- rex[-mis,]
@@ -582,7 +582,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
               mis <- which(is.na(refPop))
               if ( length(mis) >0) {
                    stopifnot ( nrow(ref ) == nrow(refPop))
-                   mat <- merge( 1:nrow(refPop), 1:ncol(refPop), by = NULL)         
+                   mat <- merge( 1:nrow(refPop), 1:ncol(refPop), by = NULL)
                    refPop[unique(mat[mis,"x"]), unique(mat[mis,"y"])] <- ref[unique(mat[mis,"x"]), unique(mat[mis,"y"])]
               }
            }
@@ -595,9 +595,9 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
        }
        if(!all(dims %in% refPop[,1]))  {warning(paste0("Dimension names in the 'results' object '",paste(dims, collapse="', '"), "' do not match to names in the first columns of 'refPop': '",paste(refPop[,1], collapse="', '"),"."))}
        if(!all(dims %in% names(cuts))) {warning(paste0("Dimension names in the 'results' object '",paste(dims, collapse="', '"), "' do not match to names in the cut scores object: '",paste(names(cuts), collapse="', '"),"."))}
-       modN<- lapply(nam1, FUN = function ( mod ) {                             
+       modN<- lapply(nam1, FUN = function ( mod ) {
               nam2 <- names(equatingList[["items"]][[mod]])
-              dimN <- lapply(nam2, FUN = function ( dims ) {                    
+              dimN <- lapply(nam2, FUN = function ( dims ) {
                       if (isRunM) {
                           resMD<- equatingList[["results"]][unique(c(intersect(which(equatingList[["results"]][,"model"] == mod), which(equatingList[["results"]][,"group"] == dims)),  which(equatingList[["results"]][,"type"] == "tech"))),]
                           rex  <- pvFromRes(resMD, toWideFormat = TRUE, idVarName = idVarName, verbose=FALSE)
@@ -660,7 +660,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                                     }  else  {
                                          pvF <- eatTools::mergeAttr ( pv, weights , by.x = id, by.y = colnames(weights)[1], all.x = TRUE, all.y = FALSE,  setAttr = FALSE, unitName = "cases", xName = paste0("plausible values for dimension ",dims), yName = "weights", verbose = c("match", "dataframe"))
                                          mis <- which(is.na(pvF[,colnames(weights)[2]]))
-                                         if ( length(mis) > 0 ) {                       
+                                         if ( length(mis) > 0 ) {
                                               cat(paste ( "Found ",length(mis)," missing values in the 'weights' frame.\n    Cases with missing values on weighting variable will be ignored for transformation.\n",sep=""))
                                               pvF <- pvF[-mis,]
                                          }
@@ -671,11 +671,11 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                                 }  else  {
                                     cat("Results object does not contain any plausible values. Skip transformation of linking error for competence levels.\n")
                                 }
-                                if ( !is.null(pv) && !is.null ( itFrame )) {        
+                                if ( !is.null(pv) && !is.null ( itFrame )) {
                                     if ( cutsMis == FALSE & !is.null ( equatingList[["items"]] )) {
                                          cts <- c( -10^6, cuts[[mat1]][["values"]], 10^6)
                                          le  <- do.call("rbind", lapply ( (length(cts)-1):1 , FUN = function ( l ) {
-                                                kmp<- c(cts[l], cts[l+1])           
+                                                kmp<- c(cts[l], cts[l+1])
                                                 a1 <- sum ( dnorm ( ( kmp - refPop[mat,4]) / refPop[mat,5] ) * c(-1,1) / refPop[mat,5] )
                                                 a2 <- sum ( dnorm ( ( kmp - msdFok[1]) / msdFok[2] ) * c(-1,1) / msdFok[2] )
                                                 if(a2 == 0 ) {cat("mutmasslicher fehler.\n")}
@@ -710,7 +710,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                                         pv[,"linkingError"] <- equatingList[["items"]][[mod]][[dims]][["eq"]][["descriptives"]][["linkerror"]]
                                         pv[,"linkingErrorTransfBista"] <- unique ( itFrame[,"linkingErrorTransfBista"])
                                     }
-                                    ori <- colnames(pv)                             
+                                    ori <- colnames(pv)
                                     if ( cutsMis == FALSE && !is.null ( equatingList[["items"]]) && exists("le") ) {
                                          pv  <- eatTools::mergeAttr ( pv, le, by = "traitLevel", sort = FALSE, all.x = TRUE, all.y = FALSE, setAttr = FALSE, unitName = "trait levels", xName = "plausible values", yName = "linking error list", verbose = c("match"))
                                          pv  <- pv[,c(ori, "linkingErrorTraitLevel")]
@@ -730,7 +730,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                                 pv <- NULL
                             }
                             return(list ( itempars = itFrame, personpars = pv, rp = rp))
-                      }  })                                                     
+                      }  })
               itempars<- do.call(plyr::rbind.fill, lapply ( dimN, FUN = function ( x ) { x[["itempars"]]}))
               perspar <- do.call("rbind", lapply ( dimN, FUN = function ( x ) { x[["personpars"]]}))
               rp      <- do.call("rbind", lapply ( dimN, FUN = function ( x ) { x[["rp"]]}))
@@ -760,12 +760,12 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
 
 
 runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.console = TRUE, wait = TRUE) {
-            if (inherits(defineModelObj, "defineMultiple") ) {                  
+            if (inherits(defineModelObj, "defineMultiple") ) {
                 if(is.null ( attr(defineModelObj, "split")[["nCores"]] ) || attr(defineModelObj, "split")[["nCores"]] == 1 ) {
-                   res <- lapply(defineModelObj, FUN = function ( r ) {         
+                   res <- lapply(defineModelObj, FUN = function ( r ) {
                           ret <- runModel ( defineModelObj = r, show.output.on.console = show.output.on.console, show.dos.console = show.dos.console, wait = wait)
                           return(ret)})
-                }  else  {                                                      
+                }  else  {
                    doIt<- function (laufnummer,  ... ) {
                           if(!exists("runModel"))  { library(eatModel) }
                           ret <- runModel ( defineModelObj = defineModelObj[[laufnummer]], show.output.on.console = show.output.on.console, show.dos.console = show.dos.console, wait = TRUE)
@@ -783,13 +783,13 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
                 class(res) <- c("runMultiple", "list")
                 attr(res, "split") <- attr(defineModelObj, "split")
                 return(res)
-            } else {                                                            
-                if(inherits(defineModelObj, "defineConquest")) {                
+            } else {
+                if(inherits(defineModelObj, "defineConquest")) {
                    oldPfad <- getwd()
                    setwd(defineModelObj$dir)
                    suppressWarnings(system(paste(defineModelObj$conquest.folder," ",defineModelObj$input,sep=""),invisible=!show.dos.console,show.output.on.console=show.output.on.console, wait=wait) )
                    if(wait == FALSE) { Sys.sleep(0.2) }
-                   setwd(oldPfad)                                               
+                   setwd(oldPfad)
                    class(defineModelObj) <- c("runConquest", "list")
                    return ( defineModelObj )
                 }
@@ -831,17 +831,17 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
                           mod  <- tam.mml.mfr(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], facets = facetten, constraint = defineModelObj[["constraint"]], formulaA = formel, pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = defineModelObj[["anchor"]], irtmodel = defineModelObj[["irtmodel"]], pweights = wgt, control = defineModelObj[["control"]], group=group)
                      }  else  {
                           mod  <- tamObjForBayesianPV (anchor = defineModelObj[["anchor"]], qMatrix = defineModelObj[["qMatrix"]], resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y=Y, slopeMatrix = defineModelObj[["fixSlopeMat"]])
-                     }                                                          
-                   }                                                            
+                     }
+                   }
                    attr(mod, "defineModelObj") <- defineModelObj[-match("daten", names(defineModelObj))]
                    attr(mod, "Y")              <- Y
                    return(mod)  }  }   }
 
 doAufb <- function ( m, matchCall, anf, verbose, dir, multicore ) {
           matchL <- match(m, unlist(lapply(matchCall[["splittedModels"]][["models.splitted"]], FUN = function ( l ) { l[["model.no"]] } )))
-          mess1  <- NULL                                                        
+          mess1  <- NULL
           if(!is.null(matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["qMatrix"]])) {
-             if ( !is.null(matchCall[["items"]]) )  {                           
+             if ( !is.null(matchCall[["items"]]) )  {
                   if(m == anf) { mess1 <- c(mess1, cat("Warning: 'defineModel' was called using 'splitModels' argument. Model split according to item groups is intended. Item selection is defined \n    via 'splittedModels' object. Hence, 'items' argument is expected to be missed in 'defineModel()' and will be ignored.\n")) }
              }
              itemMis<- setdiff ( matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["qMatrix"]][,1], colnames(matchCall[["dat"]]))
@@ -874,28 +874,28 @@ doAufb <- function ( m, matchCall, anf, verbose, dir, multicore ) {
           }
           overwr1<- list( dat=datSel, items = itemSel, qMatrix = qMatrix, analysis.name = nameI, dir = dirI)
           overwrF<- setdiff ( colnames(matchCall[["splittedModels"]][["models"]]), c("model.no", "model.name", "model.subpath", "dim", "Ndim", "group", "Ngroup"))
-          if(length(overwrF)>0) {                                               
-             notAllow <- setdiff ( overwrF, names(formals(defineModel)))        
+          if(length(overwrF)>0) {
+             notAllow <- setdiff ( overwrF, names(formals(defineModel)))
              if ( length ( notAllow ) > 0 ) {
-                  if ( m == anf ) {                                             
+                  if ( m == anf ) {
                        mess1 <- c(mess1, paste("Column(s) '",paste(notAllow, collapse = "', '"),"' of 'splittedModels' definition frame do not match arguments of 'defineModel()'. Columns will be ignored.\n", sep=""))
                   }
                   overwrF <- setdiff (overwrF, notAllow)
-             }                                                                  
-             notAllow2<- intersect ( overwrF, names(overwr1))                   
+             }
+             notAllow2<- intersect ( overwrF, names(overwr1))
              if ( length ( notAllow2 ) > 0 ) {
-                  if ( m == anf ) {                                             
+                  if ( m == anf ) {
                        mess1 <- c(mess1, paste("Column(s) '",paste(notAllow2, collapse = "', '"),"' of 'splittedModels' definition frame are not allowed to be modified by user. Columns will be ignored.\n", sep=""))
                   }
                   overwrF <- setdiff (overwrF, notAllow2)
              }
-             notAllow3<- intersect ( overwrF, names(matchCall))                 
-             if ( length ( notAllow3 ) > 0 ) {                                  
+             notAllow3<- intersect ( overwrF, names(matchCall))
+             if ( length ( notAllow3 ) > 0 ) {
                   if ( m == anf ) {
                        mess1 <- c(mess1, paste("Column(s) '",paste(notAllow3, collapse = "', '"),"' were defined twice, in <models>$models and 'defineModel'. The latter one will be ignored.\n", sep=""))
                   }
-             }                                                                  
-             if ( length ( overwrF ) > 0 ) {                                    
+             }
+             if ( length ( overwrF ) > 0 ) {
                   for ( hh in overwrF ) {
                         overwr1[[hh]] <- matchCall[["splittedModels"]][["models"]][which(matchCall[["splittedModels"]][["models"]][,"model.no"] == m),hh]
                         matchCall[["splittedModels"]][["models.splitted"]][[matchL]][[hh]] <- matchCall[["splittedModels"]][["models"]][which(matchCall[["splittedModels"]][["models"]][,"model.no"] == m),hh]
@@ -921,12 +921,12 @@ doAufb <- function ( m, matchCall, anf, verbose, dir, multicore ) {
               if(!is.null(mess1)) { cat(mess1)}
            }
           if(is.null ( matchCall[["splittedModels"]][["nCores"]] ) | matchCall[["splittedModels"]][["nCores"]] == 1 ) {
-             ret    <- do.call("defineModel", args = overwr1)                   
-          }  else  {                                                            
-             attr(overwr1[["dat"]], "multicore") <- TRUE                        
-             ret    <- overwr1                                                  
-          }                                                                     
-          return(ret) }                                                         
+             ret    <- do.call("defineModel", args = overwr1)
+          }  else  {
+             attr(overwr1[["dat"]], "multicore") <- TRUE
+             ret    <- overwr1
+          }
+          return(ret) }
 
 
 identifyConquestFolder <- function () {
@@ -960,10 +960,10 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                allowAllScoresEverywhere = TRUE, guessMat = NULL, est.slopegroups = NULL, fixSlopeMat = NULL, slopeMatDomainCol=NULL, slopeMatItemCol=NULL, slopeMatValueCol=NULL,
                progress = FALSE, Msteps = NULL, increment.factor=1 , fac.oldxsi=0, export = list(logfile = TRUE, systemfile = FALSE, history = TRUE, covariance = TRUE, reg_coefficients = TRUE, designmatrix = FALSE) )   {
                   software <- match.arg(arg = software, choices = c("conquest","tam"))
-                  if ( software == "conquest" && is.null(conquest.folder) ) {   
+                  if ( software == "conquest" && is.null(conquest.folder) ) {
                        conquest.folder <- identifyConquestFolder()
                   }
-                  ismc <- attr(dat, "multicore")                                
+                  ismc <- attr(dat, "multicore")
                   dat  <- eatTools::makeDataFrame(dat, name = "dat")
                   if(!is.null(splittedModels)) {
                      if(length(splittedModels) == 4L & !is.null(splittedModels[["models"]]) &  length(nrow( splittedModels[["models"]]) > 0)>0 ) {
@@ -987,11 +987,11 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                              flush.console()
                          }
                      }
-                     cl1 <- as.list(match.call(definition = defineModel))       
-                     cl1[["analysis.name"]] <- NULL                             
-                     cl1[["dat"]] <- as.name("dat")                             
-                     cl1[["splittedModels"]] <- splittedModels                  
-                     cll <- list()                                              
+                     cl1 <- as.list(match.call(definition = defineModel))
+                     cl1[["analysis.name"]] <- NULL
+                     cl1[["dat"]] <- as.name("dat")
+                     cl1[["splittedModels"]] <- splittedModels
+                     cll <- list()
                      for ( u in 2:length(cl1)) {cll[[u-1]] <- eval(cl1[[u]])}
                      names(cll) <- names(cl1)[-1]
                      anf <- mods[1]
@@ -1016,7 +1016,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                         txts<- lapply(mods, FUN = function ( m ) { m[["txt"]] } )
                         luec<- which(txt == "")
                         pos <- luec[which ( diff(luec) == 1L )]
-                        dif2<- which(diff(pos) == 1L)                           
+                        dif2<- which(diff(pos) == 1L)
                         if(length(dif2)>0) { pos <- pos [ -dif2 ] }
                         pos <- c(pos, length(txt)+1)
                         txtP<- lapply ( 1:(length(pos)-1), FUN = function ( u ) { txt[ pos[u] : (pos[u+1]-1) ] })
@@ -1024,8 +1024,8 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                         stopifnot(length(txtP) == length(txts))
                         for ( j in 1:length(txtP) ) {
                               txtG <- c(txtG, txtP[[j]], txts[[j]])
-                        }                                                       
-                        fl  <- min(grep( pattern = "====", x = txt))            
+                        }
+                        fl  <- min(grep( pattern = "====", x = txt))
                         if ( fl > 1) {
                              if (!all(txt[1:(fl-1)] == "" )) {
                                  txtG <- c("", txt[1:(fl-3)], txtG)
@@ -1035,24 +1035,24 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                      }
                   attr(models, "split") <- splittedModels
                   class(models)    <- c("defineMultiple", "list")
-                  return(models)                                                
+                  return(models)
                   }  else  {
                      irtmodel <- match.arg(irtmodel)
-                     if ( is.null(Msteps) ) {                                   
+                     if ( is.null(Msteps) ) {
                           if ( irtmodel == "3PL" ) { Msteps <- 10 } else { Msteps <- 4 }
                      }
                      method   <- match.arg(method)
                      pvMethod <- match.arg(pvMethod)
                      if(software == "conquest") {
-                        original.options <- options("scipen")                   
-                        options(scipen = 20)                                    
+                        original.options <- options("scipen")
+                        options(scipen = 20)
                         if(missing(analysis.name)) {stop("Please specify 'analysis.name' or use 'software = \"tam\"'\n")}
                      }  else  {
                         if(missing(analysis.name)) {analysis.name <- "not_specified"}
                      }
                      if(length(model.statement)!=1)                {stop("'model.statement' has to be of length 1.\n")}
                      if(!inherits(model.statement, "character"))   {stop("'model.statement' has to be of class 'character'.\n")}
-                     if(missing(dat))   {stop("No dataset specified.\n") }      
+                     if(missing(dat))   {stop("No dataset specified.\n") }
                      if(is.null(items)) {stop("Argument 'items' must not be NULL.\n",sep="")}
                      if(length(items) == 0 ) {stop("Argument 'items' has no elements.\n",sep="")}
                      if ( length(items) != length(unique(items)) ) {
@@ -1070,7 +1070,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                      dat <- checkBoundary(dat=dat, allNam=all.Names, boundary=boundary, remove.boundary=remove.boundary)
                      subsNam <- .substituteSigns(dat=dat, variable=unlist(all.Names[-c(1:2)]), all.Names = all.Names)
                      if(software == "conquest" || !is.null(all.Names[["DIF.var"]])) {
-                        if(!all(subsNam$old == subsNam$new)) {                  
+                        if(!all(subsNam$old == subsNam$new)) {
                            sn     <- subsNam[which( subsNam$old != subsNam$new),]
                            cat("Conquest neither allows '.', '-', and '_' nor upper case letters in explicit variable names. Delete signs from variables names for explicit variables.\n"); flush.console()
                            recStr <- paste("'",sn[,"old"] , "' = '" , sn[,"new"], "'" ,sep = "", collapse="; ")
@@ -1082,13 +1082,13 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                            }
                         }
                         if("item" %in% unlist(all.Names[-c(1:2)])) { stop("Conquest does not allow labelling explicit variable(s) with 'Item' or 'item'.\n") }
-                     }                                                          
+                     }
                      if(length(intersect(all.Names$DIF.var, all.Names$variablen))>0)    {stop("Test items and DIF variable have to be mutually exclusive.\n")}
                      if(length(intersect(all.Names$weight.var, all.Names$variablen))>0) {stop("Test items and weighting variable have to be mutually exclusive.\n")}
                      if(length(intersect(all.Names$HG.var, all.Names$variablen))>0)     {stop("Test items and HG variable have to be mutually exclusive.\n")}
                      if(length(intersect(all.Names$group.var, all.Names$variablen))>0)  {stop("Test items and group variable have to be mutually exclusive.\n")}
                      if(is.null(qMatrix)) { qMatrix <- data.frame ( item = all.Names$variablen, Dim1 = 1, stringsAsFactors = FALSE) } else {
-                         qMatrix <- checkQmatrixConsistency(qMatrix)            
+                         qMatrix <- checkQmatrixConsistency(qMatrix)
                          notInDat<- setdiff(qMatrix[,1], all.Names$variablen)
                          notInQ  <- setdiff( all.Names$variablen , qMatrix[,1])
                          if(length(notInDat)>0) {
@@ -1098,7 +1098,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                          }
                          if(length(notInQ)>0) {
                             cat(paste("Following ", length(notInQ)," item(s) missed in Q matrix will be removed from data: \n    ",paste(notInQ,collapse=", "),"\n",sep=""))
-                         }                                                      
+                         }
                          all.Names[["variablen"]] <- qMatrix[,1]  } ;   flush.console()
                       cic <- checkItemConsistency(dat=dat, allNam = all.Names, remove.missing.items=remove.missing.items, verbose=verbose, removeMinNperItem=removeMinNperItem, minNperItem=minNperItem, remove.constant.items=remove.constant.items, model.statement=model.statement)
                       cbc <- checkBGV(allNam = cic[["allNam"]], dat=cic[["dat"]], software=software, remove.no.answersHG=remove.no.answersHG, remove.vars.DIF.missing=remove.vars.DIF.missing, namen.items.weg=cic[["namen.items.weg"]], remove.vars.DIF.constant=remove.vars.DIF.constant)
@@ -1109,7 +1109,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                       }
                       pwvv<- personWithoutValidValues(dat=cbc[["dat"]], allNam=cbc[["allNam"]], remove.no.answers=remove.no.answers)
                       cpsc<- checkPersonSumScores(datL = pwvv[["datL"]], allNam = cbc[["allNam"]], dat=pwvv[["dat"]], remove.failures=remove.failures)
-                      if(check.for.linking == TRUE) {                           
+                      if(check.for.linking == TRUE) {
                          linkNaKeep <- checkLink(dataFrame = cpsc[["dat"]][,cbc[["allNam"]][["variablen"]], drop = FALSE], remove.non.responser = FALSE, verbose = FALSE )
                          linkNaOmit <- checkLink(dataFrame = cpsc[["dat"]][,cbc[["allNam"]][["variablen"]], drop = FALSE], remove.non.responser = TRUE, verbose = FALSE )
                          if(linkNaKeep == FALSE & linkNaOmit == TRUE )  {cat("Note: Dataset is not completely linked. This is probably only due to missings on all cases.\n")}
@@ -1117,14 +1117,14 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                       }
                       met <- adaptMethod(method=method, software=software, nodes=nodes)
                       if(length(cbc[["namen.all.hg"]])>0) {all.hg.char <- sapply(cbc[["namen.all.hg"]], FUN=function(ii) {max(nchar(as.character(na.omit(cpsc[["dat"]][,ii]))))})} else {all.hg.char <- NULL}
-                      if ( software == "conquest" )   {                         
+                      if ( software == "conquest" )   {
                           var.char  <- sapply(cpsc[["dat"]][,cbc[["allNam"]][["variablen"]], drop = FALSE], FUN=function(ii) {max(nchar(as.character(na.omit(ii))))})
                           no.number <- setdiff(1:length(var.char), grep("[[:digit:]]",var.char))
-                          if(length(no.number)>0) {var.char[no.number] <- 1}    
-                          if(use.letters == TRUE)   {                           
+                          if(length(no.number)>0) {var.char[no.number] <- 1}
+                          if(use.letters == TRUE)   {
                              rec.statement <- paste(0:25,"='",LETTERS,"'",sep="",collapse="; ")
-                             daten.temp <- cpsc[["dat"]]                        
-                             for (i in cbc[["allNam"]][["variablen"]])  {       
+                             daten.temp <- cpsc[["dat"]]
+                             for (i in cbc[["allNam"]][["variablen"]])  {
                                   cpsc[["dat"]][,i] <- car::recode(cpsc[["dat"]][,i], rec.statement)}
                              var.char <- rep(1,length(cbc[["allNam"]][["variablen"]]))}
                       }
@@ -1135,12 +1135,12 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                            cat ( paste ( "Following ",length(crit), " items with less than ",minNperItem," item responses:\n",sep=""))
                            options(width=1000)
                            print(deskRes[crit,-match(c("item.nr", "Label", "KB", "Codes", "Abs.Freq", "Rel.Freq"), colnames(deskRes))], digits = 3)
-                      }                                                         
+                      }
                       if(inherits(try(discrim <- item.diskrim(daten,match(cbc[["allNam"]][["variablen"]], colnames(daten)))  ),"try-error"))  {
                            discrim <- item.diskrim(daten.temp,match(cbc[["allNam"]][["variablen"]], colnames(daten.temp)))
                            rm(daten.temp)
                       }
-                      if ( length ( cbc[["allNam"]][["schooltype.var"]] ) > 0 ) { 
+                      if ( length ( cbc[["allNam"]][["schooltype.var"]] ) > 0 ) {
                            deskS <- by ( data = cpsc[["dat"]], INDICES = cpsc[["dat"]][, cbc[["allNam"]][["schooltype.var"]] ], FUN = function ( st ) {
                                     drst <- desk.irt(daten = st, itemspalten = match(cbc[["allNam"]][["variablen"]], colnames(st)), percent = TRUE)
                                     colnames(drst) <- car::recode (colnames(drst) , paste0("'item.p'='item.p.",st[1,cbc[["allNam"]][["schooltype.var"]]],"'") )
@@ -1165,10 +1165,10 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                           daten$ID <- gsub ( " ", "0", formatC(daten$ID, width=max(as.numeric(names(table(nchar(daten$ID)))))) )
                           fixed.width <- c(as.numeric(names(table(nchar(daten[,"ID"])))), all.hg.char, rep(max(var.char),length(var.char)))
                           txt  <-  capture.output ( gdata::write.fwf(daten , colnames = FALSE,rownames = FALSE, sep="",quote = FALSE,na=".", width=fixed.width))
-                          stopifnot(length(table(nchar(txt)))==1)               
-                          rm(txt)                                               
+                          stopifnot(length(table(nchar(txt)))==1)
+                          rm(txt)
                           gdata::write.fwf(daten , file.path(dir,paste(analysis.name,".dat",sep="")), colnames = FALSE,rownames = FALSE, sep="",quote = FALSE,na=".", width=fixed.width)
-                          colnames(lab) <- c("===>","item")                     
+                          colnames(lab) <- c("===>","item")
                           write.table(lab,file.path(dir,paste(analysis.name,".lab",sep="")),col.names = TRUE,row.names = FALSE, dec = ",", sep = " ", quote = FALSE)
                           batch <- paste( normalize.path(conquest.folder),paste(analysis.name,".cqc",sep=""), sep=" ")
                           write(batch, file.path(dir,paste(analysis.name,".bat",sep="")))
@@ -1181,7 +1181,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                              cat(paste("Found existing log file '",paste(analysis.name,".log",sep=""), "' in folder '",dir,"'\nConquest analysis will overwrite log file. Original log file will be saved as '",paste(analysis.name,"_old.log'\n",sep=""),sep=""))
                              do <- file.rename(from = file.path(dir, paste(analysis.name,".log",sep="")), to = file.path(dir, paste(analysis.name,"_old.log",sep="")))
                           }
-                          options(scipen = original.options); flush.console()   
+                          options(scipen = original.options); flush.console()
                           ret <- list ( software = software, input = paste("\"", file.path(dir, paste(analysis.name,"cqc",sep=".")), "\"", sep=""), conquest.folder = paste("\"", conquest.folder, "\"", sep=""), dir=dir, analysis.name=analysis.name, model.name = analysis.name, qMatrix=qMatrix, all.Names=cbc[["allNam"]], deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]], perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], daten=daten, method=met[["method"]], nodes=met[["nodes"]], p.nodes=p.nodes, f.nodes=f.nodes)
                           class(ret) <-  c("defineConquest", "list")
                           return ( ret )  }
@@ -1213,7 +1213,7 @@ prepGuessMat <- function(guessMat, allNam){
        return(gues)}
 
 prepFixSlopeMatTAM <- function (fsm, allNam, qma, slopeMatDomainCol, slopeMatItemCol, slopeMatValueCol, dat, irtmodel){
-       if(!is.null(fsm))  {                                                     
+       if(!is.null(fsm))  {
            fsm  <- eatTools::facToChar(fsm)
            if(!is.null( slopeMatDomainCol ) ) {
                 allV  <- list(slopeMatDomainCol=slopeMatDomainCol , slopeMatItemCol=slopeMatItemCol, slopeMatValueCol =slopeMatValueCol)
@@ -1241,13 +1241,13 @@ prepFixSlopeMatTAM <- function (fsm, allNam, qma, slopeMatDomainCol, slopeMatIte
            }
            if ( nrow(fsm) != length(unique(fsm[,1])) ) { stop ( "Item identifiers in 'fixSlopeMat' are not unique.\n")}
            fsm[,"reihenfolge"] <- 1:nrow(fsm)
-           dims  <- (1:ncol(qma))[-1]                                           
+           dims  <- (1:ncol(qma))[-1]
            slopMa<- do.call("rbind", by ( data = fsm, INDICES = fsm[,"reihenfolge"], FUN = function (zeile ) {
                     zeile <- zeile[,-ncol(zeile)]
                     stopifnot ( nrow(zeile) == 1 )
                     qSel  <- qma[which( qma[,1] == zeile[[1]]),]
                     anzKat<- length(unique(na.omit(dat[,as.character(zeile[[1]])])))
-                    zeilen<- anzKat * length(dims)                              
+                    zeilen<- anzKat * length(dims)
                     block <- cbind ( rep ( match(zeile[[1]], allNam[["variablen"]]), times = zeilen), rep ( 1:anzKat, each = length(dims) ), rep ( 1:length(dims), times = anzKat), rep(0, zeilen))
                     matchD<- which ( qSel[,-1] != 0 )
                     stopifnot ( length( matchD ) == 1)
@@ -1271,7 +1271,7 @@ prepEstSlopegroupsTAM <- function(esg, allNam){
               cat("   "); cat(paste(weg2, collapse=", ")); cat("\n")
               cat("Remove these item(s) from design matrix.\n")
               esg <- esg[-match(weg2,esg[,1]),]
-           }                                                                    
+           }
            weg3 <- c(which(is.na(esg[,2])), which(esg[,2] ==""))
            if(length(weg3)>0) {stop("Items in 'est.slopegroups' with missing or empty values.\n")}
            esg  <- as.numeric(as.factor(as.character(esg[match(allNam[["variablen"]], esg[,1]),2])))
@@ -1282,11 +1282,11 @@ checkContextVars <- function(x, varname, type = c("weight", "DIF", "group", "HG"
                      type <- match.arg(arg = type, choices = c("weight", "DIF", "group", "HG"))
                      stopifnot(length(x) == nrow(itemdata))
                      if(missing(varname))  {varname <- "ohne Namen"}
-                     if(!inherits(x, "numeric") && isTRUE(internal))  {         
+                     if(!inherits(x, "numeric") && isTRUE(internal))  {
                         if (type == "weight") {stop(paste(type, " variable has to be 'numeric' necessarily. Automatic transformation is not recommended. Please transform by yourself.\n",sep=""))}
                         cat(paste(type, " variable has to be 'numeric'. Variable '",varname,"' of class '",class(x),"' will be transformed to 'numeric'.\n",sep=""))
                         x <- suppressWarnings(unlist(eatTools::asNumericIfPossible(x = data.frame(x, stringsAsFactors = FALSE), transform.factors = TRUE, maintain.factor.scores = FALSE, force.string = FALSE)))
-                        if(!inherits(x, "numeric"))  {                          
+                        if(!inherits(x, "numeric"))  {
                            x <- as.numeric(as.factor(x))
                         }
                         cat(paste("    '", varname, "' was converted into numeric variable of ",length(table(x))," categories. Please check whether this was intended.\n",sep=""))
@@ -1320,7 +1320,7 @@ checkContextVars <- function(x, varname, type = c("weight", "DIF", "group", "HG"
                           if(length(weg) > 0 ) {warning(paste0("Found ",length(weg)," cases with missing on ",type," variable '",varname,"'. Conquest probably will collapse unless cases are not deleted.\n"))}
                           if(type == "DIF" ) {
                                         if(mis > 2 && isTRUE(internal))   {cat(paste(type, " Variable '",varname,"' does not seem to be dichotomous.\n",sep=""))}
-                                        y       <- paste0("V", x)               
+                                        y       <- paste0("V", x)
                                         n.werte <- lapply(itemdata, FUN=function(iii){by(iii, INDICES=list(y), FUN=table, simplify=FALSE)})
                                         completeMissingGroupwise <- data.frame(t(sapply(n.werte, function(ll){lapply(ll, FUN = function (uu) { length(uu[uu>0])}  )})), stringsAsFactors = FALSE)
                                         for (iii in seq(along=completeMissingGroupwise)) {
@@ -1348,8 +1348,8 @@ checkContextVars <- function(x, varname, type = c("weight", "DIF", "group", "HG"
 
 prepAnchorTAM <- function (ank, allNam) {
         if(!is.null(ank)) {
-            stopifnot(ncol(ank) == 2 )                                          
-            notInData   <- setdiff(ank[,1], allNam[["variablen"]])              
+            stopifnot(ncol(ank) == 2 )
+            notInData   <- setdiff(ank[,1], allNam[["variablen"]])
             if(length(notInData)>0)  {ank <- ank[-match(notInData, ank[,1]),]}
             ank[,1]    <- match(as.character(ank[,1]), allNam[["variablen"]])
         }
@@ -1375,19 +1375,19 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
                          newFr <- model.matrix( as.formula (paste("~",yy,sep="")), data = dat)[,-1,drop=FALSE]
                          cat(paste("    Variable '",yy,"' was converted to ",ncol(newFr)," indicator(s) with name(s) '",paste(colnames(newFr), collapse= "', '"), "'.\n",sep=""))
                          return(newFr) }))
-                  if(software == "conquest") {                                  
+                  if(software == "conquest") {
                       subNm <- .substituteSigns(dat=ind, variable=colnames(ind))
                       if(!all(subNm$old == subNm$new)) {
                           sn  <- subNm[which( subNm$old != subNm$new),]
                           reSt<- paste("'",sn[,"old"] , "' = '" , sn[,"new"], "'" ,sep = "", collapse="; ")
-                          colnames(ind) <- car::recode(colnames(ind), reSt)     
-                      }                                                         
-                  }                                                             
+                          colnames(ind) <- car::recode(colnames(ind), reSt)
+                      }
+                  }
                   allNam[["HG.var"]] <- setdiff ( allNam[["HG.var"]], names(varClass)[notNum])
                   allNam[["HG.var"]] <- c(allNam[["HG.var"]], colnames(ind))
                   if ( length(allNam[["HG.var"]]) > 99 && software == "conquest" ) {
                        warning(paste0(length(allNam[["HG.var"]]), " background variables might be problematic in 'Conquest'. Recommend to use 'TAM' instead."))
-                  }                                                             
+                  }
                dat <- data.frame ( dat, ind, stringsAsFactors = FALSE )
                }
                hg.info <- lapply(allNam[["HG.var"]], FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="HG", itemdata=dat[,allNam[["variablen"]], drop = FALSE], suppressAbort = TRUE, internal=TRUE )})
@@ -1395,7 +1395,7 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
                wegVar  <- unlist(lapply(hg.info, FUN = function ( uu ) { uu[["toRemove"]] }))
                if(length(wegVar)>0) { allNam[["HG.var"]] <- setdiff ( allNam[["HG.var"]], wegVar) }
                weg.hg  <- unique(unlist(lapply(hg.info, FUN = function ( y ) {y$weg})))
-               if(length(weg.hg)>0) {                                           
+               if(length(weg.hg)>0) {
                    if ( remove.no.answersHG == TRUE ) {
                         cat(paste("Remove ",length(weg.hg)," cases with missings on at least one HG variable.\n",sep=""))
                    }  else  {
@@ -1408,7 +1408,7 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
                 group.info <- lapply(allNam$group.var, FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="group", itemdata=dat[,allNam[["variablen"]], drop = FALSE], internal=TRUE)})
                 for ( i in 1:length(group.info)) { dat[, group.info[[i]]$varname ] <- group.info[[i]]$x }
                 weg.group  <- unique(unlist(lapply(group.info, FUN = function ( y ) {y$weg})))
-                if(length(weg.group)>0)  {                                      
+                if(length(weg.group)>0)  {
                     cat(paste("Remove ",length(weg.group)," cases with missings on group variable.\n",sep=""))
                 }
             }
@@ -1428,7 +1428,7 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
                 }
                 for ( i in 1:length(dif.info)) { dat[, dif.info[[i]]$varname ] <- dif.info[[i]]$x }
                 weg.dif  <- unique(unlist(lapply(dif.info, FUN = function ( y ) {y$weg})))
-                if(length(weg.dif)>0)  {                                        
+                if(length(weg.dif)>0)  {
                     cat(paste("Remove ",length(weg.dif)," cases with missings on DIF variable.\n",sep=""))
                 }
             }
@@ -1437,11 +1437,11 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
                 weight.info <- lapply(allNam[["weight.var"]], FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="weight", itemdata=dat[,allNam[["variablen"]], drop = FALSE], internal = TRUE)})
                 for ( i in 1:length(weight.info)) { dat[, weight.info[[i]]$varname ] <- weight.info[[i]]$x }
                 weg.weight  <- unique(unlist(lapply(weight.info, FUN = function ( y ) {y$weg})))
-                if(length(weg.weight)>0) {                                      
+                if(length(weg.weight)>0) {
                     cat(paste("Remove ",length(weg.weight)," cases with missings on weight variable.\n",sep=""))
                 }
 
-            }                                                                   
+            }
             namen.all.hg <- unique(c(allNam[["HG.var"]],allNam[["group.var"]],allNam[["DIF.var"]],allNam[["weight.var"]]))
             weg.all <- unique(c(weg.dif, weg.hg, weg.weight, weg.group))
             perExHG <- NULL
@@ -1451,9 +1451,9 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
                dat    <- dat[-weg.all,]
             }
             return(list(dat=dat, allNam=allNam, namen.items.weg=namen.items.weg,perExHG=perExHG, namen.all.hg=namen.all.hg))}
-            
+
 checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, removeMinNperItem, minNperItem, remove.constant.items, model.statement){
-          namen.items.weg <- NULL                                               
+          namen.items.weg <- NULL
           is.NaN <- do.call("cbind", lapply(dat[,allNam[["variablen"]], drop = FALSE], FUN = function (uu) { is.nan(uu) } ) )
           if(sum(is.NaN) > 0 ) {
              cat(paste("Found ",sum(is.NaN)," 'NaN' values in the data. Convert 'NaN' to 'NA'.\n",sep=""))
@@ -1485,7 +1485,7 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
                  namen.items.weg <- c(namen.items.weg, names(n.mis))
              }
           }
-          if ( removeMinNperItem == TRUE ) {                                    
+          if ( removeMinNperItem == TRUE ) {
                nValid <- unlist(lapply(dat[,allNam[["variablen"]], drop = FALSE], FUN = function ( ii ) { length(na.omit ( ii )) }))
                below  <- which ( nValid < minNperItem )
                if ( length ( below ) > 0 ) {
@@ -1502,8 +1502,8 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
                  namen.items.weg <- c(namen.items.weg, names(constant))
              }
           }
-          n.rasch  <- which( !isDichot )                                        
-          if(length(n.rasch) >0 )   {                                           
+          n.rasch  <- which( !isDichot )
+          if(length(n.rasch) >0 )   {
              valND <- values[ which(names(values) %in% names(n.rasch)) ]
              valND <- valND[which(sapply(valND, length) > 1)]
              if(length(valND)>0) {
@@ -1522,35 +1522,35 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
              }
           }
           return(list(dat=dat,allNam=allNam, namen.items.weg=namen.items.weg))}
-          
+
 checkID_consistency <- function(dat, allNam, software){
           dat[,allNam[["ID"]] ] <- as.character(dat[,allNam[["ID"]] ])
           doppelt     <- which(duplicated(dat[,allNam[["ID"]]]))
           if(length(doppelt)>0)  {stop(paste( length(doppelt) , " duplicate IDs found!",sep=""))}
           if(software == "conquest") {
-              notAllowed  <- grep("-|\\.", dat[,allNam[["ID"]] ])               
+              notAllowed  <- grep("-|\\.", dat[,allNam[["ID"]] ])
               if ( length(notAllowed)>0) {
                    cat("Conquest neither allows '.' nor '-' in ID variable. Delete signs from ID variable.\n")
                    dat[,allNam[["ID"]] ] <- eatTools::removePattern(string = eatTools::removePattern(string=dat[,allNam[["ID"]] ], pattern="\\."), pattern = "-")
                    if ( length ( which(duplicated(dat[,allNam[["ID"]]])))>0) {
                          dat[,allNam[["ID"]] ] <- paste0(1:nrow(dat),dat[,allNam[["ID"]] ])
-                   }                                                            
+                   }
               }
           }
           return(dat)}
-          
+
 checkDir <- function(dir, software) {
-            if(!is.null(dir)) {                                                 
-                dir <- eatTools::crop(dir,"/")                                  
+            if(!is.null(dir)) {
+                dir <- eatTools::crop(dir,"/")
                 if(dir.exists(dir) == FALSE) {
                    cat(paste("Warning: Specified folder '",dir,"' does not exist. Create folder ... \n",sep=""))
                    dir.create(dir, recursive = TRUE)
                 }
-            }  else  {                                                          
+            }  else  {
                 if (software == "conquest") {stop("Argument 'dir' must be specified if software = 'conquest'.\n")}
             }
             return(dir)}
-            
+
 checkBoundary <- function(dat, allNam, boundary, remove.boundary) {
           datL.valid  <- reshape2::melt(dat, id.vars = allNam[["ID"]], measure.vars = allNam[["variablen"]], na.rm=TRUE)
           if(nrow(datL.valid) == 0) {warning("No valid item values. Skip data preparation."); return(NULL)}
@@ -1567,18 +1567,18 @@ checkBoundary <- function(dat, allNam, boundary, remove.boundary) {
              }
           }
           return(dat)}
-          
+
 personWithoutValidValues <- function (dat, allNam, remove.no.answers){
           if(inherits(try(datL  <- reshape2::melt(data = dat, id.vars = unique(unlist(allNam[-match("variablen", names(allNam))])), measure.vars = allNam[["variablen"]], na.rm=TRUE)  ),"try-error"))  {
              cat("W A R N I N G ! ! !   Error in melting for unknown reasons. Try workaround.\n"); flush.console()
              allHG <- setdiff(unique(unlist(allNam[-match("variablen", names(allNam))])), allNam[["ID"]] )
-             stopifnot(length(allHG)>0)                                         
+             stopifnot(length(allHG)>0)
              datL  <- reshape2::melt(data = dat, id.vars = allNam[["ID"]], measure.vars = allNam[["variablen"]], na.rm=TRUE)
              datL  <- merge(datL, dat[,unique(unlist(allNam[-match("variablen", names(allNam))]))], by = allNam[["ID"]], all=TRUE)
           }
           wegNV <- setdiff(dat[,allNam[["ID"]]], unique(datL[,allNam[["ID"]]]))
           perNA <- NULL
-          if(length(wegNV)>0)   {                                               
+          if(length(wegNV)>0)   {
              cat(paste("Found ",length(wegNV)," cases with missings on all items.\n",sep=""))
              perNA<- dat[match(wegNV,dat[,allNam[["ID"]]] ), allNam[["ID"]]]
              if( remove.no.answers == TRUE)  {
@@ -1590,12 +1590,12 @@ personWithoutValidValues <- function (dat, allNam, remove.no.answers){
              }
           }
           return(list(dat=dat, perNA=perNA, datL=datL))}
-          
+
 checkPersonSumScores <- function(datL, allNam, dat, remove.failures){
           minMax<- do.call("rbind", by ( data = datL, INDICES = datL[,"variable"], FUN = function ( v ) {
-                   v[,"valueMin"] <- min(v[,"value"])                           
-                   v[,"valueMax"] <- max(v[,"value"])                           
-                   return(v)}))                                                 
+                   v[,"valueMin"] <- min(v[,"value"])
+                   v[,"valueMax"] <- max(v[,"value"])
+                   return(v)}))
           datW  <- reshape2::dcast(minMax, as.formula(paste(allNam[["ID"]], "~variable",sep="")), value.var = "value")
           datMin<- reshape2::dcast(minMax, as.formula(paste(allNam[["ID"]], "~variable",sep="")), value.var = "valueMin")
           datMax<- reshape2::dcast(minMax, as.formula(paste(allNam[["ID"]], "~variable",sep="")), value.var = "valueMax")
@@ -1624,14 +1624,14 @@ checkPersonSumScores <- function(datL, allNam, dat, remove.failures){
              perA<- numT
           }
           return(list(dat=dat, per0=per0, perA=perA))}
-          
+
 adaptMethod <- function(method, software,nodes){
-        snodes <- NULL; QMC <- NULL                                             
+        snodes <- NULL; QMC <- NULL
         if(method == "quasiMontecarlo" && software == "conquest") {
            cat("Method 'quasiMontecarlo' is not available for software 'conquest'. Set method to 'montecarlo'.\n")
            method <- "montecarlo"
         }
-        if(method %in% c("montecarlo", "quasiMontecarlo"))  {                   
+        if(method %in% c("montecarlo", "quasiMontecarlo"))  {
            if(is.null(nodes) )   {
               cat(paste("'",method,"' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 1000.\n",sep=""))
               nodes <- 1000
@@ -1639,9 +1639,9 @@ adaptMethod <- function(method, software,nodes){
               if (nodes < 500 ) {
                   warning(paste0("Due to user specification, only ",nodes," nodes are used for '",method,"' estimation. Please note or re-specify your analysis."))
               }
-           }                                                                    
+           }
            if ( software == "tam" )   {snodes <- nodes; nodes <- NULL; QMC <- as.logical(car::recode ( method, "'montecarlo'=FALSE; 'quasiMontecarlo'=TRUE"))}
-        }  else {                                                               
+        }  else {
            if(is.null(nodes) )   {
               cat(paste("'",method,"' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.\n",sep=""))
               nodes <- 20
@@ -1700,6 +1700,19 @@ checkQmatrixConsistency <-  function(qmat) {
                 cat("    "); cat(paste(qmat[weg,1],collapse=", ")); cat("\n")
                 qmat  <- qmat[-weg,]
              }
+             # wenn nur eine Spalte wird diese als IDs angenommen
+             if ( test_data_frame(qmat, ncols = 1) ) {
+               warning ( "qMatrix contains just one column; this is treated as item names" , call. = FALSE )
+               qMatrix$dim <- 1
+             }
+             # qMatrix und person.groups auf Plausibilitaet checken
+             if ( !is.null ( qMatrix ) ) {
+               # hat erste Spalte mehr Elemente als alle anderen
+               len <- sapply ( qMatrix , function ( x ) length ( unique ( x ) ) )
+               len.log <- len < len[1]
+               if ( ! all ( len.log[-1] ) ) warning ( paste0 ( "splitModels: first column of qMatrix might not contain item names; please check\n(number of unique elements is smaller than in another column)" ) , call. = FALSE )
+             }
+
              return(qmat)}
 
 converged<- function (dir, logFile) {
@@ -1755,9 +1768,9 @@ getConquestShw <- function (model.name, qMatrix, qL, shw, altN){
             shw2  <- shw2[-which(is.na(shw2[,"value"])),]                       ### entferne Zeilen aus shw2, die in der "value"-Spalte NA haben
          }
          return(list(shw1=shw1, shw2=shw2))}
-         
+
 getConquestDesc <- function ( model.name, deskRes, qMatrix, qL, isPoly){
-         shw3 <- shw31 <- NULL                                                  
+         shw3 <- shw31 <- NULL
          if(is.null ( deskRes ) ) { return(NULL)}
          deskR<- merge(deskRes, qL[,-match("value", colnames(qL))], by.x = "item.name", by.y = colnames(qMatrix)[1], all=TRUE)
          if ( isPoly == FALSE ) {
@@ -1785,11 +1798,11 @@ getConquestInfit <- function (model.name,  shw){
 
 
 getConquestAdditionalTerms <- function(model.name, qMatrix, shw, shwFile){
-         if(length(shw) <= 4 )  {  return(NULL)}                                
-         res   <- NULL                                                          
-         read  <- 2 : (length(shw) - 3)                                         
+         if(length(shw) <= 4 )  {  return(NULL)}
+         res   <- NULL
+         read  <- 2 : (length(shw) - 3)
          for ( i in names(shw)[read] ) {
-               cols <- unlist(isLetter(i))                                      
+               cols <- unlist(isLetter(i))
                if( !all(cols %in% colnames(shw[[i]])) ) {
                    cat(paste("Cannot identify variable identifier for additional term '",i,"' in file '",shwFile,"'. Skip procedure.\n",sep=""))
                }  else  {
@@ -1825,10 +1838,10 @@ getConquestAdditionalTerms <- function(model.name, qMatrix, shw, shwFile){
          return(res)}
 
 getConquestPopPar <- function(model.name, qMatrix, shw){
-         if(ncol(qMatrix) == 2) {                                               
+         if(ncol(qMatrix) == 2) {
             res  <- data.frame ( model = model.name, source = "conquest", var1 = colnames(qMatrix)[2], var2 = NA , type = "distrpar", indicator.group = NA, group = "persons", par = "var",  derived.par = NA, value = shw$cov.structure, stringsAsFactors = FALSE)
-         }  else  {                                                             
-            stopifnot(nrow(shw$cov.structure) == ncol(qMatrix))                 
+         }  else  {
+            stopifnot(nrow(shw$cov.structure) == ncol(qMatrix))
             shw$cov.structure[-nrow(shw$cov.structure),1] <- colnames(qMatrix)[-1]
             cov1 <- shw$cov.structure[,-1]
             cov1[upper.tri(shw$cov.structure[,-1])] <- NA
@@ -1841,7 +1854,7 @@ getConquestPopPar <- function(model.name, qMatrix, shw){
 
 getConquestRegPar <- function ( model.name, shw, altN){
          if(nrow(shw$regression)<=1) {return(NULL)}
-         reg  <- shw$regression                                                 
+         reg  <- shw$regression
          if(!is.null( dim(shw$cov.structure) )) {
             for ( i in 1:nrow(altN)) { colnames(reg) <- gsub(altN[i,"from"], altN[i,"to"], colnames(reg))}
          }  else  {
@@ -1865,12 +1878,12 @@ getConquestWles <- function ( model.name, analysis.name, qMatrix, allFiles, omit
              cat("Cannot find Conquest WLE file.\n")
              return(NULL)
          }
-         wle  <- get.wle( file.path(path, wleFile) )                            
-         res  <- NULL                                                           
+         wle  <- get.wle( file.path(path, wleFile) )
+         res  <- NULL
          for ( i in 1:nrow(altN)) { colnames(wle) <- gsub(  paste(".",altN[i,"nr"],"$",sep=""), paste("_", altN[i,"to"],sep="") , colnames(wle))}
          wleL <- reshape2::melt(wle, id.vars = "ID", measure.vars = colnames(wle)[-c(1:2)], na.rm=TRUE)
          foo  <- data.frame ( eatTools::halveString( as.character(wleL[,"variable"]), pattern = "_"), stringsAsFactors=FALSE)
-         colnames(foo) <- c("par", "group")                                     
+         colnames(foo) <- c("par", "group")
          foo[,"derived.par"] <- car::recode(foo[,"par"], "'wle'='est'; 'std.wle'='se'; else=NA")
          foo[,"par"]         <- car::recode(foo[,"par"], "'wle'='wle'; 'std.wle'='wle'; 'n.solved'='NitemsSolved'; 'n.total'='NitemsTotal'")
          wleL <- data.frame ( wleL[,-match("variable", colnames(wleL)), drop=FALSE], foo, stringsAsFactors = FALSE)
@@ -1878,7 +1891,7 @@ getConquestWles <- function ( model.name, analysis.name, qMatrix, allFiles, omit
          rels <- do.call("rbind", by(wleW, INDICES = wleW[,"group"], FUN = function ( g ) { data.frame (dim = g[1,"group"], rel = 1 - mean(g[,"se"]^2)/var(g[,"est"]), stringsAsFactors = FALSE)}))
          res  <- rbind ( res, data.frame ( model = model.name, source = "conquest", var1 = c(wleL[,"ID"],rep(NA,nrow(rels))), var2 = NA , type = c(rep("indicator",nrow(wleL)), rep("tech",nrow(rels))), indicator.group = "persons", group = c(wleL[,"group"],rels[,"dim"]), par = c(wleL[,"par"],rep("wle",nrow(rels))),  derived.par = c(wleL[,"derived.par"],rep("rel", nrow(rels))), value = c(wleL[,"value"] ,rels[,"rel"]) , stringsAsFactors = FALSE))
          return(list(res=res, wle=wle))   }
-         
+
 getConquestPVs <- function ( model.name, analysis.name, omitPV, altN, path, allFiles){
          pvFile<- paste(analysis.name, "pvl", sep=".")
          if ( omitPV == TRUE ) {return(NULL)}
@@ -1924,12 +1937,12 @@ getConquestQ3 <- function(model.name, shw,Q3, q3theta, omitWle, omitPV, pv,wle,d
               colEAP<- grep("^eap", colnames(pv[["pvWide"]]))[1]
               theta <- pv[["pvWide"]][,c(2,colEAP)]
          }
-         drinI <- match( shw[["item"]][,"item"], colnames(daten))               
-         drinP <- match(theta[,1], daten[,"ID"])                                
+         drinI <- match( shw[["item"]][,"item"], colnames(daten))
+         drinP <- match(theta[,1], daten[,"ID"])
          stopifnot(length(which(is.na(drinP))) == 0 , length(which(is.na(drinI))) == 0 )
          q3.res<- sirt::Q3(dat = daten[drinP,drinI], theta = theta[,2], b = shw[["item"]][,"ESTIMATE"], progress = FALSE)
          nObs  <- NULL
-         if ( !is.null(q3MinObs) ) {                                            
+         if ( !is.null(q3MinObs) ) {
               if ( q3MinObs > 1 ) { nObs <- nObsItemPairs ( responseMatrix = daten[,all.Names[["variablen"]]], q3MinType = q3MinType ) }
          }
          matL  <- reshapeQ3 (mat = q3.res$q3.matrix, q3MinObs = q3MinObs, nObs = nObs)
@@ -1942,7 +1955,7 @@ getConquestDeviance <- function ( path, analysis.name, omitUntil = omitUntil) {
          such <- c("method", "nodes")
          ret  <- lapply(such, FUN = function ( su ) {
                  indm <- grep(paste0(su, "="), cqc)
-                 if ( length(indm)>1) {                                         
+                 if ( length(indm)>1) {
                     hf   <- grep("f_nodes", cqc)
                     indm <- setdiff(indm, hf)
                  }
@@ -1950,12 +1963,12 @@ getConquestDeviance <- function ( path, analysis.name, omitUntil = omitUntil) {
                     cat(paste("Cannot identify '",su,"'from cqc file.\n",sep=""))
                     met <- NULL
                  }  else  {
-                    pos1<- nchar(unlist(strsplit(cqc[indm], su))[1])            
+                    pos1<- nchar(unlist(strsplit(cqc[indm], su))[1])
                     pos2<- which(sapply(1:nchar(cqc[indm]), FUN = function(x){ substr(cqc[indm],x,x) == ","}))
                     pos2<- min(pos2[which(pos2>pos1)])
                     met <- eatTools::removePattern(substr(cqc[indm], pos1+1, pos2-1), paste0(su,"="))
                  }
-                 return(met)})                                                  
+                 return(met)})
          tme  <- file.info ( file.path ( path, paste0(analysis.name, ".shw")))[["mtime"]] - file.info ( file.path ( path, paste0(analysis.name, ".cqc")))[["mtime"]]
          grDevices::pdf(file = file.path ( path, paste0(analysis.name, "_dev.pdf")), width = 10, height = 7.5)
          plotDevianceConquest ( logFile = list ( path=path, analysis.name=analysis.name, ret=ret, tme=tme), omitUntil = omitUntil)
@@ -1967,10 +1980,10 @@ getConquestResults<- function(path, analysis.name, model.name, qMatrix, all.Name
          qL       <- reshape2::melt(qMatrix, id.vars = colnames(qMatrix)[1], variable.name = "dimensionName", na.rm=TRUE)
          qL       <- qL[which(qL[,"value"] != 0 ) , ]
          varName  <- colnames(qMatrix)[1]
-         ret      <- NULL                                                       
+         ret      <- NULL
          logFile  <- paste(analysis.name, "log", sep=".")
          isConv   <- converged ( dir = path, logFile = logFile )
-         isPoly   <- length(unique(deskRes[,"Codes"]))>1                        
+         isPoly   <- length(unique(deskRes[,"Codes"]))>1
          plotPdf  <- getConquestDeviance(path=path, analysis.name = analysis.name, omitUntil = omitUntil)
          ret      <- rbind(ret, getConquestItn (model.name=model.name, analysis.name=analysis.name, qMatrix=qMatrix, qL=qL, allFiles=allFiles, isPoly=isPoly, path=path))
          ret      <- rbind(ret, getConquestDesc (model.name=model.name, deskRes = deskRes, qMatrix=qMatrix, qL = qL, isPoly=isPoly))
@@ -1979,7 +1992,7 @@ getConquestResults<- function(path, analysis.name, model.name, qMatrix, all.Name
          if (!shwFile %in% allFiles) {
              cat("Cannot find Conquest showfile.\n")
          } else {
-             shw  <- get.shw( file = file.path(path, shwFile) )                 
+             shw  <- get.shw( file = file.path(path, shwFile) )
              if(is.null( dim(shw$cov.structure) )) {from <- NA} else { from <- shw$cov.structure[-ncol(shw$cov.structure),1]}
              altN <- data.frame ( nr = 1:(ncol(qMatrix)-1), pv = paste("dim", 1:(ncol(qMatrix)-1),sep="."), from = from ,  to = colnames(qMatrix)[-1], stringsAsFactors = FALSE)
              shw[["item"]]  <- merge(shw[["item"]], qL[,-match("value", colnames(qL))], by.x = "item", by.y = colnames(qMatrix)[1], all=TRUE)
@@ -1996,7 +2009,7 @@ getConquestResults<- function(path, analysis.name, model.name, qMatrix, all.Name
              pvs  <- getConquestPVs (model.name=model.name, analysis.name=analysis.name, omitPV = omitPV, altN = altN, path=path, allFiles=allFiles)
              ret  <- rbind(ret, pvs[["res"]])
              ret  <- rbind(ret, getConquestQ3 (model.name=model.name, shw=shw,Q3=Q3, q3theta=q3theta, omitWle=omitWle, omitPV=omitPV, pv=pvs[["pv"]],wle=wles[["wle"]],daten=daten,all.Names=all.Names, q3MinObs=q3MinObs, q3MinType=q3MinType, shw1 = shw12[["shw1"]]))
-         }                                                                      
+         }
          if(!is.null(ret)) {
              attr(ret, "isConverged") <- isConv
              attr(ret, "available")   <- list ( itn =  paste(analysis.name, "itn", sep=".") %in% allFiles, shw =  paste(analysis.name, "shw", sep=".") %in% allFiles, wle = ( paste(analysis.name, "wle", sep=".") %in% allFiles) & (omitWle == FALSE), pv = ( paste(analysis.name, "pvl", sep=".") %in% allFiles) & (omitPV == FALSE))
@@ -2004,19 +2017,19 @@ getConquestResults<- function(path, analysis.name, model.name, qMatrix, all.Name
          return(ret)}
 
 getTamItempars    <- function(runModelObj, qL, qMatrix, leseAlles) {
-         if(leseAlles == FALSE) {return(NULL)}                                  
+         if(leseAlles == FALSE) {return(NULL)}
          if ( is.null(attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.var"]])) {
               xsis <- merge(data.frame ( item = rownames(runModelObj[["xsi"]]), runModelObj[["xsi"]], stringsAsFactors = FALSE), qL[,-match("value", colnames(qL))],  by.x = "item", by.y = colnames(qMatrix)[1], all = TRUE)
-         }  else  {                                                             
+         }  else  {
               xsis <- mergeDimensionIfDIF (dat = data.frame ( item = rownames(runModelObj[["xsi"]]), runModelObj[["xsi"]], stringsAsFactors = FALSE), qmatLong = qL[,-match("value", colnames(qL))], datMergingVar="item", remove = "toMerge")
          }
          shw1 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = xsis[,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = xsis[,"dimensionName"], par = "est",  derived.par = NA, value = xsis[,"xsi"], stringsAsFactors = FALSE)
          shw2 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = xsis[,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = xsis[,"dimensionName"], par = "est",  derived.par = "se", value = xsis[,"se.xsi"], stringsAsFactors = FALSE)
-         if ( !is.null(attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.var"]])) {          
+         if ( !is.null(attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.var"]])) {
                shw1 <- renameDifParameters (dat=shw1, qmatLong = qL[,-match("value", colnames(qL))])
                shw2 <- renameDifParameters (dat=shw2, qmatLong = qL[,-match("value", colnames(qL))])
          }
-         toOff<- shw2[ which(shw2[,"value"] == 0 ), "var1"]                     
+         toOff<- shw2[ which(shw2[,"value"] == 0 ), "var1"]
          if(length(toOff)>0) {
             shw1[match(toOff, shw1[,"var1"]), "par"] <- "offset"
             shw2  <- shw2[-which(shw2[,"value"] == 0 ),] }                      ### entferne Zeilen aus shw2, die in der "value"-Spalte NA haben, danach: p-Werte einfuegen
@@ -2045,12 +2058,12 @@ getTamDiscrim    <- function(runModelObj, qL, qMatrix, leseAlles) {
 getTam2plDiscrim <- function(runModelObj, qMatrix, leseAlles, regr, omitRegr) {
          if(leseAlles == FALSE || !attr(runModelObj, "defineModelObj")[["irtmodel"]] %in% c("2PL", "2PL.groups", "GPCM", "3PL") ) {return(NULL)}
          shw6 <- do.call("rbind", lapply (  1 : length ( colnames( qMatrix ) [-1] ) , FUN = function ( dims ) {
-                 if ( isFALSE(omitRegr) ) {                                     
-                      obj <- regr[["B"]]                                        
-                 } else {                                                       
-                      obj <- as.data.frame ( runModelObj[["B"]])                
+                 if ( isFALSE(omitRegr) ) {
+                      obj <- regr[["B"]]
+                 } else {
+                      obj <- as.data.frame ( runModelObj[["B"]])
                       colnames(obj) <- paste0("B.", gsub("Dim0", "Dim", colnames(obj)))
-                      obj[,"item"]  <- rownames(obj)                            
+                      obj[,"item"]  <- rownames(obj)
                       isNull        <- which(sapply(obj, FUN = function ( x ) { all(x==0)})==TRUE)
                       if (length (isNull)>0) {
                           obj <- obj[,-isNull]
@@ -2094,12 +2107,12 @@ renameDifParameters <- function(dat, qmatLong) {
 
 getTamInfit    <- function(runModelObj, qL, qMatrix, leseAlles, omitFit, seed) {
          if(leseAlles == FALSE || omitFit == TRUE ) {return(NULL)}
-         infit<- tam.fit(runModelObj, progress=FALSE, seed=seed)                
+         infit<- tam.fit(runModelObj, progress=FALSE, seed=seed)
          fits <- merge(infit[["itemfit"]], qL[,-match("value", colnames(qL))],  by.x = "parameter", by.y = colnames(qMatrix)[1], all = TRUE)
-         if ( is.null(attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.var"]])) {           
+         if ( is.null(attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.var"]])) {
               ret  <- rbind(data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = fits[,"parameter"], var2 = NA , type = "fixed", indicator.group = "items", group = fits[,"dimensionName"], par = "est",  derived.par = "infit", value = fits[,"Infit"], stringsAsFactors = FALSE),
                             data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = fits[,"parameter"], var2 = NA , type = "fixed", indicator.group = "items", group = fits[,"dimensionName"], par = "est",  derived.par = "outfit", value = fits[,"Outfit"], stringsAsFactors = FALSE))
-         }  else  {                                                             
+         }  else  {
               ret  <- rbind(data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = infit$itemfit[,"parameter"], var2 = NA , type = "fixed", indicator.group = "items", group = NA, par = "est",  derived.par = "infit", value = infit$itemfit[,"Infit"], stringsAsFactors = FALSE),
                             data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = infit$itemfit[,"parameter"], var2 = NA , type = "fixed", indicator.group = "items", group = NA, par = "est",  derived.par = "outfit", value = infit$itemfit[,"Outfit"], stringsAsFactors = FALSE) )
               ret  <- mergeDimensionIfDIF(dat=ret, qmatLong=qL[,-match("value", colnames(qL))], datMergingVar="var1", remove = c("group", "toMerge"))
@@ -2110,14 +2123,14 @@ getTamInfit    <- function(runModelObj, qL, qMatrix, leseAlles, omitFit, seed) {
 
 getTamPopPar    <- function(runModelObj, qMatrix, leseAlles) {
          if(leseAlles == FALSE ) {return(NULL)}
-         if(ncol(qMatrix) == 2) {                                               
+         if(ncol(qMatrix) == 2) {
             ret  <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = colnames(qMatrix)[2], var2 = NA , type = "distrpar", indicator.group = NA, group = "persons", par = "var",  derived.par = NA, value = runModelObj[["variance"]][1,1] , stringsAsFactors = FALSE)
-         }  else  {                                                             
+         }  else  {
             cov1 <- runModelObj[["variance"]]
             colnames(cov1) <- colnames(qMatrix)[-1]
             rownames(cov1) <- colnames(qMatrix)[-1]
             cor1 <- cov2cor(cov1)
-            for (ii in 1:nrow(cor1))   {                                        
+            for (ii in 1:nrow(cor1))   {
                  cor1[ii,ii:ncol(cor1)] <- NA}
             cor1 <- reshape2::melt(cor1, measure.vars = colnames(cor1), na.rm=TRUE)
             vars <- Matrix::diag(cov1)
@@ -2127,7 +2140,7 @@ getTamPopPar    <- function(runModelObj, qMatrix, leseAlles) {
 
 getTamRegPar    <- function(runModelObj, leseAlles, qMatrix, omitRegr, regr) {
          if(leseAlles == FALSE || omitRegr == TRUE ) {return(NULL)}
-         if( !isTRUE(all.equal ( dim(runModelObj$beta) , c(1,1))))  {           
+         if( !isTRUE(all.equal ( dim(runModelObj$beta) , c(1,1))))  {
              regr <- data.frame ( reg.var = rownames(regr$beta), regr$beta, stringsAsFactors = FALSE)
              regr <- reshape2::melt(regr, id.vars = "reg.var", na.rm=TRUE)
              regr2<- data.frame ( par = "est", derived.par = car::recode(unlist(lapply(strsplit(as.character(regr[,"variable"]),"\\."), FUN = function ( l ) {l[1]})), "'se'='se'; else=NA"), group = colnames(qMatrix)[as.numeric(eatTools::removePattern( string = unlist(lapply(strsplit(as.character(regr[,"variable"]),"\\."), FUN = function ( l ) {l[2]})), pattern = "Dim")) + 1], regr, stringsAsFactors = FALSE)
@@ -2143,8 +2156,8 @@ getTamModInd    <- function(runModelObj, leseAlles) {
 
 getTamWles    <- function(runModelObj, qMatrix, leseAlles, omitWle) {
          if(leseAlles == FALSE || omitWle == TRUE ) {return(NULL)}
-         txt  <- capture.output(wle  <- tam.wle(runModelObj, progress = FALSE)) 
-         eind1<- ncol(wle) == 7                                                 
+         txt  <- capture.output(wle  <- tam.wle(runModelObj, progress = FALSE))
+         eind1<- ncol(wle) == 7
          if(isTRUE(eind1)) {
             cols1<- grep("theta$", colnames(wle))
             cols2<- grep("error$", colnames(wle))
@@ -2157,8 +2170,8 @@ getTamWles    <- function(runModelObj, qMatrix, leseAlles, omitWle) {
          trans<- na.omit(unique(data.frame ( original = unlist(lapply(strsplit(as.character(wleL[,"variable"]),"\\."), FUN = function (l) {l[2]})), uebersetzt = wleL[,"group"], stringsAsFactors = FALSE)))
          wleL[,"par"]   <- car::recode(unlist(lapply(strsplit(as.character(wleL[,"variable"]),"\\."), FUN = function (l) {l[1]})), "'PersonScores'='NitemsSolved'; 'PersonMax'='NitemsTotal'; 'theta'='wle'; 'error'='wle'")
          wleL[,"derived.par"] <- car::recode(unlist(lapply(strsplit(as.character(wleL[,"variable"]),"\\."), FUN = function (l) {l[1]})), "'theta'='est'; 'error'='se';else=NA")
-         rel  <- reshape2::melt(as.data.frame ( wle)[1,weg1], na.rm = TRUE)     
-         if ( "variable" %in% colnames(rel)) {                                  
+         rel  <- reshape2::melt(as.data.frame ( wle)[1,weg1], na.rm = TRUE)
+         if ( "variable" %in% colnames(rel)) {
                rel[,"original"] <- unlist(lapply(strsplit(as.character(rel[,"variable"]),"\\."), FUN = function (l) {l[length(l)]}))
                rel  <- merge(rel, trans, by="original", all=TRUE)
          }  else  {
@@ -2171,9 +2184,9 @@ getTamPVs <- function ( runModelObj, qMatrix, leseAlles, omitPV, pvMethod, tam.p
          if(omitPV == TRUE ) {return(NULL)}
          for ( i in names( tam.pv.arguments )) { assign(i, tam.pv.arguments[[i]]) }
          if(leseAlles == TRUE ) {
-            if ( pvMethod == "regular" ) {                                      
+            if ( pvMethod == "regular" ) {
                  do   <- paste ( "tam.pv ( ", paste(names(formals(tam.pv)), car::recode ( names(formals(tam.pv)), "'tamobj'='runModelObj'"), sep =" = ", collapse = ", "), ")",sep="")
-            } else {                                                            
+            } else {
                  if ( is.null ( attr(runModelObj, "Y") ) ) {
                       warning("Conditioning model was not defined ('Y' is NULL).")
                       Y1 <- NULL
@@ -2182,8 +2195,8 @@ getTamPVs <- function ( runModelObj, qMatrix, leseAlles, omitPV, pvMethod, tam.p
                  }
                  do   <- paste ( "tam.pv.mcmc ( ", paste(names(formals(tam.pv.mcmc)), car::recode ( names(formals(tam.pv.mcmc)), "'tamobj'='runModelObj'; 'Y'='Y1'"), sep =" = ", collapse = ", "), ")",sep="")
             }
-         }  else  {                                                             
-            class(runModelObj) <- "list"                                        
+         }  else  {
+            class(runModelObj) <- "list"
             stopifnot ( pvMethod == "bayesian")
             do   <- paste ( "tam.pv.mcmc ( ", paste(names(formals(tam.pv.mcmc)), car::recode ( names(formals(tam.pv.mcmc)), "'tamobj'='runModelObj'; 'Y'='runModelObj[[\"Y\"]]'; 'nplausible'='attr(runModelObj, \"defineModelObj\")[[\"n.plausible\"]]'"), sep =" = ", collapse = ", "), ")",sep="")
          }
@@ -2193,7 +2206,7 @@ getTamPVs <- function ( runModelObj, qMatrix, leseAlles, omitPV, pvMethod, tam.p
          pvL[,"group"] <- colnames(qMatrix)[as.numeric(eatTools::removePattern(string = unlist(lapply(strsplit(as.character(pvL[,"variable"]),"\\."), FUN = function (l) {l[2]})), pattern = "Dim"))+1]
          res <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = pvL[,"pid"], var2 = NA , type = "indicator", indicator.group = "persons", group = pvL[,"group"], par = "pv",  derived.par = paste("pv", pvL[,"PV.Nr"],sep=""), value = pvL[,"value"] , stringsAsFactors = FALSE)
          return(res)}
-         
+
 getTamEAPs <- function ( runModelObj, qMatrix, leseAlles = leseAlles) {
          if(leseAlles == FALSE ) {return(NULL)}
          eaps <- runModelObj[["person"]]                                        ### Achtung: im eindimensionalen Fall enthalten die Spaltennamen keine Benennung der Dimension
@@ -2224,7 +2237,7 @@ getTamEAPs <- function ( runModelObj, qMatrix, leseAlles = leseAlles) {
 getTamQ3 <- function(runModelObj, leseAlles, shw1, Q3, q3MinObs, q3MinType){
          if(leseAlles == FALSE || Q3 == FALSE) {return(NULL)}
          nObs <- NULL
-         if ( !is.null(q3MinObs) ) {                                            
+         if ( !is.null(q3MinObs) ) {
               if ( q3MinObs > 1 ) {
                    nObs <- nObsItemPairs ( responseMatrix = runModelObj[["resp"]], q3MinType = q3MinType )
               }
@@ -2244,17 +2257,17 @@ getTamResults <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV, nplau
          qMatrix<- attr(runModelObj, "defineModelObj")[["qMatrix"]]
          qL     <- reshape2::melt(qMatrix, id.vars = colnames(qMatrix)[1], variable.name = "dimensionName", na.rm=TRUE)
          qL     <- qL[which(qL[,"value"] != 0 ) , ]
-         varName<- colnames(qMatrix)[1]                                         
+         varName<- colnames(qMatrix)[1]
          if( omitRegr == FALSE && !inherits(runModelObj, "tamBayes")) {
              beg <- Sys.time()
-             txt <- capture.output ( regr <- tam.se(runModelObj))               
-             stopifnot ( nrow(regr$beta) == ncol(attr(runModelObj, "Y") )+1)    
+             txt <- capture.output ( regr <- tam.se(runModelObj))
+             stopifnot ( nrow(regr$beta) == ncol(attr(runModelObj, "Y") )+1)
              rownames(regr$beta) <- c("(Intercept)", colnames(attr(runModelObj, "Y")))
           } else {
              regr <- NULL
          }
          if ( !inherits(runModelObj, "tamBayes") ) {leseAlles <- TRUE} else {leseAlles <- FALSE}
-         ret    <- NULL                                                         
+         ret    <- NULL
          resItem<- getTamItempars(runModelObj=runModelObj, qL=qL, qMatrix=qMatrix, leseAlles = leseAlles)
          ret    <- rbind(ret, resItem[["shw1"]], resItem[["shw2"]])
          ret    <- rbind(ret, getTamDescriptives(runModelObj=runModelObj, qL=qL, qMatrix=qMatrix, leseAlles = leseAlles))
@@ -2271,7 +2284,7 @@ getTamResults <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV, nplau
          tamArg <- as.list(match.call(definition = getTamResults))
          weg    <- which(names(tamArg) %in% c("tamobj", "Y", "runModelObj", "qMatrix", "leseAlles", "omitPV", "pvMethod", "omitFit", "omitRegr", "omitWle"))
          if ( length(weg)>0) {tamArg <- tamArg[-weg]}
-         tamarg <- list()                                                       
+         tamarg <- list()
          for ( i in 2:length(tamArg)) {
               tamarg[[names(tamArg)[i]]] <- eval(tamArg[[i]])
          }
@@ -2283,9 +2296,9 @@ getTamResults <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV, nplau
 
 
 reshapeQ3 <- function ( mat, q3MinObs, nObs ) {
-             for (ii in 1:(nrow(mat)-1)) { mat[ii,ii:ncol(mat)] <- NA}          
-             matL <- reshape2::melt ( mat , na.rm = TRUE)                       
-             if ( !is.null(nObs)) {                                             
+             for (ii in 1:(nrow(mat)-1)) { mat[ii,ii:ncol(mat)] <- NA}
+             matL <- reshape2::melt ( mat , na.rm = TRUE)
+             if ( !is.null(nObs)) {
                    check<- do.call("rbind", apply(matL[,-ncol(matL)], MARGIN = 1, FUN = function ( y ) { ret <- sort ( y); ret <- data.frame ( Var1 = ret[1], Var2 = ret[2], stringsAsFactors = FALSE); return(ret)}))
                    matL <- data.frame ( check, value = matL[,"value"], stringsAsFactors = FALSE)
                    matL <- merge ( matL, nObs, by = c("Var1", "Var2"), all = TRUE)
@@ -2332,9 +2345,9 @@ regcoefFromRes <- function (resultsObj, digits = NULL){
                     if(!is.null(digits)) {mw <- eatTools::roundDF(mw, digits =digits)}
                     return(mw)}, simplify=FALSE)
               nam<- eatTools::facToChar(expand.grid(attr(re, "dimnames")[["model"]], attr(re, "dimnames")[["group"]]))
-              names(re) <- paste0("model: '",nam[,1],"', group: '",nam[,2],"'") 
-              re <- re[lengths(re) != 0]                                        
-              return(re)                                                        
+              names(re) <- paste0("model: '",nam[,1],"', group: '",nam[,2],"'")
+              re <- re[lengths(re) != 0]
+              return(re)
           }}
 
 correlationFromRes <- function (resultsObj, digits = NULL){
@@ -2357,7 +2370,7 @@ pvFromRes  <- function ( resultsObj, toWideFormat = TRUE, idVarName = NULL, verb
                warning("'resultsObj' does not contain any pv values.")
                return ( NULL )
           }  else  {
-             sel  <- resultsObj[pvRow, ]                                        
+             sel  <- resultsObj[pvRow, ]
              id   <- unique(resultsObj[intersect(which(resultsObj[,"type"] == "tech"), which(resultsObj[,"par"] == "ID")),"derived.par"])
              id   <- getIdVarName(id, idVarName, verbose=verbose)
              if (toWideFormat == TRUE ) {
@@ -2383,14 +2396,14 @@ getIdVarName <- function ( id, idVarName, verbose=TRUE) {
           }
           return(id)}
 
-itemFromRes<- function ( resultsObj ) {                                         
+itemFromRes<- function ( resultsObj ) {
           res <- do.call(plyr::rbind.fill, by ( data = resultsObj, INDICES = resultsObj[,"model"], FUN = function ( mod ) {
                  sel  <- mod[intersect( which(mod[,"par"] %in% c("est", "estSlope", "Nvalid", "itemP", "ptBis", "itemDiscrim", "offset")),which(mod[,"indicator.group"] == "items")),]
                  if (nrow(sel)==0) {
                      return(NULL)
                  }  else  {
                      isDif<- intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "DIF.var"))
-                     if ( length( isDif ) > 0 ) {                               
+                     if ( length( isDif ) > 0 ) {
                            vars     <- mod[intersect(which(mod[,"type"] == "tech"),which(mod[,"par"] == "variablen")),"derived.par"]
                            itemList <- do.call("rbind", lapply ( vars, FUN = function ( v ) {
                                        ind <- grep( paste0("_",v,"_"), sel[,"var1"])
@@ -2404,7 +2417,7 @@ itemFromRes<- function ( resultsObj ) {
                            stopifnot(length( intersect(weg, forDif)) == 0 )
                            selForDif<- sel[forDif, ]
                            sel      <- sel[-c(weg, forDif) , ]
-                           sel      <- sel[which ( sel[,"par"] != "ptBis" ) , ] 
+                           sel      <- sel[which ( sel[,"par"] != "ptBis" ) , ]
                            selDIF   <- do.call("rbind", by(selForDif, INDICES = selForDif[,"group"], FUN = function ( gr ) {
                                        res  <- reshape2::dcast ( gr , model+var1~par+derived.par, value.var = "value")
                                        mat  <- lapply( vars, FUN = function ( v ) { grep(paste0("_",v,"_"), res[,"var1"])})
@@ -2414,7 +2427,7 @@ itemFromRes<- function ( resultsObj ) {
                                        res[,"absDif"]<- abs ( res[,"estDif"]  * 2 )
                                        pval <- intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")), which(mod[,"derived.par"] == "p.value"))
                                        stopifnot (length(pval) == 1)
-                                       pval <- mod[pval, "value"]               
+                                       pval <- mod[pval, "value"]
                                        adb  <- mod[intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")), which(mod[,"derived.par"] == "abs.dif.bound")),"value"]
                                        sdb  <- mod[intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")), which(mod[,"derived.par"] == "sig.dif.bound")),"value"]
                                        res[,paste("CI__", pval ,"__lb",sep="")] <- res[,"absDif"] - 2*abs(qnorm(0.5*(1-pval))) * res[,"seDif"]
@@ -2509,17 +2522,17 @@ wleFromRes <- function ( resultsObj , idVarName = NULL, verbose=TRUE) {
              return(sel)
           }  }
 
-get.plausible <- function(file, quiet = FALSE, forConquestResults = FALSE)  {   
+get.plausible <- function(file, quiet = FALSE, forConquestResults = FALSE)  {
                  input           <- scan(file,what="character",sep="\n",quiet=TRUE)
                  input           <- strsplit(eatTools::crop(gsub("-"," -",input) ) ," +")
                  n.spalten       <- max ( sapply(input,FUN=function(ii){ length(ii) }) )
                  input           <- data.frame( matrix( t( sapply(input,FUN=function(ii){ ii[1:n.spalten] }) ),length(input), byrow = FALSE), stringsAsFactors = FALSE)
-                 pv.pro.person   <- sum (input[-1,1]==1:(nrow(input)-1) )       
-                 n.person        <- nrow(input)/(pv.pro.person+3)               
+                 pv.pro.person   <- sum (input[-1,1]==1:(nrow(input)-1) )
+                 n.person        <- nrow(input)/(pv.pro.person+3)
                  weg             <- c(1, as.numeric( sapply(1:n.person,FUN=function(ii){((pv.pro.person+3)*ii-1):((pv.pro.person+3)*ii+1)}) ) )
                  cases           <- input[(1:n.person)*(pv.pro.person+3)-(pv.pro.person+2),1:2]
                  input.sel       <- input[-weg,]
-                 n.dim <- dim(input.sel)[2]-1                                   
+                 n.dim <- dim(input.sel)[2]-1
                  if(quiet == FALSE) {cat(paste(n.person,"persons and",n.dim,"dimensions(s) found.\n"))
                                cat(paste(pv.pro.person,"plausible values were drawn for each person on each dimension.\n"))}
                  ID              <- input[  (pv.pro.person + 3) *  (1:n.person) - (pv.pro.person + 2) ,2]
@@ -2527,8 +2540,8 @@ get.plausible <- function(file, quiet = FALSE, forConquestResults = FALSE)  {
                  input.sel[,1]   <- gsub( " ", "0", formatC(input.sel[,1],width = max(nchar(input.sel[,1]))))
                  input.sel$ID    <- rep(ID, each = pv.pro.person)
                  is.na.ID        <- FALSE
-                 if(is.na(input.sel$ID[1])) {                                   
-                    is.na.ID        <- TRUE                                     
+                 if(is.na(input.sel$ID[1])) {
+                    is.na.ID        <- TRUE
                     input.sel$ID    <- rep( 1: n.person, each = pv.pro.person)
                  }
                  input.melt      <- reshape2::melt(input.sel, id.vars = c("ID", "PV.Nr") , stringsAsFactors = FALSE)
@@ -2536,7 +2549,7 @@ get.plausible <- function(file, quiet = FALSE, forConquestResults = FALSE)  {
                  input.wide      <- data.frame( case = gsub(" ", "0",formatC(as.character(1:n.person),width = nchar(n.person))) , reshape2::dcast(input.melt, ... ~ variable + PV.Nr) , stringsAsFactors = FALSE)
                  colnames(input.wide)[-c(1:2)] <- paste("pv.", paste( rep(1:pv.pro.person,n.dim), rep(1:n.dim, each = pv.pro.person), sep = "."), sep = "")
                  weg.eap         <- (1:n.person)*(pv.pro.person+3) - (pv.pro.person+2)
-                 input.eap    <- input[setdiff(weg,weg.eap),]                   
+                 input.eap    <- input[setdiff(weg,weg.eap),]
                  input.eap    <- na.omit(input.eap[,-ncol(input.eap),drop=FALSE])
                  stopifnot(ncol(input.eap) ==  n.dim)
                  input.eap    <- lapply(1:n.dim, FUN=function(ii) {matrix(unlist(as.numeric(input.eap[,ii])), ncol=2,byrow = TRUE)})
@@ -2554,28 +2567,28 @@ get.plausible <- function(file, quiet = FALSE, forConquestResults = FALSE)  {
 get.wle <- function(file)      {
             input <- eatTools::crop(scan(file, what = "character", sep = "\n", quiet = TRUE))
             input <- strsplit(input," +")
-            n.spalten <- max ( sapply(input,FUN=function(ii){ length(ii) }) )   
-            n.wle <- floor((n.spalten-1) / 4)                                   
+            n.spalten <- max ( sapply(input,FUN=function(ii){ length(ii) }) )
+            n.wle <- floor((n.spalten-1) / 4)
             input <- suppressWarnings(eatTools::asNumericIfPossible(data.frame( matrix( t( sapply(input,FUN=function(ii){ ii[1:n.spalten] }) ),length(input),byrow = FALSE), stringsAsFactors = FALSE), force.string = FALSE))
             valid <- na.omit(input)
             cat(paste("Found valid WLEs of ", nrow(valid)," person(s) for ", n.wle, " dimension(s).\n",sep=""))
             if (nrow(valid) != nrow(input)) { cat(paste("    ",nrow(input)-nrow(valid)," persons with missings on at least one latent dimension.\n",sep="")) }
             namen1<- c(rep ( x = c("n.solved", "n.total"), times = n.wle), rep ( x = c("wle", "std.wle"), times = n.wle))
-            namen2<- rep(rep ( paste(".", 1:n.wle, sep=""), each = 2),2)        
+            namen2<- rep(rep ( paste(".", 1:n.wle, sep=""), each = 2),2)
             colnames(valid)[(ncol(valid)-length(namen2)):1] <- c("ID","case")[1:(ncol(valid)-length(namen2))]
             colnames(valid)[(ncol(valid)-length(namen2)+1):ncol(valid)] <- paste(namen1,namen2,sep="")
             return(valid)}
 
 get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.dif.bound = 0.3, p.value = 0.9) {
-            all.output <- list();   all.terms <- NULL                           
-            input.all <- scan(file,what="character",sep="\n",quiet=TRUE)        
+            all.output <- list();   all.terms <- NULL
+            input.all <- scan(file,what="character",sep="\n",quiet=TRUE)
             rowToFind <- c("Final Deviance","Total number of estimated parameters")
-            rowToFind <- sapply(rowToFind, FUN = function(ii) {                 
-                         row.ii <- grep(ii,input.all)                           
+            rowToFind <- sapply(rowToFind, FUN = function(ii) {
+                         row.ii <- grep(ii,input.all)
                          stopifnot(length(row.ii) == 1)
                          row.ii <- as.numeric(unlist(lapply (strsplit(input.all[row.ii], " +"), FUN=function(ll) {ll[length(ll)]}) ))
                          return(row.ii)})
-            ind <- grep("TERM",input.all)                                       
+            ind <- grep("TERM",input.all)
             grenzen <- grep("An asterisk",input.all)
             if(length(ind)==0) {stop(paste("No TERM-statement found in file ",file,".\n",sep=""))}
             for (i in 1:length(ind)) {
@@ -2583,29 +2596,29 @@ get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.d
                  doppelpunkt <- which( sapply(1:nchar(term),FUN=function(ii){u <- substr(term,ii,ii); b <- u==":"  }) )
                  term <- substr(term,doppelpunkt+2,nchar(term))
                  cat(paste("Found TERM ",i,": '",term,"' \n",sep=""))
-                 all.terms <- c(all.terms,term)                                 
-                 bereich <- (ind[i]+6) : (grenzen[i] -2)                        
+                 all.terms <- c(all.terms,term)
+                 bereich <- (ind[i]+6) : (grenzen[i] -2)
                  namen   <- c("No.", strsplit(input.all[bereich[1]-2]," +")[[1]][-1])
                  namen   <- gsub("\\^","",namen)
                  index   <- grep("CI",namen)                                    ### Wenn ein "CI" als Spaltenname erscheint, muessen daraus im R-Dataframe zwei Spalten werden!
                  if(length(index) > 0)  {
                     for (ii in 1:length(index)) {
                          namen  <- c(namen[1:index[ii]], "CI",namen[(index[ii]+1):length(namen)] )}}
-                 input.sel  <- eatTools::crop( input.all[bereich] )             
-                 input.sel  <- gsub("\\(|)|,"," ",input.sel)                    
-                 input.sel  <- gsub("\\*    ", "  NA", input.sel)               
-                 foo        <- strsplit(input.sel," +")                         
-                 maxColumns <- max(sapply(foo, FUN=function(ii){ length(ii)}))  
+                 input.sel  <- eatTools::crop( input.all[bereich] )
+                 input.sel  <- gsub("\\(|)|,"," ",input.sel)
+                 input.sel  <- gsub("\\*    ", "  NA", input.sel)
+                 foo        <- strsplit(input.sel," +")
+                 maxColumns <- max(sapply(foo, FUN=function(ii){ length(ii)}))
                  nDifferentColumns <- length( table(sapply(foo, FUN=function(ii){ length(ii)  })))
                  maxColumns <- which( sapply(foo, FUN=function(ii){ length(ii) == maxColumns  }) ) [1]
                  foo.2      <- which( sapply(1:nchar(input.sel[maxColumns]),FUN=function(ii){u <- substr(input.sel[maxColumns],ii,ii); b <- u==" "  }) )
-                 foo.3      <- diff(foo.2)                                      
-                 foo.3      <- foo.2[foo.3 !=1]                                 
+                 foo.3      <- diff(foo.2)
+                 foo.3      <- foo.2[foo.3 !=1]
                  ESTIMATE   <- which( sapply(1:nchar(input.all[ind[i] + 4] ),FUN=function(ii){u <- substr(input.all[ind[i] + 4],ii,ii+7); b <- u=="ESTIMATE"  }) )
-                 foo.3      <- foo.3[foo.3>(ESTIMATE-3)]                        
+                 foo.3      <- foo.3[foo.3>(ESTIMATE-3)]
                  if(nDifferentColumns>1) {
-                    if(length(foo.3)>0) {                                       
-                       for (ii in 1:length(input.sel)) {                        
+                    if(length(foo.3)>0) {
+                       for (ii in 1:length(input.sel)) {
                             for (iii in 1:length(foo.3)) {
                                  if(substr( input.sel[ii], foo.3[iii] + 2 , foo.3[iii] + 2 ) == " ") {input.sel[ii] <- paste(substr(input.sel[ii],1,foo.3[iii]), "NA", substring(input.sel[ii],foo.3[iii]+3) , sep="")}}}}
                     if(length(foo.3)==0) {cat(paste("There seem to be no values in any columns behind 'ESTIMATE'. Check outputfile for term '",all.terms[length(all.terms)],"' in file: '",file,"'. \n",sep=""))}}
@@ -2616,8 +2629,8 @@ get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.d
                     referenzlaenge <- max (sapply( input.sel, FUN=function(ii ){  length(ii)    }) )
                     if(referenzlaenge < length(namen) ) {
                        cat(paste("Several columns seem to be empty for term '",all.terms[length(all.terms)],"' in file: '",file,"'.\n",sep=""))
-                       head <- eatTools::crop(input.all[bereich[1]-2])          
-                       leerz<- gregexpr(" ", head)[[1]]                         
+                       head <- eatTools::crop(input.all[bereich[1]-2])
+                       leerz<- gregexpr(" ", head)[[1]]
                        leerd<- which ( diff ( leerz) > 1 )[2]
                        vgl  <- length(strsplit ( eatTools::crop(substr(input.all[bereich[1]], 1, leerd)), split = " +")[[1]])
                        if ( vgl == 4 ) {
@@ -2635,15 +2648,15 @@ get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.d
                           cat(paste("There seem to be more columns than names for it. Check outputfile for term '",all.terms[length(all.terms)],"' in file: '",file,"'. \n",sep=""))
                           namen<- c(namen, rep("add.column",referenzlaenge-length(namen) )) }}
                     input.sel  <- t(sapply(input.sel, FUN=function(ii){ c(ii, rep(NA,referenzlaenge-length(ii))) }))
-                    colnames(input.sel) <- namen                                
+                    colnames(input.sel) <- namen
                     input.sel  <- suppressWarnings(eatTools::asNumericIfPossible(data.frame( gsub("NNA", NA, gsub("NA", NA, gsub("\\*","",input.sel))), stringsAsFactors = FALSE), force.string = FALSE))
                     results.sel<- data.frame(input.sel,filename=file,stringsAsFactors = FALSE)
                     if(is.na(as.numeric(results.sel$ESTIMATE[1]))) {cat(paste("'ESTIMATE' column in Outputfile for term '",all.terms[length(all.terms)],"' in file: '",file,"' does not seem to be a numeric value. Please check!\n",sep=""))}
-                    if(!missing(dif.term)) {                                    
-                       if(all.terms[length(all.terms)] == dif.term) {           
+                    if(!missing(dif.term)) {
+                       if(all.terms[length(all.terms)] == dif.term) {
                           cat(paste("Treat '",all.terms[length(all.terms)],"' as DIF TERM.\n",sep=""))
                           results.sel <- data.frame(results.sel,abs.dif = 2*results.sel$ESTIMATE,stringsAsFactors=FALSE)
-                          konfNiveau  <- round(100*p.value)                     
+                          konfNiveau  <- round(100*p.value)
                           results.sel[,paste("KI.",konfNiveau,".u",sep="")] <- results.sel$abs.dif-2*abs(qnorm(0.5*(1-p.value)))*results.sel$ERROR
                           results.sel[,paste("KI.",konfNiveau,".o",sep="")] <- results.sel$abs.dif+2*abs(qnorm(0.5*(1-p.value)))*results.sel$ERROR
                           results.sel[,paste("sig.",konfNiveau,sep="")] <- ifelse(abs(results.sel[,"abs.dif"])>abs.dif.bound & abs(results.sel[,paste("KI.",konfNiveau,".u",sep="")])>sig.dif.bound & abs(results.sel[,paste("KI.",konfNiveau,".o",sep="")])>sig.dif.bound,1,0)
@@ -2688,13 +2701,13 @@ get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.d
               korEnd   <- min(korEnd[korEnd > korStart])
               korStriche <- grep("-----",input.all)
               korStriche <- korStriche[korStriche > korStart & korStriche < korEnd]
-              if(length(korStriche) == 2) {                                     
+              if(length(korStriche) == 2) {
                  varRow    <- grep("Variance", input.all)
                  variance  <- as.numeric( unlist( lapply(strsplit(input.all[varRow]," +"), FUN=function(ll) {ll[length(ll)]}) ) )
                  names(variance) <- "variance"
                  all.output$cov.structure <- variance
               }
-              if(length(korStriche) > 2) {                                      
+              if(length(korStriche) > 2) {
                  bereich     <- input.all[ (min(korStriche) + 1) : (max(korStriche) - 1 ) ]
                  bereich     <- bereich[ -grep("----",bereich)]
                  bereich     <- strsplit(eatTools::crop(bereich),"  +")
@@ -2723,7 +2736,7 @@ get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.d
 
 get.prm <- function(file)   {
             input <- scan(file,what="character",sep="\n",quiet=TRUE)
-            input <- strsplit( gsub("\\\t"," ",eatTools::crop(input)), "/\\*")  
+            input <- strsplit( gsub("\\\t"," ",eatTools::crop(input)), "/\\*")
             ret   <- data.frame ( do.call("rbind", strsplit( eatTools::crop(unlist(lapply(input, FUN = function ( l ) {l[1]}))), " +")), stringsAsFactors = FALSE)
             nameI <- eatTools::crop(eatTools::removePattern ( eatTools::crop( eatTools::crop(unlist(lapply(input, FUN = function ( l ) {l[length(l)]}))), char = "item"), pattern = "\\*/"))
             ret   <- data.frame ( Case= as.numeric(ret[,1]), item = nameI, parameter= as.numeric(ret[,2]) ,stringsAsFactors = FALSE)
@@ -2734,39 +2747,39 @@ get.itn <- function(file)  {
             ind.1 <- grep("==========",input)
             items <- grep( "item:", input )
             diff.last <- ind.1[length(ind.1)-1] - items[length(items)] + 4
-            items <- cbind(1:length(items),items,c(diff(items),diff.last))      
-            ind.2 <- gregexpr(":", input[items[,2]])                            
-            ind.3 <- unlist(ind.2)                                              
+            items <- cbind(1:length(items),items,c(diff(items),diff.last))
+            ind.2 <- gregexpr(":", input[items[,2]])
+            ind.3 <- unlist(ind.2)
             ind.3 <- matrix(ind.3,length(ind.2),byrow=T)
             item.namen <- substr(input[items[,2]], ind.3[,dim(ind.3)[2]]+1+nchar(as.character(items[,1])),100)
-            item.namen <- gsub(" ","",item.namen)                               
+            item.namen <- gsub(" ","",item.namen)
             item.namen <- gsub("\\)","",item.namen); item.namen <- gsub("\\(","",item.namen)
-            if(dim(ind.3)[2]>1)                                                 
-              {stopifnot(length(table(ind.3[,1]))==1)                           
-               dif.name <- rep(substr(input[items[,2]], 1, ind.3[,1]-1),(items[,3]-11))                          
-               dif.value <- rep(as.numeric(substr(input[items[,2]], ind.3[,1]+1, ind.3[,1]+1)),(items[,3]-11))}  
-            zeilen <- list(); reihe <- NULL                                     
-            for (i in 1:dim(items)[1])                                          
-                {zeilen[[i]] <- (items[i,2]+7) : (items[i,2]+ (items[i,3]-5) )  
-                 cases       <- gsub("NA ","NA",input[zeilen[[i]]])             
+            if(dim(ind.3)[2]>1)
+              {stopifnot(length(table(ind.3[,1]))==1)
+               dif.name <- rep(substr(input[items[,2]], 1, ind.3[,1]-1),(items[,3]-11))
+               dif.value <- rep(as.numeric(substr(input[items[,2]], ind.3[,1]+1, ind.3[,1]+1)),(items[,3]-11))}
+            zeilen <- list(); reihe <- NULL
+            for (i in 1:dim(items)[1])
+                {zeilen[[i]] <- (items[i,2]+7) : (items[i,2]+ (items[i,3]-5) )
+                 cases       <- gsub("NA ","NA",input[zeilen[[i]]])
                  cases <- gsub("_BIG_ ","NA",cases)
                  cases <- gsub("_BIG_","NA",cases)
                  if(length(table(sapply(1:length(cases),FUN=function(ii){length(unlist(strsplit(cases[ii]," +"))) }) ) )>1 )
-                   {cases <- gsub("          ","    NA    ",cases)}             
+                   {cases <- gsub("          ","    NA    ",cases)}
                  cases       <- data.frame( matrix ( unlist( strsplit(eatTools::crop(gsub(" +"," ", cases))," ") ), nrow=length(zeilen[[i]]),byrow=T ) , stringsAsFactors=F)
                  ind         <- grep("\\)",cases[1,]); cases[,ind] <- gsub("\\)","",cases[,ind] )
                  cases       <- data.frame(cases[,1:(ind-1)],matrix(unlist(strsplit(cases[,6],"\\(")),nrow=length(zeilen[[i]]),byrow=T),cases[,-c(1:ind)],stringsAsFactors=F)
                  for(jj in 1:ncol(cases)) {cases[,jj] <- as.numeric(cases[,jj])}
                  colnames(cases) <- c("Label","Score","Abs.Freq","Rel.Freq","pt.bis","t.value","p.value",paste(rep(c("PV1.Avg.","PV1.SD."),((ncol(cases)-7)/2) ),rep(1:((ncol(cases)-7)/2),each=2),sep=""))
                  threshold.zeile   <- input[items[i,2]+2]; threshold <- NULL; delta <- NULL
-                 bereich <- ifelse( (items[i,3]-12)<1,1,(items[i,3]-12))        
+                 bereich <- ifelse( (items[i,3]-12)<1,1,(items[i,3]-12))
                  if((items[i,3]-12)<1) {cat(paste("Item",i,"hat nur eine Antwortkategorie.\n"))}
                  for (j in 1: bereich )
                      {threshold  <- c(threshold ,as.numeric(substr(threshold.zeile,  6*j+16,6*j+21)))
                       delta      <- c(delta,     as.numeric(substr(input[items[i,2]+3],6*j+13,6*j+18)))}
                  while(length(threshold) < nrow(cases)) {threshold <- c(threshold,NA)}
                  while(length(delta) < nrow(cases)) {delta <- c(delta,NA)}
-                 item.p <- NA                                                   
+                 item.p <- NA
                  valid.p <- which(is.na(cases$Score))
                  if(length(valid.p) == 0)
                     {item.p <- cases[which(cases$Score == max(cases$Score)),"Abs.Freq"] / sum(cases$Abs.Freq)}
@@ -2865,14 +2878,14 @@ gen.syntax     <- function(Name,daten, all.Names, namen.all.hg = NULL, all.hg.ch
                    "descriptives !estimates=pv >> ####hier.name.einfuegen####_pvl.dsc;",
                    "descriptives !estimates=wle >> ####hier.name.einfuegen####_wle.dsc;",
                    "quit;")
-                   if(is.null(Title))   {                                       
+                   if(is.null(Title))   {
                       all.inf  <- Sys.getenv()
                       Title    <- paste("Analysis name: ",Name, ", User: ",all.inf["USERNAME"],", Computername: ",all.inf["COMPUTERNAME"],", ", R.version$version.string , ", Time: ",date(),sep="")}
                    converge <- paste("0",substring(as.character(converge+1),2),sep="")
                    deviancechange <- paste("0",substring(as.character(deviancechange+1),2),sep="")
                    syntax    <- gsub("####hier.title.einfuegen####",Title,mustersyntax)
                    if(is.null(n.plausible))   {n.plausible <- 0}  ; if(is.na(n.plausible))     {n.plausible <- 0}
-                   if(n.plausible == 0 )     {                                  
+                   if(n.plausible == 0 )     {
                       syntax    <- gsub("n_plausible=####hier.anzahl.pv.einfuegen####,","",syntax) } else {
                       syntax    <- gsub("####hier.anzahl.pv.einfuegen####",n.plausible,syntax)
                    }
@@ -2896,11 +2909,11 @@ gen.syntax     <- function(Name,daten, all.Names, namen.all.hg = NULL, all.hg.ch
                    erlaubte.codes <- paste(gsub("_","",sort(gsub(" ","_",formatC(names(eatTools::tableUnlist(daten[, all.Names[["variablen"]], drop=FALSE ])),width=var.char)),decreasing=TRUE)),collapse=",")
                    syntax    <- gsub("####hier.erlaubte.codes.einfuegen####",erlaubte.codes, syntax )
                    ind       <- grep("Format pid",syntax)
-                   beginn    <- NULL                                            
-                   if(length(namen.all.hg)>0)    {                              
+                   beginn    <- NULL
+                   if(length(namen.all.hg)>0)    {
                      all.hg.char.kontroll <- all.hg.char
                      all.hg.char <- sapply(namen.all.hg, FUN=function(ii) {max(nchar(as.character(na.omit(daten[,ii]))))})
-                     stopifnot(all(all.hg.char == all.hg.char.kontroll))        
+                     stopifnot(all(all.hg.char == all.hg.char.kontroll))
                      for (ii in 1:length(namen.all.hg))  {
                           if(is.null(beginn)) {beginn <- ID.char+1}
                           ende   <- beginn-1+all.hg.char[ii]
@@ -2914,7 +2927,7 @@ gen.syntax     <- function(Name,daten, all.Names, namen.all.hg = NULL, all.hg.ch
                         cat(paste("However, '",tolower(model.statement),"' will used as 'model statement' to accomplish your will.\n",sep=""))
                       }
                       if(model.statement == "item") {
-                         ind.model <- grep("model item", syntax)                
+                         ind.model <- grep("model item", syntax)
                          stopifnot(length(ind.model)==1)
                          syntax[ind.model] <- paste("model item - ",paste(tolower(all.Names[["DIF.var"]]),collapse=" - ") ," + ", paste("item*",tolower(all.Names[["DIF.var"]]),collapse=" + "), ";",sep="")
                       }
@@ -2925,7 +2938,7 @@ gen.syntax     <- function(Name,daten, all.Names, namen.all.hg = NULL, all.hg.ch
                       if(method == "gauss") {warning("Gaussian quadrature is only available for models without latent regressors.\n         Use 'Bock-Aiken quadrature' for estimation.")
                                              method <- "quadrature"} }          ### method muss "quadrature" oder "montecarlo" sein
                    syntax    <- gsub("####hier.method.einfuegen####",method,syntax)
-                   if(length(all.Names[["weight.var"]])>0)  {                   
+                   if(length(all.Names[["weight.var"]])>0)  {
                       ind.4   <- grep("caseweight",syntax)
                       syntax[ind.4] <- paste( syntax[ind.4], " ", tolower(all.Names[["weight.var"]]),";",sep="") }
                    if(length(all.Names[["group.var"]])>0) {
@@ -2939,7 +2952,7 @@ gen.syntax     <- function(Name,daten, all.Names, namen.all.hg = NULL, all.hg.ch
                        syntax   <- c(syntax[1:(ind.3-1)],add.syntax.pv, add.syntax.wle, syntax[ind.3:length(syntax)]) }
                    if(is.null(beginn)) {beginn <- ID.char+1}
                    syntax[ind] <- paste(syntax[ind], "responses ",beginn,"-",beginn-1+var.char*ncol(data.frame(daten[,all.Names[["variablen"]]],stringsAsFactors = FALSE)),";",sep="")
-                   if(var.char>1)  {                                            
+                   if(var.char>1)  {
                       syntax[ind] <- paste(gsub(";","",syntax[ind]), " (a",var.char,");",sep="")}
                    score.statement <- .writeScoreStatementMultidim (data=daten, itemCols=all.Names[["variablen"]], qmatrix=model, columnItemNames = 1 ,use.letters=use.letters, allowAllScoresEverywhere = allowAllScoresEverywhere )
                    expected.nodes  <- nodes^(ncol(model)-1)
@@ -2947,30 +2960,30 @@ gen.syntax     <- function(Name,daten, all.Names, namen.all.hg = NULL, all.hg.ch
                    ind <- grep("labels ",syntax)
                    stopifnot(length(ind)==1)
                    syntax <- c(syntax[1:ind],score.statement,syntax[(ind+1):length(syntax)])
-                   if(length(all.Names[["HG.var"]])==0) {                       
+                   if(length(all.Names[["HG.var"]])==0) {
                       ind.2 <- grep("^regression$",syntax)
                       stopifnot(length(ind.2)==1)
                       syntax <- syntax[-ind.2]
                       ind.3 <- grep("export reg_coefficients",syntax)
                       stopifnot(length(ind.3)==1)
                       syntax <- syntax[-ind.3] }
-                   if(length(all.Names[["group.var"]]) ==0) {                   
+                   if(length(all.Names[["group.var"]]) ==0) {
                       ind.3 <- grep("^group$",syntax)
                       stopifnot(length(ind.3)==1)
                       syntax <- syntax[-ind.3]}
-                   if(length(all.Names[["weight.var"]]) ==0) {                  
+                   if(length(all.Names[["weight.var"]]) ==0) {
                       ind.4 <- grep("^caseweight$",syntax)
                       stopifnot(length(ind.4)==1)
                       syntax <- syntax[-ind.4]}
-                   if(match.arg(equivalence.table) == "NULL") {                 
+                   if(match.arg(equivalence.table) == "NULL") {
                       ind.5   <- grep("^equivalence",syntax)
                       stopifnot(length(ind.5)==1)
                       syntax <- syntax[-ind.5]}
-                   if(is.null(seed)) {                                          
+                   if(is.null(seed)) {
                       ind.7   <- grep("^set seed",syntax)
                       stopifnot(length(ind.7)==1)
                       syntax <- syntax[-ind.7]}
-                   if(n.plausible == 0)     {                                   
+                   if(n.plausible == 0)     {
                       ind.6   <- grep("^show cases! estimates=latent", syntax)
                       stopifnot(length(ind.6) == 1)
                       syntax  <- syntax[-ind.6]}
@@ -2982,7 +2995,7 @@ gen.syntax     <- function(Name,daten, all.Names, namen.all.hg = NULL, all.hg.ch
                    if(!all(sapply(export, inherits, what="logical"))) {stop("All list elements of argument 'export' have to be of class 'logical'.")}
                    export <- as.list(userSpecifiedList ( l = export, l.default = export.default ))
                    weg <- names(export[which(export == FALSE)])
-                   if(length(weg)>0)    {                                       
+                   if(length(weg)>0)    {
                       for (ii in seq(along=weg) ) {
                            ind.x <- grep(paste("export ", weg[ii], sep=""), syntax)
                            stopifnot(length(ind.x) == 1)
@@ -2991,7 +3004,7 @@ gen.syntax     <- function(Name,daten, all.Names, namen.all.hg = NULL, all.hg.ch
 
 anker <- function(lab, prm, qMatrix, domainCol, itemCol, valueCol, multicore )  {
                   stopifnot(ncol(lab)==2)
-                  if ( !ncol(prm) == 2 )   {                                    
+                  if ( !ncol(prm) == 2 )   {
                        if ( is.null(itemCol))  { stop("If anchor parameter frame has more than two columns, 'itemCol' must be specified.\n")}
                        if ( is.null(valueCol)) { stop("If anchor parameter frame has more than two columns, 'valueCol' must be specified.\n")}
                        allVars <- list(domainCol = domainCol, itemCol=itemCol, valueCol=valueCol)
@@ -3012,7 +3025,7 @@ anker <- function(lab, prm, qMatrix, domainCol, itemCol, valueCol, multicore )  
                   ind <- intersect(lab[,"item"],prm[,"item"])
                   if(length(ind) == 0) {stop("No common items found in 'anchor' list and data frame.\n")}
                   if(length(ind) > 0)  {cat(paste(length(ind), " common items found in 'anchor' list and data frame.\n",sep="")) }
-                  if(!is.null(multicore) && multicore == TRUE) {                
+                  if(!is.null(multicore) && multicore == TRUE) {
                       txt <- capture.output(resT<- eatTools::mergeAttr(lab, prm, by = "item", sort = FALSE, all = FALSE, setAttr = FALSE, unitName = "item", xName = "item response data", yName = "anchor list", verbose = c("match", "unique")),type="message")
                       if(length(txt)>0) { cat(txt, sep="\n")}
                   }  else  {
@@ -3033,28 +3046,28 @@ isLetter <- function ( string ) {
             return(isL)}
 
 .writeScoreStatementMultidim <- function(data, itemCols, qmatrix, columnItemNames = 1 ,columnsDimensions = -1, use.letters=use.letters , allowAllScoresEverywhere) {
-            n.dim      <- (1:ncol(qmatrix) )[-columnItemNames]                  
+            n.dim      <- (1:ncol(qmatrix) )[-columnItemNames]
             stopifnot(length( which( rowSums(qmatrix[,n.dim,drop = FALSE]) == 0))==0)
       	    if(length(setdiff(names(eatTools::tableUnlist(qmatrix[,-1, drop = FALSE])), c("0","1"))) > 0 )  {
                cat("Found unequal factor loadings for at least one dimension. This will result in a 2PL model.\n")
                for (u in 2:ncol(qmatrix)) {qmatrix[,u] <- as.character(round(qmatrix[,u], digits = 3))}
-            }                                                                   
-            stopifnot(all(qmatrix[,1] == itemCols))                             
+            }
+            stopifnot(all(qmatrix[,1] == itemCols))
             cat(paste("Q matrix specifies ",length(n.dim)," dimension(s).\n",sep=""))
             stopifnot(length(setdiff(colnames(data[,itemCols]),  qmatrix[,columnItemNames]) )==0)
             unique.patter <- qmatrix[which(!duplicated(do.call("paste", qmatrix[,-1, drop = FALSE] ))), -1, drop = FALSE]
             colnames(unique.patter) <- paste("Var",1:ncol(unique.patter), sep="")
             score.matrix  <- data.frame(score=1, unique.patter, matrix(NA, nrow= nrow(unique.patter), ncol=length(itemCols), dimnames=list(NULL, paste("X",1:length(itemCols),sep=""))),stringsAsFactors = FALSE)
             scoreColumns  <- grep("^Var",colnames(score.matrix))
-            for (i in 1:length(itemCols))  {                                    
+            for (i in 1:length(itemCols))  {
                qmatrix.i    <- qmatrix[qmatrix[,columnItemNames] == itemCols[i],]
                matchRow     <- which(sapply ( 1:nrow(score.matrix) , function(ii) {all ( as.numeric(qmatrix.i[,n.dim]) == as.numeric(score.matrix[ii,scoreColumns])) }))
                stopifnot(length(matchRow) == 1)
-               matchColumn  <- min(which(is.na(score.matrix[matchRow,])))       
+               matchColumn  <- min(which(is.na(score.matrix[matchRow,])))
                stopifnot(length(matchColumn) == 1)
                score.matrix[matchRow,matchColumn] <- i
 		        }
-            rowsToDelete <- which(is.na(score.matrix[, max(scoreColumns) + 1])) 
+            rowsToDelete <- which(is.na(score.matrix[, max(scoreColumns) + 1]))
             if(length(rowsToDelete)>0) {score.matrix <- score.matrix[-rowsToDelete, ]}
             for (ii in 1:nrow(score.matrix)) {score.matrix[,ii] <- as.character(score.matrix[,ii])}
             score.matrix <- fromMinToMax(dat = data[,itemCols, drop = FALSE], score.matrix = score.matrix, qmatrix = qmatrix, allowAllScoresEverywhere = allowAllScoresEverywhere, use.letters = use.letters)
@@ -3083,7 +3096,7 @@ isLetter <- function ( string ) {
 
 fromMinToMax <- function(dat, score.matrix, qmatrix, allowAllScoresEverywhere, use.letters)    {
                 all.values <- plyr::alply(as.matrix(score.matrix), .margins = 1, .fun = function(ii) {sort(names(eatTools::tableUnlist(dat[,na.omit(as.numeric(ii[grep("^X", names(ii))])), drop = FALSE])) ) })
-                if ( length(all.values) > 1) {                                  
+                if ( length(all.values) > 1) {
                      if ( all ( outer ( all.values, all.values, Vectorize(identical))) == FALSE ) {
                           cat(paste("Found different values for dimensions: \n",sep=""))
                           for ( u in 1:length(all.values)) {
@@ -3151,11 +3164,11 @@ userSpecifiedList <- function ( l, l.default ) {
 desk.irt <- function(daten, itemspalten, na=NA,percent=FALSE,reduce=TRUE,codebook=list(datei=NULL,item=NULL,value=NULL,lab=NULL, komp=NULL), quiet = FALSE ) {
              daten <- eatTools::makeDataFrame(daten)
              if(!missing(itemspalten)) {daten <- daten[,itemspalten,drop=FALSE]}
-             if (is.na(na[1])==FALSE) {                                         
+             if (is.na(na[1])==FALSE) {
                  recode.statement <- paste(na,"= NA",collapse="; ")
                  daten            <- data.frame(sapply(daten,FUN=function(ii) {car::recode(ii,recode.statement)}),stringsAsFactors=FALSE)
              }
-             specific.codes <- lapply(daten,function(ii){NULL})                 
+             specific.codes <- lapply(daten,function(ii){NULL})
              if(!is.null(codebook$datei) & !is.null(codebook$value))  {
                specific.codes <- lapply(as.list(colnames(daten)), FUN=function(ii) {
                                  codebook$datei[codebook$datei[,codebook$item] == ii,c(codebook$item,codebook$value)] } )
@@ -3192,10 +3205,10 @@ desk.irt <- function(daten, itemspalten, na=NA,percent=FALSE,reduce=TRUE,codeboo
              return(results)}
 
 item.diskrim <- function(daten, itemspalten, streng = TRUE) {
-                 if(!missing(itemspalten))  {daten <- daten[,itemspalten]}      
-                 trenn <- suppressWarnings(eatTools::pwc(daten))                
+                 if(!missing(itemspalten))  {daten <- daten[,itemspalten]}
+                 trenn <- suppressWarnings(eatTools::pwc(daten))
                  if(streng) {return(data.frame(item.name=trenn[,"item"],item.diskrim = trenn[,"partWholeCorr"],stringsAsFactors = FALSE))} else {return(data.frame(item.name=trenn[,"item"],item.diskrim = trenn[,"corr"],stringsAsFactors = FALSE))}}
-                 
+
 prepRep <- function ( calibT2, bistaTransfT1, bistaTransfT2, makeIdsUnique = TRUE) {
            if ( !inherits(calibT2, "transfBista" )) { stop("'calibT2' object must be of class 'transfBista'.\n")}
            if ( !inherits(bistaTransfT1, "transfBista" )) { stop("'bistaTransfT2' object must be of class 'transfBista'.\n")}
@@ -3242,10 +3255,10 @@ plotICC <- function ( resultsObj, defineModelObj, item = NULL, personPar = c("WL
            it  <- itemFromRes ( resultsObj )
            if ( !"est" %in% colnames(it) ) { it[,"est"] <- NA }
            if ( !"estOffset" %in% colnames(it) ) { it[,"estOffset"] <- NA }
-           it[,"est"] <- rowSums(it[,c("est", "estOffset")], na.rm = TRUE)      
-           if ( !"estSlope" %in% colnames(it) ) { it[,"estSlope"] <- 1 }        
+           it[,"est"] <- rowSums(it[,c("est", "estOffset")], na.rm = TRUE)
+           if ( !"estSlope" %in% colnames(it) ) { it[,"estSlope"] <- 1 }
            if ( length(which(is.na(it[,"estSlope"]))) > 0) { it[which(is.na(it[,"estSlope"])), "estSlope"] <- 1 }
-           eapA<- eapFromRes (resultsObj)                                       
+           eapA<- eapFromRes (resultsObj)
            if ( personPar == "WLE") {
                 eapA <- wleFromRes(resultsObj)
                 colnames(eapA) <- car::recode(colnames(eapA), "'wle_est'='EAP'")
@@ -3263,14 +3276,14 @@ plotICC <- function ( resultsObj, defineModelObj, item = NULL, personPar = c("WL
            }
            pl  <- by ( data = it, INDICES = it[,c("model", "item")], FUN = function ( i ) {
                   xlm <- c(i[["est"]]+2, i[["est"]]-2)
-                  anf <- -6                                                     
-                  ende<- 6                                                      
+                  anf <- -6
+                  ende<- 6
                   x   <- seq ( anf, ende, l = 400)
                   y   <- exp( i[["estSlope"]]*x - i[["est"]] ) / (1+exp( i[["estSlope"]]*x - i[["est"]] ))
                   plot (x, y, type = "l", main = paste("Item '",as.character(i[["item"]]),"'\n\n",sep=""), xlim = c(-6,6), ylim = c(0,1), xlab = "theta", ylab = "P(X=1)", col = "darkred", cex = 8, lwd = 2)
                   graphics::mtext( paste("Model = ",i[["model"]],"  |  Dimension = ",i[["dimension"]], "  |  difficulty = ",round(i[["est"]], digits = 3),"  |  Infit = ",round(i[["infit"]], digits = 3),"\n",sep=""))
                   eap <- eapA[intersect ( which (eapA[,"dimension"] == i[["dimension"]]) , which (eapA[,"model"] == i[["model"]])),]
-                  if ( inherits(defineModelObj, "defineMultiple")) {            
+                  if ( inherits(defineModelObj, "defineMultiple")) {
                        woIst<- which ( lapply ( defineModelObj, FUN = function ( g ) {   g[["analysis.name"]] == i[["model"]] }) == TRUE)
                        stopifnot(length(woIst) == 1)
                        dat  <-defineModelObj[[woIst]][["daten"]]
@@ -3280,7 +3293,7 @@ plotICC <- function ( resultsObj, defineModelObj, item = NULL, personPar = c("WL
                   id  <- unique(resultsObj[intersect(which(resultsObj[,"type"] == "tech"), which(resultsObj[,"par"] == "ID")),"derived.par"])
                   stopifnot(length(id)==1)
                   prbs<- na.omit ( merge ( dat[,c( "ID", as.character(i[["item"]]))], eap[,c( id, "EAP")], by.x = "ID", by.y = id))
-                  anz <- round ( nrow(prbs) / personsPerGroup ) + 1             
+                  anz <- round ( nrow(prbs) / personsPerGroup ) + 1
                   if ( anz < 3 ) { anz <- 3 }
                   if ( anz > smooth) { anz <- round(smooth)}
                   eapQ<- quantile ( prbs[,"EAP"], probs = seq(0,1,l = anz))
@@ -3300,23 +3313,23 @@ plotDevianceConquest <- function ( logFile, omitUntil = 1, reverse = TRUE, chang
            if ( inherits(logFile, "character")) {lf <- logFile}  else  { lf <- file.path(logFile[["path"]], paste0(logFile[["analysis.name"]], ".log"))}
            input<- scan(lf,what="character",sep="\n",quiet=TRUE)
            ind  <- grep("eviance=", input)
-           dev  <- unlist(lapply(input[ind], FUN = function (x) {               
-                   brace <- grep("\\(", x)                                      
+           dev  <- unlist(lapply(input[ind], FUN = function (x) {
+                   brace <- grep("\\(", x)
                    if(length(brace)>0) {
-                       weg <- grep("\\(", unlist(strsplit(x, "")))              
+                       weg <- grep("\\(", unlist(strsplit(x, "")))
                        x   <- substr(x, 1, weg-1)
                    }
                    return(x)}))
            dev  <- data.frame ( lapply(data.frame ( eatTools::halveString(dev, "\\."), stringsAsFactors = FALSE), eatTools::removeNonNumeric), stringsAsFactors = FALSE)
            mat  <- data.frame ( iter = 1:length(ind), dev = as.numeric(paste(dev[,1], dev[,2], sep=".")), stringsAsFactors = FALSE)
            if(omitUntil>0)  {
-              dc<- mat[-c(1:omitUntil),2]                                       
+              dc<- mat[-c(1:omitUntil),2]
            } else {
               dc<- mat[,2]
            }
            if ( change ){
               dc<- diff(dc)
-              yl<- "Deviance Change"                                            
+              yl<- "Deviance Change"
            } else {
               yl<- "Deviance"
            }
