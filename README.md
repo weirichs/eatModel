@@ -25,7 +25,8 @@ package?eatModel
 
 ## Exemplary analysis
 
-The package comes with an examplary data set containing fictional achievement scores of 13524 students in two domains (reading, listening) in the long format. The name of the data set is `trends`. You can find detailed exemplary analyses in the help pages of `defineModel()`. The following example estimates a between-item two-dimensional 2pl model with conditioning (background) model for the student cohort measured in 2020.  
+The package comes with an examplary data set containing fictional achievement scores of 13524 students in two domains (reading, listening) from three measurement occasions (2010, 2015, 2020) in the long format. The data are not longitudinal as the individuals stem from different cohorts and do not overlap across measurement occasions. The name of the data set is `trends`. You can find detailed exemplary analyses in the help pages of `defineModel()`. The following example estimates a between-item two-dimensional 2pl model with conditioning (background) model for the student cohort measured in 2020. The `splitModels()` function can be used previously if the corresponding model should be estimated in 2010 and 2015 likewise. 
+
 ```R
 library(eatModel)
 ### load exemplary data 
@@ -40,7 +41,7 @@ qMat   <- unique(trends[ ,c("item","domain")])
 qMat   <- data.frame ( qMat[,"item", drop=FALSE], model.matrix(~domain-1, data = qMat))
 
 ### specify the model
-def    <- defineModel(dat = dat2020, id = "idstud", check.for.linking = TRUE,items = colnames(dat2020)[-c(1:5)],
+def    <- defineModel(dat = dat2020, id = "idstud", items = colnames(dat2020)[-c(1:5)],
           qMatrix = qMat, HG.var = c("sex", "ses", "language"), irtmodel = "2PL", software = "tam")
 
 ### run the model
