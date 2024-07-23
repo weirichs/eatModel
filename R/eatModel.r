@@ -1072,7 +1072,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                      if(software == "conquest" || !is.null(all.Names[["DIF.var"]])) {
                         if(!all(subsNam$old == subsNam$new)) {                  
                            sn     <- subsNam[which( subsNam$old != subsNam$new),]
-                           cat("Conquest neither allows '.', '-', and '_' nor upper case letters in explicit variable names. Delete signs from variables names for explicit variables.\n"); flush.console()
+                           cat("Conquest neither allows '.', '-', and '_' nor upper case letters in explicit variable names and numbers in DIF variable name. Delete signs from variables names for explicit and DIF variables.\n"); flush.console()
                            recStr <- paste("'",sn[,"old"] , "' = '" , sn[,"new"], "'" ,sep = "", collapse="; ")
                            colnames(dat) <- car::recode(colnames(dat), recStr)
                            all.Names     <- lapply(all.Names, FUN = function ( y ) { car::recode(y, recStr) })
@@ -1282,7 +1282,7 @@ checkContextVars <- function(x, varname, type = c("weight", "DIF", "group", "HG"
                      type <- match.arg(arg = type, choices = c("weight", "DIF", "group", "HG"))
                      stopifnot(length(x) == nrow(itemdata))
                      if(missing(varname))  {varname <- "ohne Namen"}
-                     if(!inherits(x, "numeric") && isTRUE(internal))  {         
+                     if(!inherits(x, c("numeric", "integer")) && isTRUE(internal))  {
                         if (type == "weight") {stop(paste(type, " variable has to be 'numeric' necessarily. Automatic transformation is not recommended. Please transform by yourself.\n",sep=""))}
                         cat(paste(type, " variable has to be 'numeric'. Variable '",varname,"' of class '",class(x),"' will be transformed to 'numeric'.\n",sep=""))
                         x <- suppressWarnings(unlist(eatTools::asNumericIfPossible(x = data.frame(x, stringsAsFactors = FALSE), transform.factors = TRUE, maintain.factor.scores = FALSE, force.string = FALSE)))
