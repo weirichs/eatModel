@@ -1050,8 +1050,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                      }  else  {
                         if(missing(analysis.name)) {analysis.name <- "not_specified"}
                      }
-                     if(length(model.statement)!=1)                {stop("'model.statement' has to be of length 1.\n")}
-                     if(!inherits(model.statement, "character"))   {stop("'model.statement' has to be of class 'character'.\n")}
+                     checkmate::assert_character(model.statement, len = 1)
                      if(missing(dat))   {stop("No dataset specified.\n") }      
                      if(is.null(items)) {stop("Argument 'items' must not be NULL.\n",sep="")}
                      if(length(items) == 0 ) {stop("Argument 'items' has no elements.\n",sep="")}
@@ -1060,7 +1059,14 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                           items <- unique(items)
                      }
                      if(length(id) != 1 ) {stop("Argument 'id' must be of length 1.\n",sep="")}
-                     allVars     <- list(ID = id, variablen=items, DIF.var=DIF.var, HG.var=HG.var, group.var=group.var, weight.var=weight.var, schooltype.var = schooltype.var)
+                     if(model.statement != "item") {
+                          vars <- setdiff(eatTools::crop(unlist(strsplit(model.statement, "\\+|-|\\*"))), "item")
+                          mis  <- which(!vars %in% colnames(dat))
+                          if ( length(mis)>0) {stop(paste0("Variables '",paste(vars[mis], collapse="', '"), "' from 'model.statement' not found in data."))}
+                     }  else  {
+                          vars <- NULL
+                     }
+                     allVars     <- list(ID = id, variablen=items, DIF.var=DIF.var, HG.var=HG.var, group.var=group.var, weight.var=weight.var, schooltype.var = schooltype.var, add.vars = vars)
                      all.Names   <- lapply(allVars, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = dat, variable=ii)})
                      if(software == "conquest") {
                          if(max(nchar(all.Names[["variablen"]]))>11) {stop("In Conquest, maximum length of variable names must not exceed 11 characters. Please shorten variables names.\n")}
@@ -1072,10 +1078,9 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                      if(software == "conquest" || !is.null(all.Names[["DIF.var"]])) {
                         if(!all(subsNam$old == subsNam$new)) {                  
                            sn     <- subsNam[which( subsNam$old != subsNam$new),]
-                           cat("Conquest neither allows '.', '-', and '_' nor upper case letters in explicit variable names and numbers in DIF variable name. Delete signs from variables names for explicit and DIF variables.\n"); flush.console()
-                           recStr <- paste("'",sn[,"old"] , "' = '" , sn[,"new"], "'" ,sep = "", collapse="; ")
-                           colnames(dat) <- car::recode(colnames(dat), recStr)
-                           all.Names     <- lapply(all.Names, FUN = function ( y ) { car::recode(y, recStr) })
+                           message("Conquest neither allows '.', '-', and '_' nor upper case letters in explicit variable names and numbers in DIF variable name. Delete signs from variables names for explicit and DIF variables: \n\n", eatTools::print_and_capture (sn, spaces = 5), "\n")
+                           colnames(dat) <- eatTools::recodeLookup(colnames(dat), sn[,c("old", "new")])
+                           all.Names     <- lapply(all.Names, FUN = function ( y ) {eatTools::recodeLookup(y, sn[,c("old", "new")]) })
                            if(model.statement != "item") {
                               cat("    Remove deleted signs from variables names for explicit variables also in the model statement. Please check afterwards for consistency!\n")
                               for ( uu in 1:nrow(sn))  {model.statement <- gsub(sn[uu,"old"], sn[uu,"new"], model.statement)}
@@ -1197,6 +1202,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                           ret     <- list ( software = software, constraint = match.arg(constraints) , qMatrix=qMatrix, anchor=anchor,  all.Names=fixSlopeMat[["allNam"]], daten=daten, irtmodel=fixSlopeMat[["irtmodel"]], est.slopegroups = est.slopegroups, guessMat=guessMat, control = control, n.plausible=n.plausible, dir = dir, analysis.name=analysis.name, deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]], perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], fixSlopeMat = fixSlopeMat[["slopMat"]], estVar = fixSlopeMat[["estVar"]], pvMethod = pvMethod,  fitTamMmlForBayesian=fitTamMmlForBayesian)
                           class(ret) <-  c("defineTam", "list")
                           return ( ret )    }   }  }
+
 
 prepGuessMat <- function(guessMat, allNam){
        if(!is.null(guessMat)) {
@@ -1357,20 +1363,19 @@ prepAnchorTAM <- function (ank, allNam) {
 
 checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF.missing, namen.items.weg, remove.vars.DIF.constant){
             weg.dif <- NULL; weg.hg <- NULL; weg.weight <- NULL; weg.group <- NULL
-            if(length(allNam[["HG.var"]])>0 || length(allNam[["group.var"]])>0 || length(allNam[["DIF.var"]])>0 || length(allNam[["weight.var"]]) >0  ) {
-               varClass<- sapply(c(allNam[["HG.var"]],allNam[["group.var"]],allNam[["DIF.var"]], allNam[["weight.var"]]),FUN = function(ii) {class(dat[,ii])})
+            if(length(allNam[["HG.var"]])>0 || length(allNam[["group.var"]])>0 || length(allNam[["DIF.var"]])>0 || length(allNam[["weight.var"]]) >0 || length(allNam[["add.vars"]]) >0 ) {
+               varClass<- sapply(c(allNam[["HG.var"]],allNam[["group.var"]],allNam[["DIF.var"]], allNam[["weight.var"]], allNam[["add.vars"]]),FUN = function(ii) {class(dat[,ii])})
                if ( isFALSE(all(sapply(varClass, length) == 1)) ) {
                     fehler <- which(sapply(varClass, length) != 1)
-                    cat(paste0("Following ",length(fehler), " variables with more that one class:"))
-                    print(varClass[names(fehler)]); stop()
+                    stop("Following ",length(fehler), " variables with more that one class: \n", eatTools::print_and_capture(varClass[names(fehler)], spaces = 5))
                }
             }
+            if(length(allNam[["add.vars"]])>0)  { stopifnot(all(sapply(allNam[["add.vars"]], FUN = function(ii) { inherits(dat[,ii], c("integer", "numeric"))})))}
             if(length(allNam[["HG.var"]])>0)    {
-               varClass<- sapply(allNam[["HG.var"]], FUN = function(ii) {class(dat[,ii])})
-               notNum  <- which(varClass %in% c("factor", "character"))
-               if(length(notNum)>0) {
-                  cat(paste("Warning: Background variables '",paste(names(varClass)[notNum], collapse="', '"),"' of class \n    '",paste(varClass[notNum],collapse="', '"),"' will be converted to indicator variables.\n",sep=""))
-                  ind <- do.call("cbind", lapply ( names(varClass)[notNum], FUN = function ( yy ) {
+               varClass<- sapply(allNam[["HG.var"]], FUN = function(ii) { inherits(dat[,ii], c("integer", "numeric"))})
+               if(!all(varClass)) {
+                  cat(paste("Background variables '",paste(names(varClass)[which(varClass == FALSE)], collapse="', '"),"' of class \n    '",paste(varClass[which(varClass == FALSE)],collapse="', '"),"' will be converted to indicator variables.\n",sep=""))
+                  ind <- do.call("cbind", lapply ( names(varClass)[which(varClass == FALSE)], FUN = function ( yy ) {
                          if ( length(which(is.na(dat[,yy])))>0) { stop(paste0("Found ",length(which(is.na(dat[,yy]))), " missings on background variable '",yy,"'."))}
                          newFr <- model.matrix( as.formula (paste("~",yy,sep="")), data = dat)[,-1,drop=FALSE]
                          cat(paste("    Variable '",yy,"' was converted to ",ncol(newFr)," indicator(s) with name(s) '",paste(colnames(newFr), collapse= "', '"), "'.\n",sep=""))
@@ -1379,8 +1384,7 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
                       subNm <- .substituteSigns(dat=ind, variable=colnames(ind))
                       if(!all(subNm$old == subNm$new)) {
                           sn  <- subNm[which( subNm$old != subNm$new),]
-                          reSt<- paste("'",sn[,"old"] , "' = '" , sn[,"new"], "'" ,sep = "", collapse="; ")
-                          colnames(ind) <- car::recode(colnames(ind), reSt)     
+                          colnames(ind) <- eatTools::recodeLookup(colnames(ind), sn[,c("old", "new")])
                       }                                                         
                   }                                                             
                   allNam[["HG.var"]] <- setdiff ( allNam[["HG.var"]], names(varClass)[notNum])
@@ -1442,7 +1446,7 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
                 }
 
             }                                                                   
-            namen.all.hg <- unique(c(allNam[["HG.var"]],allNam[["group.var"]],allNam[["DIF.var"]],allNam[["weight.var"]]))
+            namen.all.hg <- unique(c(allNam[["HG.var"]],allNam[["group.var"]],allNam[["DIF.var"]],allNam[["weight.var"]], allNam[["add.vars"]]))
             weg.all <- unique(c(weg.dif, weg.hg, weg.weight, weg.group))
             perExHG <- NULL
             if(length(weg.all)>0) {
@@ -1451,6 +1455,7 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
                dat    <- dat[-weg.all,]
             }
             return(list(dat=dat, allNam=allNam, namen.items.weg=namen.items.weg,perExHG=perExHG, namen.all.hg=namen.all.hg))}
+
             
 checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, removeMinNperItem, minNperItem, remove.constant.items, model.statement){
           namen.items.weg <- NULL                                               
@@ -2196,17 +2201,17 @@ getTamPVs <- function ( runModelObj, qMatrix, leseAlles, omitPV, pvMethod, tam.p
          
 getTamEAPs <- function ( runModelObj, qMatrix, leseAlles = leseAlles) {
          if(leseAlles == FALSE ) {return(NULL)}
-         eaps <- runModelObj[["person"]]                                        ### Achtung: im eindimensionalen Fall enthalten die Spaltennamen keine Benennung der Dimension
-         eind1<- ncol(eaps) == 7                                                ### (uneinheitlich zu pvs, wo es immer eine Benennung gibt.)
-         if(eind1 == TRUE) {                                                    ### Im eindimensionalen Fall muss Benennung ergaenzt werden
-            cols <- grep("EAP$", colnames(eaps))                                ### zur Sicherheit werden hier zwei Indikatoren fuer Eindimensionalitaet genutzt. Fehlermeldung bei Widerspruch
-            stopifnot(length(cols) == 2)                                        ### ggf. muss diese Passage nach Release neuerer TAM-Versionen korrigiert werden
+         eaps <- runModelObj[["person"]]                                        
+         eind1<- ncol(eaps) == 7                                                
+         if(eind1 == TRUE) {                                                    
+            cols <- grep("EAP$", colnames(eaps))                                
+            stopifnot(length(cols) == 2)                                        
             colnames(eaps)[cols] <- paste(colnames(eaps)[cols], ".Dim1", sep="")
          }
          eaps <- reshape2::melt(eaps, id.vars = "pid", measure.vars = grep("EAP", colnames(eaps)), na.rm=TRUE)
          eaps[,"tam"]      <- eatTools::halveString(string = as.character(eaps[,"variable"]), pattern = "\\.", first = FALSE)[,"X2"]
          eaps[,"dimnumber"]<- as.numeric(eatTools::removePattern ( eaps[,"tam"], "Dim"))
-         eaps[,"group"]    <- colnames(qMatrix)[eaps[,"dimnumber"] + 1]         ### Zuordnung der Dimensionsnamen
+         eaps[,"group"]    <- colnames(qMatrix)[eaps[,"dimnumber"] + 1]         
          checkmate::assert_numeric(unique(eaps[,"dimnumber"]), len = ncol(qMatrix)-1, any.missing = FALSE)
          eaps[,"par"]      <- "est"
          eaps[grep("^SD.",as.character(eaps[,"variable"])),"par"]   <- "se"
