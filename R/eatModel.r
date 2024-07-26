@@ -1374,8 +1374,9 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
             if(length(allNam[["HG.var"]])>0)    {
                varClass<- sapply(allNam[["HG.var"]], FUN = function(ii) { inherits(dat[,ii], c("integer", "numeric"))})
                if(!all(varClass)) {
-                  cat(paste("Background variables '",paste(names(varClass)[which(varClass == FALSE)], collapse="', '"),"' of class \n    '",paste(varClass[which(varClass == FALSE)],collapse="', '"),"' will be converted to indicator variables.\n",sep=""))
-                  ind <- do.call("cbind", lapply ( names(varClass)[which(varClass == FALSE)], FUN = function ( yy ) {
+                  vnam<- names(varClass)[which(varClass == FALSE)]              
+                  cat(paste("Background variable(s) '",paste(vnam, collapse="', '"),"' of class \n    '",paste(sapply(dat[,vnam, drop=FALSE], class),collapse="', '"),"' will be converted to indicator variables.\n",sep=""))
+                  ind <- do.call("cbind", lapply ( vnam, FUN = function ( yy ) {
                          if ( length(which(is.na(dat[,yy])))>0) { stop(paste0("Found ",length(which(is.na(dat[,yy]))), " missings on background variable '",yy,"'."))}
                          newFr <- model.matrix( as.formula (paste("~",yy,sep="")), data = dat)[,-1,drop=FALSE]
                          cat(paste("    Variable '",yy,"' was converted to ",ncol(newFr)," indicator(s) with name(s) '",paste(colnames(newFr), collapse= "', '"), "'.\n",sep=""))
@@ -1386,13 +1387,12 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
                           sn  <- subNm[which( subNm$old != subNm$new),]
                           colnames(ind) <- eatTools::recodeLookup(colnames(ind), sn[,c("old", "new")])
                       }                                                         
-                  }                                                             
-                  allNam[["HG.var"]] <- setdiff ( allNam[["HG.var"]], names(varClass)[notNum])
-                  allNam[["HG.var"]] <- c(allNam[["HG.var"]], colnames(ind))
+                  }
+                  allNam[["HG.var"]] <- c(setdiff(allNam[["HG.var"]],vnam), colnames(ind))
                   if ( length(allNam[["HG.var"]]) > 99 && software == "conquest" ) {
                        warning(paste0(length(allNam[["HG.var"]]), " background variables might be problematic in 'Conquest'. Recommend to use 'TAM' instead."))
                   }                                                             
-               dat <- data.frame ( dat, ind, stringsAsFactors = FALSE )
+                  dat <- data.frame ( dat, ind, stringsAsFactors = FALSE )      
                }
                hg.info <- lapply(allNam[["HG.var"]], FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="HG", itemdata=dat[,allNam[["variablen"]], drop = FALSE], suppressAbort = TRUE, internal=TRUE )})
                for ( i in 1:length(hg.info)) { dat[, hg.info[[i]][["varname"]] ] <- hg.info[[i]]$x }
