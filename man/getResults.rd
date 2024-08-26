@@ -226,6 +226,6 @@ logistic regression. Journal of Educational and Behavioral Statistics, 32 (1), 9
 https://doi.org/10.3102/1076998606298035
 
 Zieky, M. (1993). Practical questions in the use of DIF statistics in item development. In P.
-W. Holland & H. Wainer (Eds.), \emph{Differential item functioning} (pp. 337–347). Hillsdale, NJ:
+W. Holland & H. Wainer (Eds.), \emph{Differential item functioning} (pp. 337-347). Hillsdale, NJ:
 Lawrence Erlbaum.
 }
