@@ -669,7 +669,7 @@ transformToBista <- function ( equatingList, refPop, cuts, weights = NULL, defau
                                     }
                                     msdFok <- c(msdF[intersect(which(msdF[,"parameter"] == "mean"), which(msdF[,"coefficient"] == "est")),"value"], msdF[intersect(which(msdF[,"parameter"] == "sd"), which(msdF[,"coefficient"] == "est")),"value"])
                                 }  else  {
-                                    cat("Results object does not contain any plausible values. Skip transformation of linking error for competence levels.\n")
+                                    message("Results object does not contain any plausible values. Skip transformation of linking error for competence levels.")
                                 }
                                 if ( !is.null(pv) && !is.null ( itFrame )) {        
                                     if ( cutsMis == FALSE & !is.null ( equatingList[["items"]] )) {
@@ -1203,7 +1203,6 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                           class(ret) <-  c("defineTam", "list")
                           return ( ret )    }   }  }
 
-
 prepGuessMat <- function(guessMat, allNam){
        if(!is.null(guessMat)) {
            weg1 <- setdiff(allNam[["variablen"]], guessMat[,1])
@@ -1287,7 +1286,7 @@ prepEstSlopegroupsTAM <- function(esg, allNam){
 checkContextVars <- function(x, varname, type = c("weight", "DIF", "group", "HG"), itemdata, suppressAbort = FALSE, internal = FALSE)   {
                      type <- match.arg(arg = type, choices = c("weight", "DIF", "group", "HG"))
                      stopifnot(length(x) == nrow(itemdata))
-                     if(missing(varname))  {varname <- "ohne Namen"}
+                     if(missing(varname))  {varname <- "ohne Namen"}            
                      if(!inherits(x, c("numeric", "integer")) && isTRUE(internal))  {
                         if (type == "weight") {stop(paste(type, " variable has to be 'numeric' necessarily. Automatic transformation is not recommended. Please transform by yourself.\n",sep=""))}
                         cat(paste(type, " variable has to be 'numeric'. Variable '",varname,"' of class '",class(x),"' will be transformed to 'numeric'.\n",sep=""))
@@ -1455,7 +1454,6 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
                dat    <- dat[-weg.all,]
             }
             return(list(dat=dat, allNam=allNam, namen.items.weg=namen.items.weg,perExHG=perExHG, namen.all.hg=namen.all.hg))}
-
             
 checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, removeMinNperItem, minNperItem, remove.constant.items, model.statement){
           namen.items.weg <- NULL                                               
@@ -1984,7 +1982,9 @@ getConquestResults<- function(path, analysis.name, model.name, qMatrix, all.Name
          if (!shwFile %in% allFiles) {
              cat("Cannot find Conquest showfile.\n")
          } else {
-             shw  <- get.shw( file = file.path(path, shwFile) )                 
+             fle  <- file.path(path, shwFile)
+             attr(fle, "allNames") <- all.Names                                 
+             shw  <- get.shw( file = fle )                                      
              if(is.null( dim(shw$cov.structure) )) {from <- NA} else { from <- shw$cov.structure[-ncol(shw$cov.structure),1]}
              altN <- data.frame ( nr = 1:(ncol(qMatrix)-1), pv = paste("dim", 1:(ncol(qMatrix)-1),sep="."), from = from ,  to = colnames(qMatrix)[-1], stringsAsFactors = FALSE)
              shw[["item"]]  <- merge(shw[["item"]], qL[,-match("value", colnames(qL))], by.x = "item", by.y = colnames(qMatrix)[1], all=TRUE)
@@ -2225,7 +2225,6 @@ getTamEAPs <- function ( runModelObj, qMatrix, leseAlles = leseAlles) {
          res  <- rbind(res, data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = NA, var2 = NA , type = "tech", indicator.group = "persons", group = grp, par = "eap", derived.par = "rel", value = runModelObj[["EAP.rel"]] , stringsAsFactors = FALSE) )
          return(res)}
 
-
 getTamQ3 <- function(runModelObj, leseAlles, shw1, Q3, q3MinObs, q3MinType){
          if(leseAlles == FALSE || Q3 == FALSE) {return(NULL)}
          nObs <- NULL
@@ -2255,7 +2254,7 @@ getTamResults <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV, nplau
              txt <- capture.output ( regr <- tam.se(runModelObj))               
              stopifnot ( nrow(regr$beta) == ncol(attr(runModelObj, "Y") )+1)    
              rownames(regr$beta) <- c("(Intercept)", colnames(attr(runModelObj, "Y")))
-          } else {
+         } else {
              regr <- NULL
          }
          if ( !inherits(runModelObj, "tamBayes") ) {leseAlles <- TRUE} else {leseAlles <- FALSE}
@@ -2572,53 +2571,49 @@ get.wle <- function(file)      {
             return(valid)}
 
 get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.dif.bound = 0.3, p.value = 0.9) {
-            all.output <- list();   all.terms <- NULL                           
-            input.all <- scan(file,what="character",sep="\n",quiet=TRUE)        
+            all.output<- list();   all.terms <- NULL                            
+            input.all <- scan(file,what="character",sep="\n",quiet=TRUE)
             rowToFind <- c("Final Deviance","Total number of estimated parameters")
             rowToFind <- sapply(rowToFind, FUN = function(ii) {                 
                          row.ii <- grep(ii,input.all)                           
                          stopifnot(length(row.ii) == 1)
                          row.ii <- as.numeric(unlist(lapply (strsplit(input.all[row.ii], " +"), FUN=function(ll) {ll[length(ll)]}) ))
                          return(row.ii)})
-            ind <- grep("TERM",input.all)                                       
-            grenzen <- grep("An asterisk",input.all)
+            ind       <- grep("TERM",input.all)                                 
+            grenzen   <- grep("An asterisk",input.all)
             if(length(ind)==0) {stop(paste("No TERM-statement found in file ",file,".\n",sep=""))}
             for (i in 1:length(ind)) {
-                 term <- input.all[ind[i]];  steps <- NULL
-                 doppelpunkt <- which( sapply(1:nchar(term),FUN=function(ii){u <- substr(term,ii,ii); b <- u==":"  }) )
-                 term <- substr(term,doppelpunkt+2,nchar(term))
-                 cat(paste("Found TERM ",i,": '",term,"' \n",sep=""))
+                 term <- eatTools::crop(unlist(strsplit(input.all[ind[i]], ":"))[2])
+                 cat(paste0("Found TERM ",i,": '",term,"' \n"))
                  all.terms <- c(all.terms,term)                                 
                  bereich <- (ind[i]+6) : (grenzen[i] -2)                        
-                 namen   <- c("No.", strsplit(input.all[bereich[1]-2]," +")[[1]][-1])
-                 namen   <- gsub("\\^","",namen)
-                 index   <- grep("CI",namen)                                    ### Wenn ein "CI" als Spaltenname erscheint, muessen daraus im R-Dataframe zwei Spalten werden!
-                 if(length(index) > 0)  {
-                    for (ii in 1:length(index)) {
-                         namen  <- c(namen[1:index[ii]], "CI",namen[(index[ii]+1):length(namen)] )}}
-                 input.sel  <- eatTools::crop( input.all[bereich] )             
-                 input.sel  <- gsub("\\(|)|,"," ",input.sel)                    
-                 input.sel  <- gsub("\\*    ", "  NA", input.sel)               
-                 foo        <- strsplit(input.sel," +")                         
+                 namen   <- gsub("\\^","",c("No.", strsplit(input.all[bereich[1]-2]," +")[[1]][-1]))
+                 namen   <- rep(namen, car::recode(namen, "'CI'=2; else=1"))    ### Wenn ein "CI" als Spaltenname erscheint, muessen daraus im R-Dataframe zwei Spalten werden!
+                 inp.sel <- gsub("\\(|)|,"," ",eatTools::crop(input.all[bereich]))
+                 inp.sel <- gsub("\\*    ", "  NA", inp.sel)                    
+                 if(!is.null(attr(file, "allNames"))) {                         
+                     inp.sel <- eatTools::gsubAll(inp.sel, old = attr(file, "allNames")[["variablen"]], new = paste0(attr(file, "allNames")[["variablen"]], " "))
+                 }
+                 foo        <- strsplit(inp.sel," +")
                  maxColumns <- max(sapply(foo, FUN=function(ii){ length(ii)}))  
                  nDifferentColumns <- length( table(sapply(foo, FUN=function(ii){ length(ii)  })))
-                 maxColumns <- which( sapply(foo, FUN=function(ii){ length(ii) == maxColumns  }) ) [1]
-                 foo.2      <- which( sapply(1:nchar(input.sel[maxColumns]),FUN=function(ii){u <- substr(input.sel[maxColumns],ii,ii); b <- u==" "  }) )
+                 maxColumns <- which( sapply(foo, FUN=function(ii){ length(ii) == maxColumns  }) )[1]
+                 foo.2      <- which( sapply(1:nchar(inp.sel[maxColumns]),FUN=function(ii){u <- substr(inp.sel[maxColumns],ii,ii); b <- u==" "  }) )
                  foo.3      <- diff(foo.2)                                      
                  foo.3      <- foo.2[foo.3 !=1]                                 
                  ESTIMATE   <- which( sapply(1:nchar(input.all[ind[i] + 4] ),FUN=function(ii){u <- substr(input.all[ind[i] + 4],ii,ii+7); b <- u=="ESTIMATE"  }) )
                  foo.3      <- foo.3[foo.3>(ESTIMATE-3)]                        
                  if(nDifferentColumns>1) {
                     if(length(foo.3)>0) {                                       
-                       for (ii in 1:length(input.sel)) {                        
+                       for (ii in 1:length(inp.sel)) {                          
                             for (iii in 1:length(foo.3)) {
-                                 if(substr( input.sel[ii], foo.3[iii] + 2 , foo.3[iii] + 2 ) == " ") {input.sel[ii] <- paste(substr(input.sel[ii],1,foo.3[iii]), "NA", substring(input.sel[ii],foo.3[iii]+3) , sep="")}}}}
+                                 if(substr( inp.sel[ii], foo.3[iii] + 2 , foo.3[iii] + 2 ) == " ") {inp.sel[ii] <- paste(substr(inp.sel[ii],1,foo.3[iii]), "NA", substring(inp.sel[ii],foo.3[iii]+3) , sep="")}}}}
                     if(length(foo.3)==0) {cat(paste("There seem to be no values in any columns behind 'ESTIMATE'. Check outputfile for term '",all.terms[length(all.terms)],"' in file: '",file,"'. \n",sep=""))}}
-                 input.sel <- strsplit(input.sel," +")
-                 if(length(input.sel[[1]]) == 0 ) {cat(paste("There seem to be no valid values associated with term '",all.terms[length(all.terms)],"' in file: '",file,"'. \n",sep=""))
+                 inp.sel    <- strsplit(inp.sel," +")
+                 if(length(inp.sel[[1]]) == 0 ) {cat(paste("There seem to be no valid values associated with term '",all.terms[length(all.terms)],"' in file: '",file,"'. \n",sep=""))
                                                    all.terms <- all.terms[-i]}
-                 if(length(input.sel[[1]]) > 0 ) {
-                    referenzlaenge <- max (sapply( input.sel, FUN=function(ii ){  length(ii)    }) )
+                 if(length(inp.sel[[1]]) > 0 ) {
+                    referenzlaenge <- max (sapply( inp.sel, FUN=function(ii ){  length(ii)    }) )
                     if(referenzlaenge < length(namen) ) {
                        cat(paste("Several columns seem to be empty for term '",all.terms[length(all.terms)],"' in file: '",file,"'.\n",sep=""))
                        head <- eatTools::crop(input.all[bereich[1]-2])          
@@ -2639,10 +2634,10 @@ get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.d
                        if(referenzlaenge >  length(namen) + 1) {
                           cat(paste("There seem to be more columns than names for it. Check outputfile for term '",all.terms[length(all.terms)],"' in file: '",file,"'. \n",sep=""))
                           namen<- c(namen, rep("add.column",referenzlaenge-length(namen) )) }}
-                    input.sel  <- t(sapply(input.sel, FUN=function(ii){ c(ii, rep(NA,referenzlaenge-length(ii))) }))
-                    colnames(input.sel) <- namen                                
-                    input.sel  <- suppressWarnings(eatTools::asNumericIfPossible(data.frame( gsub("NNA", NA, gsub("NA", NA, gsub("\\*","",input.sel))), stringsAsFactors = FALSE), force.string = FALSE))
-                    results.sel<- data.frame(input.sel,filename=file,stringsAsFactors = FALSE)
+                    inp.sel  <- t(sapply(inp.sel, FUN=function(ii){ c(ii, rep(NA,referenzlaenge-length(ii))) }))
+                    colnames(inp.sel) <- namen                                
+                    inp.sel  <- suppressWarnings(eatTools::asNumericIfPossible(data.frame( gsub("NNA", NA, gsub("NA", NA, gsub("\\*","",inp.sel))), stringsAsFactors = FALSE), force.string = FALSE))
+                    results.sel<- data.frame(inp.sel,filename=as.character(file),stringsAsFactors = FALSE)
                     if(is.na(as.numeric(results.sel$ESTIMATE[1]))) {cat(paste("'ESTIMATE' column in Outputfile for term '",all.terms[length(all.terms)],"' in file: '",file,"' does not seem to be a numeric value. Please check!\n",sep=""))}
                     if(!missing(dif.term)) {                                    
                        if(all.terms[length(all.terms)] == dif.term) {           
