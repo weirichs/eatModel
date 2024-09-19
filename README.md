@@ -12,7 +12,7 @@
 
 ```R
 # Install eatRep from GitHub via
-remotes::install_github("weirichs/eatModel")
+remotes::install_github("weirichs/eatModel", upgrade="never")
 ```
 
 ## View package documentation
