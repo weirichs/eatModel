@@ -1,3 +1,5 @@
+### runModel is usually used after defineModel().
+
 runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.console = TRUE, wait = TRUE) {
   if (inherits(defineModelObj, "defineMultiple") ) {
     if(is.null ( attr(defineModelObj, "split")[["nCores"]] ) || attr(defineModelObj, "split")[["nCores"]] == 1 ) {
@@ -75,3 +77,30 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
       attr(mod, "defineModelObj") <- defineModelObj[-match("daten", names(defineModelObj))]
       attr(mod, "Y")              <- Y
       return(mod)  }  }   }
+
+
+### runModel() specific help functions -----------------------------------------
+
+qMatToB <- function(qma, slp) {
+  zei <- match( qma[,"item"], slp[,1])
+  for ( i in 1:length(zei) ) {
+    ind <- which(qma[i,] ==1 )
+    stopifnot(length(ind)==1, qma[i,"item"] == slp[zei[i],1])
+    qma[i,ind] <- slp[zei[i],2] }
+  return(qma)}
+
+tamObjForBayesianPV <- function(anchor, qMatrix, slopeMatrix = NULL, resp, pid, Y) {
+  warning("To date, bayesian plausible values imputation only works for binary between-item dimensionality models.")
+  if ( !is.null(slopeMatrix)) {
+    qMatrix <- qMatToB ( qma = qMatrix, slp = slopeMatrix)
+  }
+  xsi.obj<- as.matrix(data.frame ( V1 = 0, V2 = anchor[,"parameter"] * (-1)))
+  B.obj  <- array(unlist(lapply(2:ncol(qMatrix),FUN = function ( col) {data.frame ( Cat0 = 0, Cat1 = qMatrix[,col])})), dim = c(nrow(qMatrix), 2, ncol(qMatrix)-1), dimnames = list(qMatrix[,"item"], c("Cat0", "Cat1"), paste0("Dim0",1:(ncol(qMatrix)-1)) ))
+  tamObj <- list ( AXsi = xsi.obj, B = B.obj, resp = resp, Y=Y, pid = pid)
+  class(tamObj) <- c("list", "tamBayes")
+  return(tamObj)}
+
+
+
+
+
