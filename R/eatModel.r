@@ -57,23 +57,29 @@ simEquiTable <- function(anchor, mRef, sdRef, addConst = 500, mulConst = 100, cu
 
 ### not called -----------------------------------------------------------------
 
-getConquestVersion <- function ( path.conquest , path.temp , asDate = TRUE ) {
-    wd <- path.temp
-		f <- file.path ( wd , "delete.cqc" )
-		write ( "quit;" , f )
-		f <- normalizePath ( f )
-		path.conquest <- normalizePath ( path.conquest )
-		cmd <- paste ( "\"", path.conquest, "\" \"", f , "\"" , sep ="")
-		r <- NULL
-		suppressWarnings(try ( r <- system ( command = cmd , intern = TRUE ) , silent = TRUE ))
-		file.remove ( f )
-		if ( !is.null ( r ) ) {
-				r <- r[1]
-				r <- sub ( "ConQuest build: " , "" , r )
-				r <- gsub ( "\\s+" , "-" , r )
-				if ( asDate ) r <- date::as.date(r)
-		}
-		return (r)}
+getConquestVersion <- function(path.conquest, path.temp, asDate = TRUE){
+  # checks
+  lapply(c(path.conquest, path.temp), checkmate::assert_character, len = 1)
+  checkmate::assert_logical(asDate, len = 1)
+
+  # funtion
+  wd <- path.temp
+  f <- file.path (wd, "delete.cqc")
+  write("quit;", f)
+  f <- normalizePath(f)
+  path.conquest <- normalizePath(path.conquest)
+  cmd <- paste("\"", path.conquest, "\" \"", f, "\"" , sep = "")
+  r <- NULL
+  suppressWarnings(try (r <- system(command = cmd, intern = TRUE), silent = TRUE))
+  file.remove(f)
+  if(!is.null(r)){
+    r <- r[1]
+    r <- sub("ConQuest build: ", "", r)
+    r <- gsub("\\s+", "-", r)
+    if(asDate)r <- date::as.date(r)
+  }
+  return(r)
+}
 
 ### not called -----------------------------------------------------------------
 
