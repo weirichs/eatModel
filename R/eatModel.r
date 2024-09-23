@@ -1,17 +1,22 @@
 ### diverse functions that can be used on their own or are called by
-### multiple other functions
+### multiple other functions which could't be usefully grouped.
 
 ### called by .substituteSigns() and getConquestAdditionalTerms () -------------
 
-isLetter <- function ( string ) {
+isLetter <- function(string){
+  # checks
+  checkmate::assert_character(string)
+
   splt <- strsplit(string, "")
-  isL  <- lapply(splt, FUN = function ( x ) {
-    ind <- which ( x %in% c( letters , LETTERS ))
-    x[setdiff(1:length(x),ind)] <- " "
-    x <- eatTools::crop(paste(x, sep="", collapse=""))
-    x <- unlist ( strsplit(x, " +") )
-    return(x)  } )
-  return(isL)}
+  isL <- lapply(splt, FUN = function(x) {
+    ind <- which(x %in% c(letters, LETTERS))
+    x[setdiff(1:length(x), ind)] <- " "
+    x <- eatTools::crop(paste(x, sep = "", collapse = ""))
+    x <- unlist(strsplit(x, " +"))
+    return(x)
+  })
+  return(isL)
+}
 
 ### not called ----------------------------------------------------------------------------
 
