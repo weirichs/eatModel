@@ -1,7 +1,7 @@
 ### diverse functions that can be used on their own or are called by
-### multiple other functions which could't be usefully grouped.
+### multiple other functions which couldn't be usefully grouped.
 
-### called by .substituteSigns() and getConquestAdditionalTerms () -------------
+### called by defineModel/.substituteSigns() and getResults/getConquestAdditionalTerms()
 
 isLetter <- function(string){
   # checks
