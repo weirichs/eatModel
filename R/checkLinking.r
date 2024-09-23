@@ -1,3 +1,5 @@
+### checkLink() is called by defineModel()
+
 ### prueft, ob Design verlinkt ist: checkLinking(design[1:15,c(1:5,ncol(design))], bookletColumn = "TH")
 checkLinking <- function(design, blocks=NULL, bookletColumn=NULL, verbose=FALSE) {
       design<- eatTools::makeDataFrame(design)

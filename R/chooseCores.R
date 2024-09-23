@@ -1,3 +1,5 @@
+### called by splitModels()
+
 chooseCores <- function(cores = NULL, GBcore = NULL, max.cores = NULL ) {
              # if(!exists("detectCores"))   {library(parallel)}
              n.cores <- parallel::detectCores()
@@ -20,5 +22,5 @@ chooseCores <- function(cores = NULL, GBcore = NULL, max.cores = NULL ) {
              }
 			 if (!is.null(max.cores)) {
 					use.cores <- min( use.cores, max.cores )
-			 } 
+			 }
 			 return( use.cores ) }
