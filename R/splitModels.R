@@ -27,69 +27,60 @@ splitModels <- function(qMatrix = NULL, person.groups = NULL, split = c("qMatrix
 ### what to do with this? -------------------------------------------------------
 
 # wenn kein data.frame, dann ignorieren
-	if ( !is.null ( qMatrix ) & !is.data.frame ( qMatrix ) ) {
+	if(!is.null(qMatrix) & !is.data.frame(qMatrix)){
 			qMatrix <- NULL
-			warning ( paste0 ( "splitModels: qMatrix is not a data.frame and will be ignored." ) , call. = FALSE )
-	}
+			warning ( paste0 ( "splitModels: qMatrix is not a data.frame and will be ignored." ) , call. = FALSE )}
 	if ( !is.null ( person.groups ) & !is.data.frame ( person.groups ) ) {
 			person.groups <- NULL
-			warning ( paste0 ( "splitModels: person.groups is not a data.frame and will be ignored." ) , call. = FALSE )
-	}
-
-		# wenn keine Spalten / Zeilen dann NULL
+			warning ( paste0 ( "splitModels: person.groups is not a data.frame and will be ignored." ) , call. = FALSE )}
+# wenn keine Spalten / Zeilen dann NULL
 		if ( !is.null ( qMatrix ) ) {
 				if ( nrow ( qMatrix ) %in% 0 | ncol ( qMatrix ) %in% 0 ) {
 						warning ( "splitModels: check qMatrix" , call. = FALSE )
 						qMatrix <- NULL
-				}
-		}
+				}}
   	if ( !is.null ( person.groups ) ) {
 				if ( nrow ( person.groups ) %in% 0 | ncol ( person.groups ) %in% 0 ) {
 						warning ( "splitModels: check person.groups" , call. = FALSE )
 						person.groups <- NULL
-				}
-		}
-
+				}}
 # Dimensionen in qMatrix duerfen nur 0/1 haben
 if ( !is.null ( qMatrix ) ) {
 		if ( ncol ( qMatrix ) > 1 ) {
 				not01 <- ! sapply ( qMatrix[,-1,drop=FALSE] , function ( x ) all ( x %in% c(0,1) ) )
 
 				if ( any ( not01 ) ) {
-						warning ( paste0 ( "splitModels: column(s) '" , paste ( names (not01)[not01] , collapse = "', '" ) , "' in qMatrix contain elements that are not 0 or 1; this/these column(s) are ignored" ) , call. = FALSE )
+						warning(paste0("splitModels: column(s) '" , paste(names(not01)[not01], collapse = "', '" ),
+						               "' in qMatrix contain elements that are not 0 or 1; this/these column(s) are ignored" ),
+						        call. = FALSE )
 						qMatrix <- qMatrix[,colnames(qMatrix)[!colnames(qMatrix) %in% names (not01)[not01]],drop=FALSE]
-				}
-		}
-}
+				}}}
 
-# wenn nur eine Spalte wird diese als IDs angenommen
-if ( !is.null ( qMatrix ) ) {
-		if ( ncol ( qMatrix ) %in% 1 ) {
-				warning ( "splitModels: qMatrix contains just one column; this is treated as item names" , call. = FALSE )
-				qMatrix$dim <- 1
-		}
-}
-if ( !is.null ( person.groups ) ) {
-		if ( ncol ( person.groups ) %in% 1 ) {
-				warning ( "splitModels: person.groups contains just one column; this is treated as person ids" , call. = FALSE )
-				person.groups$group <- all.persons.lab
-				all.persons <- FALSE
-		}
-}
+### see checkModels.R for these checks -----------------------------------------
 
-# qMatrix und person.groups auf Plausibilitaet checken
-if ( !is.null ( qMatrix ) ) {
-		# hat erste Spalte mehr Elemente als alle anderen
-		len <- sapply ( qMatrix , function ( x ) length ( unique ( x ) ) )
-		len.log <- len < len[1]
-		if ( ! all ( len.log[-1] ) ) warning ( paste0 ( "splitModels: first column of qMatrix might not contain item names; please check\n(number of unique elements is smaller than in another column)" ) , call. = FALSE )
-}
-if ( !is.null ( person.groups ) ) {
-		# hat erste Spalte mehr Elemente als alle anderen
-		len <- sapply ( person.groups , function ( x ) length ( unique ( x ) ) )
-		len.log <- len < len[1]
-		if ( ! all ( len.log[-1] ) ) warning ( paste0 ( "splitModels: first column of person.groups might not contain person ids; please check\n(number of unique elements is smaller than in another column)" ) , call. = FALSE )
-}
+#   # wenn nur eine Spalte wird diese als IDs angenommen
+#   	if(test_data_frame(qMatrix, ncols = 1) ) {
+#   	  warning ( "splitModels: qMatrix contains just one column; this is treated as item names" , call. = FALSE )
+#   		qMatrix$dim <- 1
+#   	}
+#   	if(test_data_frame(person.groups, ncols = 1) ) {
+#   	  warning ( "splitModels: person.groups contains just one column; this is treated as person ids" , call. = FALSE )
+#   		person.groups$group <- all.persons.lab
+#   		all.persons <- FALSE
+#   	}
+# # qMatrix und person.groups auf Plausibilitaet checken
+# if ( !is.null ( qMatrix ) ) {
+# 		# hat erste Spalte mehr Elemente als alle anderen
+# 		len <- sapply ( qMatrix , function ( x ) length ( unique ( x ) ) )
+# 		len.log <- len < len[1]
+# 		if ( ! all ( len.log[-1] ) ) warning (paste0("splitModels: first column of qMatrix might not contain item names; please check\n(number of unique elements is smaller than in another column)" ),
+# 		                                      call. = FALSE )}
+# if ( !is.null ( person.groups ) ) {
+# 		# hat erste Spalte mehr Elemente als alle anderen
+# 		len <- sapply ( person.groups , function ( x ) length ( unique ( x ) ) )
+# 		len.log <- len < len[1]
+# 		if ( ! all ( len.log[-1] ) ) warning ( paste0 ( "splitModels: first column of person.groups might not contain person ids; please check\n(number of unique elements is smaller than in another column)" )
+# 		                                       , call. = FALSE )}
 ### -----------------------------------------------------------------------------
 
 
