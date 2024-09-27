@@ -61,7 +61,7 @@ checkQmatrixConsistency <- function(qmat){
   wertes <- lapply(qmat[,-1,drop=FALSE], FUN = function(col) {all(col == 0)})
   konst <- which(wertes == TRUE)
   if(length(konst)>0){
-    cat(paste0("Column(s) '",paste(names(konst), collapse = "', '"),"' in Q matrix are konstant with value 0. Delete column(s).\n"))
+    cat(paste0("Column(s) '",paste(names(konst), collapse = "', '"),"' in Q matrix are constant with value 0. Delete column(s).\n"))
     qmat <- qmat[,-match(names(konst), colnames(qmat)), drop=FALSE]
   }
 
@@ -87,7 +87,6 @@ checkQmatrixConsistency <- function(qmat){
     qmat <- qmat[-weg,]
   }
 
-  ### checks moved from splitModels() - EG 27.09.24
   # wenn nur eine Spalte wird diese als IDs angenommen
   if(test_data_frame(qmat, ncols = 1)){
     warning("qMatrix contains just one column; this is treated as item names", call. = FALSE)
