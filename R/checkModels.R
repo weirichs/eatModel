@@ -69,6 +69,22 @@ checkQmatrixConsistency <- function(qmat){
     cat("    "); cat(paste(qmat[weg,1],collapse=", ")); cat("\n")
     qmat <- qmat[-weg,]
   }
+
+  ### checks moved from splitModels() - EG 27.09.24
+  # wenn nur eine Spalte wird diese als IDs angenommen
+  if(test_data_frame(qmat, ncols = 1)){
+    warning("qMatrix contains just one column; this is treated as item names", call. = FALSE)
+    qMatrix$dim <- 1
+  }
+  # qMatrix auf Plausibilitaet checken
+  if(!is.null(qMatrix)){
+    # hat erste Spalte mehr Elemente als alle anderen
+    len <- sapply(qMatrix, function(x) length(unique(x)))
+    len.log <- len < len[1]
+    if(!all(len.log[-1])) warning(paste0("first column of qMatrix might not contain item names; please check\n(number of unique elements is smaller than in another column)"),
+                                  call. = FALSE)
+  }
+
   return(qmat)
 }
 
