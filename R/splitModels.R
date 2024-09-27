@@ -1,5 +1,12 @@
-splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "qMatrix" , "person.groups" ) , add = NULL , cross = NULL , all.persons = TRUE , all.persons.lab = "all" , person.split.depth = 0:length(person.groups[,-1,drop=FALSE]), full.model.names = TRUE , model.name.elements = c ( "dim" , "group" , "cross" ) , include.var.name = FALSE , env = FALSE , nCores=NULL , mcPackage = c("future", "parallel"), GBcore=NULL , verbose = TRUE ) {
-    if(!is.null(qMatrix))       {qMatrix      <- checkQmatrixConsistency (qMatrix)}
+splitModels <- function(qMatrix = NULL, person.groups = NULL, split = c("qMatrix", "person.groups"), add = NULL, cross = NULL,
+                        all.persons = TRUE, all.persons.lab = "all", person.split.depth = 0:length(person.groups[,-1,drop=FALSE]),
+                        full.model.names = TRUE, model.name.elements = c("dim", "group", "cross"), include.var.name = FALSE,
+                        env = FALSE, nCores=NULL, mcPackage = c("future", "parallel"), GBcore=NULL, verbose = TRUE){
+  # checks
+
+
+
+  if(!is.null(qMatrix))       {qMatrix      <- checkQmatrixConsistency (qMatrix)}
     if(!is.null(person.groups)) {person.groups<- checkPersonGroupsConsistency (person.groups)}
     mcPackage <- match.arg(mcPackage)
     # Funktion: person.groups nach person.grouping
@@ -475,4 +482,5 @@ splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "q
 				cat ( out.str )
 				flush.console()
 		}
-		return ( r )}
+		return ( r )
+}
