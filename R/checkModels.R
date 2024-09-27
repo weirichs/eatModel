@@ -20,7 +20,6 @@ checkPersonGroupsConsistency <- function(d){
       stop(paste0("Column '",x,"' of 'person.groups' has missing values."))}
   })
 
-  ### checks moved from splitModels() - EG 27.09.24
   # wenn nur eine Spalte wird diese als IDs angenommen
   if(test_data_frame(person.groups, ncols = 1)){
     warning("person.groups contains just one column; this is treated as person ids", call. = FALSE)
