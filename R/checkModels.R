@@ -19,6 +19,23 @@ checkPersonGroupsConsistency <- function(d){
     if(any(is.na(d[,x]))){
       stop(paste0("Column '",x,"' of 'person.groups' has missing values."))}
   })
+
+  ### checks moved from splitModels() - EG 27.09.24
+  # wenn nur eine Spalte wird diese als IDs angenommen
+  if(test_data_frame(person.groups, ncols = 1)){
+    warning("person.groups contains just one column; this is treated as person ids", call. = FALSE)
+    person.groups$group <- all.persons.lab
+    all.persons <- FALSE
+  }
+  # person.groups auf Plausibilitaet checken
+  if(!is.null(person.groups)){
+    # hat erste Spalte mehr Elemente als alle anderen
+    len <- sapply(person.groups, function(x) length(unique(x)))
+    len.log <- len < len[1]
+    if(!all(len.log[-1])) warning(paste0("first column of person.groups might not contain person ids; please check\n(number of unique elements is smaller than in another column)"),
+                                  call. = FALSE)
+  }
+
   return(d)
 }
 
