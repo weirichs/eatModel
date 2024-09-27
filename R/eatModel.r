@@ -4,9 +4,6 @@
 ### called by defineModel/.substituteSigns() and getResults/getConquestAdditionalTerms()
 
 isLetter <- function(string){
-  # checks
-  checkmate::assert_character(string)
-
   # function
   splt <- strsplit(string, "")
   isL <- lapply(splt, FUN = function(x) {
@@ -33,7 +30,9 @@ simEquiTable <- function(anchor, mRef, sdRef, addConst = 500, mulConst = 100, cu
   if(length(unique(anchor[,1])) != nrow(anchor)){
     stop("Item ID column has duplicated entries.")
   }
-  lapply(c(mRef, sdRef, addConst, mulConst, cutScores), checkmate::assert_numeric, len = 1)
+  checkmate::assert_numeric(mRef, len = 1)
+  lapply(c(sdRef, addConst, mulConst), checkmate::assert_numeric, len = 1, lower = 0)
+  checkmate::assert_list(cutScores)
 
   # function
   dtmp <- data.frame(rbind(1*(lower.tri(matrix(1, nrow = nrow(anchor), ncol = nrow(anchor)))),1))
