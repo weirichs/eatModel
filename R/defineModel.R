@@ -146,8 +146,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
       notInQ  <- setdiff( all.Names$variablen , qMatrix[,1])
       if(length(notInDat)>0) {
         cat(paste("Following ", length(notInDat)," item(s) missed in data frame will be removed from Q matrix: \n    ",paste(notInDat,collapse=", "),"\n",sep=""))
-        qMatrix <- qMatrix[-match(notInDat, qMatrix[,1]),]
-        if(nrow(qMatrix) == 0) { stop("No common items in Q matrix and data.\n")}
+        qMatrix <- checkQmatrixConsistency(qMatrix[-match(notInDat, qMatrix[,1]),])
       }
       if(length(notInQ)>0) {
         cat(paste("Following ", length(notInQ)," item(s) missed in Q matrix will be removed from data: \n    ",paste(notInQ,collapse=", "),"\n",sep=""))
