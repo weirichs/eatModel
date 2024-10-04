@@ -20,7 +20,7 @@ checkPersonGroupsConsistency <- function(d){
   })
 
   # wenn nur eine Spalte wird diese als IDs angenommen
-  if(test_data_frame(person.groups, ncols = 1)){
+  if(checkmate::test_data_frame(person.groups, ncols = 1)){
     warning("person.groups contains just one column; this is treated as person ids", call. = FALSE)
     person.groups$group <- all.persons.lab
     all.persons <- FALSE
