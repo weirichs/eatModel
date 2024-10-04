@@ -4,6 +4,13 @@
 ### checks whether design is linked. checkLinking(design[1:15,c(1:5,ncol(design))], bookletColumn = "TH")
 
 checkLinking <- function(design, blocks=NULL, bookletColumn=NULL, verbose=FALSE){
+  # checks
+  checkmate::assert_data_frame(design)
+  checkmate::assert_character(blocks, null.ok = TRUE)
+  checkmate::assert_vector(bookletColumn, null.ok = TRUE)
+  checkmate::assert_logical(verbose, len = 1)
+
+  # function
   design <- eatTools::makeDataFrame(design)
   if(!all(sapply(design, inherits, what="character"))){
     design <- data.frame(lapply(design, as.character), stringsAsFactors=FALSE)
