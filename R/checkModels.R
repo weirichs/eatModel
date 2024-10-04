@@ -106,9 +106,6 @@ checkQmatrixConsistency <- function(qmat){
 ### called by defineModel() ----------------------------------------------------
 
 checkContextVars <- function(x, varname, type = c("weight", "DIF", "group", "HG"), itemdata, suppressAbort = FALSE, internal = FALSE){
-  checkmate::assert_character(varname, len = 1)
-  lapply(c(suppressAbort, internal), checkmate::assert_logical, len = 1)
-
   type <- match.arg(arg = type, choices = c("weight", "DIF", "group", "HG"))
   stopifnot(length(x) == nrow(itemdata))
   if(missing(varname)){
