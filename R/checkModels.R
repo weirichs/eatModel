@@ -4,8 +4,7 @@
 ### called by splitModels() ----------------------------------------------------
 
 checkPersonGroupsConsistency <- function(d){
-  if(!"data.frame" %in% class(d) || "tbl" %in% class(d)){
-    d <- data.frame(d, stringsAsFactors = FALSE)}
+  d <- eatTools::makeDataFrame(d, verbose=FALSE)
   ### Eintraege in erster Spalte muessen unique sein und duerfen keine missings enthalten
   if(any(is.na(d[,1]))){
     stop("Person identifier in first column of 'person.groups' has missing values.")}
