@@ -33,9 +33,9 @@ simEquiTable <- function(anchor, mRef, sdRef, addConst = 500, mulConst = 100, cu
   checkmate::assert_numeric(mRef, len = 1)
   lapply(c(sdRef, addConst, mulConst), checkmate::assert_numeric, len = 1, lower = 0)
   checkmate::assert_list(cutScores, min.len = 1, max.len = 2)
-  checkmate::assert_numeric(cutScores$values, sorted = TRUE)
-  checkmate::assert_character(cutScores$labels, null.ok = TRUE, len = length(cutScores$values),
-                              sorted = TRUE, unique = TRUE)
+  checkmate::assert_numeric(cutScores$values, sorted = TRUE, unique = TRUE)
+  checkmate::assert_character(cutScores$labels, null.ok = TRUE, len = length(cutScores$values)+1,
+                              unique = TRUE)
 
   # function
   dtmp <- data.frame(rbind(1*(lower.tri(matrix(1, nrow = nrow(anchor), ncol = nrow(anchor)))),1))
