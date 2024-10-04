@@ -3,7 +3,7 @@ Type: Package
 Title: Educational Assessment Tools for IRT Modeling using Conquest or TAM
 Version: 0.8.36
 Depends: R (>= 4.0), TAM, parallel
-Imports: reshape2, future, combinat, car, gdata, plyr, date, eatRep (>= 0.12.0), eatTools (>= 0.7.7), sirt (>= 1.12), devtools (>= 2.0), irtoys, Matrix, graphics, checkmate, ps, cli
+Imports: reshape2, future, combinat, car, gdata, plyr, eatRep (>= 0.12.0), eatTools (>= 0.7.4), sirt (>= 1.12), devtools (>= 2.0), irtoys, Matrix, graphics, checkmate, ps, cli
 Date: 2024-10-04
 Authors@R: c(
     person("Sebastian", "Weirich", email = "sebastian.weirich@iqb.hu-berlin.de", role = c("aut", "cre")),
