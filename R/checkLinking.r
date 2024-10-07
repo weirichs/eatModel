@@ -1,3 +1,5 @@
+### checkLink() is called by defineModel()
+
 ### prueft, ob Design verlinkt ist: checkLinking(design[1:15,c(1:5,ncol(design))], bookletColumn = "TH")
 checkLinking <- function(design, blocks=NULL, bookletColumn=NULL, verbose=FALSE) {
       design<- eatTools::makeDataFrame(design)
@@ -13,7 +15,7 @@ checkLinking <- function(design, blocks=NULL, bookletColumn=NULL, verbose=FALSE)
           desL   <- desL[which(desL[,"blockName"] %in% blocks),]                ### geht einfacher zu selektieren
       }
       if(any(grepl("[[:punct:]]", desL[,"blockName"]))) {if(verbose) {message("Special characters and spaces will be removed from names in 'blocks'")}}
-      desL[,"blockName"] <- paste0("B_", eatTools::gsubAll(desL[,"blockName"], old=c(" ", "[[:punct:]]"), new=c("", "")))
+      desL[,"blockName"] <- gsub(" ", "", gsub("[[:punct:]]", "",desL[,"blockName"]))
     ### an welcher Position kommt welcher Block mit welcher Haeufigkeit vor?
       blPos <- reshape2::dcast(desL, blockName~blockPos, value.var="blockName", fun.aggregate=length)
     ### welche Kombinationen von Bloecken kommen wie oft vor?

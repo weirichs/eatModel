@@ -111,7 +111,7 @@ Which package should be used for local host definition in multicore processing? 
 is recommended. If R version >= 3.4, \code{"future"} is recommended.
 }
   \item{GBcore}{
-numeric (default: NULL), maximum RAM usage per core
+numeric (default: NULL), maximum RAM usage per core in giga bytes
 }
   \item{verbose}{
 logical (default: TRUE), print progress
