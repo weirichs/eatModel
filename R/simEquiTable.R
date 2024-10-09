@@ -1,5 +1,5 @@
 
-simEquiTable <- function(anchor, mRef, sdRef, addConst = 500, mulConst = 100, cutScores){
+simEquiTable <- function(anchor, mRef, sdRef, addConst = 500, multConst = 100, cutScores){
   # checks/prep
   anchor <- eatTools::makeDataFrame(anchor)
   if(ncol(anchor) != 2){
