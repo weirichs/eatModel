@@ -31,8 +31,14 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
   ismc <- attr(dat, "multicore")
   dat  <- eatTools::makeDataFrame(dat, name = "dat")
 
-
-
+# items, id, splitted Models, irtmodel
+  checkmate::assert_vector(items)
+  checkmate::assert_vector(id, len = 1)
+  checkmate::assert_list(splittedModels, null.ok = TRUE)
+  checkmate::assert_subset(irtmodel, choices = c("1PL", "2PL", "PCM", "PCM2", "RSM", "GPCM", "2PL.groups", "GPCM.design", "3PL"))
+# qMatrix
+  checkmate::assert_data_frame(qMatrix, null.ok = TRUE, col.names = "named", min.cols = 2)
+  #checkmate::assert_character(qMatrix$item, unique = TRUE)
 
 
   # logical arguments
