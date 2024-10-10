@@ -1,18 +1,40 @@
-defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL", "2PL", "PCM", "PCM2", "RSM", "GPCM", "2PL.groups", "GPCM.design", "3PL"),
-                        qMatrix=NULL, DIF.var=NULL, HG.var=NULL, group.var=NULL, weight.var=NULL, anchor = NULL, domainCol=NULL, itemCol=NULL, valueCol=NULL,check.for.linking = TRUE,
-                        minNperItem = 50, removeMinNperItem = FALSE, boundary = 6, remove.boundary = FALSE, remove.no.answers = TRUE, remove.no.answersHG = TRUE, remove.missing.items = TRUE, remove.constant.items = TRUE,
-                        remove.failures = FALSE, remove.vars.DIF.missing = TRUE, remove.vars.DIF.constant = TRUE, verbose=TRUE, software = c("conquest","tam"), dir = NULL,
-                        analysis.name, schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE, pvMethod = c("regular", "bayesian"), fitTamMmlForBayesian = TRUE, n.plausible=5, seed = NULL, conquest.folder=NULL,
-                        constraints=c("cases","none","items"),std.err=c("quick","full","none"), distribution=c("normal","discrete"), method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo"),
-                        n.iterations=2000,nodes=NULL, p.nodes=2000, f.nodes=2000,converge=0.001,deviancechange=0.0001, equivalence.table=c("wle","mle","NULL"), use.letters=FALSE,
-                        allowAllScoresEverywhere = TRUE, guessMat = NULL, est.slopegroups = NULL, fixSlopeMat = NULL, slopeMatDomainCol=NULL, slopeMatItemCol=NULL, slopeMatValueCol=NULL,
-                        progress = FALSE, Msteps = NULL, increment.factor=1 , fac.oldxsi=0, export = list(logfile = TRUE, systemfile = FALSE, history = TRUE, covariance = TRUE, reg_coefficients = TRUE, designmatrix = FALSE) )   {
+defineModel <- function(dat, items, id, splittedModels = NULL,
+                        irtmodel = c("1PL", "2PL", "PCM", "PCM2", "RSM", "GPCM", "2PL.groups", "GPCM.design", "3PL"),
+                        qMatrix=NULL, DIF.var=NULL, HG.var=NULL, group.var=NULL,
+                        weight.var=NULL, anchor = NULL, domainCol=NULL, itemCol=NULL,
+                        valueCol=NULL,check.for.linking = TRUE, minNperItem = 50,
+                        removeMinNperItem = FALSE, boundary = 6, remove.boundary = FALSE,
+                        remove.no.answers = TRUE, remove.no.answersHG = TRUE,
+                        remove.missing.items = TRUE, remove.constant.items = TRUE,
+                        remove.failures = FALSE, remove.vars.DIF.missing = TRUE,
+                        remove.vars.DIF.constant = TRUE, verbose=TRUE, software = c("conquest","tam"),
+                        dir = NULL, analysis.name, schooltype.var = NULL, model.statement = "item",
+                        compute.fit = TRUE, pvMethod = c("regular", "bayesian"),
+                        fitTamMmlForBayesian = TRUE, n.plausible=5, seed = NULL,
+                        conquest.folder=NULL, constraints=c("cases","none","items"),
+                        std.err=c("quick","full","none"), distribution=c("normal","discrete"),
+                        method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo"),
+                        n.iterations=2000, nodes=NULL, p.nodes=2000, f.nodes=2000,
+                        converge=0.001, deviancechange=0.0001, equivalence.table=c("wle","mle","NULL"),
+                        use.letters=FALSE, allowAllScoresEverywhere = TRUE, guessMat = NULL,
+                        est.slopegroups = NULL, fixSlopeMat = NULL, slopeMatDomainCol=NULL,
+                        slopeMatItemCol=NULL, slopeMatValueCol=NULL, progress = FALSE,
+                        Msteps = NULL, increment.factor=1 , fac.oldxsi=0,
+                        export = list(logfile = TRUE, systemfile = FALSE, history = TRUE,
+                                      covariance = TRUE, reg_coefficients = TRUE, designmatrix = FALSE) ){
+
+### checking/asserting the arguments -------------------------------------------
   software <- match.arg(arg = software, choices = c("conquest","tam"))
-  if ( software == "conquest" && is.null(conquest.folder) ) {
+  if(software == "conquest" && is.null(conquest.folder)) {
     conquest.folder <- identifyConquestFolder()
   }
   ismc <- attr(dat, "multicore")
   dat  <- eatTools::makeDataFrame(dat, name = "dat")
+
+
+
+  ##
+
   if(!is.null(splittedModels)) {
     if(length(splittedModels) == 4L & !is.null(splittedModels[["models"]]) &  length(nrow( splittedModels[["models"]]) > 0)>0 ) {
       if ( !missing ( analysis.name ) ) {
@@ -248,4 +270,5 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
       if ( !is.null(met[["nodes"]])) { control$nodes <- met[["nodes"]] }
       ret     <- list ( software = software, constraint = match.arg(constraints) , qMatrix=qMatrix, anchor=anchor,  all.Names=fixSlopeMat[["allNam"]], daten=daten, irtmodel=fixSlopeMat[["irtmodel"]], est.slopegroups = est.slopegroups, guessMat=guessMat, control = control, n.plausible=n.plausible, dir = dir, analysis.name=analysis.name, deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]], perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], fixSlopeMat = fixSlopeMat[["slopMat"]], estVar = fixSlopeMat[["estVar"]], pvMethod = pvMethod,  fitTamMmlForBayesian=fitTamMmlForBayesian)
       class(ret) <-  c("defineTam", "list")
-      return ( ret )    }   }  }
+      return ( ret )    }   }
+}
