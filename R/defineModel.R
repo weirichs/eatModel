@@ -24,29 +24,58 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
                                       covariance = TRUE, reg_coefficients = TRUE, designmatrix = FALSE) ){
 
 ### checking/asserting the arguments -------------------------------------------
+  # dat
+  ismc <- attr(dat, "multicore")
+  dat  <- eatTools::makeDataFrame(dat, name = "dat")
+  # items, id, splitted Models, irtmodel
+  checkmate::assert_vector(items)
+  checkmate::assert_vector(id, len = 1)
+  checkmate::assert_list(splittedModels, null.ok = TRUE)
+  checkmate::assert_subset(irtmodel, choices = c("1PL", "2PL", "PCM", "PCM2","RSM",
+                                                 "GPCM", "2PL.groups", "GPCM.design", "3PL"))
+
+  # qMatrix
+  checkmate::assert_data_frame(qMatrix, null.ok = TRUE, col.names = "named", min.cols = 2)
+  if(!colnames(qMatrix)[1] == "item"){
+    warning(paste0("The first column of the data frame `qMatrix` should be called `item`, but is called ",
+                   colnames(qMatrix)[1], "."))}
+  # x.var arguments
+  checkmate::assert_vector(DIF.var, len = 1)
+  lapply(c(HG.var, group.var, weight.var), checkmate::assert_vector, null.ok = TRUE)
+  checkmate::assert_vector(schooltype.var, len = 1, null.ok = TRUE)
+  # anchor
+  checkmate::assert_data_frame(anchor, null.ok = TRUE, col.names = "named", min.cols = 2)
+  if(ncol(anchor) > 2){
+    checkmate::assert_subset(colnames(anchor), choices = c(colnames(anchor)[1:2],
+                                                           "domainCol", "itemCol", "valueCol"))}
+
+  # minNperItem, boundary
+  lapply(c(minNperItem, boundary), checkmate::assert_numeric, len = 1)
+  # software
   software <- match.arg(arg = software, choices = c("conquest","tam"))
   if(software == "conquest" && is.null(conquest.folder)) {
     conquest.folder <- identifyConquestFolder()
   }
-  ismc <- attr(dat, "multicore")
-  dat  <- eatTools::makeDataFrame(dat, name = "dat")
+  # arguments specific to `conquest` or `tam`:
+  # dir, analysis.name, model.statement, compute.fit, pvMethod, fitTamMmlForBayesian
+  if(software == "conquest"){
+    lapply(c(dir, analysis.name), checkmate::assert_character, len = 1)
+    checkmate::assert_character(model.statement, len = 1, null.ok = TRUE)
+    checkmate::assert_logical(compute.fit, len = 1)
+  } else if (software == "tam"){
+    checkmate::assert_character(dir, len = 1, null.ok = TRUE)
+    pvMethod <- match.arg(arg = pvMethod, choices = c("regular", "bayesian"))
+    checkmate::assert_logical(fitTamMmlForBayesian, len = 1)
+  }
 
-# items, id, splitted Models, irtmodel
-  checkmate::assert_vector(items)
-  checkmate::assert_vector(id, len = 1)
-  checkmate::assert_list(splittedModels, null.ok = TRUE)
-  checkmate::assert_subset(irtmodel, choices = c("1PL", "2PL", "PCM", "PCM2", "RSM", "GPCM", "2PL.groups", "GPCM.design", "3PL"))
-# qMatrix
-  checkmate::assert_data_frame(qMatrix, null.ok = TRUE, col.names = "named", min.cols = 2)
-  #checkmate::assert_character(qMatrix$item, unique = TRUE)
 
 
-  # logical arguments
+  # the rest of the logical arguments
   lapply(c(check.for.linking, removeMinNperItem, remove.boundary, remove.no.answers,
            remove.no.answersHG, remove.missing.items, remove.constant.items,
            remove.failures, remove.vars.DIF.missing, remove.vars.DIF.constant,
-           verbose, compute.fit, fitTamMmlForBayesian, use.letters, allowAllScoresEverywhere,
-           progress), checkmate::assert_logical, len = 1)
+           verbose, use.letters, allowAllScoresEverywhere, progress),
+         checkmate::assert_logical, len = 1)
 
 
 
