@@ -33,7 +33,19 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
 
 
 
-  ##
+
+
+  # logical arguments
+  lapply(c(check.for.linking, removeMinNperItem, remove.boundary, remove.no.answers,
+           remove.no.answersHG, remove.missing.items, remove.constant.items,
+           remove.failures, remove.vars.DIF.missing, remove.vars.DIF.constant,
+           verbose, compute.fit, fitTamMmlForBayesian, use.letters, allowAllScoresEverywhere,
+           progress), checkmate::assert_logical, len = 1)
+
+
+
+
+### function -------------------------------------------------------------------
 
   if(!is.null(splittedModels)) {
     if(length(splittedModels) == 4L & !is.null(splittedModels[["models"]]) &  length(nrow( splittedModels[["models"]]) > 0)>0 ) {
