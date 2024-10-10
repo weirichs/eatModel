@@ -8,8 +8,6 @@ checkPersonGroupsConsistency <- function(d){
   ### Eintraege in erster Spalte muessen unique sein und duerfen keine missings enthalten
   if(any(is.na(d[,1]))){
     stop("Person identifier in first column of 'person.groups' has missing values.")}
-  if(length(d[,1]) != length(unique(d[,1]))){
-    stop("Person identifier in first column of 'person.groups' is not unique.")}
   ### die naechsten checks erfolgen jeweils fuer alle weiteren spalten
   chk1 <- lapply(colnames(d)[-1], FUN = function (x){
     ### gruppierungsvariablen duerfen nicht konstant sein und keine fehlenden Werte haben
@@ -18,21 +16,8 @@ checkPersonGroupsConsistency <- function(d){
     if(any(is.na(d[,x]))){
       stop(paste0("Column '",x,"' of 'person.groups' has missing values."))}
   })
-
-  # wenn nur eine Spalte wird diese als IDs angenommen
-  if(checkmate::test_data_frame(person.groups, ncols = 1)){
-    warning("person.groups contains just one column; this is treated as person ids", call. = FALSE)
-    person.groups$group <- all.persons.lab
-    all.persons <- FALSE
-  }
-  # person.groups auf Plausibilitaet checken
-  if(!is.null(person.groups)){
-    # hat erste Spalte mehr Elemente als alle anderen
-    len <- sapply(person.groups, function(x) length(unique(x)))
-    len.log <- len < len[1]
-    if(!all(len.log[-1])) warning(paste0("first column of person.groups might not contain person ids; please check\n(number of unique elements is smaller than in another column)"),
-                                  call. = FALSE)
-  }
+  # data frame needs at least 2 columns: Person ID, data, etc.
+  checkmate::assert_data_frame(d, min.cols = 2)
 
   return(d)
 }
