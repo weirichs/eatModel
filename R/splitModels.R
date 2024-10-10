@@ -21,7 +21,7 @@ splitModels <- function(qMatrix = NULL, person.groups = NULL, split = c("qMatrix
 
   lapply(c(all.persons, full.model.names, include.var.name, env, verbose), checkmate::assert_logical, len = 1)
   checkmate::assert_subset(split, choices = c("qMatrix" , "person.groups"))
-  checkmate::assert_subset(model.name.elements, choices = c("dim", "group", "add", "cross"))
+  checkmate::assert_subset(model.name.elements, choices = c("dim", "group", "cross"))
   checkmate::assert_character(all.persons.lab, len = 1)
   checkmate::assert_integer(person.split.depth)
   checkmate::assert_integer(nCores, len = 1, null.ok = TRUE)
