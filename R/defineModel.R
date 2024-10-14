@@ -118,8 +118,8 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
     if(!colnames(est.slopegroups)[1] == "item"){
       warning(paste0("The first column of the data frame `est.slopegroups` should be called `item`, but is called ",
                      colnames(est.slopegroups)[1], "."))}
-    lapply(c(guessMat[,1], est.slopegroups[,1], fixSlopeMat[,1]), checkmate::assert_character)
-    lapply(c(guessMat[,2], est.slopegroups[,2], fixSlopeMat[,2]), checkmate::assert_numeric)
+    lapply(c(guessMat[,1], est.slopegroups[,1], fixSlopeMat[,1]), checkmate::assert_character, null.ok = TRUE)
+    lapply(c(guessMat[,2], est.slopegroups[,2], fixSlopeMat[,2]), checkmate::assert_numeric, null.ok = TRUE)
     # increment.factor, fac.oldxsi ?
   }
 
