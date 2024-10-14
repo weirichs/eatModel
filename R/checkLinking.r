@@ -5,8 +5,7 @@
 
 checkLinking <- function(design, blocks=NULL, bookletColumn=NULL, verbose=FALSE){
   # checks
-  checkmate::assert_character(blocks, null.ok = TRUE)
-  checkmate::assert_vector(bookletColumn, null.ok = TRUE)
+  checkmate::assert_character(blocks, null.ok = TRUE, unique = TRUE)
   checkmate::assert_logical(verbose, len = 1)
   design <- eatTools::makeDataFrame(design)
 
