@@ -101,7 +101,11 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
     checkmate::assert_character(dir, len = 1, null.ok = TRUE)
     # character via match.arg: pvMethod, constraints
     pvMethod <- match.arg(arg = pvMethod, choices = c("regular", "bayesian"))
-    constraints <- match.arg(arg = constraints, choices = c("cases", "items"))
+
+    constraints <- match.arg(arg = constraints, choices = c("cases", "none", "items"))
+    if(constraints == "none"){
+      stop("tbd: You can't use constraints = 'none' when using 'tam'.")
+    }
     # logical: fitTamMmlForBayesian, progress
     lapply(c(fitTamMmlForBayesian, progress), checkmate::assert_logical, len = 1)
     # named data frames: guessMat, est.slopegroups, fixSlopeMat
