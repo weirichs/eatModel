@@ -30,9 +30,8 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
 
   # data frame: qMatrix
   checkmate::assert_data_frame(qMatrix, null.ok = TRUE, col.names = "named", min.cols = 2)
-  if(!colnames(qMatrix)[1] == "item"){
-    warning(paste0("The first column of the data frame `qMatrix` should be called `item`, but is called ",
-                   colnames(qMatrix)[1], "."))}
+  warning(paste0("The first column of the data frame `qMatrix` should be called `item`, but is called ",
+                 colnames(qMatrix)[1], "."))
 
   # dataframe: anchor
   checkmate::assert_data_frame(anchor, null.ok = TRUE, col.names = "named", min.cols = 2)
@@ -110,16 +109,13 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
     lapply(c(fitTamMmlForBayesian, progress), checkmate::assert_logical, len = 1)
     # named data frames: guessMat, est.slopegroups, fixSlopeMat
     lapply(c(guessMat, est.slopegroups, fixSlopeMat), checkmate::assert_data_frame, col.names = "named", ncols = 2)
+    warning(paste0("The first column of the data frame `guessMat` should be called `item`, but is called ",
+                   colnames(guessMat)[1], "."))
+    warning(paste0("The first column of the data frame `est.slopegroups` should be called `item`, but is called ",
+                   colnames(est.slopegroups)[1], "."))
 
-    if(!colnames(guessMat)[1] == "item"){
-      warning(paste0("The first column of the data frame `guessMat` should be called `item`, but is called ",
-                     colnames(guessMat)[1], "."))}
-
-    if(!colnames(est.slopegroups)[1] == "item"){
-      warning(paste0("The first column of the data frame `est.slopegroups` should be called `item`, but is called ",
-                     colnames(est.slopegroups)[1], "."))}
-    lapply(c(guessMat[,1], est.slopegroups[,1], fixSlopeMat[,1]), checkmate::assert_character, null.ok = TRUE)
-    lapply(c(guessMat[,2], est.slopegroups[,2], fixSlopeMat[,2]), checkmate::assert_numeric, null.ok = TRUE)
+    lapply(c(guessMat[,1], est.slopegroups[,1], fixSlopeMat[,1]), checkmate::assert_character)
+    lapply(c(guessMat[,2], est.slopegroups[,2], fixSlopeMat[,2]), checkmate::assert_numeric)
     # increment.factor, fac.oldxsi ?
   }
 
