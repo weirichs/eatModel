@@ -25,6 +25,7 @@ splitModels <- function(qMatrix = NULL, person.groups = NULL, split = c("qMatrix
   checkmate::assert_character(all.persons.lab, len = 1)
   checkmate::assert_numeric(person.split.depth)
   lapply(c(nCores, GBcore), checkmate::assert_numeric, len = 1, null.ok = TRUE)
+
 ### function -------------------------------------------------------------------
 
 		# aus Split die Sachen raus, die nicht da sind
