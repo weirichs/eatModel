@@ -96,9 +96,6 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
   }
 
   # arguments specific to `tam`:
-  #' dir, pvMethod, fitTamMmlForBayesian, constraints, guessMat, est.slopegroups
-  #' fixSlopeMat (and slopeMatXCol), progress
-  #' increment.factor, fac.oldxsi
   if(software == "tam"){
     # character: dir
     checkmate::assert_character(dir, len = 1, null.ok = TRUE)
@@ -119,6 +116,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
                      colnames(est.slopegroups)[1], "."))}
     lapply(c(guessMat[,1], est.slopegroups[,1], fixSlopeMat[,1]), checkmate::assert_character)
     lapply(c(guessMat[,2], est.slopegroups[,2], fixSlopeMat[,2]), checkmate::assert_numeric)
+    # increment.factor, fac.oldxsi ?
   }
 
 ### function -------------------------------------------------------------------
