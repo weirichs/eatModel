@@ -36,9 +36,9 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
 
   # dataframe: anchor
   checkmate::assert_data_frame(anchor, null.ok = TRUE, col.names = "named", min.cols = 2)
-  if(ncol(anchor) > 2){
+  if(checkmate::test_data_frame(anchor, null.ok = TRUE, col.names = "named", min.cols = 3)){
     checkmate::assert_subset(colnames(anchor), choices = c(colnames(anchor)[1:2],
-                                                           "domainCol", "itemCol", "valueCol"))}
+                                                           "domainCol", "itemCol", "valueCol")) }
 
   # list: splitted Models
   checkmate::assert_list(splittedModels, null.ok = TRUE)
