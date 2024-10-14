@@ -27,59 +27,89 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
   # dat
   ismc <- attr(dat, "multicore")
   dat  <- eatTools::makeDataFrame(dat, name = "dat")
-  # items, id, splitted Models, irtmodel
-  checkmate::assert_vector(items)
-  checkmate::assert_vector(id, len = 1)
-  checkmate::assert_list(splittedModels, null.ok = TRUE)
-  checkmate::assert_subset(irtmodel, choices = c("1PL", "2PL", "PCM", "PCM2","RSM",
-                                                 "GPCM", "2PL.groups", "GPCM.design", "3PL"))
-  # qMatrix
+
+  # data frame: qMatrix
   checkmate::assert_data_frame(qMatrix, null.ok = TRUE, col.names = "named", min.cols = 2)
   if(!colnames(qMatrix)[1] == "item"){
     warning(paste0("The first column of the data frame `qMatrix` should be called `item`, but is called ",
                    colnames(qMatrix)[1], "."))}
-  # x.var arguments
-  checkmate::assert_vector(DIF.var, len = 1)
-  lapply(c(HG.var, group.var, weight.var), checkmate::assert_vector, null.ok = TRUE)
-  checkmate::assert_vector(schooltype.var, len = 1, null.ok = TRUE)
-  # anchor
+
+  # dataframe: anchor
   checkmate::assert_data_frame(anchor, null.ok = TRUE, col.names = "named", min.cols = 2)
   if(ncol(anchor) > 2){
     checkmate::assert_subset(colnames(anchor), choices = c(colnames(anchor)[1:2],
                                                            "domainCol", "itemCol", "valueCol"))}
-  # minNperItem, boundary
-  lapply(c(minNperItem, boundary), checkmate::assert_numeric, len = 1)
+
+  # list: splitted Models
+  checkmate::assert_list(splittedModels, null.ok = TRUE)
+  # subset: irtmodel
+  checkmate::assert_subset(irtmodel, choices = c("1PL", "2PL", "PCM", "PCM2","RSM",
+                                                 "GPCM", "2PL.groups", "GPCM.design", "3PL"))
+
+  #' assert vector:
+  #' items, id, DIF.var, HG.var, group.var, weight.var, schooltype.var
+  checkmate::assert_vector(items)
+  lapply(c(id, DIF.var), checkmate::assert_vector, len = 1)
+  lapply(c(HG.var, group.var, weight.var), checkmate::assert_vector, null.ok = TRUE)
+  checkmate::assert_vector(schooltype.var, len = 1, null.ok = TRUE)
+
+  #' assert numeric:
+  #' minNperItem, boundary, n.plausible, seed, n.iterations, nodes, converge,
+  #' deviancechange, Msteps
+  lapply(c(minNperItem, boundary, n.plausible, n.iterations, nodes, converge,
+           deviancechange, Msteps), checkmate::assert_numeric, len = 1)
+  checkmate::assert_numeric(seed, len = 1, null.ok = TRUE)
+
+  #' assert character via match.arg:
   # software
   software <- match.arg(arg = software, choices = c("conquest","tam"))
   if(software == "conquest" && is.null(conquest.folder)) {
     conquest.folder <- identifyConquestFolder()
   }
+  # method
+  method <- match.arg(arg = method, choices = c("gauss", "quadrature", "montecarlo", "quasiMontecarlo"))
+
+  #' assert logical:
+  lapply(c(check.for.linking, removeMinNperItem, remove.boundary, remove.no.answers,
+           remove.no.answersHG, remove.missing.items, remove.constant.items,
+           remove.failures, remove.vars.DIF.missing, remove.vars.DIF.constant,
+           verbose),
+         checkmate::assert_logical, len = 1)
+
   # arguments specific to `conquest`:
-  #' dir, analysis.name, model.statement, compute.fit, conquest.folder,
-  #' constraints, std.err, distribution, p.nodes, f.nodes, equivalence.table
-  #' use.letters, allowAllScoresEverywhere
   if(software == "conquest"){
+    # character: dir, analysis.name, conquest.folder, model.statement, export
     lapply(c(dir, analysis.name, conquest.folder),
            checkmate::assert_character, len = 1)
     checkmate::assert_character(model.statement, len = 1, null.ok = TRUE)
+    checkmate::assert_character(export)
+    # logical: compute.fit, use.letters, allowAllScoresEverywhere
     lapply(c(compute.fit, use.letters, allowAllScoresEverywhere),
            checkmate::assert_logical, len = 1)
+    # character via match.arg: constraints, std.err, distribution, equivalence.table
     constraints <- match.arg(arg = constraints, choices = c("cases","none","items"))
     std.err <- match.arg(arg = std.err, choices = c("quick","full","none"))
     distribution <- match.arg(arg = distribution, choices = c("normal","discrete"))
-    lapply(c(p.nodes, f.nodes), checkmate::assert_numeric, len = 1)
     equivalence.table <- match.arg(arg = equivalence.table, choices = c("wle","mle","NULL"))
+    # numeric: p.nodes, f.nodes
+    lapply(c(p.nodes, f.nodes), checkmate::assert_numeric, len = 1)
   }
+
   # arguments specific to `tam`:
   #' dir, pvMethod, fitTamMmlForBayesian, constraints, guessMat, est.slopegroups
-  #' fixSlopeMat
+  #' fixSlopeMat (and slopeMatXCol), progress
+  #' increment.factor, fac.oldxsi
   if(software == "tam"){
+    # character: dir
     checkmate::assert_character(dir, len = 1, null.ok = TRUE)
+    # character via match.arg: pvMethod, constraints
     pvMethod <- match.arg(arg = pvMethod, choices = c("regular", "bayesian"))
-    checkmate::assert_logical(fitTamMmlForBayesian, len = 1)
     constraints <- match.arg(arg = constraints, choices = c("cases", "items"))
-    # named data frames
+    # logical: fitTamMmlForBayesian, progress
+    lapply(c(fitTamMmlForBayesian, progress), checkmate::assert_logical, len = 1)
+    # named data frames: guessMat, est.slopegroups, fixSlopeMat
     lapply(c(guessMat, est.slopegroups, fixSlopeMat), checkmate::assert_data_frame, col.names = "named", ncols = 2)
+
     if(!colnames(guessMat)[1] == "item"){
       warning(paste0("The first column of the data frame `guessMat` should be called `item`, but is called ",
                      colnames(guessMat)[1], "."))}
@@ -89,28 +119,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
                      colnames(est.slopegroups)[1], "."))}
     lapply(c(guessMat[,1], est.slopegroups[,1], fixSlopeMat[,1]), checkmate::assert_character)
     lapply(c(guessMat[,2], est.slopegroups[,2], fixSlopeMat[,2]), checkmate::assert_numeric)
-    # fixSlopeMat: if item indicators are not unique
-
   }
-
-  # n.plausible, seed
-  checkmate::assert_numeric(n.plausible, len = 1)
-  checkmate::assert_numeric(seed, len = 1, null.ok = TRUE)
-  # method
-  method <- match.arg(arg = method, choices = c("gauss", "quadrature", "montecarlo", "quasiMontecarlo"))
-  # n.iterations, nodes, converge, deviancechange
-  lapply(c(n.iterations, nodes, converge, deviancechange),
-         checkmate::assert_numeric, len = 1)
-
-
-
-
-  # the rest of the logical arguments
-  lapply(c(check.for.linking, removeMinNperItem, remove.boundary, remove.no.answers,
-           remove.no.answersHG, remove.missing.items, remove.constant.items,
-           remove.failures, remove.vars.DIF.missing, remove.vars.DIF.constant,
-           verbose, progress),
-         checkmate::assert_logical, len = 1)
 
 ### function -------------------------------------------------------------------
 
