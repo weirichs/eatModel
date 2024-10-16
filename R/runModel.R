@@ -1,6 +1,15 @@
 ### runModel is usually used after defineModel().
 
-runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.console = TRUE, wait = TRUE) {
+runModel <- function(defineModelObj, show.output.on.console = FALSE,
+                     show.dos.console = TRUE, wait = TRUE) {
+
+### checks ---------------------------------------------------------------------
+
+  checkmate::assert_list(defineModelObj)
+  lapply(c(show.output.on.console, show.dos.console, wait), checkmate::assert_logical, len = 1)
+
+### function -------------------------------------------------------------------
+
   if (inherits(defineModelObj, "defineMultiple") ) {
     if(is.null ( attr(defineModelObj, "split")[["nCores"]] ) || attr(defineModelObj, "split")[["nCores"]] == 1 ) {
       res <- lapply(defineModelObj, FUN = function ( r ) {
@@ -76,8 +85,8 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
       }
       attr(mod, "defineModelObj") <- defineModelObj[-match("daten", names(defineModelObj))]
       attr(mod, "Y")              <- Y
-      return(mod)  }  }   }
-
+      return(mod)  }  }
+}
 
 ### runModel() specific help functions -----------------------------------------
 
@@ -95,8 +104,11 @@ tamObjForBayesianPV <- function(anchor, qMatrix, slopeMatrix = NULL, resp, pid, 
     qMatrix <- qMatToB ( qma = qMatrix, slp = slopeMatrix)
   }
   xsi.obj<- as.matrix(data.frame ( V1 = 0, V2 = anchor[,"parameter"] * (-1)))
-  B.obj  <- array(unlist(lapply(2:ncol(qMatrix),FUN = function ( col) {data.frame ( Cat0 = 0, Cat1 = qMatrix[,col])})), dim = c(nrow(qMatrix), 2, ncol(qMatrix)-1), dimnames = list(qMatrix[,"item"], c("Cat0", "Cat1"), paste0("Dim0",1:(ncol(qMatrix)-1)) ))
-  tamObj <- list ( AXsi = xsi.obj, B = B.obj, resp = resp, Y=Y, pid = pid)
+  B.obj  <- array(unlist(lapply(2:ncol(qMatrix),
+                                FUN = function (col) {data.frame(Cat0 = 0, Cat1 = qMatrix[,col])})),
+                  dim = c(nrow(qMatrix), 2, ncol(qMatrix)-1),
+                  dimnames = list(qMatrix[,"item"], c("Cat0", "Cat1"), paste0("Dim0", 1:(ncol(qMatrix)-1)) ))
+  tamObj <- list(AXsi = xsi.obj, B = B.obj, resp = resp, Y=Y, pid = pid)
   class(tamObj) <- c("list", "tamBayes")
   return(tamObj)}
 
