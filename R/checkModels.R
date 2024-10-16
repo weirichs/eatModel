@@ -1,74 +1,188 @@
 ### called by splitModels() and/or defineModel().
 ### Contains all functions that check certain aspects of models.
 
+### called by splitModels() ----------------------------------------------------
+
+checkPersonGroupsConsistency <- function(d){
+  d <- eatTools::makeDataFrame(d, verbose=FALSE)
+  ### Eintraege in erster Spalte muessen unique sein und duerfen keine missings enthalten
+  if(any(is.na(d[,1]))){
+    stop("Person identifier in first column of 'person.groups' has missing values.")}
+  ### die naechsten checks erfolgen jeweils fuer alle weiteren spalten
+  chk1 <- lapply(colnames(d)[-1], FUN = function (x){
+    ### gruppierungsvariablen duerfen nicht konstant sein und keine fehlenden Werte haben
+    if(length(unique(d[,x])) == 1){
+      stop(paste0("Column '",x,"' of 'person.groups' is constant."))}
+    if(any(is.na(d[,x]))){
+      stop(paste0("Column '",x,"' of 'person.groups' has missing values."))}
+  })
+  # data frame needs at least 2 columns: Person ID, data, etc.
+  checkmate::assert_data_frame(d, min.cols = 2)
+
+  return(d)
+}
+
+### called by defineModel() and splitModels() ----------------------------------
+
+checkQmatrixConsistency <- function(qmat, errorWhenNot01 = FALSE){
+  if(is.null(qmat)) {return(qmat)}
+
+  qmat <- eatTools::makeDataFrame(qmat, name = "Q matrix", onlyWarn=FALSE)
+  if(!inherits(qmat[,1], "character")){
+    qmat[,1] <- as.character(qmat[,1])}
+  nClass<- sapply(qmat[,-1,drop=FALSE], inherits, what=c("numeric", "integer"))
+
+  # all columns - except the first - must be numeric or integer
+  if(!all(nClass)){
+    warning(paste0("Found non-numeric indicator column(s) in the Q matrix. Transform column(s) '",
+                   paste(colnames(qmat)[ which(nClass==FALSE)+1], collapse = "', '") ,"' into numeric format."))
+    qmat <- data.frame(qmat[,1,drop=FALSE], eatTools::asNumericIfPossible(qmat[,-1,drop=FALSE]), stringsAsFactors = FALSE)}
+
+  #' There should only be values 0 and 1 (no missings).
+  #' In rare cases (conquest 2pl with fixed Itemladungen) other values than 0/1 are ok,
+  #' that's why there's a warning here, instead of an error.
+  #' Exception: function is called by splitModels() -> HAS to throw an error with values other than 0/1.
+  werte <- eatTools::tableUnlist(qmat[, -1, drop=FALSE], useNA="always")
+  if(length(setdiff(names(werte), c("0","1", "NA"))) < 0){
+    eval(parse(text=paste0("cli::cli_",ifelse(errorWhenNot01, "abort", "warn"),
+                           "(c(\"Expected values for Q matrix are 0 and 1.\", \"",
+                           ifelse(errorWhenNot01, "x", "i"),
+                           "\"=paste0(\"Found unexpected values: '\", paste(names(werte), collapse= \"', '\"),\"'\")))")))}
+  if(werte[match("NA", names(werte))] > 0){
+    stop("Missing values in Q matrix.\n")}
+
+  # Indikatorspalten duerfen nicht konstant 0 sein (konstant 1 ginge, das waere dann within item multidimensionality)
+  wertes <- lapply(qmat[, -1, drop=FALSE], FUN = function(col) {all(col == 0)})
+  konst <- which(wertes == TRUE)
+  if(length(konst) > 0){              # sind alle Indikatorspalten ausschliesslich 0 -> Fehler
+    if(length(konst) == length(wertes)){
+      stop("All indicator columns in Q matrix have 0 values.")
+    }
+    cat(paste0("Column(s) '",paste(names(konst), collapse = "', '"),
+               "' in Q matrix are constant with value 0. Delete column(s).\n"))
+    qmat <- qmat[,-match(names(konst), colnames(qmat)), drop=FALSE]
+  }
+
+  # no doubled input in item columns.
+  doppel <- which(duplicated(qmat[,1]))
+  if(length(doppel) > 0){
+    cat("Found duplicated elements in the item id column of the q matrix. Duplicated elements will be removed.\n")
+    chk  <- table(qmat[,1])                           # es wird hier vorher gecheckt, ob - wenn ein Item zweimal in der Q Matrix
+    chk  <- chk[which(chk > 1)]                       # auftritt - es beidemale auf dieselben latenten Dimensionen laedt.
+    chkL <- lapply(names(chk), FUN = function(ch){
+      qChk <- qmat[which(qmat[,1] == ch),]
+      pste <- apply(qChk, 1, FUN = function(x) {paste(x[-1], collapse="")})
+      if(!all(pste == pste[1])){
+        stop(paste0("Inconsistent Q matrix. Item '", ch, "' occurs ", nrow(qChk),
+                    " times with incoherent loading structure: \n",
+                    eatTools::print_and_capture(qChk, spaces = 3)))
+        }
+      })
+    qmat <- qmat[!duplicated(qmat[,1]),]
+  }
+
+  # delete items, that don't load on any dimension.
+  zeilen <- apply(qmat, 1, FUN = function(y) {all(names(table(y[-1])) == "0")} )
+  weg    <- which(zeilen == TRUE)
+  if(length(weg) > 0){
+    cat(paste("Note: Following ",length(weg)," item(s) in Q matrix do not belong to any dimension. Delete these item(s) from Q matrix.\n",
+              sep=""))
+    cat("    "); cat(paste(qmat[weg,1],collapse=", ")); cat("\n")
+    qmat <- qmat[-weg,]
+  }
+  return(qmat)
+}
+
 ### called by defineModel() ----------------------------------------------------
 
-checkContextVars <- function(x, varname, type = c("weight", "DIF", "group", "HG"), itemdata, suppressAbort = FALSE, internal = FALSE)   {
+checkContextVars <- function(x, varname, type = c("weight", "DIF", "group", "HG"), itemdata, suppressAbort = FALSE, internal = FALSE){
   type <- match.arg(arg = type, choices = c("weight", "DIF", "group", "HG"))
   stopifnot(length(x) == nrow(itemdata))
-  if(missing(varname))  {varname <- "ohne Namen"}
-  if(!inherits(x, c("numeric", "integer")) && isTRUE(internal))  {
-    if (type == "weight") {stop(paste(type, " variable has to be 'numeric' necessarily. Automatic transformation is not recommended. Please transform by yourself.\n",sep=""))}
+  if(missing(varname)){
+    varname <- "ohne Namen"}
+  if(!inherits(x, c("numeric", "integer")) && isTRUE(internal)){
+    if (type == "weight"){
+      stop(paste(type, " variable has to be 'numeric' necessarily. Automatic transformation is not recommended. Please transform by yourself.\n",sep=""))
+    }
     cat(paste(type, " variable has to be 'numeric'. Variable '",varname,"' of class '",class(x),"' will be transformed to 'numeric'.\n",sep=""))
     x <- suppressWarnings(unlist(eatTools::asNumericIfPossible(x = data.frame(x, stringsAsFactors = FALSE), transform.factors = TRUE, maintain.factor.scores = FALSE, force.string = FALSE)))
-    if(!inherits(x, "numeric"))  {
-      x <- as.numeric(as.factor(x))
-    }
+    if(!inherits(x, "numeric")){
+      x <- as.numeric(as.factor(x))}
     cat(paste("    '", varname, "' was converted into numeric variable of ",length(table(x))," categories. Please check whether this was intended.\n",sep=""))
-    if(length(table(x)) < 12 ) { cat(paste("    Values of '", varname, "' are: ",paste(names(table(x)), collapse = ", "),"\n",sep=""))}
+    if(length(table(x)) < 12){
+      cat(paste("    Values of '", varname, "' are: ",paste(names(table(x)), collapse = ", "),"\n",sep=""))}
   }
-  toRemove<- NULL
-  mis     <- length(unique(x))
-  if(mis == 0 )  {
-    if ( suppressAbort == FALSE ) {
+
+  toRemove <- NULL
+  mis      <- length(unique(x))
+  if(mis == 0){
+    if(suppressAbort == FALSE){
       stop(paste("Error: ",type," Variable '",varname,"' without any values.",sep=""))
     }  else  {
       cat(paste0("Warning: ", type," Variable '",varname,"' without any values. '",varname,"' will be removed.\n"))
       toRemove <- varname
     }
   }
-  if(mis == 1 )  {
-    if ( suppressAbort == FALSE ) {
+  if(mis == 1 ){
+    if(suppressAbort == FALSE){
       stop(paste("Error: ",type," Variable '",varname,"' is a constant.",sep=""))
     }  else  {
       cat(paste0(type," Variable '",varname,"' is a constant. '",varname,"' will be removed.\n"))
       toRemove <- varname
     }
   }
-  if(type == "DIF" | type == "group") {
+  if(type == "DIF" | type == "group"){
     if(mis > 10 && isTRUE(internal))   {warning(paste0(type," Variable '",varname,"' with more than 10 categories. Recommend recoding."))}
   }
+
   wegDifMis <- NULL; wegDifConst <- NULL; char <- 1; weg <- which(is.na(1:12)); info <- NULL
-  if ( is.null(toRemove)) {
-    char    <- max(nchar(as.character(na.omit(x))))
-    weg     <- which(is.na(x))
-    if(length(weg) > 0 ) {warning(paste0("Found ",length(weg)," cases with missing on ",type," variable '",varname,"'. Conquest probably will collapse unless cases are not deleted.\n"))}
-    if(type == "DIF" ) {
-      if(mis > 2 && isTRUE(internal))   {cat(paste(type, " Variable '",varname,"' does not seem to be dichotomous.\n",sep=""))}
+  if(is.null(toRemove)){
+    char <- max(nchar(as.character(na.omit(x))))
+    weg  <- which(is.na(x))
+    if(length(weg) > 0){
+      warning(paste0("Found ",length(weg)," cases with missing on ",type," variable '",varname,"'. Conquest probably will collapse unless cases are not deleted.\n"))}
+    if(type == "DIF"){
+      if(mis > 2 && isTRUE(internal)){
+        cat(paste(type, " Variable '",varname,"' does not seem to be dichotomous.\n",sep=""))
+      }
       y       <- paste0("V", x)
-      n.werte <- lapply(itemdata, FUN=function(iii){by(iii, INDICES=list(y), FUN=table, simplify=FALSE)})
-      completeMissingGroupwise <- data.frame(t(sapply(n.werte, function(ll){lapply(ll, FUN = function (uu) { length(uu[uu>0])}  )})), stringsAsFactors = FALSE)
-      for (iii in seq(along=completeMissingGroupwise)) {
+      n.werte <- lapply(itemdata, FUN = function(iii) {by(iii, INDICES = list(y), FUN=table, simplify=FALSE)} )
+      completeMissingGroupwise <- data.frame(t(sapply(n.werte, function(ll){
+        lapply(ll, FUN = function(uu){
+          length(uu[uu > 0])
+        })
+      })), stringsAsFactors = FALSE)
+
+      for(iii in seq(along=completeMissingGroupwise)){
         missingCat.i <- which(completeMissingGroupwise[,iii] == 0)
-        if(length(missingCat.i) > 0) {
-          cat(paste("Warning: Following ",length(missingCat.i)," items with no values in ",type," variable '",varname,"', group ",substring(colnames(completeMissingGroupwise)[iii],2),": \n",sep=""))
-          wegDifMis <- c(wegDifMis, rownames(completeMissingGroupwise)[missingCat.i] )
+        if(length(missingCat.i) > 0){
+          cat(paste("Warning: Following ", length(missingCat.i), " items with no values in ", type, " variable '",
+                    varname, "', group ", substring(colnames(completeMissingGroupwise)[iii], 2), ": \n", sep=""))
+          wegDifMis <- c(wegDifMis, rownames(completeMissingGroupwise)[missingCat.i])
           cat(paste0("   ", paste(rownames(completeMissingGroupwise)[missingCat.i],collapse=", "), "\n"))
-          info      <- plyr::rbind.fill(info, data.frame ( varname = varname, varlevel = substring(colnames(completeMissingGroupwise)[iii],2), nCases = table(y)[colnames(completeMissingGroupwise)[iii]], type = "missing", vars =rownames(completeMissingGroupwise)[missingCat.i], stringsAsFactors = FALSE))
+          info <- plyr::rbind.fill(info,
+                                   data.frame(varname = varname, varlevel = substring(colnames(completeMissingGroupwise)[iii], 2),
+                                              nCases = table(y)[colnames(completeMissingGroupwise)[iii]], type = "missing",
+                                              vars = rownames(completeMissingGroupwise)[missingCat.i], stringsAsFactors = FALSE))
         }
-        constantCat.i<- which(completeMissingGroupwise[,iii] == 1)
-        if(length(constantCat.i) > 0) {
-          cat(paste("Warning: Following ",length(constantCat.i)," items are constants in ",type," variable '",varname,"', group ",substring(colnames(completeMissingGroupwise)[iii],2),":\n",sep=""))
-          wegDifConst<- c(wegDifConst, rownames(completeMissingGroupwise)[constantCat.i] )
-          values    <- n.werte[rownames(completeMissingGroupwise)[constantCat.i]]
-          values    <- lapply(values, FUN = function(v){v[[colnames(completeMissingGroupwise)[iii]]]})
+        constantCat.i <- which(completeMissingGroupwise[,iii] == 1)
+        if(length(constantCat.i) > 0){
+          cat(paste("Warning: Following ", length(constantCat.i), " items are constants in ", type, " variable '",
+                    varname, "', group ", substring(colnames(completeMissingGroupwise)[iii], 2), ":\n",sep=""))
+          wegDifConst <- c(wegDifConst, rownames(completeMissingGroupwise)[constantCat.i])
+          values <- n.werte[rownames(completeMissingGroupwise)[constantCat.i]]
+          values <- lapply(values, FUN = function(v) {v[[colnames(completeMissingGroupwise)[iii]]]} )
           cat(paste0("   ", paste(rownames(completeMissingGroupwise)[constantCat.i],collapse=", "), "\n"))
-          info      <- plyr::rbind.fill(info, data.frame ( varname = varname, varlevel = substring(colnames(completeMissingGroupwise)[iii],2), nCases = table(y)[colnames(completeMissingGroupwise)[iii]], type = "constant", vars =names(values), value =  sapply(values, names), nValue = unlist(values), stringsAsFactors = FALSE))
+          info <- plyr::rbind.fill(info,
+                                   data.frame(varname = varname, varlevel = substring(colnames(completeMissingGroupwise)[iii], 2),
+                                              nCases = table(y)[colnames(completeMissingGroupwise)[iii]], type = "constant",
+                                              vars =names(values), value =  sapply(values, names), nValue = unlist(values), stringsAsFactors = FALSE))
         }
       }
     }
   }
-  return(list(x = x, char = char, weg = weg, varname=varname, wegDifMis = wegDifMis, wegDifConst = wegDifConst, toRemove = toRemove, info=info))}
+  return(list(x = x, char = char, weg = weg, varname=varname, wegDifMis = wegDifMis, wegDifConst = wegDifConst, toRemove = toRemove, info=info))
+}
 
 ### called by defineModel() ----------------------------------------------------
 
@@ -326,58 +440,4 @@ checkPersonSumScores <- function(datL, allNam, dat, remove.failures){
     perA<- numT
   }
   return(list(dat=dat, per0=per0, perA=perA))}
-
-### called by defineModel() and splitModels() ----------------------------------
-
-checkQmatrixConsistency <-  function(qmat) {
-  qmat  <- eatTools::makeDataFrame(qmat, name = "Q matrix")
-  if(!inherits(qmat[,1], "character")) { qmat[,1] <- as.character(qmat[,1])}
-  nClass<- sapply(qmat[,-1,drop=FALSE], inherits, what=c("numeric", "integer"))
-  if ( !all(nClass)) {
-    warning(paste0("Found non-numeric indicator column(s) in the Q matrix. Transform column(s) '",paste(colnames(qmat)[ which(nClass==FALSE)+1], collapse = "', '") ,"' into numeric format."))
-    qmat <- data.frame ( qmat[,1,drop=FALSE], eatTools::asNumericIfPossible(qmat[,-1,drop=FALSE]), stringsAsFactors = FALSE)
-  }
-  werte <- eatTools::tableUnlist(qmat[,-1,drop=FALSE], useNA="always")
-  if(length(setdiff( names(werte) , c("0","1", "NA")))<0) {stop("Q matrix must not contain entries except '0' and '1'.\n")}
-  if(werte[match("NA", names(werte))] > 0) {stop("Missing values in Q matrix.\n")}
-  wertes<- lapply(qmat[,-1,drop=FALSE], FUN = function (col)  {all ( col == 0)})
-  konst <- which(wertes == TRUE)
-  if ( length(konst)>0) {
-    cat(paste0("Column(s) '",paste(names(konst), collapse = "', '"),"' in Q matrix are konstant with value 0. Delete column(s).\n"))
-    qmat <- qmat[,-match(names(konst), colnames(qmat)), drop=FALSE]
-  }
-  doppel<- which(duplicated(qmat[,1]))
-  if(length(doppel)>0) {
-    cat("Found duplicated elements in the item id column of the q matrix. Duplicated elements will be removed.\n")
-    chk  <- table(qmat[,1])
-    chk  <- chk[which(chk > 1)]
-    chkL <- lapply(names(chk), FUN = function ( ch ) {
-      qChk <- qmat[which(qmat[,1] == ch),]
-      pste <- apply(qChk, 1, FUN = function ( x ) { paste(x[-1], collapse="")})
-      if( !all ( pste == pste[1] )) { stop("Inconsistent q matrix.\n")}
-    })
-    qmat <- qmat[!duplicated(qmat[,1]),]
-  }
-  zeilen<- apply(qmat, 1, FUN = function ( y ) { all ( names(table(y[-1])) == "0")  })
-  weg   <- which(zeilen == TRUE)
-  if(length(weg)>0) {
-    cat(paste("Note: Following ",length(weg)," item(s) in Q matrix do not belong to any dimension. Delete these item(s) from Q matrix.\n",sep=""))
-    cat("    "); cat(paste(qmat[weg,1],collapse=", ")); cat("\n")
-    qmat  <- qmat[-weg,]
-  }
-  return(qmat)}
-
-### called by splitModels() ----------------------------------------------------
-
-checkPersonGroupsConsistency <- function (d) {
-  if(!"data.frame" %in% class(d) || "tbl" %in% class(d) ) {d     <- data.frame(d, stringsAsFactors = FALSE)}
-  ### Eintraege in erster Spalte muessen unique sein und duerfen keine missings enthalten
-  if(any(is.na(d[,1]))) {stop("Person identifier in first column of 'person.groups' has missing values.")}
-  if(length(d[,1]) != length(unique(d[,1]))) {stop("Person identifier in first column of 'person.groups' is not unique.")}
-  ### die naechsten checks erfolgen jeweils fuer alle weiteren spalten
-  chk1 <- lapply(colnames(d)[-1], FUN = function (x) {
-    ### gruppierungsvariablen duerfen nicht konstant sein und keine fehlenden Werte haben
-    if(length(unique(d[,x])) == 1) {stop(paste0("Column '",x,"' of 'person.groups' is constant."))}
-    if(any(is.na(d[,x]))) {stop(paste0("Column '",x,"' of 'person.groups' has missing values."))}})
-  return(d)}
 

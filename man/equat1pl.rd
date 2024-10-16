@@ -57,8 +57,8 @@ left with |DIF|> \code{difBound}.
 Linking method. If \code{"Mean.Mean"}, \code{"Haebara"}, or \code{"Stocking.Lord"},
 the function \code{\link[sirt]{equating.rasch}} from the \code{sirt} package is called. If
 \code{"robust"}, the function \code{\link[sirt]{linking.robust}} from the \code{sirt} package
-is called. If \code{"Haberman"}, the function \code{\link[sirt]{linking.haberman}} from the \
-code{sirt} package is called.
+is called. If \code{"Haberman"}, the function \code{\link[sirt]{linking.haberman}} from the
+\code{sirt} package is called.
 }
   \item{itemF}{
 Optional: Give the number or name of the item column in results.

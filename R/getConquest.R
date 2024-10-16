@@ -381,7 +381,7 @@ plotDevianceConquest <- function ( logFile, omitUntil = 1, reverse = TRUE, chang
   si   <- si[["packages"]][which(si[["packages"]][,"package"] == "eatModel"),]
   sysi <- Sys.info()
   stri <- paste0("'eatModel', version ", si[["loadedversion"]], ", build ",si[["date"]], ", user: ",sysi[["user"]], " (", sysi[["sysname"]],", ",sysi[["release"]], ", ",sysi[["version"]], ")")
-  if (class(logFile) == "list") {
+  if (inherits(logFile,"list")) {
     stri <- paste0("Method = '",logFile[["ret"]][[1]],"'  |  nodes = ",logFile[["ret"]][[2]],"  |  ",capture.output(logFile[["tme"]]), "\n",stri)
   }
   graphics::mtext(stri)

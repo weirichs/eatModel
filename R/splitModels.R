@@ -1,110 +1,78 @@
-splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "qMatrix" , "person.groups" ) , add = NULL , cross = NULL , all.persons = TRUE , all.persons.lab = "all" , person.split.depth = 0:length(person.groups[,-1,drop=FALSE]), full.model.names = TRUE , model.name.elements = c ( "dim" , "group" , "cross" ) , include.var.name = FALSE , env = FALSE , nCores=NULL , mcPackage = c("future", "parallel"), GBcore=NULL , verbose = TRUE ) {
-    if(!is.null(qMatrix))       {qMatrix      <- checkQmatrixConsistency (qMatrix)}
-    if(!is.null(person.groups)) {person.groups<- checkPersonGroupsConsistency (person.groups)}
-    mcPackage <- match.arg(mcPackage)
-    # Funktion: person.groups nach person.grouping
-		pg2pgr <- function ( x , nam ) {
-				d <- x[,1,drop=FALSE]
-				eval ( parse ( text = paste0 ( "d$'" , nam , "' <- 1 " ) ) )
-				return ( d )
-		}
-		# wenn kein data.frame, dann ignorieren
-		if ( !is.null ( qMatrix ) & !is.data.frame ( qMatrix ) ) {
-				qMatrix <- NULL
-				warning ( paste0 ( "splitModels: qMatrix is not a data.frame and will be ignored." ) , call. = FALSE )
-		}
-		if ( !is.null ( person.groups ) & !is.data.frame ( person.groups ) ) {
-				person.groups <- NULL
-				warning ( paste0 ( "splitModels: person.groups is not a data.frame and will be ignored." ) , call. = FALSE )
-		}
-		# wenn keine Spalten / Zeilen dann NULL
-		if ( !is.null ( qMatrix ) ) {
-				if ( nrow ( qMatrix ) %in% 0 | ncol ( qMatrix ) %in% 0 ) {
-						warning ( "splitModels: check qMatrix" , call. = FALSE )
-						qMatrix <- NULL
-				}
-		}
-		if ( !is.null ( person.groups ) ) {
-				if ( nrow ( person.groups ) %in% 0 | ncol ( person.groups ) %in% 0 ) {
-						warning ( "splitModels: check person.groups" , call. = FALSE )
-						person.groups <- NULL
-				}
-		}
-		# Dimensionen in qMatrix duerfen nur 0/1 haben
-		if ( !is.null ( qMatrix ) ) {
-				if ( ncol ( qMatrix ) > 1 ) {
-						not01 <- ! sapply ( qMatrix[,-1,drop=FALSE] , function ( x ) all ( x %in% c(0,1) ) )
+splitModels <- function(qMatrix = NULL, person.groups = NULL, split = c("qMatrix", "person.groups"),
+                        add = NULL, cross = NULL, all.persons = TRUE, all.persons.lab = "all",
+                        person.split.depth = 0:length(person.groups[,-1,drop=FALSE]),
+                        full.model.names = TRUE, model.name.elements = c("dim", "group", "cross"),
+                        include.var.name = FALSE, env = FALSE, nCores=NULL, mcPackage = c("future", "parallel"),
+                        GBcore=NULL, verbose = TRUE){
 
-						if ( any ( not01 ) ) {
-								warning ( paste0 ( "splitModels: column(s) '" , paste ( names (not01)[not01] , collapse = "', '" ) , "' in qMatrix contain elements that are not 0 or 1; this/these column(s) are ignored" ) , call. = FALSE )
-								qMatrix <- qMatrix[,colnames(qMatrix)[!colnames(qMatrix) %in% names (not01)[not01]],drop=FALSE]
-						}
-				}
-		}
-		# wenn nur eine Spalte wird diese als IDs angenommen
-		if ( !is.null ( qMatrix ) ) {
-				if ( ncol ( qMatrix ) %in% 1 ) {
-						warning ( "splitModels: qMatrix contains just one column; this is treated as item names" , call. = FALSE )
-						qMatrix$dim <- 1
-				}
-		}
-		if ( !is.null ( person.groups ) ) {
-				if ( ncol ( person.groups ) %in% 1 ) {
-						warning ( "splitModels: person.groups contains just one column; this is treated as person ids" , call. = FALSE )
-						person.groups$group <- all.persons.lab
-						all.persons <- FALSE
-				}
-		}
-		# qMatrix und person.groups auf Plausibilitaet checken
-		if ( !is.null ( qMatrix ) ) {
-				# hat erste Spalte mehr Elemente als alle anderen
-				len <- sapply ( qMatrix , function ( x ) length ( unique ( x ) ) )
-				len.log <- len < len[1]
-				if ( ! all ( len.log[-1] ) ) warning ( paste0 ( "splitModels: first column of qMatrix might not contain item names; please check\n(number of unique elements is smaller than in another column)" ) , call. = FALSE )
-		}
-		if ( !is.null ( person.groups ) ) {
-				# hat erste Spalte mehr Elemente als alle anderen
-				len <- sapply ( person.groups , function ( x ) length ( unique ( x ) ) )
-				len.log <- len < len[1]
-				if ( ! all ( len.log[-1] ) ) warning ( paste0 ( "splitModels: first column of person.groups might not contain person ids; please check\n(number of unique elements is smaller than in another column)" ) , call. = FALSE )
-		}
+### checking/asserting the arguments -------------------------------------------
+
+  if(!is.null(qMatrix)){
+    qMatrix <- checkQmatrixConsistency(qMatrix)}
+  if(!is.null(person.groups)){
+    person.groups<- checkPersonGroupsConsistency(person.groups)}
+  mcPackage <- match.arg(mcPackage)
+  # Funktion: person.groups nach person.grouping
+  pg2pgr <- function(x, nam){
+    d <- x[, 1, drop = FALSE]
+    eval(parse(text = paste0("d$'", nam, "' <- 1 ")))
+    return(d)
+  }
+
+  lapply(c(all.persons, full.model.names, include.var.name, env, verbose), checkmate::assert_logical, len = 1)
+  checkmate::assert_subset(split, choices = c("qMatrix" , "person.groups"))
+  checkmate::assert_subset(model.name.elements, choices = c("dim", "group", "cross"))
+  checkmate::assert_character(all.persons.lab, len = 1)
+  checkmate::assert_numeric(person.split.depth)
+  lapply(c(nCores, GBcore), checkmate::assert_numeric, len = 1, null.ok = TRUE)
+
+### function -------------------------------------------------------------------
+
 		# aus Split die Sachen raus, die nicht da sind
-		if ( is.null ( qMatrix ) ) split <- split[!split %in% "qMatrix"]
-		if ( is.null ( person.groups ) ) split <- split[!split %in% "person.groups"]
+		if(is.null(qMatrix)) split <- split[!split %in% "qMatrix"]
+		if(is.null(person.groups)) split <- split[!split %in% "person.groups"]
+
 		# all.persons.lab checken ob bereits eine Kategorie in person.groups so heisst
-		if ( !is.null ( person.groups ) & all.persons ) {
-				cats <- unique ( unname ( do.call ( "c" , sapply ( person.groups[,-1,drop=FALSE] , unique , simplify = FALSE ) ) ) )
-				if ( all.persons.lab %in% cats ) {
+		if(!is.null(person.groups) & all.persons){
+				cats <- unique(unname(do.call("c", sapply(person.groups[,-1,drop=FALSE],
+				                                          unique, simplify = FALSE))))
+				if(all.persons.lab %in% cats){
 						# Alternativen checken
-						alt <- c ( "all" , "ALL" , "_all_" , "_ALL_" )
+						alt <- c("all", "ALL", "_all_", "_ALL_")
 						# wenn eine der Alternativen nicht in Kategorien, dann diese setzen
-						if ( any ( !alt %in% cats ) ) {
+						if(any(!alt %in% cats)){
 								new.lab <- alt[!alt %in% cats][1]
 						} else {
 						# solange random erzeugen bis eine noch nicht verwendete Kategorie gefunden
 								new.lab <- cats[1]
-								while ( new.lab %in% cats ) {
-										set.seed ( 1234567 )
-										new.lab <- paste ( sample ( letters , 3 , replace = TRUE ) , collapse = "")
+								while (new.lab %in% cats) {
+										set.seed(1234567)
+										new.lab <- paste(sample(letters, 3, replace = TRUE), collapse = "")
 								}
 						}
 						# Warnung
-						warning ( paste0 ( "splitModels: '" , all.persons.lab , "' is already a used category in person.groups, it has been changed to '" , new.lab , "'." ) , call. = FALSE )
+						warning(paste0("splitModels: '", all.persons.lab, "' is already a used category in person.groups, it has been changed to '",
+						               new.lab, "'."), call. = FALSE)
 						# neues Label setzen
 						all.persons.lab <- new.lab
 				}
 		}
+
 		# wenn Faktoren in person.groups, dann sortieren
 		# bei Nicht-Faktoren Reihenfolge wie im Datensatz
 		colcl <- sapply ( person.groups[,-1,drop=FALSE] , class )
 		if ( any ( colcl %in% "factor" ) ) {
-				do.order <- paste0 ( "person.groups <- person.groups[order(",paste ( paste0 ( "person.groups$" , names ( colcl[colcl %in% "factor"] ) ) , collapse = "," ),"),]" )
-				eval ( parse ( text = do.order ) )
+				do.order <- paste0("person.groups <- person.groups[order(",
+				                   paste(paste0("person.groups$", names(colcl[colcl %in% "factor"])),
+				                         collapse = ","), "),]")
+				eval(parse(text = do.order))
 		}
 		# qMatrix
 		if ( "qMatrix" %in% split & !is.null ( qMatrix ) ) {
 				# qMatrix mit mehreren Dimensionen zu Liste von item.groupings mit nur einer Dimension
-				i <- sapply ( colnames ( qMatrix )[-1] , function ( x , d ) { d <- d[,c(colnames(qMatrix)[1],x)]; d <- d[ d[,x] %in% 1 , ]; return ( d ) } , qMatrix , simplify = FALSE )
+				i <- sapply(colnames(qMatrix)[-1], function(x ,d) {
+				            d <- d[,c(colnames(qMatrix)[1],x)]; d <- d[ d[,x] %in% 1, ]; return(d)},
+				            qMatrix , simplify = FALSE )
 		} else if ( ! "qMatrix" %in% split & !is.null ( qMatrix ) ) {
 				i <- list ( qMatrix )
 		} else {
@@ -125,7 +93,8 @@ splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "q
 						colnames ( d ) <- x
 						return ( d )
 				}
-				pers.l <- mapply ( make.pers.l , person.groups[,-1,drop=FALSE] , colnames ( person.groups )[-1] , MoreArgs = list ( all.persons , all.persons.lab ) , SIMPLIFY = FALSE )
+				pers.l <- mapply(make.pers.l, person.groups[,-1,drop=FALSE], colnames(person.groups)[-1],
+				                 MoreArgs = list(all.persons, all.persons.lab), SIMPLIFY = FALSE)
 				# jetzt komplettes Kreuzen der Kategorien
 				# pers.l reversen fuer schoenere Sortierung der Kategorien
 				p <- Reduce(function(x, y) merge(x, y, all=TRUE,by=NULL),rev(pers.l),accumulate=FALSE )
@@ -138,12 +107,14 @@ splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "q
 						person.split.depth <- person.split.depth[person.split.depth %in% 0:length(person.groups[,-1,drop=FALSE])]
 						if ( identical ( person.split.depth , integer(0) ) | any ( is.na ( person.split.depth ) ) ) {
 								person.split.depth <- 0:length(person.groups[,-1,drop=FALSE])
-								warning ( paste0 ( "splitModels: parameter person.split.depth is out of range and will be defaulted to " , person.split.depth[1] , ":" , person.split.depth[length(person.split.depth)] ) , call. = FALSE )
+								warning(paste0("splitModels: parameter person.split.depth is out of range and will be defaulted to ",
+								               person.split.depth[1], ":", person.split.depth[length(person.split.depth)]), call. = FALSE)
 						}
 				} else {
 						person.split.depth <- 0:length(person.groups[,-1,drop=FALSE])
 						if ( !is.null ( person.groups ) ) {
-								warning ( paste0 ( "splitModels: parameter person.split.depth is falsely set and will be defaulted to " , person.split.depth[1] , ":" , person.split.depth[length(person.split.depth)] ) , call. = FALSE )
+								warning(paste0("splitModels: parameter person.split.depth is falsely set and will be defaulted to ",
+								               person.split.depth[1], ":", person.split.depth[length(person.split.depth)]), call. = FALSE)
 						}
 				}
 				# Tiefe berechnen
@@ -475,4 +446,5 @@ splitModels <- function ( qMatrix = NULL , person.groups = NULL , split = c ( "q
 				cat ( out.str )
 				flush.console()
 		}
-		return ( r )}
+		return ( r )
+}
