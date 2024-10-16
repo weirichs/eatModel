@@ -46,8 +46,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
                                                  "GPCM", "2PL.groups", "GPCM.design", "3PL"))
 
   #' assert vector:
-  #' items, id, DIF.var, HG.var, group.var, weight.var, schooltype.var
-  checkmate::assert_vector(items)
+  #' id, DIF.var, HG.var, group.var, weight.var, schooltype.var
   lapply(c(id, DIF.var), checkmate::assert_vector, len = 1)
   lapply(c(HG.var, group.var, weight.var), checkmate::assert_vector, null.ok = TRUE)
   checkmate::assert_vector(schooltype.var, len = 1, null.ok = TRUE)
