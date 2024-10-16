@@ -29,9 +29,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
   dat  <- eatTools::makeDataFrame(dat, name = "dat")
 
   # data frame: qMatrix
-  checkmate::assert_data_frame(qMatrix, null.ok = TRUE, col.names = "named", min.cols = 2)
-  warning(paste0("The first column of the data frame `qMatrix` should be called `item`, but is called ",
-                 colnames(qMatrix)[1], "."))
+  checkQmatrixConsistency(qMatrix)
 
   # dataframe: anchor
   checkmate::assert_data_frame(anchor, null.ok = TRUE, col.names = "named", min.cols = 2)
