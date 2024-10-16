@@ -37,9 +37,9 @@ A data frame containing all variables necessary for analysis.
 }
   \item{items}{
 Names or column numbers of variables with item responses. Item response values must
-be numeric (i.e. 0, 1, 2, 3 ... ). Character values (i.e. A, B, C ... or a, b, c, ...) 
-are not allowed. Class of item columns are expected to be numeric or integer. 
-Columns of class \code{character} will be transformed. 
+be numeric (i.e. 0, 1, 2, 3 ... ). Character values (i.e. A, B, C ... or a, b, c, ...)
+are not allowed. Class of item columns are expected to be numeric or integer.
+Columns of class \code{character} will be transformed.
 }
   \item{id}{
 Name or column number of the identifier (ID) variable.
@@ -80,8 +80,8 @@ Optional: Name or column number of one weighting variable.
 Optional: A named data frame with anchor parameters. The first column contains the
 names of all items which are used to be anchor items and may be named item.
 The second column contains anchor parameters. Anchor items can be a subset of the
-items in the dataset and vice versa. If the data frame contains more than two 
-columns, columns must be named explicitly using the following arguments 
+items in the dataset and vice versa. If the data frame contains more than two
+columns, columns must be named explicitly using the following arguments
 \code{domainCol}, \code{itemCol}, and \code{valueCol}.
 }
   \item{domainCol}{
@@ -89,20 +89,20 @@ Optional: Only necessary if the \code{anchor} argument was used to define
 anchor parameters. Moreover, specifying \code{domainCol} is only necessary, if the
 item identifiers in \code{anchor} are not unique---for example, if a specific item
 occurs with two parameters, one domain-specific item parameter and one additional
-``global'' item parameter. The domain column than must specify which parameter 
-belongs to which domain. 
+``global'' item parameter. The domain column than must specify which parameter
+belongs to which domain.
 }
   \item{itemCol}{
 Optional: Only necessary if the \code{anchor} argument was used to define
 anchor parameters. Moreover, specifying \code{itemCol} is only necessary, if the
-\code{anchor} data frame has more than two columns. The \code{itemCol} column than 
-must specify which column contains the item identifier. 
+\code{anchor} data frame has more than two columns. The \code{itemCol} column then
+must specify which column contains the item identifier.
 }
   \item{valueCol}{
 Optional: Only necessary if the \code{anchor} argument was used to define
 anchor parameters. Moreover, specifying \code{valueCol} is only necessary, if the
-\code{anchor} data frame has more than two columns. The \code{valueCol} column than 
-must specify which column contains the item parameter values. 
+\code{anchor} data frame has more than two columns. The \code{valueCol} column then
+must specify which column contains the item parameter values.
 }
   \item{check.for.linking}{
 A logical value indicating whether the items in dataset are checked for being
@@ -117,7 +117,7 @@ Logical: Remove items with less valid responses than defined in \code{minNperIte
 }
   \item{boundary}{
 Numerical: A message is printed on console if a subject has answered less than the number of items
-defined in boundary. 
+defined in boundary.
 }
   \item{remove.boundary}{
 Logical: Remove subjects who have answered less items than defined in the \code{boundary} argument?
@@ -138,14 +138,14 @@ Logical: Should items without variance being removed prior to analysis?
 Logical: Should persons without any correct item response (i.e., only \dQuote{0} responses) being removed prior to analysis?
 }
   \item{remove.vars.DIF.missing}{
-Logical: Applies only in DIF analyses. Should items without any responses in at least one 
+Logical: Applies only in DIF analyses. Should items without any responses in at least one
 DIF group being removed prior to analyses? Note: Conquest may crash if these items
-remain in the data. 
+remain in the data.
 }
   \item{remove.vars.DIF.constant}{
-Logical: Applies only in DIF analyses. Should items without variance in at least one 
-DIF group being removed prior to analyses? Note: Conquest may crash if these items 
-remain in the data. 
+Logical: Applies only in DIF analyses. Should items without variance in at least one
+DIF group being removed prior to analyses? Note: Conquest may crash if these items
+remain in the data.
 }
   \item{verbose}{
 A logical value indicating whether messages are printed on the R console.
@@ -159,15 +159,15 @@ The directory in which the output will be written to. If \code{software = "conqu
 }
   \item{analysis.name}{
 A character string specifying the analysis name. If \code{software = "conquest"},
-\code{analysis.name} must be specified. All Conquest input and output files will 
-named \code{analysis.name} with their corresponding extensions. If \code{software = "tam"}, 
-\code{analysis.name} is not mandatory. In the case of multiple models estimation, 
+\code{analysis.name} must be specified. All Conquest input and output files will
+named \code{analysis.name} with their corresponding extensions. If \code{software = "tam"},
+\code{analysis.name} is not mandatory. In the case of multiple models estimation,
 \code{split.models} automatically defines \code{analysis.name} for each model.
 }
   \item{schooltype.var}{
 Optional: Name or column number of the variable indicating the school type (e.g.
-academic track, non-academic track). Only necessary if \emph{p} values should be 
-computed for each school type separately. 
+academic track, non-academic track). Only necessary if \emph{p} values should be
+computed for each school type separately.
 }
   \item{model.statement}{
 Optional: Applies only if \code{software = "conquest"}. A character string given the model
@@ -203,7 +203,7 @@ the user is requested to specify the path of the console.
 }
   \item{constraints}{
 A character string specifying how the scale should be constrained. Possible options
-are \code{"cases"} (default), \code{"items"} and \code{"none"}. When anchor parameter are specified in 
+are \code{"cases"} (default), \code{"items"} and \code{"none"}. When anchor parameter are specified in
 anchor, constraints will be set to \code{"none"} automatically. In \code{TAM} the option
 \code{"none"} is not allowed. (See the help file of \code{\link[TAM]{tam.mml}} for further details.)
 }
@@ -237,19 +237,19 @@ leads to calling TAM with \code{control$QMC = TRUE} and \code{snodes = nn}, wher
   \item{n.iterations}{
 %%     ~~Describe \code{dif.term} here~~
 An integer value specifying the maximum number of iterations for which estimation
-will proceed without improvement in the deviance. 
+will proceed without improvement in the deviance.
 }
   \item{nodes}{
 %%     ~~Describe \code{dif.term} here~~
 An integer value specifying the number of nodes to be used in the analysis. The
 default value is 20. When using \code{software = "tam"}, the value specified here
-leads to calling TAM with \code{nodes = 20} AND \code{snodes = 0} if \code{"gauss"} or 
+leads to calling TAM with \code{nodes = 20} AND \code{snodes = 0} if \code{"gauss"} or
 \code{"quadrature"} was used in the \code{method} argument. If \code{"montecarlo"} or \code{"quasiMontecarlo"}
 was used in the \code{method} argument, the value specified here leads to calling TAM with
 \code{control$snodes = 20}. For numerical integration, for example,
-\code{method = "gauss"} and \code{nodes = 21} (TAM default) may be appropriate. 
+\code{method = "gauss"} and \code{nodes = 21} (TAM default) may be appropriate.
 For quasi monte carlo integration, \code{method = "quasiMontecarlo"} and \code{nodes = 1000}
-may be appropriate (TAM authors recommend to use at least 1000 nodes). 
+may be appropriate (TAM authors recommend to use at least 1000 nodes).
 }
   \item{p.nodes}{
 %%     ~~Describe \code{dif.term} here~~
@@ -293,7 +293,7 @@ with width 2 in Conquest.
 }
   \item{allowAllScoresEverywhere}{
 %%     ~~Describe \code{dif.term} here~~
-Applies only if \code{software = "Conquest"}. Defines score statement generation 
+Applies only if \code{software = "Conquest"}. Defines score statement generation
 in multidimensional polytomous models. Consider two dimensions, `reading' and `listening'.
 In `reading', values 0, 1, 2, 3 occur. In `listening', values 1, 2, 3, 4 occur. If \code{TRUE},
 values 0, 1, 2, 3, 4 are defined for both dimensions. Otherwise, values 0, 1, 2, 3
@@ -316,40 +316,40 @@ with two columns indicating for which items a common discrimination parameter sh
 be estimated. The first column contains the names of all items in the analysis
 and should be named \code{"item"}. The second column is numerical (integer values
 recommended) and allocates the items to groups. For each group of items, a
-separate discrimination parameter is estimated. Without specifying \code{est.slopegroups}, 
+separate discrimination parameter is estimated. Without specifying \code{est.slopegroups},
 a discrimination parameter for each item is estimated.
 }
   \item{fixSlopeMat}{
 %%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "tam"} for 2PL models. Optionally, a named data frame
 with two columns indicating for which items a fixed discrimination should be assumed.
-The first column contains the names of the items which discrimination should be fixed. 
-Note that item indicators should be unique---if not, use further arguments \code{slopeMatDomainCol}, 
-\code{slopeMatItemCol} and \code{slopeMatValueCol}. The second column is numerical and contains 
-the discrimination value. Note: To date, this works only for between item dimensionality models. 
-Within item dimensionality models must be specified directly in TAM, using the \code{B.fixed} 
+The first column contains the names of the items which discrimination should be fixed.
+Note that item indicators should be unique---if not, use further arguments \code{slopeMatDomainCol},
+\code{slopeMatItemCol} and \code{slopeMatValueCol}. The second column is numerical and contains
+the discrimination value. Note: To date, this works only for between item dimensionality models.
+Within item dimensionality models must be specified directly in TAM, using the \code{B.fixed}
 argument of \code{\link[TAM]{tam.mml}}. Items which discrimation should be estimated should not occur in this data frame.
 }
   \item{slopeMatDomainCol}{
 %%     ~~Describe \code{dif.term} here~~
 Optional: Only necessary if the \code{fixSlopeMat} argument was used to define fixed slope
-parameters. Moreover, specifying \code{slopeMatDomainCol} is only necessary, if the item 
-identifiers in \code{fixSlopeMat} are not unique---for example, if a specific item occurs 
-with two slope parameters, one domain-specific item slope parameter and one additional 
-``global'' item parameter. The domain column than must specify which parameter belongs to which domain. 
+parameters. Moreover, specifying \code{slopeMatDomainCol} is only necessary, if the item
+identifiers in \code{fixSlopeMat} are not unique---for example, if a specific item occurs
+with two slope parameters, one domain-specific item slope parameter and one additional
+``global'' item parameter. The domain column than must specify which parameter belongs to which domain.
 }
   \item{slopeMatItemCol}{
 %%     ~~Describe \code{dif.term} here~~
-Optional: Only necessary if the \code{fixSlopeMat} argument was used to define fixed slope 
-parameters. Moreover, specifying \code{itemCol} is only necessary, if the \code{fixSlopeMat} 
-data frame has more than two columns. The \code{itemCol} column than must specify which column 
-contains the item identifier. 
+Optional: Only necessary if the \code{fixSlopeMat} argument was used to define fixed slope
+parameters. Moreover, specifying \code{itemCol} is only necessary, if the \code{fixSlopeMat}
+data frame has more than two columns. The \code{itemCol} column than must specify which column
+contains the item identifier.
 }
   \item{slopeMatValueCol}{
 %%     ~~Describe \code{dif.term} here~~
-Optional: Only necessary if the \code{fixSlopeMat} argument was used to define slope parameters. 
-Moreover, specifying \code{valueCol} is only necessary, if the \code{fixSlopeMat} data frame has 
-more than two columns. The \code{valueCol} column than must specify which column contains the item parameter values. 
+Optional: Only necessary if the \code{fixSlopeMat} argument was used to define slope parameters.
+Moreover, specifying \code{valueCol} is only necessary, if the \code{fixSlopeMat} data frame has
+more than two columns. The \code{valueCol} column than must specify which column contains the item parameter values.
 }
   \item{progress}{
 %%     ~~Describe \code{dif.term} here~~
@@ -381,7 +381,7 @@ on hard disk.
 %%  \item{comp1 }{Description of 'comp1'}
 %%  \item{comp2 }{Description of 'comp2'}
 %% ...
-A list which contains information about the desired estimation. The list is intended for 
+A list which contains information about the desired estimation. The list is intended for
 further processing via \code{\link{runModel}}. Structure of the list varies depending on
 whether multiple models were called using \code{\link{splitModels}} or not. If
 \code{\link{splitModels}} was called, the number of elements in the list equals
@@ -398,58 +398,58 @@ The Q matrix allocating items to dimensions.
 Named list of all relevant variables of the data set.
 }
   \item{dir}{
-Character string of the directory the results are to be saved. 
+Character string of the directory the results are to be saved.
 }
   \item{analysis.name}{
-Character string of the analysis' name. 
+Character string of the analysis' name.
 }
   \item{deskRes}{
-Data frame with descriptives (e.g., p values) of the test items. 
+Data frame with descriptives (e.g., p values) of the test items.
 }
   \item{discrim}{
-Data frame with item discrimination values. 
+Data frame with item discrimination values.
 }
   \item{perNA}{
 The person identifiers of examinees which are excluded from the analysis due to solely missing values.
 }
   \item{per0}{
-The person identifiers of examinees which have solely false responses. if \code{remove.failues} was set 
-to be TRUE, these persons are excluded from the data set. 
+The person identifiers of examinees which have solely false responses. if \code{remove.failues} was set
+to be TRUE, these persons are excluded from the data set.
 }
   \item{perA}{
-The person identifiers of examinees which have solely correct responses. 
+The person identifiers of examinees which have solely correct responses.
 }
   \item{perExHG}{
 The person identifiers of examinees which are excluded from the analysis due to missing values on explicit variables.
 }
   \item{itemsExcluded}{
-Character string of items which were excluded, for example due to zero variance or solely missing values. 
+Character string of items which were excluded, for example due to zero variance or solely missing values.
 }
 If \code{software == "conquest"}, the output additionally includes the following elements:
   \item{input}{
-Character string of the path with Conquest input (cqc) file. 
+Character string of the path with Conquest input (cqc) file.
 }
   \item{conquest.folder}{
-Character string of the path of the conquest executable file. 
+Character string of the path of the conquest executable file.
 }
   \item{model.name}{
-Character string of the model name. 
+Character string of the model name.
 }
 If \code{software == "tam"}, the output additionally includes the following elements:
   \item{anchor}{
 Optional: data frame of anchor parameters (if anchor parameters were defined).
 }
   \item{daten}{
-The prepared data for TAM analysis. 
+The prepared data for TAM analysis.
 }
   \item{irtmodel}{
-Character string of the used IRT model. 
+Character string of the used IRT model.
 }
   \item{est.slopegroups}{
-Applies for 2pl modeling. Information about which items share a common slope parameter. 
+Applies for 2pl modeling. Information about which items share a common slope parameter.
 }
   \item{guessMat}{
-Applies for 3pl modeling. Information about which items share a common guessing parameter. 
+Applies for 3pl modeling. Information about which items share a common guessing parameter.
 }
   \item{control}{
 List of control parameters for TAM estimation.
@@ -498,7 +498,7 @@ run1 <- runModel(mod1)
 res1 <- getResults(run1)
 
 # extract the item parameters from the results object
-item <- itemFromRes ( res1 ) 
+item <- itemFromRes ( res1 )
 
 
 ################################################################################
@@ -507,12 +507,12 @@ item <- itemFromRes ( res1 )
 
 # nearly the same procedure as in example 1. Using 'sex' as DIF variable
 # note that 'sex' is a factor variable here. Conquest needs all explicit variables
-# to be numeric. Variables will be automatically transformed to numeric by 
+# to be numeric. Variables will be automatically transformed to numeric by
 # 'defineModels'. However, it might be the better idea to transform the variable
-# manually. 
+# manually.
 datW[,"sexNum"] <- car::recode ( datW[,"sex"] , "'male'=0; 'female'=1", as.factor = FALSE)
-                   
-# as we have defined a new variable ('sexNum') in the data, it is a good idea 
+
+# as we have defined a new variable ('sexNum') in the data, it is a good idea
 # to explicitly specify item columns ... instead of saying 'items= -c(1:3)' which
 # means: Everything except column 1 to 3 are item columns
 items<- grep("^T[[:digit:]]{2}", colnames(datW))
@@ -588,7 +588,7 @@ tf2b <- transformToBista ( equatingList = eq2b, refPop = ref, cuts = cuts)
 # we use the same anchor parameters from example 1
 
 # estimate model 2 with latent regression and anchored parameters in TAM
-# specification of an output folder (via 'dir' argument) no longer necessary 
+# specification of an output folder (via 'dir' argument) no longer necessary
 mod2T<- defineModel(dat=datW, items= grep("^T[[:digit:]]{2}", colnames(datW)),
         id="idstud", qMatrix = qMat, HG.var = "sex", anchor = aPar, software = "tam")
 
@@ -627,10 +627,10 @@ l1    <- splitModels ( qMatrix = qMat, person.groups = pers, nCores = 1)
 modMul<- defineModel(dat = datW, items = grep("^T[[:digit:]]{2}", colnames(datW)),
          id = "idstud", check.for.linking = TRUE, splittedModels = l1, software = "tam")
 
-# run all models 
+# run all models
 runMul<- runModel(modMul)
 
-# get results of all models 
+# get results of all models
 resMul<- getResults(runMul)
 
 
@@ -639,7 +639,7 @@ resMul<- getResults(runMul)
 ################################################################################
 
 # Example 5: define und run multiple models according to different domains (item groups)
-# and further linking/equating. This example mimics the routines necessary for the 
+# and further linking/equating. This example mimics the routines necessary for the
 # 'Vergleichsarbeiten' at the Institute of Educational Progress (IQB)
 
 # specify two models according to the two domains 'reading' and 'listening'
@@ -649,10 +649,10 @@ l2    <- splitModels ( qMatrix = qMat,  nCores = 1)
 mods  <- defineModel(dat = datW, id = "idstud", check.for.linking = TRUE,
          splittedModels = l2, software = "tam")
 
-# run 2 models 
+# run 2 models
 runs  <- runModel(mods)
 
-# get the results 
+# get the results
 ress  <- getResults(runs)
 
 # only for illustration, we create arbitrary 'normed' parameters for anchoring
@@ -660,36 +660,36 @@ prmNrm<- itemFromRes(ress)[ sample ( 1:56, 31,FALSE) ,c("item", "est")]
 prmNrm[,"est"] <- prmNrm[,"est"] - 0.6 + rnorm ( 31, 0, 0.75)
 
 # anchoring without exclusion of linking DIF items (DIF items will only be identified)
-anch  <- equat1pl ( results = ress, prmNorm = prmNrm, excludeLinkingDif = FALSE, 
+anch  <- equat1pl ( results = ress, prmNorm = prmNrm, excludeLinkingDif = FALSE,
          difBound = 0.6)
 
 # anchoring with exclusion of linking DIF items
-anch2 <- equat1pl ( results = ress, prmNorm = prmNrm, excludeLinkingDif = TRUE, 
+anch2 <- equat1pl ( results = ress, prmNorm = prmNrm, excludeLinkingDif = TRUE,
          difBound = 0.6, iterativ = FALSE)
 
 # anchoring with iterative exclusion of linking DIF items
-anch3 <- equat1pl ( results = ress, prmNorm = prmNrm, excludeLinkingDif = TRUE, 
+anch3 <- equat1pl ( results = ress, prmNorm = prmNrm, excludeLinkingDif = TRUE,
          difBound = 0.6, iterativ = TRUE)
 
 # transformation to the Bista metric
-# first we arbitrarily define mean and standard deviation of the reference 
-# population according to both dimensions (defined in the Q matrix): 
+# first we arbitrarily define mean and standard deviation of the reference
+# population according to both dimensions (defined in the Q matrix):
 # reading and listening
-# Note that the the first column of the 'refPop' data frame must include the 
+# Note that the the first column of the 'refPop' data frame must include the
 # domain names. Domain names must match the names defined in the Q matrix
 refPop<- data.frame ( domain = c("domainreading", "domainlistening"),
         m = c(0.03890191, 0.03587727), sd= c(1.219, 0.8978912))
 
 # second, we specify a list with cut scores. Values must be in ascending order.
-# Labels of the competence stages are optional. If no labels are specified, 
+# Labels of the competence stages are optional. If no labels are specified,
 # the will be defaulted to 1, 2, 3 ... etc.
-# Note: if labels are specified, there must be one label more than cut scores. 
+# Note: if labels are specified, there must be one label more than cut scores.
 # (i.e. 4 cut scores need 5 labels, etc.)
 cuts  <- list ( domainreading = list ( values = 390+0:3*75),
          domainlistening = list ( values = 360+0:3*85))
 
 # transformation
-dfr   <- transformToBista ( equatingList = anch3, refPop = refPop, cuts=cuts ) 
+dfr   <- transformToBista ( equatingList = anch3, refPop = refPop, cuts=cuts )
 head(dfr$itempars)
 head(dfr$personpars)
 
@@ -699,8 +699,8 @@ head(dfr$personpars)
 ################################################################################
 
 # Example 5a: define und run multiple models according to different domains (item groups)
-# and further linking/equating. Same as example 5, but extended for the 'global' 
-# domain. 
+# and further linking/equating. Same as example 5, but extended for the 'global'
+# domain.
 
 # add the 'global' domain (reading and listening together) in the Q matrix
 qMat2 <- qMat
@@ -716,7 +716,7 @@ mods3 <- defineModel(dat = datW, id = "idstud", check.for.linking = TRUE,
 # run 3 models
 runs3 <- runModel(mods3)
 
-# get the results 
+# get the results
 res3  <- getResults(runs3)
 
 # only for illustration, we create arbitrary 'normed' parameters for anchoring.
@@ -728,35 +728,35 @@ prmGlo<- prmNrm
 prmGlo[,"dimension"] <- "global"
 prmNrm<- rbind ( prmNrm, prmGlo)
 
-# if the item identifier in 'prmNrm' is not unique, 'equat1pl' has to know which 
+# if the item identifier in 'prmNrm' is not unique, 'equat1pl' has to know which
 # parameter in 'prmNrm' belongs to which dimension/domain. Hence, the dimension
 # is added to 'prmNrm'.
- 
-# anchoring: if 'prmNrm' has more than 2 columns, the columns of 'prmNrm' must be 
+
+# anchoring: if 'prmNrm' has more than 2 columns, the columns of 'prmNrm' must be
 # specified in 'equat1pl'
-anch3 <- equat1pl ( results = res3, prmNorm = prmNrm, item = "item", value = "est", 
+anch3 <- equat1pl ( results = res3, prmNorm = prmNrm, item = "item", value = "est",
          domain = "dimension", excludeLinkingDif = FALSE, difBound = 0.6)
 
 # transformation to the Bista metric
-# first we arbitrarily define mean and standard deviation of the reference 
-# population according to the three dimensions (defined in the Q matrix): 
+# first we arbitrarily define mean and standard deviation of the reference
+# population according to the three dimensions (defined in the Q matrix):
 # reading, listening, and global
-# Note that the the first column of the 'refPop' data frame must include the 
+# Note that the the first column of the 'refPop' data frame must include the
 # domain names. Domain names must match the names defined in the Q matrix
 refPop<- data.frame ( domain = c("domainreading", "domainlistening", "global"),
         m = c(0.03890191, 0.03587727, 0.03), sd= c(1.219, 0.8978912, 1.05))
 
 # second, we specify a list with cut scores. Values must be in ascending order.
-# Labels of the competence stages are optional. If no labels are specified, 
+# Labels of the competence stages are optional. If no labels are specified,
 # the will be defaulted to 1, 2, 3 ... etc.
-# Note: if labels are specified, there must be one label more than cut scores. 
+# Note: if labels are specified, there must be one label more than cut scores.
 # (i.e. 4 cut scores need 5 labels, etc.)
 cuts  <- list ( domainreading = list ( values = 390+0:3*75),
          domainlistening = list ( values = 360+0:3*85),
          global = list ( values = 400+0:2*100, labels = c("A1", "A2", "B1", "B2")))
 
 # transformation
-dfr   <- transformToBista ( equatingList = anch3, refPop = refPop, cuts=cuts ) 
+dfr   <- transformToBista ( equatingList = anch3, refPop = refPop, cuts=cuts )
 head(dfr$itempars)
 head(dfr$personpars)
 
