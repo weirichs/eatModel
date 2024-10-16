@@ -32,10 +32,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
   checkQmatrixConsistency(qMatrix)
 
   # dataframe: anchor
-  checkmate::assert_data_frame(anchor, null.ok = TRUE, col.names = "named", min.cols = 2)
-  if(checkmate::test_data_frame(anchor, null.ok = TRUE, col.names = "named", min.cols = 3)){
-    checkmate::assert_subset(colnames(anchor), choices = c(colnames(anchor)[1:2],
-                                                           "domainCol", "itemCol", "valueCol")) }
+  anker(prm = anchor, domainCol = domainCol, itemCol = itemCol, valueCol = valueCol)
 
   # list: splitted Models
   checkmate::assert_list(splittedModels, null.ok = TRUE)
@@ -52,8 +49,9 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
   #' assert numeric:
   #' minNperItem, boundary, n.plausible, seed, n.iterations, nodes, converge,
   #' deviancechange, Msteps
-  lapply(c(minNperItem, boundary, n.plausible, n.iterations, nodes, converge,
-           deviancechange, Msteps), checkmate::assert_numeric, len = 1)
+  lapply(c(minNperItem, boundary, n.plausible, n.iterations, nodes, Msteps),
+         checkmate::assert_numeric, len = 1, lower = 0)
+  lapply(c(converge, deviancechange), checkmate::assert_numeric, len = 1)
   checkmate::assert_numeric(seed, len = 1, null.ok = TRUE)
 
   #' assert character via match.arg:
@@ -190,7 +188,6 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
     class(models)    <- c("defineMultiple", "list")
     return(models)
   }  else  {
-    irtmodel <- match.arg(irtmodel)
     if ( is.null(Msteps) ) {
       if ( irtmodel == "3PL" ) { Msteps <- 10 } else { Msteps <- 4 }
     }
