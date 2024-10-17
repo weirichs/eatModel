@@ -3,6 +3,8 @@
 replaceLinkingError <- function(equatingList, multiEquatError_output, verbose = TRUE, digits = 4) {
     ### checks
        if ( !is.list(multiEquatError_output)&&is.null(dim(multiEquatError_output)) ) {stop("'multiEquatError_output' must be a list of data.frames.")}
+       checkmate::assert_logical(verbose, len = 1)
+       checkmate::assert_numeric(digits, len = 1)
     ### dimensionen in der Equatingliste. Diese Dimensionen muessen auch in dem 'multiEquatError_output'-Objekt vorhanden sein
        dims <- lapply(equatingList[["items"]], names)
        drin <- unlist(dims) %in% names(multiEquatError_output)
