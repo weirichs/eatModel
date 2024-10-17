@@ -95,7 +95,7 @@ printToConsole <- function(d, nMods, it, prmDim, eq, allN, method, estimation, e
 ### ----------------------------------------------------------------------------
 
 handleLinkingDif <- function(prmDim,prbl, eq, difBound, dif, method, excludeLinkingDif, iterativ,prmM, allN) {
-  cat(paste ( "\nDimension '", prmDim[1,"dimension"], "': ", length( prbl), " of ", nrow( eq[["anchor"]]), " items with linking DIF > ",difBound," identified.\n",sep=""))
+  cat(paste ( "\nDimension '", prmDim[1,"dimension"], "': ", length( prbl), " of ", nrow( eq[["anchor"]]), " items with linking |DIF| > ",difBound," identified.\n",sep=""))
   dskr <- data.frame ( item = eq[["anchor"]][prbl,"item"], dif = dif[prbl], linking.constant = eq[["B.est"]][[method]], linkerror = eq[["descriptives"]][["linkerror"]] )
   if ( !excludeLinkingDif) { info<- dskr }
   if ( excludeLinkingDif ) {
