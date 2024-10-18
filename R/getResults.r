@@ -1,7 +1,48 @@
-getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c("pv", "wle", "eap"), q3MinObs = 0, q3MinType = c("singleObs", "marginalSum"), omitFit = FALSE, omitRegr = FALSE, omitWle = FALSE, omitPV = FALSE, abs.dif.bound = 0.6, sig.dif.bound = 0.3, p.value = 0.9,
-                         nplausible = NULL, ntheta = 2000, normal.approx = FALSE, samp.regr = FALSE, theta.model=FALSE, np.adj=8, group = NULL, beta_groups = TRUE, level = .95, n.iter = 1000, n.burnin = 500, adj_MH = .5, adj_change_MH = .05, refresh_MH = 50, accrate_bound_MH = c(.45, .55),	sample_integers=FALSE, theta_init=NULL, print_iter = 20, verbose = TRUE, calc_ic=TRUE, omitUntil=1, seed=NA) {
+## usually called after defineModel()
+
+getResults <- function(runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c("pv", "wle", "eap"),
+                       q3MinObs = 0, q3MinType = c("singleObs", "marginalSum"),
+                       omitFit = FALSE, omitRegr = FALSE, omitWle = FALSE, omitPV = FALSE,
+                       abs.dif.bound = 0.6, sig.dif.bound = 0.3, p.value = 0.9,
+                       nplausible = NULL, ntheta = 2000, normal.approx = FALSE,
+                       samp.regr = FALSE, theta.model=FALSE, np.adj=8, group = NULL,
+                       beta_groups = TRUE, level = .95, n.iter = 1000, n.burnin = 500,
+                       adj_MH = .5, adj_change_MH = .05, refresh_MH = 50,
+                       accrate_bound_MH = c(.45, .55),	sample_integers=FALSE,
+                       theta_init=NULL, print_iter = 20, verbose = TRUE, calc_ic=TRUE,
+                       omitUntil=1, seed=NA) {
+
+### checks ---------------------------------------------------------------------
+  checkmate::assert_list(runModelObj)
+
   q3MinType<- match.arg(q3MinType)
-  q3theta  <- match.arg(q3theta )
+  q3theta  <- match.arg(q3theta)
+  checkmate::assert_numeric(q3MinObs, len = 1)
+
+  # logical arguments
+  lapply(c(overwrite, Q3, omitFit, omitRegr, omitWle, omitPV),
+         checkmate::assert_logical, len = 1)
+  #lapply(c(), checkmate::assert_logical, len = 1)
+
+  # if DIF was applied
+  lapply(c(abs.dif.bound, sig.dif.bound, p.value), checkmate::assert_numeric, len = 1)
+
+  # if software = "tam"
+  lapply(c(normal.approx, samp.regr, theta.model, beta_groups, sample_integers,
+           verbose, calc_ic), checkmate::assert_logical, len = 1)
+  checkmate::assert_numeric(nplausible, len = 1, null.ok = TRUE)
+  checkmate::assert_vector(group, null.ok = TRUE)
+  checkmate::assert_matrix(theta_init, null.ok = TRUE)
+
+  lapply(c(ntheta, np.adj, level, n.iter, n.burnin, adj_MH, adj_change_MH,
+           refresh_MH, print_iter), checkmate::assert_numeric, len = 1)
+  checkmate::assert_numeric(accrate_bound_MH)
+
+  # omitUntil (given to plotDevianceConquest)
+  checkmate::assert_numeric(omitUntil, len = 1)
+
+### function -------------------------------------------------------------------
+
   if(inherits(runModelObj, "runMultiple")) {
     if(is.null ( attr(runModelObj, "split")[["nCores"]] ) || attr(runModelObj, "split")[["nCores"]] == 1 ) {
       res <- lapply( runModelObj, FUN = function ( r ) {
