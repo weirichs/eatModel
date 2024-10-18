@@ -290,6 +290,7 @@ return(string)}
 
 anker <- function(lab, prm, qMatrix, domainCol, itemCol, valueCol, multicore )  {
   stopifnot(ncol(lab)==2)
+  checkmate::assert_data_frame(prm, min.cols = 2)
   if ( !ncol(prm) == 2 )   {
     if ( is.null(itemCol))  { stop("If anchor parameter frame has more than two columns, 'itemCol' must be specified.\n")}
     if ( is.null(valueCol)) { stop("If anchor parameter frame has more than two columns, 'valueCol' must be specified.\n")}
