@@ -272,20 +272,19 @@ between successive iterations of the EM algorithm is less than converge. The
 default value is 0.001.
 }
   \item{deviancechange}{
-%%     ~~Describe \code{dif.term} here~~
 An integer value specifiying the convergence criterion for the deviance. The
 estimation will terminate when the change in the deviance between successive
 iterations of the EM algorithm is less than deviancechange. The default value
 is 0.0001.
 }
   \item{equivalence.table}{
-%%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "conquest"}. A character string specifying the
-type of equivalence table to print. Possible options are \code{"wle"} (default), \code{"mle"}
-and NULL.
+type of equivalence table to print. To be more precise, the person estimator that
+is to be used to create the table must be specified here. Possible options are
+\code{"wle"} (default), \code{"mle"} and NULL. If NULL, no equivalence table is
+computed at all.
 }
   \item{use.letters}{
-%%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "conquest"}. A logical value indicating whether
 item response values should be coded as letters. This option can be used in partial
 credit models comprising items with more than 10 categories to avoid response columns
