@@ -28,21 +28,18 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
   ismc <- attr(dat, "multicore")
   dat  <- eatTools::makeDataFrame(dat, name = "dat")
 
-  # data frame: qMatrix
-  checkQmatrixConsistency(qMatrix)
-
-  # dataframe: anchor
-  anker(prm = anchor, domainCol = domainCol, itemCol = itemCol, valueCol = valueCol)
-
   # list: splitted Models
   checkmate::assert_list(splittedModels, null.ok = TRUE)
   # subset: irtmodel
   checkmate::assert_subset(irtmodel, choices = c("1PL", "2PL", "PCM", "PCM2","RSM",
                                                  "GPCM", "2PL.groups", "GPCM.design", "3PL"))
 
+  # data frame: qMatrix
+  checkQmatrixConsistency(qMatrix)
+
   #' assert vector:
-  #' id, DIF.var, HG.var, group.var, weight.var, schooltype.var
-  lapply(c(id, DIF.var), checkmate::assert_vector, len = 1)
+  #' DIF.var, HG.var, group.var, weight.var, schooltype.var
+  checkmate::assert_vector(DIF.var, len = 1)
   lapply(c(HG.var, group.var, weight.var), checkmate::assert_vector, null.ok = TRUE)
   checkmate::assert_vector(schooltype.var, len = 1, null.ok = TRUE)
 
@@ -92,8 +89,8 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
 
   # arguments specific to `tam`:
   if(software == "tam"){
-    # character: dir
-    checkmate::assert_character(dir, len = 1, null.ok = TRUE)
+    # character: dir, analysis.name
+    lapply(c(dir, analysis.name), checkmate::assert_character, len = 1, null.ok = TRUE)
     # character via match.arg: pvMethod, constraints
     pvMethod <- match.arg(arg = pvMethod, choices = c("regular", "bayesian"))
 
@@ -112,7 +109,6 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
 
     lapply(c(guessMat[,1], est.slopegroups[,1], fixSlopeMat[,1]), checkmate::assert_character)
     lapply(c(guessMat[,2], est.slopegroups[,2], fixSlopeMat[,2]), checkmate::assert_numeric)
-    # increment.factor, fac.oldxsi ?
   }
 
 ### function -------------------------------------------------------------------
