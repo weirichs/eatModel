@@ -277,14 +277,22 @@ correlationFromRes <- function(resultsObj, digits = NULL){
 
 ### not called  ----------------------------------------------------------------
 
-wleRelFromRes <- function(resultsObj) {
-  ret <- resultsObj[intersect(which(resultsObj[,"derived.par"] == "rel"), which(resultsObj[,"par"] == "wle")),c("model", "group", "value")]
+wleRelFromRes <- function(resultsObj){
+  checkmate::assert_data_frame(resultsObj)
+  #
+  ret <- resultsObj[intersect(which(resultsObj[,"derived.par"] == "rel"),
+                              which(resultsObj[,"par"] == "wle")),
+                    c("model", "group", "value")]
   colnames(ret) <- car::recode(colnames(ret), "'value'='rel'; 'group'='domain'")
   return(ret)}
 
 ### not called  ----------------------------------------------------------------
 
-eapRelFromRes <- function(resultsObj) {
-  ret <- resultsObj[intersect(which(resultsObj[,"derived.par"] == "rel"), which(resultsObj[,"par"] == "eap")),c("model", "group", "value")]
+eapRelFromRes <- function(resultsObj){
+  checkmate::assert_data_frame(resultsObj)
+  #
+  ret <- resultsObj[intersect(which(resultsObj[,"derived.par"] == "rel"),
+                              which(resultsObj[,"par"] == "eap")),
+                    c("model", "group", "value")]
   colnames(ret) <- car::recode(colnames(ret), "'value'='rel'; 'group'='domain'")
   return(ret)}
