@@ -89,6 +89,10 @@ get.wle <- function(file){
 ### "dif.term" definiert dabei die Variable, nach der ggf. DIF-Analysen ausgelesen werden sollen, z.B. "item*sex". Wird "dif.term" nicht
 ### spezifiziert, werden keine DIF-Daten ausgegeben.
 get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.dif.bound = 0.3, p.value = 0.9) {
+  checkmate::assert_file(file)
+  checkmate::assert_logical(split.dif, len = 1)
+  lapply(c(abs.dif.bound, sig.dif.bound, p.value), checkmate::assert_numeric, len = 1)
+  #
   all.output<- list();   all.terms <- NULL                            ### "dif.term" muss nur angegeben werden, wenn DIF-Analysen geschehen sollen.
   input.all <- scan(file,what="character",sep="\n",quiet=TRUE)
   rowToFind <- c("Final Deviance","Total number of estimated parameters")
@@ -173,6 +177,9 @@ get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.d
       results.sel<- data.frame(inp.sel,filename=as.character(file),stringsAsFactors = FALSE)
       sapply(intersect(c("ESTIMATE", "ERROR"), colnames(results.sel)), FUN = function (colx) {if(any(is.na(as.numeric(results.sel[,colx])))) {cat(paste0("'",colx,"' column in Outputfile for term '",all.terms[length(all.terms)],"' in file: '",file,"' does not seem to be a numeric value. Please check!\n"))}})
       if(!missing(dif.term)) {                                    ### Der absolute DIF-Wert ist 2 * "Betrag des Gruppenunterschieds". Fuer DIF muessen ZWEI Kriterien erfuellt sein:
+        checkmate::assert_character(dif.term, len = 1)
+        ind2 <- grep(dif.term, input.all, fixed = TRUE)
+        assert_numeric(ind2, len = 1)
         if(all.terms[length(all.terms)] == dif.term) {           ### Der absolute DIF-Wert muss groesser als 'abs.dif.bound' (z.B. 0.6) und zugleich signifikant groesser als 'sig.dif.bound' (z.B. 0.3) sein
           cat(paste("Treat '",all.terms[length(all.terms)],"' as DIF TERM.\n",sep=""))
           results.sel <- data.frame(results.sel,abs.dif = 2*results.sel$ESTIMATE,stringsAsFactors=FALSE)
