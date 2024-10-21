@@ -10,11 +10,10 @@ equat1pl<- function(results, prmNorm, item = NULL, domain = NULL, testlet = NULL
   method     <- match.arg(method)
 
   # data frame (from getResults() or df with parameters of focus group)
-  checkmate::assert_data_frame(results)
+  results<- eatTools::makeDataFrame(results)
   lapply(c(itemF, domainF, testletF, valueF), checkmate::assert_vector, null.ok = TRUE)
 
-  # data frame with normed anchor item parameters
-  checkmate::assert_data_frame(prmNorm, min.cols = 2)
+  # columns for data frame 'prmNorm' with normed anchor item parameters
   lapply(c(item, domain, testlet, value), checkmate::assert_vector, null.ok = TRUE)
 
   checkmate::assert_numeric(difBound, len = 1)
