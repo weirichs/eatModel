@@ -59,21 +59,28 @@ wleFromRes <- function(resultsObj, idVarName = NULL, verbose=TRUE) {
 
 ### called by getRestuls(), transformToBista() and plotICC() -------------------
 
-pvFromRes  <- function ( resultsObj, toWideFormat = TRUE, idVarName = NULL, verbose=TRUE) {
-  pvRow<- intersect( which(resultsObj[,"par"] == "pv"),which(resultsObj[,"indicator.group"] == "persons"))
-  if ( length ( pvRow ) == 0 ) {
+pvFromRes <- function(resultsObj, toWideFormat = TRUE, idVarName = NULL, verbose=TRUE) {
+  checkmate::assert_data_frame(resultsObj)
+  checkmate::assert_character(idVarName, null.ok = TRUE)
+  lapply(c(toWideFormat, verbose), checkmate::assert_logical, len = 1)
+  #
+  pvRow <- intersect(which(resultsObj[,"par"] == "pv"),
+                     which(resultsObj[,"indicator.group"] == "persons"))
+  if(length(pvRow) == 0){
     warning("'resultsObj' does not contain any pv values.")
-    return ( NULL )
+    return(NULL)
   }  else  {
     sel  <- resultsObj[pvRow, ]
-    id   <- unique(resultsObj[intersect(which(resultsObj[,"type"] == "tech"), which(resultsObj[,"par"] == "ID")),"derived.par"])
+    id   <- unique(resultsObj[intersect(which(resultsObj[,"type"] == "tech"),
+                                        which(resultsObj[,"par"] == "ID")),"derived.par"])
     id   <- getIdVarName(id, idVarName, verbose=verbose)
     if (toWideFormat == TRUE ) {
-      sel  <- do.call("rbind", by(sel, INDICES = sel[,c("model","group")], FUN = function ( gr ) {
-        res  <- reshape2::dcast ( gr , model+var1~derived.par, value.var = "value")
+      sel  <- do.call("rbind", by(sel, INDICES = sel[,c("model","group")], FUN = function(gr){
+        res  <- reshape2::dcast(gr, model+var1~derived.par, value.var = "value")
         colnames(res)[2] <- id
         weg  <- match(c("model", id), colnames(res))
-        res  <- data.frame ( res[,c("model", id)], dimension = as.character(gr[1,"group"]), res[,-weg,drop=FALSE], stringsAsFactors = FALSE)
+        res  <- data.frame(res[,c("model", id)], dimension = as.character(gr[1,"group"]),
+                           res[,-weg,drop=FALSE], stringsAsFactors = FALSE)
         return(res)}))
     }  else  {
       sel  <- sel[,c("model", "var1", "group", "derived.par", "value")]
