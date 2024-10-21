@@ -60,19 +60,27 @@ get.plausible <- function(file, quiet = FALSE, forConquestResults = FALSE){
 
 ### called by getConquestWles --------------------------------------------------
 
-get.wle <- function(file)      {
+get.wle <- function(file){
+  checkmate::assert_file(file)
+  #
   input <- eatTools::crop(scan(file, what = "character", sep = "\n", quiet = TRUE))
   input <- strsplit(input," +")
   n.spalten <- max ( sapply(input,FUN=function(ii){ length(ii) }) )
   n.wle <- floor((n.spalten-1) / 4)
-  input <- suppressWarnings(eatTools::asNumericIfPossible(data.frame( matrix( t( sapply(input,FUN=function(ii){ ii[1:n.spalten] }) ),length(input),byrow = FALSE), stringsAsFactors = FALSE), force.string = FALSE))
+  input <- suppressWarnings(eatTools::asNumericIfPossible(data.frame(
+    matrix(t(sapply(input,FUN=function(ii){ ii[1:n.spalten] }) ),length(input),
+           byrow = FALSE), stringsAsFactors = FALSE), force.string = FALSE))
   valid <- na.omit(input)
   cat(paste("Found valid WLEs of ", nrow(valid)," person(s) for ", n.wle, " dimension(s).\n",sep=""))
-  if (nrow(valid) != nrow(input)) { cat(paste("    ",nrow(input)-nrow(valid)," persons with missings on at least one latent dimension.\n",sep="")) }
-  namen1<- c(rep ( x = c("n.solved", "n.total"), times = n.wle), rep ( x = c("wle", "std.wle"), times = n.wle))
+  if(nrow(valid) != nrow(input)){cat(paste("    ", nrow(input)-nrow(valid),
+                                           " persons with missings on at least one latent dimension.\n",
+                                           sep="")) }
+  namen1<- c(rep ( x = c("n.solved", "n.total"), times = n.wle),
+             rep(x = c("wle", "std.wle"), times = n.wle))
   namen2<- rep(rep ( paste(".", 1:n.wle, sep=""), each = 2),2)
   colnames(valid)[(ncol(valid)-length(namen2)):1] <- c("ID","case")[1:(ncol(valid)-length(namen2))]
-  colnames(valid)[(ncol(valid)-length(namen2)+1):ncol(valid)] <- paste(namen1,namen2,sep="")
+  colnames(valid)[(ncol(valid)-length(namen2)+1):ncol(valid)] <- paste(namen1,namen2,
+                                                                       sep="")
   return(valid)}
 
 ### called by getConquestResults -----------------------------------------------
