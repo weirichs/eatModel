@@ -92,20 +92,26 @@ pvFromRes <- function(resultsObj, toWideFormat = TRUE, idVarName = NULL, verbose
 
 ### called by getRestuls(), equat1pl(), transformToBista() and prepareAndCheckEatModelObject()
 
-itemFromRes<- function ( resultsObj ) {
-  res <- do.call(plyr::rbind.fill, by ( data = resultsObj, INDICES = resultsObj[,"model"], FUN = function ( mod ) {
-    sel  <- mod[intersect( which(mod[,"par"] %in% c("est", "estSlope", "Nvalid", "itemP", "ptBis", "itemDiscrim", "offset")),which(mod[,"indicator.group"] == "items")),]
+itemFromRes<- function(resultsObj){
+  checkmate::assert_data_frame(resultsObj)
+  #
+  res <- do.call(plyr::rbind.fill, by(data = resultsObj, INDICES = resultsObj[,"model"],
+                                      FUN = function(mod){
+    sel <- mod[intersect(which(mod[,"par"] %in% c("est", "estSlope", "Nvalid", "itemP", "ptBis", "itemDiscrim", "offset")),
+                         which(mod[,"indicator.group"] == "items")),]
     if (nrow(sel)==0) {
       return(NULL)
     }  else  {
-      isDif<- intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "DIF.var"))
-      if ( length( isDif ) > 0 ) {
-        vars     <- mod[intersect(which(mod[,"type"] == "tech"),which(mod[,"par"] == "variablen")),"derived.par"]
+      isDif <- intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "DIF.var"))
+      if(length(isDif) > 0) {
+        vars     <- mod[intersect(which(mod[,"type"] == "tech"),
+                                  which(mod[,"par"] == "variablen")),"derived.par"]
         itemList <- do.call("rbind", lapply ( vars, FUN = function ( v ) {
           ind <- grep( paste0("_",v,"_"), sel[,"var1"])
           it  <- sort ( unique ( sel[ind,"var1"]))
           if(length(it)>2) {
-            warning(paste0("DIF variable '",mod[isDif,"derived.par"],"' seems to have more than two categories. To date, this is not supported by 'eatModel'."))
+            warning(paste0("DIF variable '",mod[isDif,"derived.par"],
+                           "' seems to have more than two categories. To date, this is not supported by 'eatModel'."))
           }
           return ( data.frame ( item = v, dif = it[1], weg = it[length(it)] , stringsAsFactors = FALSE) ) }))
         weg      <- eatTools::whereAre ( itemList[,"weg"], sel[,"var1"], verbose=FALSE)
@@ -114,32 +120,43 @@ itemFromRes<- function ( resultsObj ) {
         selForDif<- sel[forDif, ]
         sel      <- sel[-c(weg, forDif) , ]
         sel      <- sel[which ( sel[,"par"] != "ptBis" ) , ]
-        selDIF   <- do.call("rbind", by(selForDif, INDICES = selForDif[,"group"], FUN = function ( gr ) {
+        selDIF   <- do.call("rbind", by(selForDif, INDICES = selForDif[,"group"], FUN = function(gr){
           res  <- reshape2::dcast ( gr , model+var1~par+derived.par, value.var = "value")
           mat  <- lapply( vars, FUN = function ( v ) { grep(paste0("_",v,"_"), res[,"var1"])})
           stopifnot (  all ( sapply(mat, length) == 1) )
           res[unlist(mat),"item"]  <- vars
           colnames(res) <- car::recode ( colnames(res) , "'est_infit'='infitDif'; 'est_se'='seDif'; 'est_NA'='estDif'")
           res[,"absDif"]<- abs ( res[,"estDif"]  * 2 )
-          pval <- intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")), which(mod[,"derived.par"] == "p.value"))
+          pval <- intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")),
+                            which(mod[,"derived.par"] == "p.value"))
           stopifnot (length(pval) == 1)
           pval <- mod[pval, "value"]
-          adb  <- mod[intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")), which(mod[,"derived.par"] == "abs.dif.bound")),"value"]
-          sdb  <- mod[intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")), which(mod[,"derived.par"] == "sig.dif.bound")),"value"]
+          adb  <- mod[intersect(intersect(which(mod[,"type"] == "tech"),
+                                          which(mod[,"par"] == "dif")),
+                                which(mod[,"derived.par"] == "abs.dif.bound")),"value"]
+          sdb  <- mod[intersect(intersect(which(mod[,"type"] == "tech"),
+                                          which(mod[,"par"] == "dif")),
+                                which(mod[,"derived.par"] == "sig.dif.bound")),"value"]
           res[,paste("CI__", pval ,"__lb",sep="")] <- res[,"absDif"] - 2*abs(qnorm(0.5*(1-pval))) * res[,"seDif"]
           res[,paste("CI__", pval ,"__ub",sep="")] <- res[,"absDif"] + 2*abs(qnorm(0.5*(1-pval))) * res[,"seDif"]
-          res  <- data.frame ( res, do.call("rbind", apply(res[,c("absDif", "seDif", paste("CI__",pval,"__lb",sep=""), paste("CI__",pval,"__ub",sep=""))], MARGIN = 1, FUN = function ( d ) {
+          res  <- data.frame ( res, do.call("rbind", apply(res[,c("absDif", "seDif",
+                                                                  paste("CI__",pval,"__lb",sep=""),
+                                                                  paste("CI__",pval,"__ub",sep=""))],
+                                                           MARGIN = 1, FUN = function(d){
             check <- all ( !is.na(d) )
             if(check == TRUE) {
               crit1 <- d[["absDif"]] > adb
-              crit2 <- !all ( sort ( c ( d[[paste("CI__",pval,"__lb",sep="")]], sdb , d[[paste("CI__",pval,"__ub",sep="")]]), index.return = TRUE)$ix == 1:3 )
+              crit2 <- !all(sort(c(d[[paste("CI__",pval,"__lb",sep="")]], sdb,
+                                   d[[paste("CI__",pval,"__ub",sep="")]]), index.return = TRUE)$ix == 1:3)
               if ( crit1 == TRUE & crit2 == TRUE) { res <- 1 }  else { res <- 0}
               ets   <- "A"
               ets1  <- d[["absDif"]] > 0.43
-              ets2  <- !all ( sort ( c ( d[[paste("CI__",pval,"__lb",sep="")]], 0 , d[[paste("CI__",pval,"__ub",sep="")]]), index.return = TRUE)$ix == 1:3 )
+              ets2  <- !all(sort(c(d[[paste("CI__",pval,"__lb",sep="")]], 0 ,
+                                   d[[paste("CI__",pval,"__ub",sep="")]]), index.return = TRUE)$ix == 1:3 )
               if ( ets1 == TRUE & ets2 == TRUE) { ets <- "B" }
               etsC1 <- d[["absDif"]] > 0.64
-              etsC2 <- !all ( sort ( c ( d[[paste("CI__",pval,"__lb",sep="")]], 0.43 , d[[paste("CI__",pval,"__ub",sep="")]]), index.return = TRUE)$ix == 1:3 )
+              etsC2 <- !all(sort(c(d[[paste("CI__",pval,"__lb",sep="")]], 0.43,
+                                   d[[paste("CI__",pval,"__ub",sep="")]]), index.return = TRUE)$ix == 1:3 )
               if ( etsC1 == TRUE & etsC2 == TRUE) { ets <- "C" }
               res   <- data.frame(difIndex = res, ETS = ets )
             }  else  {
@@ -157,21 +174,27 @@ itemFromRes<- function ( resultsObj ) {
         }  else  {
           res  <- reshape2::dcast ( gr , model+var1~par+derived.par, value.var = "value")
         }
-        colnames(res) <- car::recode ( colnames(res) , "'var1'='item'; 'est_infit'='infit'; 'est_outfit'='outfit'; 'est_se'='se'; 'est_NA'='est'; 'estSlope_se'='seSlope'; 'estSlope_NA'='estSlope'; 'offset_NA'='estOffset'; 'Nvalid_NA'='Nvalid'; 'ptBis_NA'='ptBis'; 'itemP_NA'='itemP'; 'itemDiscrim_NA'='itemDiscrim'")
-        cols <- c("Nvalid", "itemP", "itemDiscrim", "est", "estOffset", "se", "estSlope", "seSlope", "infit","outfit", "ptBis")
+        colnames(res) <- car::recode(colnames(res),"'var1'='item'; 'est_infit'='infit'; 'est_outfit'='outfit'; 'est_se'='se'; 'est_NA'='est'; 'estSlope_se'='seSlope'; 'estSlope_NA'='estSlope'; 'offset_NA'='estOffset'; 'Nvalid_NA'='Nvalid'; 'ptBis_NA'='ptBis'; 'itemP_NA'='itemP'; 'itemDiscrim_NA'='itemDiscrim'")
+        cols <- c("Nvalid", "itemP", "itemDiscrim", "est", "estOffset", "se",
+                  "estSlope", "seSlope", "infit","outfit", "ptBis")
         drin1<- which(cols %in% colnames(res))
         drin2<- grep("ptBis_", colnames(res))
         drin3<- grep("itemP", colnames(res))
-        res  <- data.frame ( res[,c("model", "item")], dimension = as.character(gr[1,"group"]), res[,c(cols[drin1], colnames(res)[drin2] , setdiff (colnames(res)[drin3], cols[drin1])),drop=FALSE], stringsAsFactors = FALSE)
+        res  <- data.frame(res[,c("model", "item")], dimension = as.character(gr[1,"group"]),
+                           res[,c(cols[drin1], colnames(res)[drin2],
+                                  setdiff(colnames(res)[drin3], cols[drin1])),drop=FALSE],
+                           stringsAsFactors = FALSE)
         return(res)}))
       if ( length( isDif ) > 0 ) {
         ciCo<- colnames(selDIF)[grep("^CI__", colnames(selDIF))]
-        sel <- merge(sel, selDIF[,c("item", "model", "estDif", "seDif", "infitDif", "absDif", ciCo, "difIndex", "ETS")], by=c("item","model"), all=TRUE)
+        sel <- merge(sel, selDIF[,c("item", "model", "estDif", "seDif", "infitDif",
+                                    "absDif", ciCo, "difIndex", "ETS")],
+                     by=c("item","model"), all=TRUE)
       }
       return(sel)
     }
   }))
-  return (res )}
+  return(res)}
 
 ### called by getRestuls() and addQ3() -----------------------------------------
 
