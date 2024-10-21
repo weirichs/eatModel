@@ -32,9 +32,15 @@ eapFromRes <- function (resultsObj, idVarName = NULL, verbose = TRUE){
 
 ### called by getRestuls() and plotICC() ---------------------------------------
 
-wleFromRes <- function ( resultsObj , idVarName = NULL, verbose=TRUE) {
-  wleRo<- setdiff(intersect( which(resultsObj[,"par"] %in% c("wle","NitemsSolved", "NitemsTotal")),which(resultsObj[,"indicator.group"] == "persons")), which(resultsObj[,"derived.par"] == "rel"))
-  if(length(wleRo) == 0 ) {
+wleFromRes <- function(resultsObj, idVarName = NULL, verbose=TRUE) {
+  checkmate::assert_data_frame(resultsObj)
+  checkmate::assert_character(idVarName, null.ok = TRUE)
+  checkmate::assert_logical(verbose, len = 1)
+  #
+  wleRo <- setdiff(intersect(which(resultsObj[,"par"] %in% c("wle","NitemsSolved", "NitemsTotal")),
+                             which(resultsObj[,"indicator.group"] == "persons")),
+                   which(resultsObj[,"derived.par"] == "rel"))
+  if(length(wleRo) == 0){
     warning("'resultsObj' does not contain any WLE values.")
     return(NULL)
   }  else  {
