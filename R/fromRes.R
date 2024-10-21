@@ -198,9 +198,13 @@ itemFromRes<- function(resultsObj){
 
 ### called by getRestuls() and addQ3() -----------------------------------------
 
-q3FromRes<- function ( resultsObj, out = c("wide", "long" ), triangular = FALSE ) {
+q3FromRes <- function(resultsObj, out = c("wide", "long"), triangular = FALSE){
+  checkmate::assert_data_frame(resultsObj)
+  out <- match.arg(out, choices = c("wide", "long"))
+  checkmate::assert_logical(triangular, len = 1)
+  #
   out   <- match.arg(arg = out, choices = c("wide", "long" ))
-  selM  <- by(data = resultsObj, INDICES = resultsObj[,"model"], FUN = function ( mr ) {
+  selM  <- by(data = resultsObj, INDICES = resultsObj[,"model"], FUN = function(mr){
     sel  <- mr[which(mr[,"par"] == "q3"),]
     if ( nrow(sel)>0) {
       if ( out == "wide") {
