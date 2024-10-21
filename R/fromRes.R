@@ -258,7 +258,10 @@ regcoefFromRes <- function (resultsObj, digits = NULL){
 
 ### not called  ----------------------------------------------------------------
 
-correlationFromRes <- function (resultsObj, digits = NULL){
+correlationFromRes <- function(resultsObj, digits = NULL){
+  checkmate::assert_data_frame(resultsObj)
+  checkmate::assert_numeric(digits, len = 1, null.ok = TRUE)
+  #
   corRo<- which(resultsObj[,"par"] == "correlation")
   if(length(corRo)==0) {
     cat("No correlation coefficients found in results object.\n")
