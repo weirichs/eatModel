@@ -3,23 +3,32 @@
 
 ### called by getRestuls() and plotICC() ---------------------------------------
 
-eapFromRes <- function ( resultsObj, idVarName = NULL, verbose = TRUE ) {
-  eapRo<- setdiff(intersect( which(resultsObj[,"par"] == "eap"),which(resultsObj[,"indicator.group"] == "persons")), which(resultsObj[,"derived.par"] == "rel"))
-  id   <- unique(resultsObj[intersect(which(resultsObj[,"type"] == "tech"), which(resultsObj[,"par"] == "ID")),"derived.par"])
-  id   <- getIdVarName(id, idVarName, verbose=verbose)
-  if ( length ( eapRo ) == 0 ) {
+eapFromRes <- function (resultsObj, idVarName = NULL, verbose = TRUE){
+  checkmate::assert_data_frame(resultsObj)
+  checkmate::assert_character(idVarName, null.ok = TRUE)
+  checkmate::assert_logical(verbose, len = 1)
+  #
+  eapRo <- setdiff(intersect(which(resultsObj[,"par"] == "eap"),
+                             which(resultsObj[,"indicator.group"] == "persons")),
+                   which(resultsObj[,"derived.par"] == "rel"))
+  id <- unique(resultsObj[intersect(which(resultsObj[,"type"] == "tech"),
+                                    which(resultsObj[,"par"] == "ID")),"derived.par"])
+  id <- getIdVarName(id, idVarName, verbose=verbose)
+  if(length(eapRo) == 0){
     warning("'resultsObj' does not contain any eap values.")
-    return ( NULL )
+    return(NULL)
   }  else  {
     sel  <- resultsObj[eapRo,]
     sel  <- do.call("rbind", by(sel, INDICES = sel[,c("model", "group")], FUN = function ( gr ) {
       res  <- reshape2::dcast ( gr , model+group+var1~derived.par, value.var = "value")
       colnames(res)[-c(1:2)] <- c(id, "EAP", "SE.EAP")
       weg  <- match(c("model", id), colnames(res))
-      res  <- data.frame ( res[,c("model", id)], dimension = as.character(gr[1,"group"]), res[,-weg,drop=FALSE], stringsAsFactors = FALSE)
+      res  <- data.frame(res[,c("model", id)], dimension = as.character(gr[1,"group"]),
+                         res[,-weg,drop=FALSE], stringsAsFactors = FALSE)
       return(res)}))
     return(sel)
-  }  }
+  }
+}
 
 ### called by getRestuls() and plotICC() ---------------------------------------
 
