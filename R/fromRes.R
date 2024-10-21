@@ -219,10 +219,11 @@ q3FromRes <- function(resultsObj, out = c("wide", "long"), triangular = FALSE){
 
 ### called by transformToBista() and other fromRes-functions  ------------------
 
-getIdVarName <- function ( id, idVarName, verbose=TRUE) {
-  if (length( id ) == 0 ) {
-    if ( is.null(idVarName)) { new <- "idstud"} else { new <- idVarName}
-    if(verbose){warning(paste0("Cannot identify student identifier variable (possibly because 'resultsObj' was created by an older version of 'eatModel'). student id variable will be defaulted to '",new,"'."))}
+getIdVarName <- function(id, idVarName, verbose=TRUE){
+  if(length(id) == 0){
+    if(is.null(idVarName)) { new <- "idstud"} else { new <- idVarName}
+    if(verbose){warning(paste0("Cannot identify student identifier variable (possibly because 'resultsObj' was created by an older version of 'eatModel'). student id variable will be defaulted to '",
+                               new, "'."))}
     id <- new
   }
   return(id)}
@@ -230,6 +231,9 @@ getIdVarName <- function ( id, idVarName, verbose=TRUE) {
 ### not called  ----------------------------------------------------------------
 
 regcoefFromRes <- function (resultsObj, digits = NULL){
+  checkmate::assert_data_frame(resultsObj)
+  checkmate::assert_numeric(digits, len = 1, null.ok = TRUE)
+  #
   regRo<- which(resultsObj[,"type"] == "regcoef")
   if(length(regRo)==0) {
     cat("No regression coefficients found in results object.\n")
@@ -240,11 +244,13 @@ regcoefFromRes <- function (resultsObj, digits = NULL){
       m[,"derived.par"] <- car::recode(m[,"derived.par"], "NA='est'")
       mw <- reshape2::dcast(m, var1~derived.par, value.var="value")
       mw[,"p"]   <- 2*(1-pnorm(abs(mw[,"est"] / mw[,"se"])))
-      mw[,"sig"] <- eatTools::num.to.cat(mw[,"p"], cut.points = c(0.001, 0.01, 0.05, 0.1), cat.values = c("***", "**", "**", ".", ""))
+      mw[,"sig"] <- eatTools::num.to.cat(mw[,"p"], cut.points = c(0.001, 0.01, 0.05, 0.1),
+                                         cat.values = c("***", "**", "**", ".", ""))
       colnames(mw)[1] <- "parameter"
       if(!is.null(digits)) {mw <- eatTools::roundDF(mw, digits =digits)}
       return(mw)}, simplify=FALSE)
-    nam<- eatTools::facToChar(expand.grid(attr(re, "dimnames")[["model"]], attr(re, "dimnames")[["group"]]))
+    nam<- eatTools::facToChar(expand.grid(attr(re, "dimnames")[["model"]],
+                                          attr(re, "dimnames")[["group"]]))
     names(re) <- paste0("model: '",nam[,1],"', group: '",nam[,2],"'")
     re <- re[lengths(re) != 0]
     return(re)
