@@ -3,7 +3,7 @@ multiEquatError <- function (x1, x2, x3, difBound = 1, dependentDIF =FALSE, test
   lapply(list(x1, x2, x3), checkmate::assert_data_frame, min.cols = 2)
   checkmate::assert_numeric(difBound, len = 1)
   lapply(c(dependentDIF, verbose), checkmate::assert_logical, len = 1)
-  checkmate::assert_data_frame(testletStr, ncols = 2, col.names = "named")
+  checkmate::assert_data_frame(testletStr, ncols = 2, col.names = "named", null.ok = TRUE)
   #
   if("derived.par" %in% colnames(x1)){
     obj  <- prepareAndCheckEatModelObject(liste, difBound=difBound, verbose=verbose)
