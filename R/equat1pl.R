@@ -1,7 +1,32 @@
-equat1pl<- function ( results , prmNorm , item = NULL, domain = NULL, testlet = NULL, value = NULL, excludeLinkingDif = TRUE, difBound = 1, iterativ = FALSE, method = c("Mean.Mean", "Haebara", "Stocking.Lord", "robust", "Haberman"),
-                      itemF = NULL, domainF = NULL, testletF = NULL, valueF = NULL, estimation=c("OLS", "BSQ", "HUB", "MED", "LTS", "L1", "L0"), b_trim=Inf, lts_prop=.5) {
+equat1pl<- function(results, prmNorm, item = NULL, domain = NULL, testlet = NULL,
+                    value = NULL, excludeLinkingDif = TRUE, difBound = 1, iterativ = FALSE,
+                    method = c("Mean.Mean", "Haebara", "Stocking.Lord", "robust", "Haberman"),
+                    itemF = NULL, domainF = NULL, testletF = NULL, valueF = NULL,
+                    estimation=c("OLS", "BSQ", "HUB", "MED", "LTS", "L1", "L0"),
+                    b_trim=Inf, lts_prop=.5) {
+
+### checking/assering the arguments --------------------------------------------
   estimation <- match.arg(estimation)
   method     <- match.arg(method)
+
+  # data frame (from getResults() or df with parameters of focus group)
+  checkmate::assert_data_frame(results)
+  lapply(c(itemF, domainF, testletF, valueF), checkmate::assert_vector, null.ok = TRUE)
+
+  # data frame with normed anchor item parameters
+  checkmate::assert_data_frame(prmNorm, min.cols = 2)
+  lapply(c(item, domain, testlet, value), checkmate::assert_vector, null.ok = TRUE)
+
+  checkmate::assert_numeric(difBound, len = 1)
+
+  # logicals
+  lapply(c(excludeLinkingDif, iterativ), checkmate::assert_logical, len = 1)
+
+  # if method = "Haberman"
+  lapply(c(b_trim, lts_prop), checkmate::assert_numeric, len = 1)
+
+### function -------------------------------------------------------------------
+
   isRunM<- all(c("model" , "source" , "var1" , "var2" , "type" , "indicator.group", "group", "par", "derived.par", "value") %in% names(results))
   if ( isRunM) {
     nMods <- table(results[,"model"])
