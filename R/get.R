@@ -4,14 +4,19 @@
 
 ### called by getConquestPVs ---------------------------------------------------
 
-get.plausible <- function(file, quiet = FALSE, forConquestResults = FALSE)  {
+get.plausible <- function(file, quiet = FALSE, forConquestResults = FALSE){
+  checkmate::assert_file(file)
+  lapply(c(quiet, forConquestResults), checkmate::assert_logical, len = 1)
+  #
   input           <- scan(file,what="character",sep="\n",quiet=TRUE)
   input           <- strsplit(eatTools::crop(gsub("-"," -",input) ) ," +")
   n.spalten       <- max ( sapply(input,FUN=function(ii){ length(ii) }) )
-  input           <- data.frame( matrix( t( sapply(input,FUN=function(ii){ ii[1:n.spalten] }) ),length(input), byrow = FALSE), stringsAsFactors = FALSE)
+  input           <- data.frame( matrix( t( sapply(input,FUN=function(ii){ ii[1:n.spalten] }) ),
+                                         length(input), byrow = FALSE), stringsAsFactors = FALSE)
   pv.pro.person   <- sum (input[-1,1]==1:(nrow(input)-1) )
   n.person        <- nrow(input)/(pv.pro.person+3)
-  weg             <- c(1, as.numeric( sapply(1:n.person,FUN=function(ii){((pv.pro.person+3)*ii-1):((pv.pro.person+3)*ii+1)}) ) )
+  weg             <- c(1, as.numeric(sapply(1:n.person, FUN=function(ii){
+                        ((pv.pro.person+3)*ii-1):((pv.pro.person+3)*ii+1) })))
   cases           <- input[(1:n.person)*(pv.pro.person+3)-(pv.pro.person+2),1:2]
   input.sel       <- input[-weg,]
   n.dim <- dim(input.sel)[2]-1
@@ -28,15 +33,22 @@ get.plausible <- function(file, quiet = FALSE, forConquestResults = FALSE)  {
   }
   input.melt      <- reshape2::melt(input.sel, id.vars = c("ID", "PV.Nr") , stringsAsFactors = FALSE)
   input.melt[,"value"] <- as.numeric(input.melt[,"value"])
-  input.wide      <- data.frame( case = gsub(" ", "0",formatC(as.character(1:n.person),width = nchar(n.person))) , reshape2::dcast(input.melt, ... ~ variable + PV.Nr) , stringsAsFactors = FALSE)
-  colnames(input.wide)[-c(1:2)] <- paste("pv.", paste( rep(1:pv.pro.person,n.dim), rep(1:n.dim, each = pv.pro.person), sep = "."), sep = "")
-  weg.eap         <- (1:n.person)*(pv.pro.person+3) - (pv.pro.person+2)
+  input.wide      <- data.frame( case = gsub(" ", "0",formatC(as.character(1:n.person),
+                                                              width = nchar(n.person))),
+                                 reshape2::dcast(input.melt, ... ~ variable + PV.Nr),
+                                 stringsAsFactors = FALSE)
+  colnames(input.wide)[-c(1:2)] <- paste("pv.", paste(rep(1:pv.pro.person,n.dim),
+                                                      rep(1:n.dim, each = pv.pro.person),
+                                                      sep = "."), sep = "")
+  weg.eap      <- (1:n.person)*(pv.pro.person+3) - (pv.pro.person+2)
   input.eap    <- input[setdiff(weg,weg.eap),]
   input.eap    <- na.omit(input.eap[,-ncol(input.eap),drop=FALSE])
   stopifnot(ncol(input.eap) ==  n.dim)
-  input.eap    <- lapply(1:n.dim, FUN=function(ii) {matrix(unlist(as.numeric(input.eap[,ii])), ncol=2,byrow = TRUE)})
+  input.eap    <- lapply(1:n.dim, FUN=function(ii) {matrix(unlist(as.numeric(input.eap[,ii])),
+                                                           ncol=2,byrow = TRUE)})
   input.eap    <- do.call("data.frame",input.eap)
-  colnames(input.eap) <- paste(rep(c("eap","se.eap"),n.dim), rep(paste("Dim",1:n.dim,sep="."),each=2),sep="_")
+  colnames(input.eap) <- paste(rep(c("eap","se.eap"),n.dim),
+                               rep(paste("Dim",1:n.dim,sep="."),each=2),sep="_")
   PV           <- data.frame(input.wide,input.eap, stringsAsFactors = FALSE)
   numericColumns <- grep("pv.|eap_|case",colnames(PV))
   if(is.na.ID == TRUE) {PV$ID <- NA}
