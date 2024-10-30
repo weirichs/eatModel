@@ -309,8 +309,8 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
   }
 ### sind die responses numerisch bzw. stehen da Ziffern drin? (notfalls sowas wie as.character(1) )
   cols    <- lapply(allNam[["variablen"]], FUN = function (v) {
-    zahl   <- grep("[[:digit:]]", dat[,v])                     ### sind das alles Ziffern? (auch wenn die Spalten als "character" klassifiziert sind)
-    noZahl <- setdiff(1:length(dat[,v]), zahl)
+    zahl   <- grep("[[:digit:]]", na.omit(dat[,v]))                     ### sind das alles Ziffern? (auch wenn die Spalten als "character" klassifiziert sind)
+    noZahl <- setdiff(1:length(na.omit(dat[,v])), zahl)
     if (length( noZahl ) > 0 ) {cli::cli_warn(c(paste0("Found ", length(noZahl), " non-numeric values in the item responses for item '",v,"'"),"i" = paste0("Invalid response values: '", paste(unique(dat[noZahl,v]), collapse="', '")), "i" ="These values will be treated as missing responses"))}})
   klasse  <- unlist( lapply(dat[,allNam[["variablen"]], drop = FALSE], class) )
   if(any(unlist(lapply(dat[,allNam[["variablen"]], drop = FALSE], inherits, what=c("integer", "numeric"))) == FALSE)) {
