@@ -335,14 +335,14 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
   if(length(below) > 0 ) {
     weg  <- createNamenItemsWeg(below, remove = removeMinNperItem)
     namen.items.weg <- c(namen.items.weg, weg[["niw"]])
-    cli::cli_warn(c(paste0(length(below), " testitems(s) with less than ", minNperItem, " valid responses."), "i"=paste0(weg[["mess"]], "'", paste(names(n.mis), collapse="', '"),"'")))
+    cli::cli_warn(c(paste0(length(below), " testitems(s) with less than ", minNperItem, " valid responses."), "i"=paste0(weg[["mess"]], "'", paste(names(below), collapse="', '"),"'")))
   }
 ### identifiziere konstante Items (Items ohne Varianz)
   constant <- which(n.werte == 1)
   if(length(constant) >0) {
     weg             <- createNamenItemsWeg(constant, remove = remove.constant.items)
     namen.items.weg <- c(namen.items.weg, weg[["niw"]])
-    uniqueVal       <- sapply(names(constant), FUN = function (ii) {unique(dat[,ii])})
+    uniqueVal       <- sapply(names(constant), FUN = function (ii) {unique(na.omit(dat[,ii]))})
     nVal            <- sapply(names(constant), FUN = function (ii) {length(which(!is.na(dat[,ii])))})
     cli::cli_warn(c(paste0(length(constant), " testitems(s) are constants. ", weg[["mess"]]), "i"=paste(paste0("Item '", names(constant), "', only value: ", uniqueVal, " occurs: ", nVal, " valid responses."), sep="\n")))
   }
