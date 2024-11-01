@@ -308,16 +308,19 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
     }
   }
 ### sind die responses numerisch bzw. stehen da Ziffern drin? (notfalls sowas wie as.character(1) )
-  cols    <- lapply(allNam[["variablen"]], FUN = function (v) {
-    zahl   <- grep("[[:digit:]]", na.omit(dat[,v]))                     ### sind das alles Ziffern? (auch wenn die Spalten als "character" klassifiziert sind)
-    noZahl <- setdiff(1:length(na.omit(dat[,v])), zahl)
-    if (length( noZahl ) > 0 ) {cli::cli_warn(c(paste0("Found ", length(noZahl), " non-numeric values in the item responses for item '",v,"'"),"i" = paste0("Invalid response values: '", paste(unique(dat[noZahl,v]), collapse="', '")), "i" ="These values will be treated as missing responses"))}})
+  datL    <- eatTools::set.col.type(reshape2::melt(dat, measure.vars = allNam[["variablen"]], id.vars = allNam[["ID"]], na.rm=TRUE),  col.type = list("character" = "value"))
+  zahl    <- grep("[[:digit:]]", datL[,"value"])                        ### sind das alles Ziffern? (auch wenn die Spalten als "character" klassifiziert sind)
+  noZahl  <- setdiff(1:nrow(datL), zahl)
+  if (length( noZahl ) > 0 ) {
+    itemNoZ <- unique(datL[noZahl,"variable"])
+    cli::cli_warn(c(paste0("Found ", length(noZahl), " non-numeric values in ",length(itemNoZ)," of ",length(allNam[["variablen"]])," items:"),"i" = paste0("Items: '", paste( itemNoZ, collapse= "', '"), "'"),"i" = paste0("Non-numeric values: '", paste( unique(datL[noZahl,"value"]), collapse= "', '"), "'")))
+  }
   klasse  <- unlist( lapply(dat[,allNam[["variablen"]], drop = FALSE], class) )
   if(any(unlist(lapply(dat[,allNam[["variablen"]], drop = FALSE], inherits, what=c("integer", "numeric"))) == FALSE)) {
-    warn <- c(unlist(lapply(unique(klasse), FUN = function (kls) {paste0("Item columns of class '",kls, "': '",paste(names(klasse)[which(klasse == kls)], collapse="', '"), "'")})),"All item columns will be transformed to be 'numeric'. Recommend to edit your data manually prior to analysis")
+    warn <- c(unlist(lapply(setdiff(unique(klasse),c("integer", "numeric")), FUN = function (kls) {paste0("Item columns of class '",kls, "': '",paste(names(klasse)[which(klasse == kls)], collapse="', '"), "'")})),"All item columns will be transformed to be 'numeric'. Recommend to edit your data manually prior to analysis")
     names(warn) <- rep("i", length(warn))
     cli::cli_warn(c("Found unexpected class type(s) in item response columns:", warn))
-    for ( uu in allNam[["variablen"]] ) { dat[,uu] <- as.numeric(as.character(dat[,uu]))}
+    suppressWarnings(for ( uu in allNam[["variablen"]] ) { dat[,uu] <- as.numeric(as.character(dat[,uu]))})
   }
   values  <- lapply(dat[,allNam[["variablen"]], drop = FALSE], FUN = function ( ii ) { table(ii)})
   isDichot<- unlist(lapply(values, FUN = function ( vv ) { identical(c("0","1"), names(vv)) }))
@@ -344,7 +347,7 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
     namen.items.weg <- c(namen.items.weg, weg[["niw"]])
     uniqueVal       <- sapply(names(constant), FUN = function (ii) {unique(na.omit(dat[,ii]))})
     nVal            <- sapply(names(constant), FUN = function (ii) {length(which(!is.na(dat[,ii])))})
-    cli::cli_warn(c(paste0(length(constant), " testitems(s) are constants. ", weg[["mess"]]), "i"=paste(paste0("Item '", names(constant), "', only value: ", uniqueVal, " occurs: ", nVal, " valid responses."), sep="\n")))
+    cli::cli_warn(c(paste0(length(constant), " testitems(s) are constants. ", weg[["mess"]]), "i"=paste(paste0("Item '", names(constant), "', only value '", uniqueVal, "' occurs: ", nVal, " valid responses."), sep="\n")))
   }
 ### identifiziere alle Items, die nicht dichotom (="ND") sind
   n.rasch  <- which( !isDichot )                                        ### (aber nicht die, die bereits wegen konstanter Werte aussortiert wurden!)
@@ -368,6 +371,7 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
   }
   options(warn=0)
   return(list(dat=dat,allNam=allNam, namen.items.weg=unique(namen.items.weg)))}
+
 
 ### called by defineModel() ----------------------------------------------------
 
