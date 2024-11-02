@@ -317,7 +317,7 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
   }
   klasse  <- unlist( lapply(dat[,allNam[["variablen"]], drop = FALSE], class) )
   if(any(unlist(lapply(dat[,allNam[["variablen"]], drop = FALSE], inherits, what=c("integer", "numeric"))) == FALSE)) {
-    warn <- c(unlist(lapply(setdiff(unique(klasse),c("integer", "numeric")), FUN = function (kls) {paste0("Item columns of class '",kls, "': '",paste(names(klasse)[which(klasse == kls)], collapse="', '"), "'")})),"All item columns will be transformed to be 'numeric'. Recommend to edit your data manually prior to analysis")
+    warn <- c(unlist(lapply(setdiff(unique(klasse),c("integer", "numeric")), FUN = function (kls) {paste0(length(names(klasse)[which(klasse == kls)])," item columns of class '",kls, "': '",paste(names(klasse)[which(klasse == kls)], collapse="', '"), "'")})),"All item columns will be transformed to be 'numeric'. Recommend to edit your data manually prior to analysis")
     names(warn) <- rep("i", length(warn))
     cli::cli_warn(c("Found unexpected class type(s) in item response columns:", warn))
     suppressWarnings(for ( uu in allNam[["variablen"]] ) { dat[,uu] <- as.numeric(as.character(dat[,uu]))})
