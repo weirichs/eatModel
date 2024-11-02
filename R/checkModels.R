@@ -308,7 +308,7 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
     }
   }
 ### sind die responses numerisch bzw. stehen da Ziffern drin? (notfalls sowas wie as.character(1) )
-  datL    <- eatTools::set.col.type(reshape2::melt(dat, measure.vars = allNam[["variablen"]], id.vars = allNam[["ID"]], na.rm=TRUE),  col.type = list("character" = "value"))
+  datL    <- dplyr::mutate_at(reshape2::melt(dat, measure.vars = allNam[["variablen"]], id.vars = allNam[["ID"]], na.rm=TRUE), .vars = "value", .funs = as.character)
   zahl    <- grep("[[:digit:]]", datL[,"value"])                        ### sind das alles Ziffern? (auch wenn die Spalten als "character" klassifiziert sind)
   noZahl  <- setdiff(1:nrow(datL), zahl)
   if (length( noZahl ) > 0 ) {
@@ -320,7 +320,7 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
     warn <- c(unlist(lapply(setdiff(unique(klasse),c("integer", "numeric")), FUN = function (kls) {paste0(length(names(klasse)[which(klasse == kls)])," item columns of class '",kls, "': '",paste(names(klasse)[which(klasse == kls)], collapse="', '"), "'")})),"All item columns will be transformed to be 'numeric'. Recommend to edit your data manually prior to analysis")
     names(warn) <- rep("i", length(warn))
     cli::cli_warn(c("Found unexpected class type(s) in item response columns:", warn))
-    suppressWarnings(for ( uu in allNam[["variablen"]] ) { dat[,uu] <- as.numeric(as.character(dat[,uu]))})
+    dat  <- dplyr::mutate_at(dat, .vars = allNam[["variablen"]], .funs = eatTools::asNumericIfPossible, force.string = TRUE)
   }
   values  <- lapply(dat[,allNam[["variablen"]], drop = FALSE], FUN = function ( ii ) { table(ii)})
   isDichot<- unlist(lapply(values, FUN = function ( vv ) { identical(c("0","1"), names(vv)) }))
