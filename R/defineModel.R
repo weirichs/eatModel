@@ -87,8 +87,8 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
 
   # arguments specific to `tam`:
   if(software == "tam"){
-    # character: dir, analysis.name
-    lapply(c(dir, analysis.name), checkmate::assert_character, len = 1, null.ok = TRUE)
+    # character: dir
+    checkmate::assert_character(dir, len = 1, null.ok = TRUE)
     # character via match.arg: pvMethod, constraints
     pvMethod <- match.arg(arg = pvMethod, choices = c("regular", "bayesian"))
 
