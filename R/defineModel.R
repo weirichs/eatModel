@@ -68,9 +68,8 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
 
   # arguments specific to `conquest`:
   if(software == "conquest"){
-    # character: dir, analysis.name, conquest.folder, model.statement, export
-    lapply(c(dir, analysis.name),
-           checkmate::assert_character, len = 1)
+    # character: dir, conquest.folder, model.statement, export
+    checkmate::assert_character(dir, len = 1)
     checkmate::assert_character(model.statement, len = 1, null.ok = TRUE)
     checkmate::assert_character(export)
     checkmate::assert_directory(conquest.folder)
