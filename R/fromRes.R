@@ -4,7 +4,7 @@
 ### called by getRestuls() and plotICC() ---------------------------------------
 
 eapFromRes <- function (resultsObj, idVarName = NULL, verbose = TRUE){
-  checkmate::assert_character(idVarName, null.ok = TRUE)
+  checkmate::assert_character(idVarName, null.ok = TRUE, len = 1)
   checkmate::assert_logical(verbose, len = 1)
   #
   eapRo <- setdiff(intersect(which(resultsObj[,"par"] == "eap"),
@@ -32,7 +32,7 @@ eapFromRes <- function (resultsObj, idVarName = NULL, verbose = TRUE){
 ### called by getRestuls() and plotICC() ---------------------------------------
 
 wleFromRes <- function(resultsObj, idVarName = NULL, verbose=TRUE) {
-  checkmate::assert_character(idVarName, null.ok = TRUE)
+  checkmate::assert_character(idVarName, null.ok = TRUE, len = 1)
   checkmate::assert_logical(verbose, len = 1)
   #
   wleRo <- setdiff(intersect(which(resultsObj[,"par"] %in% c("wle","NitemsSolved", "NitemsTotal")),
@@ -58,7 +58,7 @@ wleFromRes <- function(resultsObj, idVarName = NULL, verbose=TRUE) {
 ### called by getRestuls(), transformToBista() and plotICC() -------------------
 
 pvFromRes <- function(resultsObj, toWideFormat = TRUE, idVarName = NULL, verbose=TRUE) {
-  checkmate::assert_character(idVarName, null.ok = TRUE)
+  checkmate::assert_character(idVarName, null.ok = TRUE, len = 1)
   lapply(c(toWideFormat, verbose), checkmate::assert_logical, len = 1)
   #
   pvRow <- intersect(which(resultsObj[,"par"] == "pv"),
