@@ -31,9 +31,8 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
   # list: splitted Models
   checkmate::assert_list(splittedModels, null.ok = TRUE)
   # subset: irtmodel
-  checkmate::assert_subset(irtmodel, choices = c("1PL", "2PL", "PCM", "PCM2","RSM",
-                                                 "GPCM", "2PL.groups", "GPCM.design", "3PL"))
-
+  irtmodel <- match.arg(arg = irtmodel, choices = c("1PL", "2PL", "PCM", "PCM2","RSM",
+                                                    "GPCM", "2PL.groups", "GPCM.design", "3PL"))
   # data frame: qMatrix
   checkQmatrixConsistency(qMatrix)
 
