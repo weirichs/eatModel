@@ -4,14 +4,19 @@
 
 ### called by getConquestPVs ---------------------------------------------------
 
-get.plausible <- function(file, quiet = FALSE, forConquestResults = FALSE)  {
+get.plausible <- function(file, quiet = FALSE, forConquestResults = FALSE){
+  checkmate::assert_file(file)
+  lapply(c(quiet, forConquestResults), checkmate::assert_logical, len = 1)
+  #
   input           <- scan(file,what="character",sep="\n",quiet=TRUE)
   input           <- strsplit(eatTools::crop(gsub("-"," -",input) ) ," +")
   n.spalten       <- max ( sapply(input,FUN=function(ii){ length(ii) }) )
-  input           <- data.frame( matrix( t( sapply(input,FUN=function(ii){ ii[1:n.spalten] }) ),length(input), byrow = FALSE), stringsAsFactors = FALSE)
+  input           <- data.frame( matrix( t( sapply(input,FUN=function(ii){ ii[1:n.spalten] }) ),
+                                         length(input), byrow = FALSE), stringsAsFactors = FALSE)
   pv.pro.person   <- sum (input[-1,1]==1:(nrow(input)-1) )
   n.person        <- nrow(input)/(pv.pro.person+3)
-  weg             <- c(1, as.numeric( sapply(1:n.person,FUN=function(ii){((pv.pro.person+3)*ii-1):((pv.pro.person+3)*ii+1)}) ) )
+  weg             <- c(1, as.numeric(sapply(1:n.person, FUN=function(ii){
+                        ((pv.pro.person+3)*ii-1):((pv.pro.person+3)*ii+1) })))
   cases           <- input[(1:n.person)*(pv.pro.person+3)-(pv.pro.person+2),1:2]
   input.sel       <- input[-weg,]
   n.dim <- dim(input.sel)[2]-1
@@ -28,15 +33,22 @@ get.plausible <- function(file, quiet = FALSE, forConquestResults = FALSE)  {
   }
   input.melt      <- reshape2::melt(input.sel, id.vars = c("ID", "PV.Nr") , stringsAsFactors = FALSE)
   input.melt[,"value"] <- as.numeric(input.melt[,"value"])
-  input.wide      <- data.frame( case = gsub(" ", "0",formatC(as.character(1:n.person),width = nchar(n.person))) , reshape2::dcast(input.melt, ... ~ variable + PV.Nr) , stringsAsFactors = FALSE)
-  colnames(input.wide)[-c(1:2)] <- paste("pv.", paste( rep(1:pv.pro.person,n.dim), rep(1:n.dim, each = pv.pro.person), sep = "."), sep = "")
-  weg.eap         <- (1:n.person)*(pv.pro.person+3) - (pv.pro.person+2)
+  input.wide      <- data.frame( case = gsub(" ", "0",formatC(as.character(1:n.person),
+                                                              width = nchar(n.person))),
+                                 reshape2::dcast(input.melt, ... ~ variable + PV.Nr),
+                                 stringsAsFactors = FALSE)
+  colnames(input.wide)[-c(1:2)] <- paste("pv.", paste(rep(1:pv.pro.person,n.dim),
+                                                      rep(1:n.dim, each = pv.pro.person),
+                                                      sep = "."), sep = "")
+  weg.eap      <- (1:n.person)*(pv.pro.person+3) - (pv.pro.person+2)
   input.eap    <- input[setdiff(weg,weg.eap),]
   input.eap    <- na.omit(input.eap[,-ncol(input.eap),drop=FALSE])
   stopifnot(ncol(input.eap) ==  n.dim)
-  input.eap    <- lapply(1:n.dim, FUN=function(ii) {matrix(unlist(as.numeric(input.eap[,ii])), ncol=2,byrow = TRUE)})
+  input.eap    <- lapply(1:n.dim, FUN=function(ii) {matrix(unlist(as.numeric(input.eap[,ii])),
+                                                           ncol=2,byrow = TRUE)})
   input.eap    <- do.call("data.frame",input.eap)
-  colnames(input.eap) <- paste(rep(c("eap","se.eap"),n.dim), rep(paste("Dim",1:n.dim,sep="."),each=2),sep="_")
+  colnames(input.eap) <- paste(rep(c("eap","se.eap"),n.dim),
+                               rep(paste("Dim",1:n.dim,sep="."),each=2),sep="_")
   PV           <- data.frame(input.wide,input.eap, stringsAsFactors = FALSE)
   numericColumns <- grep("pv.|eap_|case",colnames(PV))
   if(is.na.ID == TRUE) {PV$ID <- NA}
@@ -48,19 +60,27 @@ get.plausible <- function(file, quiet = FALSE, forConquestResults = FALSE)  {
 
 ### called by getConquestWles --------------------------------------------------
 
-get.wle <- function(file)      {
+get.wle <- function(file){
+  checkmate::assert_file(file)
+  #
   input <- eatTools::crop(scan(file, what = "character", sep = "\n", quiet = TRUE))
   input <- strsplit(input," +")
   n.spalten <- max ( sapply(input,FUN=function(ii){ length(ii) }) )
   n.wle <- floor((n.spalten-1) / 4)
-  input <- suppressWarnings(eatTools::asNumericIfPossible(data.frame( matrix( t( sapply(input,FUN=function(ii){ ii[1:n.spalten] }) ),length(input),byrow = FALSE), stringsAsFactors = FALSE), force.string = FALSE))
+  input <- suppressWarnings(eatTools::asNumericIfPossible(data.frame(
+    matrix(t(sapply(input,FUN=function(ii){ ii[1:n.spalten] }) ),length(input),
+           byrow = FALSE), stringsAsFactors = FALSE), force.string = FALSE))
   valid <- na.omit(input)
   cat(paste("Found valid WLEs of ", nrow(valid)," person(s) for ", n.wle, " dimension(s).\n",sep=""))
-  if (nrow(valid) != nrow(input)) { cat(paste("    ",nrow(input)-nrow(valid)," persons with missings on at least one latent dimension.\n",sep="")) }
-  namen1<- c(rep ( x = c("n.solved", "n.total"), times = n.wle), rep ( x = c("wle", "std.wle"), times = n.wle))
+  if(nrow(valid) != nrow(input)){cat(paste("    ", nrow(input)-nrow(valid),
+                                           " persons with missings on at least one latent dimension.\n",
+                                           sep="")) }
+  namen1<- c(rep ( x = c("n.solved", "n.total"), times = n.wle),
+             rep(x = c("wle", "std.wle"), times = n.wle))
   namen2<- rep(rep ( paste(".", 1:n.wle, sep=""), each = 2),2)
   colnames(valid)[(ncol(valid)-length(namen2)):1] <- c("ID","case")[1:(ncol(valid)-length(namen2))]
-  colnames(valid)[(ncol(valid)-length(namen2)+1):ncol(valid)] <- paste(namen1,namen2,sep="")
+  colnames(valid)[(ncol(valid)-length(namen2)+1):ncol(valid)] <- paste(namen1,namen2,
+                                                                       sep="")
   return(valid)}
 
 ### called by getConquestResults -----------------------------------------------
@@ -69,6 +89,10 @@ get.wle <- function(file)      {
 ### "dif.term" definiert dabei die Variable, nach der ggf. DIF-Analysen ausgelesen werden sollen, z.B. "item*sex". Wird "dif.term" nicht
 ### spezifiziert, werden keine DIF-Daten ausgegeben.
 get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.dif.bound = 0.3, p.value = 0.9) {
+  checkmate::assert_file(file)
+  checkmate::assert_logical(split.dif, len = 1)
+  lapply(c(abs.dif.bound, sig.dif.bound, p.value), checkmate::assert_numeric, len = 1)
+  #
   all.output<- list();   all.terms <- NULL                            ### "dif.term" muss nur angegeben werden, wenn DIF-Analysen geschehen sollen.
   input.all <- scan(file,what="character",sep="\n",quiet=TRUE)
   rowToFind <- c("Final Deviance","Total number of estimated parameters")
@@ -153,6 +177,9 @@ get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.d
       results.sel<- data.frame(inp.sel,filename=as.character(file),stringsAsFactors = FALSE)
       sapply(intersect(c("ESTIMATE", "ERROR"), colnames(results.sel)), FUN = function (colx) {if(any(is.na(as.numeric(results.sel[,colx])))) {cat(paste0("'",colx,"' column in Outputfile for term '",all.terms[length(all.terms)],"' in file: '",file,"' does not seem to be a numeric value. Please check!\n"))}})
       if(!missing(dif.term)) {                                    ### Der absolute DIF-Wert ist 2 * "Betrag des Gruppenunterschieds". Fuer DIF muessen ZWEI Kriterien erfuellt sein:
+        checkmate::assert_character(dif.term, len = 1)
+        ind2 <- grep(dif.term, input.all, fixed = TRUE)
+        assert_numeric(ind2, len = 1)
         if(all.terms[length(all.terms)] == dif.term) {           ### Der absolute DIF-Wert muss groesser als 'abs.dif.bound' (z.B. 0.6) und zugleich signifikant groesser als 'sig.dif.bound' (z.B. 0.3) sein
           cat(paste("Treat '",all.terms[length(all.terms)],"' as DIF TERM.\n",sep=""))
           results.sel <- data.frame(results.sel,abs.dif = 2*results.sel$ESTIMATE,stringsAsFactors=FALSE)
@@ -243,17 +270,24 @@ get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.d
 
 ### not called -----------------------------------------------------------------
 
-get.prm <- function(file)   {
+get.prm <- function(file){
+  checkmate::assert_file(file)
+  #
   input <- scan(file,what="character",sep="\n",quiet=TRUE)
   input <- strsplit( gsub("\\\t"," ",eatTools::crop(input)), "/\\*")
-  ret   <- data.frame ( do.call("rbind", strsplit( eatTools::crop(unlist(lapply(input, FUN = function ( l ) {l[1]}))), " +")), stringsAsFactors = FALSE)
-  nameI <- eatTools::crop(eatTools::removePattern ( eatTools::crop( eatTools::crop(unlist(lapply(input, FUN = function ( l ) {l[length(l)]}))), char = "item"), pattern = "\\*/"))
-  ret   <- data.frame ( Case= as.numeric(ret[,1]), item = nameI, parameter= as.numeric(ret[,2]) ,stringsAsFactors = FALSE)
+  ret   <- data.frame(do.call("rbind", strsplit(eatTools::crop(unlist(lapply(input, FUN = function ( l ) {l[1]}))), " +")),
+                      stringsAsFactors = FALSE)
+  nameI <- eatTools::crop(eatTools::removePattern(eatTools::crop(eatTools::crop(unlist(lapply(input, FUN = function ( l ) {l[length(l)]}))),
+                                                                 char = "item"), pattern = "\\*/"))
+  ret   <- data.frame ( Case= as.numeric(ret[,1]), item = nameI,
+                        parameter = as.numeric(ret[,2]), stringsAsFactors = FALSE)
   return(ret)}
 
 ### called by getConquestItn ---------------------------------------------------
 
-get.itn <- function(file)  {
+get.itn <- function(file){
+  checkmate::assert_file(file)
+  #
   input <- scan(file, what = "character", sep="\n", quiet = TRUE)
   ind.1 <- grep("==========",input)
   items <- grep( "item:", input )
@@ -277,11 +311,16 @@ get.itn <- function(file)  {
   cases <- gsub("_BIG_","NA",cases)
   if(length(table(sapply(1:length(cases),FUN=function(ii){length(unlist(strsplit(cases[ii]," +"))) }) ) )>1 )
   {cases <- gsub("          ","    NA    ",cases)}
-  cases       <- data.frame( matrix ( unlist( strsplit(eatTools::crop(gsub(" +"," ", cases))," ") ), nrow=length(zeilen[[i]]),byrow=T ) , stringsAsFactors=F)
+  cases       <- data.frame( matrix ( unlist( strsplit(eatTools::crop(gsub(" +"," ", cases))," ") ),
+                                      nrow=length(zeilen[[i]]),byrow=T ) , stringsAsFactors=F)
   ind         <- grep("\\)",cases[1,]); cases[,ind] <- gsub("\\)","",cases[,ind] )
-  cases       <- data.frame(cases[,1:(ind-1)],matrix(unlist(strsplit(cases[,6],"\\(")),nrow=length(zeilen[[i]]),byrow=T),cases[,-c(1:ind)],stringsAsFactors=F)
+  cases       <- data.frame(cases[,1:(ind-1)],matrix(unlist(strsplit(cases[,6],"\\(")),
+                                                     nrow=length(zeilen[[i]]),byrow=T),
+                            cases[,-c(1:ind)],stringsAsFactors=F)
   for(jj in 1:ncol(cases)) {cases[,jj] <- as.numeric(cases[,jj])}
-  colnames(cases) <- c("Label","Score","Abs.Freq","Rel.Freq","pt.bis","t.value","p.value",paste(rep(c("PV1.Avg.","PV1.SD."),((ncol(cases)-7)/2) ),rep(1:((ncol(cases)-7)/2),each=2),sep=""))
+  colnames(cases) <- c("Label","Score","Abs.Freq","Rel.Freq","pt.bis","t.value",
+                       "p.value",paste(rep(c("PV1.Avg.","PV1.SD."), ((ncol(cases)-7)/2)),
+                                       rep(1:((ncol(cases)-7)/2),each=2),sep=""))
   threshold.zeile   <- input[items[i,2]+2]; threshold <- NULL; delta <- NULL
   bereich <- ifelse( (items[i,3]-12)<1,1,(items[i,3]-12))
   if((items[i,3]-12)<1) {cat(paste("Item",i,"hat nur eine Antwortkategorie.\n"))}
@@ -294,7 +333,10 @@ get.itn <- function(file)  {
   valid.p <- which(is.na(cases$Score))
   if(length(valid.p) == 0)
   {item.p <- cases[which(cases$Score == max(cases$Score)),"Abs.Freq"] / sum(cases$Abs.Freq)}
-  sub.reihe   <- data.frame(item.nr=i, item.name=item.namen[i], cases[,1:2], n.valid = sum(cases$Abs.Freq), cases[,3:4], item.p = item.p, diskrim=as.numeric(substr(input[items[i,2]+1],45,55)),cases[,-c(1:4)], threshold, delta, stringsAsFactors=F)
+  sub.reihe   <- data.frame(item.nr=i, item.name=item.namen[i], cases[,1:2],
+                            n.valid = sum(cases$Abs.Freq), cases[,3:4], item.p = item.p,
+                            diskrim=as.numeric(substr(input[items[i,2]+1],45,55)),
+                            cases[,-c(1:4)], threshold, delta, stringsAsFactors=F)
   reihe <- rbind(reihe,sub.reihe)}
   if(dim(ind.3)[2]>1)
   {reihe <- data.frame(dif.name,dif.value,reihe,stringsAsFactors=FALSE)}
@@ -303,6 +345,7 @@ get.itn <- function(file)  {
 ### not called -----------------------------------------------------------------
 
 get.dsc <- function(file) {
+  checkmate::assert_file(file)
   input  <- scan(file,what="character",sep="\n",quiet=TRUE)
   n.grp  <- grep("Group: ",input)
   grpNams<- unlist( lapply( strsplit(input[n.grp]," ") , function(ll) {paste(ll[-1],collapse=" ")} ) )
@@ -327,7 +370,9 @@ get.dsc <- function(file) {
 
 ### not called -----------------------------------------------------------------
 
-get.equ <- function(file)  {
+get.equ <- function(file){
+  checkmate::assert_file(file)
+  #
   input       <- scan(file,what="character",sep="\n",quiet = TRUE)
   dimensionen <- grep("Equivalence Table for",input)
   cat(paste("Found ",length(dimensionen), " dimension(s).\n",sep=""))
@@ -335,15 +380,20 @@ get.equ <- function(file)  {
   ende        <- sapply(dimensionen, FUN=function(ii) {ende[ende>ii][1]})
   tabellen    <- lapply(1:length(dimensionen), FUN=function(ii)
   {part <- eatTools::crop(input[(dimensionen[ii]+6):(ende[ii]-1)])
-  part <- data.frame(matrix(as.numeric(unlist(strsplit(part," +"))),ncol=3,byrow=T),stringsAsFactors=F)
+  part <- data.frame(matrix(as.numeric(unlist(strsplit(part," +"))),ncol=3,
+                            byrow=T),stringsAsFactors=F)
   colnames(part) <- c("Score","Estimate","std.error")
   return(part)})
   regr.model  <- grep("The regression model",input)
   item.model  <- grep("The item model",input)
   stopifnot(length(regr.model) == length(item.model))
-  name.dimensionen <- unlist( lapply(dimensionen,FUN=function(ii) {unlist(lapply(strsplit(input[ii], "\\(|)"),FUN=function(iii){iii[length(iii)]}))}) )
-  model       <- lapply(1:length(regr.model), FUN=function(ii) {rbind ( eatTools::crop(gsub("The regression model:","",input[regr.model[ii]])), eatTools::crop(gsub("The item model:","",input[item.model[ii]])) ) })
-  model       <- do.call("data.frame",args=list(model,row.names=c("regression.model","item.model"),stringsAsFactors=F))
+  name.dimensionen <- unlist( lapply(dimensionen,FUN=function(ii) {
+    unlist(lapply(strsplit(input[ii], "\\(|)"),FUN=function(iii){iii[length(iii)]}))}) )
+  model       <- lapply(1:length(regr.model), FUN=function(ii) {
+    rbind(eatTools::crop(gsub("The regression model:","",input[regr.model[ii]])),
+          eatTools::crop(gsub("The item model:","",input[item.model[ii]])) ) })
+  model       <- do.call("data.frame",args=list(model,row.names=c("regression.model","item.model"),
+                                                stringsAsFactors=F))
   colnames(model) <- name.dimensionen
   tabellen$model.specs <- model
   names(tabellen)[1:length(dimensionen)] <- name.dimensionen
