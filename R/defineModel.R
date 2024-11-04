@@ -38,8 +38,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
   checkQmatrixConsistency(qMatrix)
 
   #' assert vector:
-  #' DIF.var, HG.var, group.var, weight.var, schooltype.var
-  checkmate::assert_vector(DIF.var, len = 1)
+  #' HG.var, group.var, weight.var, schooltype.var
   lapply(c(HG.var, group.var, weight.var), checkmate::assert_vector, null.ok = TRUE)
   checkmate::assert_vector(schooltype.var, len = 1, null.ok = TRUE)
 
