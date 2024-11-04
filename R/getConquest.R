@@ -330,8 +330,14 @@ getConquestDeviance <- function ( path, analysis.name, omitUntil = omitUntil) {
 
 ### called by getConquestDeviance() --------------------------------------------
 
-plotDevianceConquest <- function ( logFile, omitUntil = 1, reverse = TRUE, change = TRUE ) {
-  if ( inherits(logFile, "character")) {lf <- logFile}  else  { lf <- file.path(logFile[["path"]], paste0(logFile[["analysis.name"]], ".log"))}
+plotDevianceConquest <- function (logFile, omitUntil = 1, reverse = TRUE, change = TRUE ) {
+  checkmate::assert_numeric(omitUntil, len = 1)
+  lapply(c(reverse, change), checkmate::assert_logical, len = 1)
+  #
+  if ( inherits(logFile, "character")) {lf <- logFile
+  }  else  { lf <- file.path(logFile[["path"]], paste0(logFile[["analysis.name"]],
+                                                       ".log"))}
+  checkmate::assert_file(lf, len = 1)
   input<- scan(lf,what="character",sep="\n",quiet=TRUE)
   ind  <- grep("eviance=", input)
   dev  <- unlist(lapply(input[ind], FUN = function (x) {
@@ -341,8 +347,11 @@ plotDevianceConquest <- function ( logFile, omitUntil = 1, reverse = TRUE, chang
       x   <- substr(x, 1, weg-1)
     }
     return(x)}))
-  dev  <- data.frame ( lapply(data.frame ( eatTools::halveString(dev, "\\."), stringsAsFactors = FALSE), eatTools::removeNonNumeric), stringsAsFactors = FALSE)
-  mat  <- data.frame ( iter = 1:length(ind), dev = as.numeric(paste(dev[,1], dev[,2], sep=".")), stringsAsFactors = FALSE)
+  dev  <- data.frame(lapply(data.frame(eatTools::halveString(dev, "\\."),
+                                       stringsAsFactors = FALSE), eatTools::removeNonNumeric),
+                     stringsAsFactors = FALSE)
+  mat  <- data.frame(iter = 1:length(ind), dev = as.numeric(paste(dev[,1], dev[,2], sep=".")),
+                     stringsAsFactors = FALSE)
   if(omitUntil>0)  {
     dc<- mat[-c(1:omitUntil),2]
   } else {
@@ -369,7 +378,8 @@ plotDevianceConquest <- function ( logFile, omitUntil = 1, reverse = TRUE, chang
     cex <- 0.40
   }
   if (inherits(logFile,"list")) {
-    titel <- paste0("Deviance Change Plot for model '",logFile[["analysis.name"]],"'\n")
+    titel <- paste0("Deviance Change Plot for model '",
+                    logFile[["analysis.name"]],"'\n")
   }  else  {
     titel <- "Deviance Change Plot\n"
   }
@@ -380,9 +390,13 @@ plotDevianceConquest <- function ( logFile, omitUntil = 1, reverse = TRUE, chang
   si   <- devtools::session_info(pkgs = "eatModel")
   si   <- si[["packages"]][which(si[["packages"]][,"package"] == "eatModel"),]
   sysi <- Sys.info()
-  stri <- paste0("'eatModel', version ", si[["loadedversion"]], ", build ",si[["date"]], ", user: ",sysi[["user"]], " (", sysi[["sysname"]],", ",sysi[["release"]], ", ",sysi[["version"]], ")")
+  stri <- paste0("'eatModel', version ", si[["loadedversion"]], ", build ",
+                 si[["date"]], ", user: ", sysi[["user"]], " (", sysi[["sysname"]],
+                 ", ",sysi[["release"]], ", ", sysi[["version"]], ")")
   if (inherits(logFile,"list")) {
-    stri <- paste0("Method = '",logFile[["ret"]][[1]],"'  |  nodes = ",logFile[["ret"]][[2]],"  |  ",capture.output(logFile[["tme"]]), "\n",stri)
+    stri <- paste0("Method = '",logFile[["ret"]][[1]],"'  |  nodes = ",
+                   logFile[["ret"]][[2]],"  |  ", capture.output(logFile[["tme"]]),
+                   "\n", stri)
   }
   graphics::mtext(stri)
   graphics::abline( a=0, b=0 )
