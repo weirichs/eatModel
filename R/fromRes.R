@@ -4,7 +4,6 @@
 ### called by getRestuls() and plotICC() ---------------------------------------
 
 eapFromRes <- function (resultsObj, idVarName = NULL, verbose = TRUE){
-  checkmate::assert_data_frame(resultsObj)
   checkmate::assert_character(idVarName, null.ok = TRUE)
   checkmate::assert_logical(verbose, len = 1)
   #
@@ -33,7 +32,6 @@ eapFromRes <- function (resultsObj, idVarName = NULL, verbose = TRUE){
 ### called by getRestuls() and plotICC() ---------------------------------------
 
 wleFromRes <- function(resultsObj, idVarName = NULL, verbose=TRUE) {
-  checkmate::assert_data_frame(resultsObj)
   checkmate::assert_character(idVarName, null.ok = TRUE)
   checkmate::assert_logical(verbose, len = 1)
   #
@@ -60,7 +58,6 @@ wleFromRes <- function(resultsObj, idVarName = NULL, verbose=TRUE) {
 ### called by getRestuls(), transformToBista() and plotICC() -------------------
 
 pvFromRes <- function(resultsObj, toWideFormat = TRUE, idVarName = NULL, verbose=TRUE) {
-  checkmate::assert_data_frame(resultsObj)
   checkmate::assert_character(idVarName, null.ok = TRUE)
   lapply(c(toWideFormat, verbose), checkmate::assert_logical, len = 1)
   #
@@ -93,8 +90,6 @@ pvFromRes <- function(resultsObj, toWideFormat = TRUE, idVarName = NULL, verbose
 ### called by getRestuls(), equat1pl(), transformToBista() and prepareAndCheckEatModelObject()
 
 itemFromRes<- function(resultsObj){
-  checkmate::assert_data_frame(resultsObj)
-  #
   res <- do.call(plyr::rbind.fill, by(data = resultsObj, INDICES = resultsObj[,"model"],
                                       FUN = function(mod){
     sel <- mod[intersect(which(mod[,"par"] %in% c("est", "estSlope", "Nvalid", "itemP", "ptBis", "itemDiscrim", "offset")),
@@ -199,7 +194,6 @@ itemFromRes<- function(resultsObj){
 ### called by getRestuls() and addQ3() -----------------------------------------
 
 q3FromRes <- function(resultsObj, out = c("wide", "long"), triangular = FALSE){
-  checkmate::assert_data_frame(resultsObj)
   out <- match.arg(out, choices = c("wide", "long"))
   checkmate::assert_logical(triangular, len = 1)
   #
@@ -231,7 +225,6 @@ getIdVarName <- function(id, idVarName, verbose=TRUE){
 ### not called  ----------------------------------------------------------------
 
 regcoefFromRes <- function (resultsObj, digits = NULL){
-  checkmate::assert_data_frame(resultsObj)
   checkmate::assert_numeric(digits, len = 1, null.ok = TRUE)
   #
   regRo<- which(resultsObj[,"type"] == "regcoef")
@@ -259,7 +252,6 @@ regcoefFromRes <- function (resultsObj, digits = NULL){
 ### not called  ----------------------------------------------------------------
 
 correlationFromRes <- function(resultsObj, digits = NULL){
-  checkmate::assert_data_frame(resultsObj)
   checkmate::assert_numeric(digits, len = 1, null.ok = TRUE)
   #
   corRo<- which(resultsObj[,"par"] == "correlation")
@@ -278,8 +270,6 @@ correlationFromRes <- function(resultsObj, digits = NULL){
 ### not called  ----------------------------------------------------------------
 
 wleRelFromRes <- function(resultsObj){
-  checkmate::assert_data_frame(resultsObj)
-  #
   ret <- resultsObj[intersect(which(resultsObj[,"derived.par"] == "rel"),
                               which(resultsObj[,"par"] == "wle")),
                     c("model", "group", "value")]
@@ -289,8 +279,6 @@ wleRelFromRes <- function(resultsObj){
 ### not called  ----------------------------------------------------------------
 
 eapRelFromRes <- function(resultsObj){
-  checkmate::assert_data_frame(resultsObj)
-  #
   ret <- resultsObj[intersect(which(resultsObj[,"derived.par"] == "rel"),
                               which(resultsObj[,"par"] == "eap")),
                     c("model", "group", "value")]
