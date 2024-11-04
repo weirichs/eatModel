@@ -283,8 +283,22 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
 
 ### called by defineModel() ----------------------------------------------------
 
+### Hilfsfunktion fuer checkItemConsistency
+createNamenItemsWeg <- function (crit, remove) {
+  if(remove == TRUE) {
+    niw <- names(crit)
+    mess<- "Remove these items from the data set: "
+  } else {
+    niw  <- NULL
+    mess <- "These items are nevertheless kept in the data set: "
+  }
+  return(list(niw=niw, mess=mess))}
+
+### Hilfsfunktion fuer defineModel
 checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, removeMinNperItem, minNperItem, remove.constant.items, model.statement){
-  namen.items.weg <- NULL
+  options(warn=1)                                                       ### alle Warnungen in dieser Funktion sollen immer angezeigt werden
+  namen.items.weg <- NULL                                               ### initialisieren
+### Wandle NaN in NA, falls es welche gibt
   is.NaN <- do.call("cbind", lapply(dat[,allNam[["variablen"]], drop = FALSE], FUN = function (uu) { is.nan(uu) } ) )
   if(sum(is.NaN) > 0 ) {
     cat(paste("Found ",sum(is.NaN)," 'NaN' values in the data. Convert 'NaN' to 'NA'.\n",sep=""))
@@ -293,48 +307,51 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
       if(length(weg)>0) {  dat[weg,j] <- NA }
     }
   }
-  n.werte <- eatTools::tableUnlist(dat[,allNam[["variablen"]], drop = FALSE])
-  zahl    <- grep("[[:digit:]]", names(n.werte))                        ### sind das alles Ziffern? (auch wenn die Spalten als "character" klassifiziert sind)
-  noZahl  <- setdiff(1:length(n.werte), zahl)
-  if (length( zahl ) == 0 )  { stop("Please use numeric values for item responses.\n")}
-  if (length( noZahl ) > 0 ) { cat(paste(" W A R N I N G !  Found ",sum(n.werte[noZahl])," non-numeric values in the item responses. These values will be treated as missing responses!\n",sep="")) }
+### sind die responses numerisch bzw. stehen da Ziffern drin? (notfalls sowas wie as.character(1) )
+  datL    <- dplyr::mutate_at(reshape2::melt(dat, measure.vars = allNam[["variablen"]], id.vars = allNam[["ID"]], na.rm=TRUE), .vars = "value", .funs = as.character)
+  zahl    <- grep("[[:digit:]]", datL[,"value"])                        ### sind das alles Ziffern? (auch wenn die Spalten als "character" klassifiziert sind)
+  noZahl  <- setdiff(1:nrow(datL), zahl)
+  if (length( noZahl ) > 0 ) {
+    itemNoZ <- unique(datL[noZahl,"variable"])
+    cli::cli_warn(c(paste0("Found ", length(noZahl), " non-numeric values in ",length(itemNoZ)," of ",length(allNam[["variablen"]])," items:"),"i" = paste0("Items: '", paste( itemNoZ, collapse= "', '"), "'"),"i" = paste0("Non-numeric values: '", paste( unique(datL[noZahl,"value"]), collapse= "', '"), "'")))
+  }
   klasse  <- unlist( lapply(dat[,allNam[["variablen"]], drop = FALSE], class) )
   if(any(unlist(lapply(dat[,allNam[["variablen"]], drop = FALSE], inherits, what=c("integer", "numeric"))) == FALSE)) {
-    cat(paste(" W A R N I N G !  Found unexpected class type(s) in item response columns: '",paste(setdiff(klasse, c("numeric", "integer")), collapse = "', '"), "'\n",sep=""))
-    cat("                  All item columns will be transformed to be 'numeric'. Recommend to edit your data manually prior to analysis.\n")
-    for ( uu in allNam[["variablen"]] ) { dat[,uu] <- as.numeric(as.character(dat[,uu]))}
+    warn <- c(unlist(lapply(setdiff(unique(klasse),c("integer", "numeric")), FUN = function (kls) {paste0(length(names(klasse)[which(klasse == kls)])," item columns of class '",kls, "': '",paste(names(klasse)[which(klasse == kls)], collapse="', '"), "'")})),"All item columns will be transformed to be 'numeric'. Recommend to edit your data manually prior to analysis")
+    names(warn) <- rep("i", length(warn))
+    cli::cli_warn(c("Found unexpected class type(s) in item response columns:", warn))
+    dat  <- dplyr::mutate_at(dat, .vars = allNam[["variablen"]], .funs = eatTools::asNumericIfPossible, force.string = TRUE)
   }
   values  <- lapply(dat[,allNam[["variablen"]], drop = FALSE], FUN = function ( ii ) { table(ii)})
   isDichot<- unlist(lapply(values, FUN = function ( vv ) { identical(c("0","1"), names(vv)) }))
   n.werte <- sapply(values, FUN=function(ii) {length(ii)})
   n.mis   <- which(n.werte == 0)
+### identifiziere Items ohne jegliche gueltige Werte
   if(length(n.mis) >0) {
-    cat(paste("Serious warning: ",length(n.mis)," testitems(s) without any values.\n",sep=""))
-    if(verbose == TRUE) {cat(paste("    ", paste(names(n.mis), collapse=", "), "\n", sep=""))}
-    if(remove.missing.items == TRUE) {
-      cat(paste("Remove ",length(n.mis)," variable(s) due to solely missing values.\n",sep=""))
-      namen.items.weg <- c(namen.items.weg, names(n.mis))
-    }
+    weg  <- createNamenItemsWeg(n.mis, remove = remove.missing.items)
+    namen.items.weg <- c(namen.items.weg, weg[["niw"]])
+    cli::cli_warn(c(paste0(length(n.mis), " testitems(s) without any values:"), "i"=paste0(weg[["mess"]], "'", paste(names(n.mis), collapse="', '"),"'")))
   }
-  if ( removeMinNperItem == TRUE ) {
-    nValid <- unlist(lapply(dat[,allNam[["variablen"]], drop = FALSE], FUN = function ( ii ) { length(na.omit ( ii )) }))
-    below  <- which ( nValid < minNperItem )
-    if ( length ( below ) > 0 ) {
-      cat (paste ( "Found ", length(below), " items with less than ", minNperItem, " valid responses. These items will be removed.\n", sep=""))
-      namen.items.weg <- unique ( c(namen.items.weg, names(below)))
-    }
+### identifiziere Items mit Anzahl gueltiger Werte < minNperItem
+  nValid <- unlist(lapply(dat[,allNam[["variablen"]], drop = FALSE], FUN = function ( ii ) { length(na.omit ( ii )) }))
+  below  <- which ( nValid < minNperItem )                              ### identifiziere Items mit weniger gueltigen Werte als in 'minNperItem' angegeben (nur wenn 'removeMinNperItem' = TRUE)
+  if(length(below) > 0 ) {
+    weg  <- createNamenItemsWeg(below, remove = removeMinNperItem)
+    namen.items.weg <- c(namen.items.weg, weg[["niw"]])
+    cli::cli_warn(c(paste0(length(below), " testitems(s) with less than ", minNperItem, " valid responses."), "i"=paste0(weg[["mess"]], "'", paste(names(below), collapse="', '"),"'")))
   }
+### identifiziere konstante Items (Items ohne Varianz)
   constant <- which(n.werte == 1)
   if(length(constant) >0) {
-    cat(paste("Warning: ",length(constant)," testitems(s) are constants.\n",sep=""))
-    if(verbose == TRUE) {foo <- lapply(names(constant),FUN=function(ii) {cat(paste(ii,": ",names(table(dat[,ii])), " ... ",length(na.omit(dat[,ii]))," valid responses", sep="")); cat("\n")})}
-    if(remove.constant.items == TRUE) {
-      cat(paste("Remove ",length(constant)," variable(s) due to solely constant values.\n",sep=""))
-      namen.items.weg <- c(namen.items.weg, names(constant))
-    }
+    weg             <- createNamenItemsWeg(constant, remove = remove.constant.items)
+    namen.items.weg <- c(namen.items.weg, weg[["niw"]])
+    uniqueVal       <- sapply(names(constant), FUN = function (ii) {unique(na.omit(dat[,ii]))})
+    nVal            <- sapply(names(constant), FUN = function (ii) {length(which(!is.na(dat[,ii])))})
+    cli::cli_warn(c(paste0(length(constant), " testitems(s) are constants. ", weg[["mess"]]), "i"=paste(paste0("Item '", names(constant), "', only value '", uniqueVal, "' occurs: ", nVal, " valid responses."), sep="\n")))
   }
-  n.rasch  <- which( !isDichot )
-  if(length(n.rasch) >0 )   {
+### identifiziere alle Items, die nicht dichotom (="ND") sind
+  n.rasch  <- which( !isDichot )                                        ### (aber nicht die, die bereits wegen konstanter Werte aussortiert wurden!)
+  if(length(n.rasch) >0 )   {                                           ### also polytome Items oder Items, die mit 1/2 anstatt 0/1 kodiert sind
     valND <- values[ which(names(values) %in% names(n.rasch)) ]
     valND <- valND[which(sapply(valND, length) > 1)]
     if(length(valND)>0) {
@@ -352,7 +369,9 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
       if(model.statement == "item") { warning("Sure you want to use 'model statement = item' even when items are not dichotomous?")}
     }
   }
-  return(list(dat=dat,allNam=allNam, namen.items.weg=namen.items.weg))}
+  options(warn=0)
+  return(list(dat=dat,allNam=allNam, namen.items.weg=unique(namen.items.weg)))}
+
 
 ### called by defineModel() ----------------------------------------------------
 

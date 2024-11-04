@@ -344,39 +344,29 @@ get.itn <- function(file){
 
 ### not called -----------------------------------------------------------------
 
-get.dsc <- function(file){
+get.dsc <- function(file) {
   checkmate::assert_file(file)
-  #
-  input     <- scan(file,what="character",sep="\n",quiet=TRUE)
-  n.gruppen    <- grep("Group: ",input)
-  gruppennamen <- unlist(lapply(strsplit(input[n.gruppen]," "),
-                                function(ll) {paste(ll[-1],collapse=" ")} ) )
-  cat(paste("Found ",length(n.gruppen)," group(s) in ",file,".\n",sep=""))
-  trenner.1 <- grep("------------------",input)
-  trenner.2 <- grep("\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.\\.",input)
-  stopifnot(length(trenner.1) == length(trenner.2))
-  daten     <- lapply(1:(length(trenner.1)/2), FUN=function(ii) {
-    dat <- strsplit(input[(trenner.1[2*ii]+1):(trenner.2[2*ii-1]-1)]," +")
-    dat <- data.frame(matrix(unlist(lapply(dat, FUN=function(iii) {
-      c(paste(iii[1:(length(iii)-4)],collapse=" "),iii[-c(1:(length(iii)-4))])  }
-      )), ncol=5,byrow=T) , stringsAsFactors=F)
-    dat <- data.frame(group.name = gruppennamen[ii], dat, stringsAsFactors = FALSE)
+  input  <- scan(file,what="character",sep="\n",quiet=TRUE)
+  n.grp  <- grep("Group: ",input)
+  grpNams<- unlist( lapply( strsplit(input[n.grp]," ") , function(ll) {paste(ll[-1],collapse=" ")} ) )
+  trenn1 <- grep(paste(rep("-", 18), collapse=""), input)
+  trenn2 <- grep(paste(rep("\\.", 18), collapse=""), input)
+  stopifnot(length(trenn1) == length(trenn2))
+  daten  <- lapply(1:(length(trenn1)/2), FUN=function(ii) {
+    dat <- data.frame ( do.call("rbind", strsplit(input[(trenn1[2*ii]+1):(trenn2[2*ii-1]-1)]," +")))
+    dat <- data.frame(group.name = grpNams[ii], tidyr::unite(dat, col = "X1", colnames(dat)[1:(ncol(dat)-4)], sep=" ")) |> eatTools::asNumericIfPossible(force.string = FALSE) |> suppressWarnings()
     colnames(dat) <- c("group.name","dimension","N","mean","std.dev","variance")
-    for (iii in 3:ncol(dat)) {dat[,iii] <- as.numeric(dat[,iii])}
-    desc <- strsplit(input[(trenner.2[2*ii-1]+1):(trenner.2[2*ii]-1)]," +")
-    desc <- data.frame(matrix(unlist(lapply(desc, FUN=function(iii) {
-      c(paste(iii[1:(length(iii)-3)],collapse=" "),iii[-c(1:(length(iii)-3))])  }
-      )), ncol=4,byrow=T) , stringsAsFactors=F)
+    desc <- data.frame ( do.call("rbind", strsplit(input[(trenn2[2*ii-1]+1):(trenn2[2*ii]-1)]," +")))
+    desc <- tidyr::unite(desc, col = "X1", colnames(desc)[1:(ncol(desc)-3)], sep=" ") |> eatTools::asNumericIfPossible(force.string = FALSE) |> suppressWarnings()
     colnames(desc) <- c("dimension","mean","std.dev","variance")
-    for (iii in 2:ncol(desc)) {desc[,iii] <- as.numeric(desc[,iii])}
-    dat.list <- list( single.values=dat, aggregates=desc)
-    return(dat.list) } )
-  names(daten) <- gruppennamen
-  n.dim        <- names(table(unlist(lapply(1:length(daten), FUN=function(ii) {
-    length( grep("Error", daten[[ii]]$aggregates$dimension))}) ) ))
-  stopifnot(length(n.dim)==1)
-  cat(paste("Found ",n.dim," dimension(s) in ",file,".\n",sep=""))
+    return(list( single.values=dat, aggregates=desc, ndim = length(grep("Error", desc[,"dimension"])))) } )
+  names(daten) <- grpNams
+  ndim   <- unique(unlist(lapply(daten, FUN = function(d){d[["ndim"]]})))
+  stopifnot(length(ndim)==1)
+  names(grpNams) <- rep("i", length(grpNams))
+  cli::cli_inform(c(paste0("Found ",length(n.grp)," group(s) and ",ndim," dimension(s) in '",file,"'"), grpNams))
   return(daten)}
+
 
 ### not called -----------------------------------------------------------------
 
