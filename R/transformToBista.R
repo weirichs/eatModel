@@ -4,7 +4,7 @@ transformToBista <- function(equatingList, refPop, cuts, weights = NULL,
                              years = NULL){
 ### checks ---------------------------------------------------------------------
 
-  weights <- eatTools::makeDataFrame(weights)
+  weights <- eatTools::makeDataFrame(weights, verbose = FALSE)
   lapply(c(defaultM, defaultSD, q3bound), checkmate::assert_numeric, len = 1, lower = 0)
   checkmate::assert_numeric(years, len = 2, null.ok = TRUE)
   checkmate::assert_character(idVarName, len = 1, null.ok = TRUE)
