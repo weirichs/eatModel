@@ -331,13 +331,13 @@ getConquestDeviance <- function ( path, analysis.name, omitUntil = omitUntil) {
 ### called by getConquestDeviance() --------------------------------------------
 
 plotDevianceConquest <- function (logFile, omitUntil = 1, reverse = TRUE, change = TRUE ) {
-  checkmate::assert_character(logFile, len = 1)
   checkmate::assert_numeric(omitUntil, len = 1)
   lapply(c(reverse, change), checkmate::assert_logical, len = 1)
   #
   if ( inherits(logFile, "character")) {lf <- logFile
   }  else  { lf <- file.path(logFile[["path"]], paste0(logFile[["analysis.name"]],
                                                        ".log"))}
+  checkmate::assert_file(lf, len = 1)
   input<- scan(lf,what="character",sep="\n",quiet=TRUE)
   ind  <- grep("eviance=", input)
   dev  <- unlist(lapply(input[ind], FUN = function (x) {
