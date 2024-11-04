@@ -14,7 +14,7 @@ multiEquatError <- function (x1, x2, x3, difBound = 1, dependentDIF =FALSE, test
                        dependentDIF=dependentDIF, testletStr=testletStr, difBound=difBound, calledForEatModel = TRUE)})
     names(link) <- names(obj)
   } else {
-    link <- tripleEquatError(e1=x1, e2=x2, e3=x3, dependentDIF=dependentDIF,
+    link <- tripleEquatError(e1=liste[[1]], e2=liste[[2]], e3=liste[[3]], dependentDIF=dependentDIF,
                              testletStr=testletStr, difBound=difBound, calledForEatModel = FALSE)
   }
   return(link)
