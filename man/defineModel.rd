@@ -95,13 +95,13 @@ belongs to which domain.
   \item{itemCol}{
 Optional: Only necessary if the \code{anchor} argument was used to define
 anchor parameters. Moreover, specifying \code{itemCol} is only necessary, if the
-\code{anchor} data frame has more than two columns. The \code{itemCol} column than
+\code{anchor} data frame has more than two columns. The \code{itemCol} column then
 must specify which column contains the item identifier.
 }
   \item{valueCol}{
 Optional: Only necessary if the \code{anchor} argument was used to define
 anchor parameters. Moreover, specifying \code{valueCol} is only necessary, if the
-\code{anchor} data frame has more than two columns. The \code{valueCol} column than
+\code{anchor} data frame has more than two columns. The \code{valueCol} column then
 must specify which column contains the item parameter values.
 }
   \item{check.for.linking}{
