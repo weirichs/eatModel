@@ -68,9 +68,8 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
   # arguments specific to `conquest`:
   if(software == "conquest"){
     # character: dir, conquest.folder, model.statement, export
-    checkmate::assert_character(dir, len = 1)
+    checkmate::assert_directory_exists(dir, access = "r")
     checkmate::assert_character(model.statement, len = 1, null.ok = TRUE)
-    checkmate::assert_character(export)
     checkmate::assert_directory(conquest.folder)
     # logical: compute.fit, use.letters, allowAllScoresEverywhere
     lapply(c(compute.fit, use.letters, allowAllScoresEverywhere),
@@ -87,10 +86,9 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
   # arguments specific to `tam`:
   if(software == "tam"){
     # character: dir
-    checkmate::assert_character(dir, len = 1, null.ok = TRUE)
+    if(!is.null(dir)) {checkmate::assert_directory_exists(dir, access = "r")}
     # character via match.arg: pvMethod, constraints
     pvMethod <- match.arg(arg = pvMethod, choices = c("regular", "bayesian"))
-
     constraints <- match.arg(arg = constraints, choices = c("cases", "none", "items"))
     if(constraints == "none"){
       stop("tbd: You can't use constraints = 'none' when using 'tam'.")
@@ -98,11 +96,11 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
     # logical: fitTamMmlForBayesian, progress
     lapply(c(fitTamMmlForBayesian, progress), checkmate::assert_logical, len = 1)
     # named data frames: guessMat, est.slopegroups, fixSlopeMat
-    lapply(c(guessMat, est.slopegroups, fixSlopeMat), checkmate::assert_data_frame, col.names = "named", ncols = 2)
-    warning(paste0("The first column of the data frame `guessMat` should be called `item`, but is called ",
-                   colnames(guessMat)[1], "."))
-    warning(paste0("The first column of the data frame `est.slopegroups` should be called `item`, but is called ",
-                   colnames(est.slopegroups)[1], "."))
+    # SW: warnings should be conditionally only if colnames(guessMat)[1] != "item"
+#    warning(paste0("The first column of the data frame `guessMat` should be called `item`, but is called ",
+#                   colnames(guessMat)[1], "."))
+#    warning(paste0("The first column of the data frame `est.slopegroups` should be called `item`, but is called ",
+#                   colnames(est.slopegroups)[1], "."))
 
     lapply(c(guessMat[,1], est.slopegroups[,1], fixSlopeMat[,1]), checkmate::assert_character)
     lapply(c(guessMat[,2], est.slopegroups[,2], fixSlopeMat[,2]), checkmate::assert_numeric)
