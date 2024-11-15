@@ -109,14 +109,14 @@ getResults <- function(runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c("p
           res <- NULL
         }
         return(res)}))
-      res <- plyr::rbind.fill ( res, data.frame ( res[1,c("model", "source")], alln, stringsAsFactors = FALSE) )
+      res <- plyr::rbind.fill ( res, data.frame ( res[1,c("model", "source")], alln, stringsAsFactors = FALSE) ) |> suppressWarnings()
       difS<- list (abs.dif.bound = abs.dif.bound, sig.dif.bound = sig.dif.bound, p.value = p.value)
-      resD<- data.frame ( res[1,c("model", "source")], type = "tech", par = "dif", derived.par = names(difS), value = unlist(difS), stringsAsFactors = FALSE)
+      resD<- data.frame ( res[1,c("model", "source")], type = "tech", par = "dif", derived.par = names(difS), value = unlist(difS), stringsAsFactors = FALSE) |> suppressWarnings()
       if ( inherits(runModelObj, "runConquest")) {
-        resN<- data.frame ( res[1,c("model", "source")], type = "tech", par = c("method",rep("nodes", 3)), derived.par = c(runModelObj[["method"]],"nodes", "p.nodes", "f.nodes"), value = c(1,runModelObj[["nodes"]], runModelObj[["p.nodes"]], runModelObj[["f.nodes"]]), stringsAsFactors = FALSE)
+        resN<- data.frame ( res[1,c("model", "source")], type = "tech", par = c("method",rep("nodes", 3)), derived.par = c(runModelObj[["method"]],"nodes", "p.nodes", "f.nodes"), value = c(1,runModelObj[["nodes"]], runModelObj[["p.nodes"]], runModelObj[["f.nodes"]]), stringsAsFactors = FALSE) |> suppressWarnings()
       }  else  {
         nNod<- length(attr(runModelObj, "defineModelObj")[["control"]][["nodes"]])
-        resN<- data.frame ( res[1,c("model", "source")], type = "tech", par = c("QMC",rep("nodes", 1+nNod)), derived.par = c(NA,rep("discrete.theta",nNod), "snodes"), value = c(attr(runModelObj, "defineModelObj")[["control"]][["QMC"]],attr(runModelObj, "defineModelObj")[["control"]][["nodes"]], attr(runModelObj, "defineModelObj")[["control"]][["snodes"]]), stringsAsFactors = FALSE)
+        resN<- data.frame ( res[1,c("model", "source")], type = "tech", par = c("QMC",rep("nodes", 1+nNod)), derived.par = c(NA,rep("discrete.theta",nNod), "snodes"), value = c(attr(runModelObj, "defineModelObj")[["control"]][["QMC"]],attr(runModelObj, "defineModelObj")[["control"]][["nodes"]], attr(runModelObj, "defineModelObj")[["control"]][["snodes"]]), stringsAsFactors = FALSE) |> suppressWarnings()
       }
       res <- plyr::rbind.fill ( res, resD, resN )
       id  <- unique(res[intersect(which(res[,"type"] == "tech"), which(res[,"par"] == "ID")),"derived.par"])

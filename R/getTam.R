@@ -208,10 +208,9 @@ getTamWles    <- function(runModelObj, qMatrix, leseAlles, omitWle) {
   txt  <- capture.output(wle  <- tam.wle(runModelObj, progress = FALSE))
   eind1<- ncol(wle) == 7
   if(isTRUE(eind1)) {
-    cols1<- grep("theta$", colnames(wle))
-    cols2<- grep("error$", colnames(wle))
-    stopifnot(length(cols1) ==1, length(cols2) ==1)
-    colnames(wle)[c(cols1,cols2)] <- paste(colnames(wle)[c(cols1,cols2)], ".Dim1", sep="")
+    cols <- grep("^PersonScores$|^PersonMax$|^theta$|^error$|^WLE.rel$", colnames(wle))
+    stopifnot(length(cols) == 5)
+    colnames(wle)[cols] <- paste(colnames(wle)[cols], ".Dim01", sep="")
   }
   weg1 <- grep("WLE.rel", colnames(wle))
   wleL <- reshape2::melt(wle, id.vars = "pid", measure.vars = colnames(wle)[-c(1:2,weg1)], na.rm=TRUE)
