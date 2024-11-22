@@ -1,7 +1,7 @@
 # eatModel <a href="https://weirichs.github.io/eatModel/"><img src="man/figures/logo.png" align="right" height="120" alt="placeholder logo" /></a>
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/weirichs/eatModel/workflows/R-CMD-check/badge.svg)](https://github.com/weirichs/eatModel/actions)
+[![R-CMD-check](https://github.com/weirichs/eatModel/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/weirichs/eatModel/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 ## Overview 
