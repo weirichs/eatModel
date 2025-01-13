@@ -1,4 +1,4 @@
-plotICC <- function ( resultsObj, defineModelObj, item = NULL, personPar = c("WLE", "EAP", "PV"), personsPerGroup = 30, pdfFolder = NULL, smooth = 7 ) {
+plotICC <- function ( resultsObj, defineModelObj, items = NULL, personPar = c("WLE", "EAP", "PV"), personsPerGroup = 30, pdfFolder = NULL, smooth = 7 ) {
   personPar  <- match.arg(arg = toupper(personPar), choices = c("WLE", "EAP", "PV"))
   if (smooth<5) {smooth <- 5}
   it  <- itemFromRes ( resultsObj )
@@ -17,11 +17,14 @@ plotICC <- function ( resultsObj, defineModelObj, item = NULL, personPar = c("WL
     colnames(eapA) <- car::recode(colnames(eapA), "'pv1'='EAP'")
   }
   cat("Note: To date, only 1pl/2pl dichotomous models are supported.\n"); flush.console()
-  if ( is.null(item) & is.null(pdfFolder)) {stop("If ICCs for more than one item should be displayed, please specify an output folder for pdf.\n")}
+  checkmate::assert_character(items,  null.ok = TRUE, unique = TRUE,  any.missing = FALSE)
+  if ( (is.null(items) || length(items) > 1)  & is.null(pdfFolder)) {stop("If ICCs for more than one item should be displayed, please specify an output folder for pdf.\n")}
   if ( !is.null(pdfFolder)) { grDevices::pdf(file = pdfFolder, width = 10, height = 7.5) }
-  if ( !is.null ( item ) )  {
-    if ( !item %in% it[,"item"]) { stop (paste("Item '",item,"' was not found in 'resultsObj'.\n",sep=""))}
-    it <- it[which(it[,"item"] == item),]
+  if ( !is.null ( items ) )  {
+    miss <- setdiff(items, it[,"item"])
+    if ( length(miss)>0) {warning(paste0("Following ",length(miss), " items not included in results object: '",paste(miss,, collapse="', '"),"'."))}
+    if ( length(intersect(items,it[,"item"]))==0) {stop("No commons items in 'items' and results object.")}
+    it <- subset(it, item %in% items)
   }
   pl  <- by ( data = it, INDICES = it[,c("model", "item")], FUN = function ( i ) {
     xlm <- c(i[["est"]]+2, i[["est"]]-2)

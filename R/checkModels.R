@@ -203,6 +203,7 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
       cat(paste("Background variable(s) '",paste(vnam, collapse="', '"),"' of class \n    '",paste(sapply(dat[,vnam, drop=FALSE], class),collapse="', '"),"' will be converted to indicator variables.\n",sep=""))
       ind <- do.call("cbind", lapply ( vnam, FUN = function ( yy ) {
         if ( length(which(is.na(dat[,yy])))>0) { stop(paste0("Found ",length(which(is.na(dat[,yy]))), " missings on background variable '",yy,"'."))}
+        dat[,yy] <- eatTools::cleanifyString(dat[,yy])
         newFr <- model.matrix( as.formula (paste("~",yy,sep="")), data = dat)[,-1,drop=FALSE]
         cat(paste("    Variable '",yy,"' was converted to ",ncol(newFr)," indicator(s) with name(s) '",paste(colnames(newFr), collapse= "', '"), "'.\n",sep=""))
         return(newFr) }))
@@ -313,7 +314,7 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
   noZahl  <- setdiff(1:nrow(datL), zahl)
   if (length( noZahl ) > 0 ) {
     itemNoZ <- unique(datL[noZahl,"variable"])
-    cli::cli_warn(c(paste0("Found ", length(noZahl), " non-numeric values in ",length(itemNoZ)," of ",length(allNam[["variablen"]])," items:"),"i" = paste0("Items: '", paste( itemNoZ, collapse= "', '"), "'"),"i" = paste0("Non-numeric values: '", paste( unique(datL[noZahl,"value"]), collapse= "', '"), "'")))
+    cli::cli_warn(c(paste0("Found {length(noZahl)} non-numeric value{?s} in ",length(itemNoZ)," of ",length(allNam[["variablen"]])," items:"),"i" = paste0("Items: '", paste( itemNoZ, collapse= "', '"), "'"),"i" = paste0("Non-numeric values: '", paste( unique(datL[noZahl,"value"]), collapse= "', '"), "'")))
   }
   klasse  <- unlist( lapply(dat[,allNam[["variablen"]], drop = FALSE], class) )
   if(any(unlist(lapply(dat[,allNam[["variablen"]], drop = FALSE], inherits, what=c("integer", "numeric"))) == FALSE)) {
@@ -330,7 +331,7 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
   if(length(n.mis) >0) {
     weg  <- createNamenItemsWeg(n.mis, remove = remove.missing.items)
     namen.items.weg <- c(namen.items.weg, weg[["niw"]])
-    cli::cli_warn(c(paste0(length(n.mis), " testitems(s) without any values:"), "i"=paste0(weg[["mess"]], "'", paste(names(n.mis), collapse="', '"),"'")))
+    cli::cli_warn(c(paste0("{length(n.mis)} testitem{?s} without any values:"), "i"=paste0(weg[["mess"]], "'", paste(names(n.mis), collapse="', '"),"'")))
   }
 ### identifiziere Items mit Anzahl gueltiger Werte < minNperItem
   nValid <- unlist(lapply(dat[,allNam[["variablen"]], drop = FALSE], FUN = function ( ii ) { length(na.omit ( ii )) }))
@@ -338,7 +339,7 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
   if(length(below) > 0 ) {
     weg  <- createNamenItemsWeg(below, remove = removeMinNperItem)
     namen.items.weg <- c(namen.items.weg, weg[["niw"]])
-    cli::cli_warn(c(paste0(length(below), " testitems(s) with less than ", minNperItem, " valid responses."), "i"=paste0(weg[["mess"]], "'", paste(names(below), collapse="', '"),"'")))
+    cli::cli_warn(c(paste0("{length(below)} testitem{?s} with less than ", minNperItem, " valid responses."), "i"=paste0(weg[["mess"]], "'", paste(names(below), collapse="', '"),"'")))
   }
 ### identifiziere konstante Items (Items ohne Varianz)
   constant <- which(n.werte == 1)
@@ -347,7 +348,7 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
     namen.items.weg <- c(namen.items.weg, weg[["niw"]])
     uniqueVal       <- sapply(names(constant), FUN = function (ii) {unique(na.omit(dat[,ii]))})
     nVal            <- sapply(names(constant), FUN = function (ii) {length(which(!is.na(dat[,ii])))})
-    cli::cli_warn(c(paste0(length(constant), " testitems(s) are constants. ", weg[["mess"]]), "i"=paste(paste0("Item '", names(constant), "', only value '", uniqueVal, "' occurs: ", nVal, " valid responses."), sep="\n")))
+    cli::cli_warn(c(paste0("{length(constant)} testitem{?s} {?is/are} constants. ", weg[["mess"]]), "i"=paste(paste0("Item '", names(constant), "', only value '", uniqueVal, "' occurs: ", nVal, " valid responses."), sep="\n")))
   }
 ### identifiziere alle Items, die nicht dichotom (="ND") sind
   n.rasch  <- which( !isDichot )                                        ### (aber nicht die, die bereits wegen konstanter Werte aussortiert wurden!)

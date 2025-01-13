@@ -1,25 +1,21 @@
 \name{plotICC}
 \alias{plotICC}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{Plots item characteristic curves.}
 \description{Function provides item characteristic plots for each item. To date, 
 only dichotomous 1pl and 2pl models are supported.}
-\usage{plotICC  ( resultsObj, defineModelObj, item = NULL, personPar = c("WLE", "EAP", "PV"),
+\usage{plotICC  ( resultsObj, defineModelObj, items = NULL, personPar = c("WLE", "EAP", "PV"),
        personsPerGroup = 30, pdfFolder = NULL, smooth = 7 )}
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{resultsObj}{
-%%     ~~Describe \code{file} here~~
-The object returned by \code{getResults}. 
+The object returned by \code{getResults}.
 }
   \item{defineModelObj}{
-%%     ~~Describe \code{file} here~~
-The object returned by \code{defineModel}. 
+The object returned by \code{defineModel}.
 }
-  \item{item}{
-%%     ~~Describe \code{file} here~~
-Optional: The item for which the ICC should be plotted. If NULL, ICCs of all items
-will be collected in a common pdf. The \code{pdfFolder} argument than must not be NULL.
+  \item{items}{
+Optional: A vector of items for which the ICC should be plotted. If NULL, ICCs of all items
+will be collected in a common pdf. The \code{pdfFolder} argument must not be NULL if the ICC of more
+than one item should be plotted, i.e. if items is not NULL or a vector of length > 1.
 }
   \item{personPar}{
 Which person parameter should be used for plotting? To mimic the
@@ -69,5 +65,5 @@ run1 <- runModel(mod1)
 res1 <- getResults(run1)
 
 # plot for one item 
-plotICC  ( resultsObj = res1, defineModelObj = mod1, item = "T04_04")
+plotICC  ( resultsObj = res1, defineModelObj = mod1, items = "T04_04")
 }

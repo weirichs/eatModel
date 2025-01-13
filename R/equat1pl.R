@@ -65,9 +65,9 @@ equat1pl<- function(results, prmNorm, item = NULL, domain = NULL, testlet = NULL
       }
       dimN <- by ( data = it, INDICES = it[,"dimension"], FUN = function ( prmDim ) {
         if(!is.null(allN[["domain"]]) ) {
-          prmM<- prmNorm [ which(prmNorm[,allN[["domain"]]] %in% unique(it[,"dimension"])) ,]
+          prmM<- allN[["prmNorm"]] [ which(allN[["prmNorm"]][,allN[["domain"]]] %in% unique(it[,"dimension"])) ,]
         }  else  {
-          prmM<- prmNorm
+          prmM<- allN[["prmNorm"]]
         }
         mess1 <- NULL
         if (!is.null(allN[["testlet"]])) {

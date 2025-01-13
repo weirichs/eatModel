@@ -16,6 +16,11 @@ checkItemParLists <- function (prmNorm, item, domain, testlet, value, dims = NUL
   }
   allF <- list(item=item, domain = domain, testlet=testlet, value = value)
   allF <- lapply(allF, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = prmNorm, variable=ii)})
+  if(isTRUE(allF[["testlet"]] == "dimension")) {                       ### hier muss isTRUE stehen, weil es sonst fehlschlaegt, wenn xx == yy logical(0) ergibt
+    message(paste0("'dimension' is not allowed for testlet column name in 'prmNorm'. Rename column to 'dimensionName'."))
+    allF[["testlet"]] <- "dimensionName"
+    colnames(prmNorm) <- car::recode(colnames(prmNorm), "'dimension'='dimensionName'")
+  }
   nomis<- sapply(prmNorm[,unlist(allF)], FUN = function ( i ) { length(which(is.na(i)))})
   if ( any(nomis>0)) {
     warning("Found ", length(which(nomis>0)), " column(s) in 'prmNorm' with missing values: '", paste(names(nomis[which(nomis>0)]), collapse= "', '"), "'")
@@ -30,28 +35,31 @@ checkItemParLists <- function (prmNorm, item, domain, testlet, value, dims = NUL
       if (!length(g[,allF[["item"]]]) == length(unique(g[,allF[["item"]]]))) { stop(paste ( "Item identifiers are not unique in 'prmNorm' for domain '",g[1,allF[["domain"]]],"'.\n",sep=""))}
     }, simplify = FALSE)
   }
+  allF[["prmNorm"]] <- prmNorm
   return(allF)}
 
 ### ----------------------------------------------------------------------------
 
+### hilfsfunktion fuer equat1pl: transformiert itemparameterliste in results-objekt, wenn nicht das Rueckgabeobjekt von getResults()
+### die Fokusparameter enthaelt, sondern ein einfacher data.frame
 transformItemParListIntoResults <- function(results, itemF, domainF, testletF, valueF){
   allF <- checkItemParLists(prmNorm =results, item = itemF, domain = domainF, testlet = testletF, value = valueF)
   if (!is.null(allF[["domain"]])) {
-    dims <- names(table(results[,allF[["domain"]]]))
+    dims <- names(table(allF[["prmNorm"]][,allF[["domain"]]]))
   }  else  {
     allF[["domain"]] <- "domaene"
-    results[, allF[["domain"]]] <- dims <- "global"
+    allF[["prmNorm"]][, allF[["domain"]]] <- dims <- "global"
   }
-  results[,"model"] <- results[, allF[["domain"]]]
-  weg  <- intersect ( colnames (results ) , setdiff  ( c("item", "dimension", "est"), unlist(allF) ))
-  if ( length ( weg ) > 0 )  {
-    results <- results[, -match(weg, colnames(results))]
-  }
+  allF[["prmNorm"]][,"model"] <- allF[["prmNorm"]][, allF[["domain"]]]
+  weg  <- intersect ( colnames (allF[["prmNorm"]] ) , setdiff  ( c("item", "dimension", "est"), unlist(allF) ))
+  if ( length ( weg ) > 0 )  {                                         ### damit keine Spalten durch 'recode' doppelt benannt werden, muessen spalten, die sich durch die Recodierung aendern
+    allF[["prmNorm"]] <- allF[["prmNorm"]][, -match(weg, colnames(allF[["prmNorm"]]))]
+  }                                                                    ### und zugleich schon im datensatz 'results' vergeben sind, raus
   allF <- allF[which(!sapply(allF, is.null))]
-  toRec<- lapply(names(allF), FUN = function ( ff ) { paste ( "'",allF[[ff]],"'='",car::recode(ff, "'item'='item'; 'domain'='dimension'; 'value'='est'"),"'",sep="")})
+  toRec<- lapply(setdiff(names(allF),"prmNorm"), FUN = function ( ff ) { paste ( "'",allF[[ff]],"'='",car::recode(ff, "'item'='item'; 'domain'='dimension'; 'value'='est'"),"'",sep="")})
   toRec<- paste(toRec, collapse = "; ")
-  colnames(results) <- car::recode (colnames(results), toRec)
-  return(list(results=results, dims=dims))}
+  colnames(allF[["prmNorm"]]) <- car::recode (colnames(allF[["prmNorm"]]), toRec)
+  return(list(results=allF[["prmNorm"]], dims=dims))}
 
 ### ----------------------------------------------------------------------------
 
