@@ -68,9 +68,9 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
   # arguments specific to `conquest`:
   if(software == "conquest"){
     # character: dir, conquest.folder, model.statement, export
-    checkmate::assert_directory_exists(dir, access = "r")
+    checkmate::assert_directory_exists(dir, access = "w")
     checkmate::assert_character(model.statement, len = 1, null.ok = TRUE)
-    checkmate::assert_directory(conquest.folder)
+    checkmate::assert_file_exists(conquest.folder)
     # logical: compute.fit, use.letters, allowAllScoresEverywhere
     lapply(c(compute.fit, use.letters, allowAllScoresEverywhere),
            checkmate::assert_logical, len = 1)

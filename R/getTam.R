@@ -290,7 +290,6 @@ getTamEAPs <- function ( runModelObj, qMatrix, leseAlles = leseAlles) {
 getTamQ3 <- function(runModelObj, leseAlles, shw1, Q3, q3MinObs, q3MinType){
   if(leseAlles == FALSE || Q3 == FALSE) {return(NULL)}
   nObs <- NULL
-  if ( !is.null(q3MinObs) ) {
     if ( q3MinObs > 1 ) {
       nObs <- nObsItemPairs ( responseMatrix = runModelObj[["resp"]], q3MinType = q3MinType )
     }
@@ -301,5 +300,4 @@ getTamQ3 <- function(runModelObj, leseAlles, shw1, Q3, q3MinObs, q3MinType){
     }  else  {
       res  <- NULL
     }
-  }
   return(res)}

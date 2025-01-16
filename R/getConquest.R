@@ -294,9 +294,7 @@ getConquestQ3 <- function(model.name, shw,Q3, q3theta, omitWle, omitPV, pv,wle,d
   stopifnot(length(which(is.na(drinP))) == 0 , length(which(is.na(drinI))) == 0 )
   q3.res<- sirt::Q3(dat = daten[drinP,drinI], theta = theta[,2], b = shw[["item"]][,"ESTIMATE"], progress = FALSE)
   nObs  <- NULL
-  if ( !is.null(q3MinObs) ) {
     if ( q3MinObs > 1 ) { nObs <- nObsItemPairs ( responseMatrix = daten[,all.Names[["variablen"]]], q3MinType = q3MinType ) }
-  }
   matL  <- reshapeQ3 (mat = q3.res$q3.matrix, q3MinObs = q3MinObs, nObs = nObs)
   if( nrow(matL)== 0) { return(NULL)}
   res   <- data.frame ( model = model.name, source = "conquest", var1 = matL[,"Var1"],  var2 = matL[,"Var2"] , type = "fixed",indicator.group = "items",group = paste(names(table(shw1[,"group"])), collapse="_"), par = "q3", derived.par = NA, value = matL[,"value"] , stringsAsFactors = FALSE)
@@ -337,7 +335,7 @@ plotDevianceConquest <- function (logFile, omitUntil = 1, reverse = TRUE, change
   if ( inherits(logFile, "character")) {lf <- logFile
   }  else  { lf <- file.path(logFile[["path"]], paste0(logFile[["analysis.name"]],
                                                        ".log"))}
-  checkmate::assert_file(lf, len = 1)
+  checkmate::assert_file(lf)
   input<- scan(lf,what="character",sep="\n",quiet=TRUE)
   ind  <- grep("eviance=", input)
   dev  <- unlist(lapply(input[ind], FUN = function (x) {

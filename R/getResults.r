@@ -13,11 +13,11 @@ getResults <- function(runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c("p
                        omitUntil=1, seed=NA) {
 
 ### checks ---------------------------------------------------------------------
+  checkmate::assert_numeric(q3MinObs, lower = 0, len=1)
   checkmate::assert_list(runModelObj)
 
   q3MinType<- match.arg(q3MinType)
   q3theta  <- match.arg(q3theta)
-  checkmate::assert_numeric(q3MinObs, len = 1)
 
   # logical arguments
   lapply(c(overwrite, Q3, omitFit, omitRegr, omitWle, omitPV),

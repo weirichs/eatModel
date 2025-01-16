@@ -1,17 +1,23 @@
 ### called by getConquestQ3() or getTamQ3(),
 ### which are called by getResults() e.g. getConquestResults() or getTamResults()
 
+tabdt <- function(x, q3MinType){
+  d   <- na.omit(data.frame (x[[1]], x[[2]]))
+  if(nrow(d) < 2) {return(NULL)}
+  tab <- Rfast::Table(x = d[,1], y = d[,2], names=FALSE)
+  if ( q3MinType == "singleObs" ) {
+    minVal <- min(tab)
+  }  else  {
+    minVal <- min(c(colSums(tab), rowSums(tab)))
+  }
+  ret <- data.frame ( Var1 = names(x)[1], Var2 = names(x)[2], minValue = minVal)
+  return(ret)}
+
+### Hilfsfunktion zur Bestimmung der Anzahl der Beobachtungen je Itempaar
 nObsItemPairs <- function ( responseMatrix, q3MinType) {
-  spl <- data.frame ( combinat::combn(colnames(responseMatrix),2), stringsAsFactors = FALSE)
-  splM<- do.call("rbind", lapply ( spl, FUN = function ( y ) {
-    if ( q3MinType == "singleObs" ) {
-      minVal <- min ( table(data.frame ( responseMatrix[,y])))
-    }  else  {
-      minVal <- min(c(rowSums(table(data.frame ( responseMatrix[,y]))), colSums(table(data.frame ( responseMatrix[,y])))))
-    }
-    ret <- data.frame ( Var1 = sort(y)[1], Var2 = sort(y)[2], minValue = minVal)
-    return(ret)}))
-  return(splM)}
+        a   <- as.list(data.frame(responseMatrix))
+        spl <- do.call("rbind", combinat::combn(x=a, m=2, fun = tabdt, simplify=FALSE, q3MinType=q3MinType))
+        return(spl)}
 
 ### ----------------------------------------------------------------------------
 
