@@ -53,7 +53,7 @@ length(intersect(ids[[1]], ids[[3]]))
 length(intersect(ids[[2]], ids[[3]]))
 
 # sampling weights substantially differ between countries due to stratified sampling
-eatTools::roundDF(do.call("rbind",  by(data=trends, INDICES = trends[,c("year", "country")], FUN = function (x) {data.frame ( trends[1,c("year", "country")], eatTools::descr(x[!duplicated(x[,"idstud"]),"wgt"])[,c("Minimum", "Maximum", "Mean", "Median", "SD")], stringsAsFactors = FALSE)})), digits = 3)
+eatTools::roundDF(do.call("rbind",  by(data=trends, INDICES = trends[,c("year", "country")], FUN = function (x) {data.frame ( x[1,c("year", "country")], eatTools::descr(x[!duplicated(x[,"idstud"]),"wgt"])[,c("Minimum", "Maximum", "Mean", "Median", "SD")], stringsAsFactors = FALSE)})), digits = 3)
 
 # which booklets occur in which assessment cycles?
 # see, for example: Bo01 only occurs 2010; Bo02 occurs 2010, 2015, and 2022; Bo83 occurs 2015 and 2020
