@@ -860,7 +860,7 @@ ankT1P<- equat1pl ( results = resT1P)
 # transformation to the 'bista' metric
 # Note: if the sample was drawn from the reference population, mean and SD
 # were just computed and captured in 'tfRef'.
-dfrT1P<- transformToBista ( equatingList = ankT1P, refPop = tfRef[["refPop"]], cuts=cuts, vera=FALSE )
+dfrT1P<- transformToBista ( equatingList = ankT1P, refPop = tfRef[["refPop"]][,-2], cuts=cuts, vera=FALSE )
 
 
 ################################################################################
@@ -904,7 +904,7 @@ L.t1t2<- equat1pl ( results = resT2, prmNorm = itemT1[,c("item", "est")],
 # We now need to specify the 'refPop' argument. We use the values from 't1' which
 # serves as the reference. To capture linking errors in a separate data.frame
 # within the returned list, we define the years of assessment
-ref   <- tfRef[["refPop"]]
+ref   <- tfRef[["refPop"]][,-2]
 T.t1t2<- transformToBista ( equatingList = L.t1t2, refPop=ref, cuts = cuts,
          vera=FALSE, years = c(2010,2015))
 
@@ -983,7 +983,7 @@ L.t2t3<- equat1pl ( results = resT3, prmNorm = T.t1t2[["itempars"]][,c("item", "
 # linking constant is negative: students performance at T3 is worse than T1
 # Third step: transform item parameters of 't3' to the common metric of 't1' and 't2'
 # We already know the 'refPop' values.
-ref   <- tfRef[["refPop"]]
+ref   <- tfRef[["refPop"]][,-2]
 T.t2t3<- transformToBista ( equatingList = L.t2t3, refPop=ref, cuts = cuts,
          vera=FALSE, years = c(2015,2020))
 
@@ -1075,7 +1075,7 @@ chain <- multiEquatError (x1=resT1, x2=resT2, x3=resT3, difBound = 0.64, verbose
 L.t1t3<- replaceLinkingError (equatingList =L.t1t3, multiEquatError_output=chain)
 
 # transform linking errors
-ref   <- tfRef[["refPop"]]
+ref   <- tfRef[["refPop"]][,-2]
 tle   <- transformToBista ( equatingList = L.t1t3, refPop=ref, cuts = cuts,
          vera=FALSE, years = c(2010,2020))
 let1t3<- tle[["linkingErrors"]]
