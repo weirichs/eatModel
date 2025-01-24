@@ -773,16 +773,13 @@ head(dfr$personpars)
 # to t1. Example 6b demonstrates routines for the third measurement occasion (t3)
 # which is linked to the common scale of t1 and t2.
 
-# data set 'trends' contains item response data for three measurement occasions
-# in a single data.frame
-data(trends)
-
 # Preparation: assume time of measurement 't1' corresponds to the year 2010.
 # This is the year of the reference population. We consider both domains,
 # reading and listening in a single call. Hence, the data.frame 'datT1' contains
-# items of both domains
+# items of both domains. We add weights to the data as the definition of mean
+# and sd of the reference population (population of 't1') necessitates weights.
 datT1<- reshape2::dcast(subset ( trends, year == 2010),
-        idstud+country+sex+ses+language~item, value.var="value")
+        idstud+country+sex+ses+language+wgt~item, value.var="value")
 
 # generate Q matrix
 qMat <- unique(trends[ ,c("item","domain")])
@@ -801,11 +798,25 @@ defT1 <- defineModel(dat = datT1, id = "idstud", check.for.linking = TRUE,
 runT1 <- runModel(defT1)
 
 # get the results of the two unidimensional models
-resT1 <- getResults(runT1, omitPV = TRUE, omitWle = TRUE, Q3 = FALSE)
+resT1 <- getResults(runT1, omitWle = TRUE, Q3 = FALSE)
 
 # extract item parameters from the 'results' object
 # t1 is the reference measurement occasion, i.e. no linking/equating is necessary
 itemT1<- itemFromRes(resT1)
+
+# The measurement point 't1' defines the reference population. We need to specify
+# mean and SD, using weights.
+eqRef <- equat1pl(resT1)
+
+# transformation to the 'bista' metric
+# Note: if the sample was drawn from the reference population in a weighted sample,
+# mean and SD are not yet known. So we ignore the 'refPop' argument in 'transformToBista'
+# and simply define the cut scores. The function then assumes that the parameter
+# stem from the reference population and estimates its mean and sd.
+cuts  <- list ( domainreading = list ( values = 390+0:3*75),
+         domainlistening = list ( values = 360+0:3*85))
+tfRef <- transformToBista ( equatingList = eqRef, cuts=cuts, vera=FALSE,
+         weights = datT1[,c("idstud", "wgt")] )
 
 # Second step: drawing plausible values separately for each country.
 # A two-dimensional (reading/listening) model is specified separately for each
@@ -848,17 +859,8 @@ ankT1P<- equat1pl ( results = resT1P)
 
 # transformation to the 'bista' metric
 # Note: if the sample was drawn from the reference population, mean and SD
-# are not yet known. So we ignore the 'refPop' argument in 'transformToBista'
-# and simply define the cut scores. The function then assumes that the parameter
-# stem from the reference population and estimates its mean and sd.
-cuts  <- list ( domainreading = list ( values = 390+0:3*75),
-         domainlistening = list ( values = 360+0:3*85))
-
-# transformation: omit 'refPop' argument
-dfrT1P<- transformToBista ( equatingList = ankT1P, cuts=cuts, vera=FALSE )
-
-# mean and sd of the reference population (population of 't1')
-dfrT1P[["refPop"]]
+# were just computed and captured in 'tfRef'.
+dfrT1P<- transformToBista ( equatingList = ankT1P, refPop = tfRef[["refPop"]], cuts=cuts, vera=FALSE )
 
 
 ################################################################################
@@ -902,7 +904,7 @@ L.t1t2<- equat1pl ( results = resT2, prmNorm = itemT1[,c("item", "est")],
 # We now need to specify the 'refPop' argument. We use the values from 't1' which
 # serves as the reference. To capture linking errors in a separate data.frame
 # within the returned list, we define the years of assessment
-ref   <- dfrT1P[["refPop"]]
+ref   <- tfRef[["refPop"]]
 T.t1t2<- transformToBista ( equatingList = L.t1t2, refPop=ref, cuts = cuts,
          vera=FALSE, years = c(2010,2015))
 
@@ -981,7 +983,7 @@ L.t2t3<- equat1pl ( results = resT3, prmNorm = T.t1t2[["itempars"]][,c("item", "
 # linking constant is negative: students performance at T3 is worse than T1
 # Third step: transform item parameters of 't3' to the common metric of 't1' and 't2'
 # We already know the 'refPop' values.
-ref   <- dfrT1P[["refPop"]]
+ref   <- tfRef[["refPop"]]
 T.t2t3<- transformToBista ( equatingList = L.t2t3, refPop=ref, cuts = cuts,
          vera=FALSE, years = c(2015,2020))
 
@@ -1073,7 +1075,7 @@ chain <- multiEquatError (x1=resT1, x2=resT2, x3=resT3, difBound = 0.64, verbose
 L.t1t3<- replaceLinkingError (equatingList =L.t1t3, multiEquatError_output=chain)
 
 # transform linking errors
-ref   <- dfrT1P[["refPop"]]
+ref   <- tfRef[["refPop"]]
 tle   <- transformToBista ( equatingList = L.t1t3, refPop=ref, cuts = cuts,
          vera=FALSE, years = c(2010,2020))
 let1t3<- tle[["linkingErrors"]]
