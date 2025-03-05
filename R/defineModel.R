@@ -204,7 +204,10 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
     if(model.statement != "item") {
       vars <- setdiff(eatTools::crop(unlist(strsplit(model.statement, "\\+|-|\\*"))), "item")
       mis  <- which(!vars %in% colnames(dat))
-      if ( length(mis)>0) {stop(paste0("Variables '",paste(vars[mis], collapse="', '"), "' from 'model.statement' not found in data."))}
+      if(length(mis)>0) {
+        cli::cli_warn(c(paste0("Model statement '",model.statement,"':"), "x"=paste0("Variable(s) '",paste(vars[mis], collapse="', '"), "' from 'model.statement' not found in data.")))
+        vars <- setdiff(vars,vars[mis])                                         ### ueberschreibt vars objekt und loescht die items aus dem model statement, die es nicht im datensatz gibt, raus
+      }
     }  else  {
       vars <- NULL
     }
