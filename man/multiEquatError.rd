@@ -1,6 +1,5 @@
 \name{multiEquatError}
 \alias{multiEquatError}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{1pl linking errors for three measurement occasions}
 \description{Function computes linking errors based on the 1pl linking procedure according
 to \code{\link[sirt]{equating.rasch}} from the \code{sirt} package for three measurement
@@ -23,6 +22,8 @@ a data.frame with two columns. First column: item identifier. Second column: ite
 %%     ~~Describe \code{file} here~~
 The object returned by \code{\link{getResults}} for the third measurement occasion. Alternatively,
 a data.frame with two columns. First column: item identifier. Second column: item difficulty parameter.
+Note: All three objects x1, x2, and x3 must be of the same type, i.e. either data.frames with two columns
+or the return object of getResults.
 }
   \item{difBound}{
 %%     ~~Describe \code{file} here~~
@@ -48,12 +49,8 @@ Logical: print linking informations to console?
 }
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-description needed
+A list of data.frames with linking errors, according to the number of domains. The output is
+intended to be used as argument of the replaceLinkingError function.
 }
 \author{
 Karoline Sachse, with code borrowed from the sirt package
@@ -76,7 +73,7 @@ results <- by(data = trends, INDICES = trends[,"year"], FUN = function (y){
            run <- runModel(def)
            res <- getResults(run)
            return(res)})
-lErrors <- multiEquatError(results[[1]], results[[2]], results[[3]], difBound = 0.64)
+lErrors <- multiEquatError(results[[1]], results[[2]], results[[3]], difBound = 0.64, verbose=FALSE)
 
 # dependent DIF
 lErrDif <- multiEquatError(results[[1]], results[[2]], results[[3]], difBound = 0.64, dependentDIF =TRUE)
@@ -106,10 +103,10 @@ results2<- by(data = trends, INDICES = trends[,"year"], FUN = function (y){
            run <- runModel(def)
            res <- getResults(run)
            return(res)})
-lErrors2<- multiEquatError(results2[[1]], results2[[2]], results2[[3]], difBound = 0.64)
+lErrors2<- multiEquatError(results2[[1]], results2[[2]], results2[[3]], difBound = 0.64, verbose=FALSE)
 
 # dependent DIF
-lErrDif2<- multiEquatError(results2[[1]], results2[[2]], results2[[3]], difBound = 0.64, dependentDIF =TRUE)
+lErrDif2<- multiEquatError(results2[[1]], results2[[2]], results2[[3]], difBound = 0.64, dependentDIF =TRUE, verbose=FALSE)
 
 # direct linking 1 to 3 (1 is reference)
 it1     <- itemFromRes(results2[[1]])
