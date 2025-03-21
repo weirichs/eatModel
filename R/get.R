@@ -179,7 +179,7 @@ get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.d
       if(!missing(dif.term)) {                                    ### Der absolute DIF-Wert ist 2 * "Betrag des Gruppenunterschieds". Fuer DIF muessen ZWEI Kriterien erfuellt sein:
         checkmate::assert_character(dif.term, len = 1)
         ind2 <- grep(dif.term, input.all, fixed = TRUE)
-        assert_numeric(ind2, len = 1)
+        checkmate::assert_numeric(ind2, len = 1)
         if(all.terms[length(all.terms)] == dif.term) {           ### Der absolute DIF-Wert muss groesser als 'abs.dif.bound' (z.B. 0.6) und zugleich signifikant groesser als 'sig.dif.bound' (z.B. 0.3) sein
           cat(paste("Treat '",all.terms[length(all.terms)],"' as DIF TERM.\n",sep=""))
           results.sel <- data.frame(results.sel,abs.dif = 2*results.sel$ESTIMATE,stringsAsFactors=FALSE)

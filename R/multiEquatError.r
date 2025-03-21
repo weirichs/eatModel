@@ -30,8 +30,8 @@ tripleEquatError <- function(e1, e2, e3, dependentDIF, testletStr, difBound, dim
     return(eqx[["items"]][["global"]][["global"]][["eq"]][["anchor"]][,c(1,2,4)])})
     names(eqs) <- unlist(lapply(kombs, FUN = paste, collapse="_"))
   el21 <- equ.rasch(eqs[["1_2"]][,c(1,3)], eqs[["1_2"]][,c(1,2)])
-  el31 <- equ.rasch(eqs[["1_3"]][,c(1,3)], eqs[["1_2"]][,c(1,2)])
-  el32 <- equ.rasch(eqs[["2_3"]][,c(1,3)], eqs[["1_2"]][,c(1,2)])
+  el31 <- equ.rasch(eqs[["1_3"]][,c(1,3)], eqs[["1_3"]][,c(1,2)])
+  el32 <- equ.rasch(eqs[["2_3"]][,c(1,3)], eqs[["2_3"]][,c(1,2)])
   l21 <- el21$descriptives
   l31 <- el31$descriptives
   l32 <- el32$descriptives

@@ -109,7 +109,7 @@ tamObjForBayesianPV <- function(anchor, qMatrix, slopeMatrix = NULL, resp, pid, 
                   dim = c(nrow(qMatrix), 2, ncol(qMatrix)-1),
                   dimnames = list(qMatrix[,"item"], c("Cat0", "Cat1"), paste0("Dim0", 1:(ncol(qMatrix)-1)) ))
   tamObj <- list(AXsi = xsi.obj, B = B.obj, resp = resp, Y=Y, pid = pid)
-  class(tamObj) <- c("list", "tamBayes")
+  class(tamObj) <- c("tamBayes", "list")
   return(tamObj)}
 
 
