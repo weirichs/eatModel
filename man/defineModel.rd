@@ -1054,10 +1054,10 @@ pers  <- rbind(persT1, persT2, persT3)
 # first we have to create the 'domain' column in plausible values data
 pers[,"domain"] <- car::recode(pers[,"dimension"], "'domainlistening'='listening'; 'domainreading'='reading'")
 pers[,"dimension"] <- NULL
-pers  <- merge(unique(trends[,c("year", "idclass", "idstud", "domain", "country", "language", "ses", "sex")]),
-         pers, by = c("year", "idstud", "domain"), all = FALSE)
+pers  <- merge(unique(trends[,c("year", "idclass", "idstud", "wgt", "jkzone", "jkrep", "domain",
+         "country", "language", "ses", "sex")]), pers, by = c("year", "idstud", "domain"), all = FALSE)
 
-# collect linking errors
+# collect original linking errors
 # t1 vs. t2: linking errors were computed in example 6a.
 let1t2<- T.t1t2[["linkingErrors"]]
 
@@ -1069,7 +1069,7 @@ L.t1t3<- equat1pl ( results = resT3, prmNorm = itemT1[,c("item", "est")],
          excludeLinkingDif = TRUE, difBound = 0.64, iterativ = TRUE)
 
 # indirect linking ('chained' linking)
-chain <- multiEquatError (x1=resT1, x2=resT2, x3=resT3, difBound = 0.64, verbose = TRUE )
+chain <- multiEquatError (eq.1_2=L.t1t2, eq.2_3=L.t2t3, eq.1_3=L.t1t3)
 
 # replace direct linking errors with indirect linking errors
 L.t1t3<- replaceLinkingError (equatingList =L.t1t3, multiEquatError_output=chain)

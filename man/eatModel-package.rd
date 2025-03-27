@@ -86,19 +86,17 @@
   of design properties. The further development of \code{eatRest} was expired because the package turned
   out to be enigmaticly written which led to undebugable problems, especially with the ardently loved
   results structure. ZKD authors did not understand any longer the code which has been written before.
-  Thus, \code{eatModel} is the second attempt. Its functionality is closely related to \code{eatRest}
-  but adds some new features---for example, the support of 2pl models using the \code{TAM} package.
-
-  \emph{Important note:} For consistency reasons, some functions in \code{eatModel} have identical names
-  as the corresponding function in \code{eatRest}, for example \code{get.shw}. It is strongly recommended
-  to \emph{not} have both packages attached simultaneously in one R session.
+  Thus, \code{eatModel} is the second attempt, launched in summer 2014 and introduced in summer 2015.
+  Its functionality is closely related to \code{eatRest} but adds some new features---for example, the
+  support of 2pl models using the \code{TAM} package and several linking procedures for more than two
+  times of measurement.
 }
 \details{
 \tabular{ll}{
 Package: \tab eatModel\cr
 Type: \tab Package\cr
-Version: \tab 0.8.52\cr
-Date: \tab 2025-03-18\cr
+Version: \tab 0.9.0\cr
+Date: \tab 2025-03-27\cr
 License: \tab GPL(>=2)
 }
 }

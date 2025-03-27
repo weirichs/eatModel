@@ -11,6 +11,10 @@ simEquiTable <- function(anchor, mRef, sdRef, addConst = 500, multConst = 100, c
   if(length(unique(anchor[,1])) != nrow(anchor)){
     stop("Item ID column has duplicated entries.")
   }
+  if(length(which(is.na(anchor[,2]))) > 0) {
+    warning(paste0(length(which(is.na(anchor[,2]))), " missing values in item parameter values. Missings will be removed."))
+    anchor <- na.omit(anchor)
+  }
   checkmate::assert_numeric(mRef, len = 1)
   lapply(c(sdRef, addConst, multConst), checkmate::assert_numeric, len = 1, lower = 0)
   checkmate::assert_list(cutScores, min.len = 1, max.len = 2)
