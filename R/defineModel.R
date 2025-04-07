@@ -102,8 +102,9 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
 #    warning(paste0("The first column of the data frame `est.slopegroups` should be called `item`, but is called ",
 #                   colnames(est.slopegroups)[1], "."))
 
-    lapply(c(guessMat[,1], est.slopegroups[,1], fixSlopeMat[,1]), checkmate::assert_character)
-    lapply(c(guessMat[,2], est.slopegroups[,2], fixSlopeMat[,2]), checkmate::assert_numeric)
+### assertions duerfen nicht nach reihenfolge der spalten gehen, denn die kann unterschiedlich sein
+#    lapply(c(guessMat[,1], est.slopegroups[,1], fixSlopeMat[,1]), checkmate::assert_character)
+#    lapply(c(guessMat[,2], est.slopegroups[,2], fixSlopeMat[,2]), checkmate::assert_numeric)
   }
 
 ### function -------------------------------------------------------------------
