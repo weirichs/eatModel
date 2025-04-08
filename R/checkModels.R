@@ -43,7 +43,7 @@ checkQmatrixConsistency <- function(qmat, errorWhenNot01 = FALSE){
   #' that's why there's a warning here, instead of an error.
   #' Exception: function is called by splitModels() -> HAS to throw an error with values other than 0/1.
   werte <- eatTools::tableUnlist(qmat[, -1, drop=FALSE], useNA="always")
-  if(length(setdiff(names(werte), c("0","1", "NA"))) < 0){
+  if(length(setdiff(names(werte), c("0","1", "NA"))) > 0){
     eval(parse(text=paste0("cli::cli_",ifelse(errorWhenNot01, "abort", "warn"),
                            "(c(\"Expected values for Q matrix are 0 and 1.\", \"",
                            ifelse(errorWhenNot01, "x", "i"),
