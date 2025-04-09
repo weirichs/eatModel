@@ -48,7 +48,7 @@ transformItemParListIntoResults <- function(results, itemF, domainF, testletF, v
     dims <- names(table(allF[["prmNorm"]][,allF[["domain"]]]))
   }  else  {
     allF[["domain"]] <- "domaene"
-    allF[["prmNorm"]][, allF[["domain"]]] <- dims <- "global"
+    allF[["prmNorm"]][, allF[["domain"]]] <- dims <- "Dim1"
   }
   allF[["prmNorm"]][,"model"] <- allF[["prmNorm"]][, allF[["domain"]]]
   weg  <- intersect ( colnames (allF[["prmNorm"]] ) , setdiff  ( c("item", "dimension", "est"), unlist(allF) ))
@@ -110,7 +110,7 @@ handleLinkingDif <- function(prmDim,prbl, eq, difBound, dif, method, excludeLink
     if ( iterativ == FALSE ) {
       cat(paste("   Exclude ",length( prbl), " items.\n",sep=""))
       qp1 <- prmM[-match ( dskr[,"item"], prmM[,allN[["item"]]]),]
-      eq1 <- equAux ( x=prmDim[ ,c("item", "est")], y = qp1[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])] )
+      eq1 <- equAux ( x=prmDim[ ,c("item", "est")], y = qp1[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])], allN=allN )
       info<- data.frame ( method = "nonIterativ", rbind ( data.frame ( itemExcluded = "" , linking.constant = eq[["B.est"]][[method]], linkerror = eq[["descriptives"]][["linkerror"]] ), data.frame ( itemExcluded = paste ( prmM[match ( dskr[,"item"], prmM[,allN[["item"]]]),allN[["item"]]] , collapse = ", "), linking.constant = eq1[["B.est"]][[method]], linkerror = eq1[["descriptives"]][["linkerror"]] ) ))
       eq  <- eq1
     }  else  {
@@ -124,7 +124,7 @@ handleLinkingDif <- function(prmDim,prbl, eq, difBound, dif, method, excludeLink
         wegI<- eq[["anchor"]][maxD,"item"]
         cat ( paste ( "   Iteration ", iter,": Exclude item '",wegI,"'.\n",sep=""))
         qp1 <- qp1[-match ( wegI, qp1[,allN[["item"]]]),]
-        eq  <- equAux ( x = prmDim[ ,c("item", "est")], y = qp1[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])] )
+        eq  <- equAux ( x = prmDim[ ,c("item", "est")], y = qp1[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])], allN=allN )
         dif <- eq[["anchor"]][,"TransfItempar.Gr1"] - eq[["anchor"]][,"Itempar.Gr2"]
         prbl<- which ( abs ( dif ) > difBound )
         info<- rbind(info, data.frame ( method = "iterativ", iter = iter , itemExcluded = wegI, DIF.excluded=as.character(round(maxV,digits=3)), linking.constant = round ( eq[["B.est"]][[method]],digits = 3), linkerror = round ( eq[["descriptives"]][["linkerror"]], digits = 3) ))
@@ -169,9 +169,9 @@ createOutput <- function (method, eqr, prm, eqh, info){
 
 ### also called by handleLinkingDif() ------------------------------------------
 
-equAux  <- function ( x, y ) {
-  eq  <- sirt::equating.rasch(x = x, y = y[,1:2])
-  if ( ncol(y)==3) {
+equAux  <- function ( x, y, allN = NULL ) {
+  eq  <- sirt::equating.rasch(x = x, y = y[,1:2])                      ### kein Jackknife
+  if(ncol(y)==3) {                                                   ### jackknife
     colnames(x)[1] <- colnames(y)[1] <- "item"
     dfr <- merge( x, y, by = "item", all = FALSE)
     stopifnot ( ncol ( dfr ) == 4 )
@@ -179,7 +179,10 @@ equAux  <- function ( x, y ) {
     txt <- capture.output ( eqJk<- sirt::equating.rasch.jackknife(dfr[ , c(4 , 2  , 3 , 1 ) ], display = FALSE ) )
     if(!all ( unlist(lapply(txt, nchar)) == 0  ) ) { cat(txt, sep="\n")}
     eq[["descriptives"]][["linkerror"]] <- eqJk[["descriptives"]][["linkerror.jackknife"]]
+    eq[["anchor"]]<- merge(eq[["anchor"]], y[,c("item",allN[["testlet"]])], by.x = colnames(eq[["anchor"]])[1], by.y = colnames(y)[1], all.x = TRUE, all.y = FALSE)
     eq[["ntl"]]  <- length(unique(dfr[,4]))
   }
   return(eq)}
+
+
 

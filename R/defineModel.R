@@ -68,7 +68,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
   # arguments specific to `conquest`:
   if(software == "conquest"){
     # character: dir, conquest.folder, model.statement, export
-    checkmate::assert_directory_exists(dir, access = "w")
+#    checkmate::assert_directory_exists(dir, access = "w")
     checkmate::assert_character(model.statement, len = 1, null.ok = TRUE)
     checkmate::assert_file_exists(conquest.folder)
     # logical: compute.fit, use.letters, allowAllScoresEverywhere
@@ -86,7 +86,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
   # arguments specific to `tam`:
   if(software == "tam"){
     # character: dir
-    if(!is.null(dir)) {checkmate::assert_directory_exists(dir, access = "r")}
+#    if(!is.null(dir)) {checkmate::assert_directory_exists(dir, access = "r")}
     # character via match.arg: pvMethod, constraints
     pvMethod <- match.arg(arg = pvMethod, choices = c("regular", "bayesian"))
     constraints <- match.arg(arg = constraints, choices = c("cases", "none", "items"))
@@ -102,8 +102,9 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
 #    warning(paste0("The first column of the data frame `est.slopegroups` should be called `item`, but is called ",
 #                   colnames(est.slopegroups)[1], "."))
 
-    lapply(c(guessMat[,1], est.slopegroups[,1], fixSlopeMat[,1]), checkmate::assert_character)
-    lapply(c(guessMat[,2], est.slopegroups[,2], fixSlopeMat[,2]), checkmate::assert_numeric)
+### assertions duerfen nicht nach reihenfolge der spalten gehen, denn die kann unterschiedlich sein
+#    lapply(c(guessMat[,1], est.slopegroups[,1], fixSlopeMat[,1]), checkmate::assert_character)
+#    lapply(c(guessMat[,2], est.slopegroups[,2], fixSlopeMat[,2]), checkmate::assert_numeric)
   }
 
 ### function -------------------------------------------------------------------
@@ -223,7 +224,8 @@ defineModel <- function(dat, items, id, splittedModels = NULL,
     if(software == "conquest" || !is.null(all.Names[["DIF.var"]])) {
       if(!all(subsNam$old == subsNam$new)) {
         sn     <- subsNam[which( subsNam$old != subsNam$new),]
-        message("Conquest neither allows '.', '-', and '_' nor upper case letters in explicit variable names and numbers in DIF variable name. Delete signs from variables names for explicit and DIF variables: \n\n", eatTools::print_and_capture (sn, spaces = 5), "\n")
+        if(nrow(sn) > 4) {toadd <- " (truncated)"} else {toadd <- ""}
+        message("'.', '-', and '_' nor upper case letters are allowed in explicit variable names and numbers in DIF variable name. Delete signs from variables names for explicit and DIF variables",toadd,": \n\n", eatTools::print_and_capture (head(sn, n=4), spaces = 5), "\n")
         colnames(dat) <- eatTools::recodeLookup(colnames(dat), sn[,c("old", "new")])
         all.Names     <- lapply(all.Names, FUN = function ( y ) {eatTools::recodeLookup(y, sn[,c("old", "new")]) })
         if(model.statement != "item") {

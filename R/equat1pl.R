@@ -79,7 +79,7 @@ equat1pl<- function(results, prmNorm, item = NULL, domain = NULL, testlet = NULL
           }
         }
         if ( length(prmDim[, "item"]) != length(unique(prmDim[, "item"])) ) {  stop(paste("Items are not unique for model '",as.character(d[1,"model"]),"'.\n",sep="")) }
-        eq  <- equAux ( x = prmDim[ ,c("item", "est")], y = prmM[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])] )
+        eq  <- equAux ( x = prmDim[ ,c("item", "est")], y = prmM[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])], allN = allN )
         if ( eq[["descriptives"]][["N.Items"]] > 0) {
           if ( method == "robust") {
             prm<- merge(prmM[,c(allN[["item"]], allN[["value"]], allN[["testlet"]])], prmDim[ ,c("item", "est")], by.y="item", by.x = allN[["item"]], all=FALSE)
@@ -118,5 +118,6 @@ equat1pl<- function(results, prmNorm, item = NULL, domain = NULL, testlet = NULL
       return(dimN) }, simplify = FALSE)
     ret  <- list ( items = items, results = results)
     class(ret) <- c("eq2tom", class(ret))
+    attr(ret, "allN") <- allN
     return(ret)
   }  }
