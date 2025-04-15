@@ -1,95 +1,44 @@
 ### diverse functions called by defineModel()
 
-doAufb <- function ( m, matchCall, anf, verbose, dir, multicore ) {
-  matchL <- match(m, unlist(lapply(matchCall[["splittedModels"]][["models.splitted"]], FUN = function ( l ) { l[["model.no"]] } )))
-  mess1  <- NULL
-  if(!is.null(matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["qMatrix"]])) {
-    if ( !is.null(matchCall[["items"]]) )  {
-      if(m == anf) { mess1 <- c(mess1, cat("Warning: 'defineModel' was called using 'splitModels' argument. Model split according to item groups is intended. Item selection is defined \n    via 'splittedModels' object. Hence, 'items' argument is expected to be missed in 'defineModel()' and will be ignored.\n")) }
-    }
-    itemMis<- setdiff ( matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["qMatrix"]][,1], colnames(matchCall[["dat"]]))
-    if( length ( itemMis ) > 0) {
-      mess1 <- c(mess1, paste( "Warning! Model No. ",matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["model.no"]], ", model name: '",matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["model.name"]],"': ", length(itemMis) ," from ",nrow(matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["qMatrix"]])," items listed the Q matrix not found in data:\n    ", paste(itemMis,collapse=", "),"\n",sep=""))
-    }
-    itemSel<- intersect ( matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["qMatrix"]][,1], colnames(matchCall[["dat"]]))
-    qMatrix<- matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["qMatrix"]]
-  }  else  {
-    if ( is.null(matchCall[["items"]]) )  { stop(paste0("Model no. ",m," ('",matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["model.name"]],"'): no items defined.\n"))}
-    itemSel<- matchCall[["items"]]                                     ### itemSel = "items selected"
-  }
-  if(!is.null(matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["person.grouping"]])) {
-    persMis<- setdiff ( matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["person.grouping"]][,1], matchCall[["dat"]][,matchCall[["id"]]])
-    if( length ( persMis ) > 0) {
-      mess1 <- c(mess1, paste0( "Warning: ",length(persMis) ," from ",nrow(matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["person.grouping"]])," persons not found in data.\n"))
-    }
-    persons<- intersect ( matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["person.grouping"]][,1], matchCall[["dat"]][,matchCall[["id"]]])
-    datSel <- matchCall[["dat"]][match(persons, matchCall[["dat"]][,matchCall[["id"]]]),]
-  }  else  { datSel <- matchCall[["dat"]] }
-  if(is.null(matchCall[["dir"]])) { dirI <- NULL }  else  { dirI   <- file.path(dir, substring(matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["model.subpath"]],3)) }
-  nameI  <- matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["model.name"]]
-  if ( !is.null(matchCall[["qMatrix"]]) ) {qMatrix <- matchCall[["qMatrix"]]}
-  if(!exists("qMatrix") && is.null(matchCall[["qMatrix"]]) ) {
-    nDim    <- 1
-    qMatrix <- NULL
-  }   else   {
-    if(!exists("qMatrix") ) { qMatrix <- matchCall[["qMatrix"]]}
-    nDim <- ncol(qMatrix)-1
-  }
-  overwr1<- list( dat=datSel, items = itemSel, qMatrix = qMatrix, analysis.name = nameI, dir = dirI)
-  overwrF<- setdiff ( colnames(matchCall[["splittedModels"]][["models"]]), c("model.no", "model.name", "model.subpath", "dim", "Ndim", "group", "Ngroup"))
-  if(length(overwrF)>0) {
-    notAllow <- setdiff ( overwrF, names(formals(defineModel)))
-    if ( length ( notAllow ) > 0 ) {
-      if ( m == anf ) {
-        mess1 <- c(mess1, paste("Column(s) '",paste(notAllow, collapse = "', '"),"' of 'splittedModels' definition frame do not match arguments of 'defineModel()'. Columns will be ignored.\n", sep=""))
-      }
-      overwrF <- setdiff (overwrF, notAllow)
-    }
-    notAllow2<- intersect ( overwrF, names(overwr1))
-    if ( length ( notAllow2 ) > 0 ) {
-      if ( m == anf ) {
-        mess1 <- c(mess1, paste("Column(s) '",paste(notAllow2, collapse = "', '"),"' of 'splittedModels' definition frame are not allowed to be modified by user. Columns will be ignored.\n", sep=""))
-      }
-      overwrF <- setdiff (overwrF, notAllow2)
-    }
-    notAllow3<- intersect ( overwrF, names(matchCall))
-    if ( length ( notAllow3 ) > 0 ) {
-      if ( m == anf ) {
-        mess1 <- c(mess1, paste("Column(s) '",paste(notAllow3, collapse = "', '"),"' were defined twice, in <models>$models and 'defineModel'. The latter one will be ignored.\n", sep=""))
-      }
-    }
-    if ( length ( overwrF ) > 0 ) {
-      for ( hh in overwrF ) {
-        overwr1[[hh]] <- matchCall[["splittedModels"]][["models"]][which(matchCall[["splittedModels"]][["models"]][,"model.no"] == m),hh]
-        matchCall[["splittedModels"]][["models.splitted"]][[matchL]][[hh]] <- matchCall[["splittedModels"]][["models"]][which(matchCall[["splittedModels"]][["models"]][,"model.no"] == m),hh]
-      }
-    }
-  }  else  { overwrF <-  NULL }
-  zusatz <- setdiff ( setdiff ( names(matchCall), "splittedModels"), names( overwr1))
-  if ( length ( zusatz ) > 0 ) { overwr1 <- c(overwr1, matchCall[zusatz]) }
-  if(!is.null(matchCall[["items"]])) {allVars<- list(variablen=matchCall[["items"]])}
-  if(exists("itemSel"))              {allVars<- list(variablen=itemSel)}
-  allNams<- lapply(allVars, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = matchCall[["dat"]], variable=ii)})
-  overwr3<- data.frame ( arg = c("Model name", "Number of items", "Number of persons", "Number of dimensions"), eval = as.character(c(matchCall[["splittedModels"]][["models.splitted"]][[matchL]][["model.name"]],length(allNams[["variablen"]]), nrow(datSel) , nDim)), stringsAsFactors = FALSE)
-  if ( length ( overwrF) > 0 )  {
-    zusatz <- lapply ( overwrF, FUN = function ( y ) { matchCall[["splittedModels"]][["models"]][which(matchCall[["splittedModels"]][["models"]][,"model.no"] == m),y] })
-    zusatz <- data.frame ( arg = overwrF, eval = as.character ( zusatz ) )
-    overwr3<- rbind ( overwr3, zusatz)
-  }
-  overwr3[,"leerz"] <- max (nchar(overwr3[,"arg"])) - nchar(overwr3[,"arg"]) + 1
-  txt    <- apply(overwr3, MARGIN = 1, FUN = function ( j ) { paste("\n    ", j[["arg"]], ":", paste(rep(" ", times = j[["leerz"]]), sep="", collapse=""), j[["eval"]], sep="")})
-  nDots  <- max(nchar(overwr3[,"arg"])) + max(na.omit(nchar(overwr3[,"eval"]))) + 6
-  if(verbose == TRUE ) {
-    cat(paste("\n\n",paste(rep("=",times = nDots), sep="", collapse=""),"\nModel No. ",m, paste(txt,sep="", collapse=""), "\n",paste(rep("=",times = nDots), sep="", collapse=""),"\n\n", sep=""))
-    if(!is.null(mess1)) { cat(mess1)}
-  }
-  if(is.null ( matchCall[["splittedModels"]][["nCores"]] ) | matchCall[["splittedModels"]][["nCores"]] == 1 ) {
-    ret    <- do.call("defineModel", args = overwr1)
-  }  else  {
-    attr(overwr1[["dat"]], "multicore") <- TRUE
-    ret    <- overwr1
-  }
-  return(ret) }
+doAufb <- function ( x, argL ) {
+          if(!is.null(x[["qMatrix"]])) {
+     ### check: wenn superSplitter BERUHEND AUF ITEM GROUPING genutzt wird, wird 'items'-Argument von 'defineModel' ignoriert bzw. ueberschrieben
+             itemMis<- setdiff ( x[["qMatrix"]][,1], colnames(argL[["dat"]]))
+             if(length(itemMis) > 0) {cli::cli_warn(c(paste0("Model split preparation for model No. ",x[["model.no"]], ", model name ",x[["model.name"]],": ", length(itemMis), " items from ",nrow(x[["qMatrix"]])," items listed the Q matrix not found in data:"), "i"=paste0("'", paste(itemMis, collapse= "', '"),"'")))}
+             itemSel<- intersect ( x[["qMatrix"]][,1], colnames(argL[["dat"]]))
+             qMatrix<- x[["qMatrix"]]
+          }  else  {
+             if ( is.null(argL[["items"]]) )  { stop(paste0("Model no. ",x[["model.no"]]," ('",x[["model.name"]],"'): no items defined.\n"))}
+             itemSel<- argL[["items"]]                                          ### itemSel = "items selected"
+          }
+     ### Personen im Datensatz selektieren: Achtung: wenn keine Personen in "person.grouping", nimm alle!
+          if(!is.null(x[["person.grouping"]])) {
+             persMis<- setdiff ( x[["person.grouping"]][,1], argL[["dat"]][,argL[["id"]]])
+             if( length ( persMis ) > 0) {warning(paste0("Model split preparation for model No. ",x[["model.no"]], ", model name ",x[["model.name"]],": ", length(persMis) ," from ",nrow(x[["person.grouping"]])," persons not found in data.\n"))}
+             persons<- intersect ( x[["person.grouping"]][,1], argL[["dat"]][,argL[["id"]]])
+             datSel <- argL[["dat"]][match(persons, argL[["dat"]][,argL[["id"]]]),]
+          }  else  {
+             datSel <- argL[["dat"]]
+          }
+     ### Unterverzeichnisse definieren
+          if(is.null(argL[["dir"]])) { dirI <- NULL }  else  { dirI   <- file.path(argL[["dir"]], substring(x[["model.subpath"]],3)) }
+          nameI  <- x[["model.name"]]
+          if ( !is.null(argL[["qMatrix"]]) ) {qMatrix <- argL[["qMatrix"]]}
+          if(!exists("qMatrix") && is.null(argL[["qMatrix"]]) ) {
+             nDim    <- 1
+             qMatrix <- NULL
+          }   else   {
+             if(!exists("qMatrix") ) { qMatrix <- argL[["qMatrix"]]}
+             nDim <- ncol(qMatrix)-1
+          }
+     ### alles was hier definiert wurde, in ArgL ersetzen
+          if(exists("qMatrix")) {argL[["qMatrix"]]<- qMatrix}
+          if(exists("itemSel")) {argL[["items"]]  <- itemSel}
+          if(exists("datSel"))  {argL[["dat"]]    <- datSel}
+          if(!is.null(dirI))    {argL[["dir"]]    <- dirI}
+          argL[["analysis.name"]] <- nameI
+          argL[["nDim"]] <- nDim
+          return(argL)}
 
 ### ----------------------------------------------------------------------------
 
@@ -142,7 +91,7 @@ prepFixSlopeMatTAM <- function (fsm, allNam, qma, slopeMatDomainCol, slopeMatIte
       if ( length( mtch) < 2 ) { stop(cat(paste ( "Cannot found dimension '",colnames(qma)[2],"' in 'fixSlopeMat'. Found following values in '",allNam[["slopeMatDomainCol"]],"' column of 'fixSlopeMat': \n    '", paste( sort(unique(fsm[, allNam[["slopeMatDomainCol"]] ])), collapse="', '"),"'.\n",sep="")))}
       fsm   <- fsm[mtch, c(allNam[["slopeMatItemCol"]],allNam[["slopeMatValueCol"]])]
     }
-    warning( "To date, fixing slopes only works for dichotomous unidimensional or between-item multidimensional models.")
+    cat( "Warning: To date, fixing slopes only works for dichotomous unidimensional or between-item multidimensional models.\n")
     estVar <- TRUE
     weg2   <- setdiff(fsm[,1], allNam[["variablen"]])
     if(length(weg2)>0) {
@@ -249,7 +198,7 @@ adaptMethod <- function(method, software,nodes){
       nodes <- 1000
     } else {
       if (nodes < 500 ) {
-        warning(paste0("Due to user specification, only ",nodes," nodes are used for '",method,"' estimation. Please note or re-specify your analysis."))
+          cat(paste0("Warning: Due to user specification, only ",nodes," nodes are used for '",method,"' estimation. Please note or re-specify your analysis.\n"))
       }
     }
     if ( software == "tam" )   {snodes <- nodes; nodes <- NULL; QMC <- as.logical(car::recode ( method, "'montecarlo'=FALSE; 'quasiMontecarlo'=TRUE"))}
@@ -288,43 +237,33 @@ return(string)}
 
 ### ----------------------------------------------------------------------------
 
-anker <- function(lab, prm, qMatrix, domainCol, itemCol, valueCol, multicore )  {
-  stopifnot(ncol(lab)==2)
-  checkmate::assert_data_frame(prm, min.cols = 2)
-  if(ncol(prm) == 2){
-    checkmate::assert_character(prm[,1])
-    checkmate::assert_numeric(prm[,2])
-  }
-  if ( !ncol(prm) == 2 )   {
-    if ( is.null(itemCol))  { stop("If anchor parameter frame has more than two columns, 'itemCol' must be specified.\n")}
-    if ( is.null(valueCol)) { stop("If anchor parameter frame has more than two columns, 'valueCol' must be specified.\n")}
-    allVars <- list(domainCol = domainCol, itemCol=itemCol, valueCol=valueCol)
-    allNams <- lapply(allVars, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = prm, variable=ii)})
-    notIncl <- setdiff ( colnames(qMatrix)[-1], prm[,allNams[["domainCol"]]])
-    if ( length( notIncl ) > 0 ) { stop(paste ( "Q matrix contains domain(s) ",paste("'",paste(notIncl, collapse="', '"),"'",sep="")," which are not included in the '",allNams[["domainCol"]],"' column of the anchor parameter frame.\n",sep="")) }
-    weg     <- setdiff ( unique(prm[,allNams[["domainCol"]]]), colnames(qMatrix)[-1])
-    if ( length ( weg ) > 0 ) {
-      ind <- eatTools::whereAre ( weg, prm[,allNams[["domainCol"]]], verbose=FALSE)
-      cat(paste("Remove ",length(ind)," rows from the anchor parameter frame which do not belong to any of the specified domains in the Q matrix.\n",sep=""))
-      prm <- prm[-ind,]
-    }
-    prm     <- prm[,c(allNams[["itemCol"]], allNams[["valueCol"]])]
-  }
-  colnames(prm) <- c("item","parameter")
-  dopp<- which(duplicated(prm[,"item"]))
-  if(length(dopp)>0) { cat(paste("W A R N I N G !!   Found ",length(dopp)," duplicate item identifiers in anchor list. Duplicated entries will be deleted.\n",sep="")) ; prm <- prm[which(!duplicated(prm[,"item"])), ] }
-  ind <- intersect(lab[,"item"],prm[,"item"])
-  if(length(ind) == 0) {stop("No common items found in 'anchor' list and data frame.\n")}
-  if(length(ind) > 0)  {cat(paste(length(ind), " common items found in 'anchor' list and data frame.\n",sep="")) }
-  if(!is.null(multicore) && multicore == TRUE) {
-    txt <- capture.output(resT<- eatTools::mergeAttr(lab, prm, by = "item", sort = FALSE, all = FALSE, setAttr = FALSE, unitName = "item", xName = "item response data", yName = "anchor list", verbose = c("match", "unique")),type="message")
-    if(length(txt)>0) { cat(txt, sep="\n")}
-  }  else  {
-    resT<- eatTools::mergeAttr(lab, prm, by = "item", sort = FALSE, all = FALSE, setAttr = FALSE, unitName = "item", xName = "item response data", yName = "anchor list", verbose = c("match", "unique"))
-  }
-  res <- data.frame(resT[sort(resT[,2],decreasing=FALSE,index.return=TRUE)$ix,], stringsAsFactors = FALSE)[,-1]
-  stopifnot(nrow(res) == length(ind))
-  return(list ( resConquest = res, resTam = resT[,-2]))}
+anker <- function(lab, prm, qMatrix, domainCol, itemCol, valueCol)  {
+         stopifnot(ncol(lab)==2)
+         if(!ncol(prm) == 2 )   {                                    ### wenn itemliste nicht unique ... 'domain'-Spalte kann ausgelassen werden
+            if(is.null(itemCol))  { stop("If anchor parameter frame has more than two columns, 'itemCol' must be specified.\n")}
+            if(is.null(valueCol)) { stop("If anchor parameter frame has more than two columns, 'valueCol' must be specified.\n")}
+            allVars <- list(domainCol = domainCol, itemCol=itemCol, valueCol=valueCol)
+            allNams <- lapply(allVars, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = prm, variable=ii)})
+            notIncl <- setdiff ( colnames(qMatrix)[-1], prm[,allNams[["domainCol"]]])
+            if(length(notIncl) > 0 ) { stop(paste ( "Q matrix contains domain(s) ",paste("'",paste(notIncl, collapse="', '"),"'",sep="")," which are not included in the '",allNams[["domainCol"]],"' column of the anchor parameter frame.\n",sep="")) }
+            weg     <- setdiff ( unique(prm[,allNams[["domainCol"]]]), colnames(qMatrix)[-1])
+            if(length ( weg ) > 0 ) {
+               ind <- eatTools::whereAre ( weg, prm[,allNams[["domainCol"]]], verbose=FALSE)
+               cat(paste("Remove ",length(ind)," rows from the anchor parameter frame which do not belong to any of the specified domains in the Q matrix.\n",sep=""))
+               prm <- prm[-ind,]
+            }
+            prm     <- prm[,c(allNams[["itemCol"]], allNams[["valueCol"]])]
+         }
+         colnames(prm) <- c("item","parameter")
+         dopp<- which(duplicated(prm[,"item"]))
+         if(length(dopp)>0) { cat(paste("W A R N I N G !!   Found ",length(dopp)," duplicate item identifiers in anchor list. Duplicated entries will be deleted.\n",sep="")) ; prm <- prm[which(!duplicated(prm[,"item"])), ] }
+         ind <- intersect(lab[,"item"],prm[,"item"])
+         if(length(ind) == 0) {stop("No common items found in 'anchor' list and data frame.\n")}
+         if(length(ind) > 0)  {cat(paste(length(ind), " common items found in 'anchor' list and data frame.\n",sep="")) }
+         resT<- eatTools::mergeAttr(lab, prm, by = "item", sort = FALSE, all = FALSE, setAttr = FALSE, unitName = "item", xName = "item response data", yName = "anchor list", verbose = c("match", "unique"))
+         res <- data.frame(resT[sort(resT[,2],decreasing=FALSE,index.return=TRUE)$ix,], stringsAsFactors = FALSE)[,-1]
+         stopifnot(nrow(res) == length(ind))
+         return(list ( resConquest = res, resTam = resT[,-2]))}
 
 ### ----------------------------------------------------------------------------
 
@@ -377,3 +316,37 @@ item.diskrim <- function(daten, itemspalten, streng = TRUE) {
   if(!missing(itemspalten))  {daten <- daten[,itemspalten]}
   trenn <- suppressWarnings(eatTools::pwc(daten))
   if(streng) {return(data.frame(item.name=trenn[,"item"],item.diskrim = trenn[,"partWholeCorr"],stringsAsFactors = FALSE))} else {return(data.frame(item.name=trenn[,"item"],item.diskrim = trenn[,"corr"],stringsAsFactors = FALSE))}}
+
+cleanifySplittedModels <- function (lst, argL) {
+  if(length(lst) == 4L & !is.null(lst[["models"]]) &  length(nrow( lst[["models"]]) > 0)>0 ) {
+     if(!is.symbol ( argL[["analysis.name"]] ) ) {
+        cat(paste("Analysis name is already specified by the 'splitted models' object. User-defined analysis name '",argL[["analysis.name"]],"' will be used as prefix.\n",sep=""))
+        lst[["models"]][,"model.name"] <- paste(argL[["analysis.name"]], "_", lst[["models"]][,"model.name"],sep="")
+        for ( u in 1:length(lst[["models.splitted"]]) ) { lst[["models.splitted"]][[u]][["model.name"]] <- paste(argL[["analysis.name"]], "_", lst[["models.splitted"]][[u]][["model.name"]],sep="") }
+     }
+     if(nrow(lst[[1L]])>0) {
+        mods   <- intersect(lst[["models"]][,"model.no"], unlist(lapply(lst[["models.splitted"]], FUN = function ( l ) {l[["model.no"]]})))
+     }  else  {
+        mods <- unlist(lapply(lst[["models.splitted"]], FUN = function ( l ) {l[["model.no"]]}))
+     }
+  }  else  {
+     mods <- unlist(lapply(lst[["models.splitted"]], FUN = function ( l ) {l[["model.no"]]}))
+  }
+  if(length(mods) == 0) { stop("Inconsistent model specification in 'splitted models'.\n") } else { if(argL[["verbose"]] == TRUE) { cat(paste("\nSpecification of 'qMatrix' and 'person.groups' results in ",length(mods)," model(s).\n",sep="")) } }
+  if(!is.null(lst[["nCores"]] ) ) {
+     if( lst[["nCores"]] > 1 ) {
+        cat(paste ( "Use multicore processing. Models are allocated to ",lst[["nCores"]]," cores.\n",sep=""))
+        flush.console()
+     }
+  }
+  return(lst)}
+
+generateConsoleInfo <- function (argL, x) {
+    listing <- data.frame ( name = c("Model name", "Number of items", "Number of persons", "Number of dimensions"), wert = as.character(c(x[["model.name"]],length(argL[["items"]]), nrow(argL[["dat"]]) , argL[["nDim"]])), stringsAsFactors = FALSE)
+    zusatz  <- setdiff(names(x),  c("model.no", "model.name", "model.subpath", "dim", "Ndim", "group", "Ngroup", "qMatrix", "person.grouping"))
+    if(length(zusatz)>0) {listing <- rbind(listing, data.frame ( name = zusatz, wert = unlist(x[zusatz]), stringsAsFactors=FALSE))}
+    listing[,"leerz"] <- max (nchar(listing[,"name"])) - nchar(listing[,"name"]) + 1
+    txt     <- apply(listing, MARGIN = 1, FUN = function ( j ) { paste("\n    ", j[["name"]], ":", paste(rep(" ", times = j[["leerz"]]), sep="", collapse=""), j[["wert"]], sep="")})
+    nDots   <- max(nchar(listing[,"name"])) + max(na.omit(nchar(listing[,"wert"]))) + 6
+    txtRet  <- capture.output(cat(paste("\n\n",paste(rep("=",times = nDots), sep="", collapse=""),"\nModel No. ",x[["model.no"]], paste(txt,sep="", collapse=""), "\n",paste(rep("=",times = nDots), sep="", collapse=""),"\n\n", sep="")))
+    return(txtRet)}

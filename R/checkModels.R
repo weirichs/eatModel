@@ -26,7 +26,6 @@ checkPersonGroupsConsistency <- function(d){
 
 checkQmatrixConsistency <- function(qmat, errorWhenNot01 = FALSE){
   if(is.null(qmat)) {return(qmat)}
-
   qmat <- eatTools::makeDataFrame(qmat, name = "Q matrix", onlyWarn=FALSE)
   if(!inherits(qmat[,1], "character")){
     qmat[,1] <- as.character(qmat[,1])}
@@ -34,23 +33,23 @@ checkQmatrixConsistency <- function(qmat, errorWhenNot01 = FALSE){
 
   # all columns - except the first - must be numeric or integer
   if(!all(nClass)){
-    warning(paste0("Found non-numeric indicator column(s) in the Q matrix. Transform column(s) '",
-                   paste(colnames(qmat)[ which(nClass==FALSE)+1], collapse = "', '") ,"' into numeric format."))
+    cat(paste0("Warning: Found non-numeric indicator column(s) in the Q matrix. Transform column(s) '",paste(colnames(qmat)[ which(nClass==FALSE)+1], collapse = "', '") ,"' into numeric format.\n"))
     qmat <- data.frame(qmat[,1,drop=FALSE], eatTools::asNumericIfPossible(qmat[,-1,drop=FALSE]), stringsAsFactors = FALSE)}
-
   #' There should only be values 0 and 1 (no missings).
   #' In rare cases (conquest 2pl with fixed Itemladungen) other values than 0/1 are ok,
   #' that's why there's a warning here, instead of an error.
   #' Exception: function is called by splitModels() -> HAS to throw an error with values other than 0/1.
   werte <- eatTools::tableUnlist(qmat[, -1, drop=FALSE], useNA="always")
-  if(length(setdiff(names(werte), c("0","1", "NA"))) > 0){
-    eval(parse(text=paste0("cli::cli_",ifelse(errorWhenNot01, "abort", "warn"),
-                           "(c(\"Expected values for Q matrix are 0 and 1.\", \"",
-                           ifelse(errorWhenNot01, "x", "i"),
-                           "\"=paste0(\"Found unexpected values: '\", paste(names(werte), collapse= \"', '\"),\"'\")))")))}
+  unexp <- setdiff( names(werte) , c("0","1", "NA"))
+  if(length(unexp)>0) {
+     if(errorWhenNot01) {
+        stop(paste0("Expected values for Q matrix are 0 and 1. Found unexpected values: '",paste(unexp, collapse="', '"),"'."))
+     } else {
+        cat(paste0("Warning: Expected values for Q matrix are 0 and 1. Found unexpected values: '",paste(unexp, collapse="', '"),"'.\n"))
+     }
+  }
   if(werte[match("NA", names(werte))] > 0){
     stop("Missing values in Q matrix.\n")}
-
   # Indikatorspalten duerfen nicht konstant 0 sein (konstant 1 ginge, das waere dann within item multidimensionality)
   wertes <- lapply(qmat[, -1, drop=FALSE], FUN = function(col) {all(col == 0)})
   konst <- which(wertes == TRUE)
@@ -95,94 +94,73 @@ checkQmatrixConsistency <- function(qmat, errorWhenNot01 = FALSE){
 
 ### called by defineModel() ----------------------------------------------------
 
-checkContextVars <- function(x, varname, type = c("weight", "DIF", "group", "HG"), itemdata, suppressAbort = FALSE, internal = FALSE){
-  type <- match.arg(arg = type, choices = c("weight", "DIF", "group", "HG"))
-  stopifnot(length(x) == nrow(itemdata))
-  if(missing(varname)){
-    varname <- "ohne Namen"}
-  if(!inherits(x, c("numeric", "integer")) && isTRUE(internal)){
-    if (type == "weight"){
-      stop(paste(type, " variable has to be 'numeric' necessarily. Automatic transformation is not recommended. Please transform by yourself.\n",sep=""))
-    }
-    cat(paste(type, " variable has to be 'numeric'. Variable '",varname,"' of class '",class(x),"' will be transformed to 'numeric'.\n",sep=""))
-    x <- suppressWarnings(unlist(eatTools::asNumericIfPossible(x = data.frame(x, stringsAsFactors = FALSE), transform.factors = TRUE, maintain.factor.scores = FALSE, force.string = FALSE)))
-    if(!inherits(x, "numeric")){
-      x <- as.numeric(as.factor(x))}
-    cat(paste("    '", varname, "' was converted into numeric variable of ",length(table(x))," categories. Please check whether this was intended.\n",sep=""))
-    if(length(table(x)) < 12){
-      cat(paste("    Values of '", varname, "' are: ",paste(names(table(x)), collapse = ", "),"\n",sep=""))}
-  }
-
-  toRemove <- NULL
-  mis      <- length(unique(x))
-  if(mis == 0){
-    if(suppressAbort == FALSE){
-      stop(paste("Error: ",type," Variable '",varname,"' without any values.",sep=""))
-    }  else  {
-      cat(paste0("Warning: ", type," Variable '",varname,"' without any values. '",varname,"' will be removed.\n"))
-      toRemove <- varname
-    }
-  }
-  if(mis == 1 ){
-    if(suppressAbort == FALSE){
-      stop(paste("Error: ",type," Variable '",varname,"' is a constant.",sep=""))
-    }  else  {
-      cat(paste0(type," Variable '",varname,"' is a constant. '",varname,"' will be removed.\n"))
-      toRemove <- varname
-    }
-  }
-  if(type == "DIF" | type == "group"){
-    if(mis > 10 && isTRUE(internal))   {warning(paste0(type," Variable '",varname,"' with more than 10 categories. Recommend recoding."))}
-  }
-
-  wegDifMis <- NULL; wegDifConst <- NULL; char <- 1; weg <- which(is.na(1:12)); info <- NULL
-  if(is.null(toRemove)){
-    char <- max(nchar(as.character(na.omit(x))))
-    weg  <- which(is.na(x))
-    if(length(weg) > 0){
-      warning(paste0("Found ",length(weg)," cases with missing on ",type," variable '",varname,"'. Conquest probably will collapse unless cases are not deleted.\n"))}
-    if(type == "DIF"){
-      if(mis > 2 && isTRUE(internal)){
-        cat(paste(type, " Variable '",varname,"' does not seem to be dichotomous.\n",sep=""))
+checkContextVars <- function(x, varname, type = c("weight", "DIF", "group", "HG"), itemdata, suppressAbort = FALSE, internal = FALSE)   {
+   type <- match.arg(arg = type, choices = c("weight", "DIF", "group", "HG"))
+   stopifnot(length(x) == nrow(itemdata))
+   if(missing(varname))  {varname <- "ohne Namen"}            ### ist Variable numerisch?
+   if(!inherits(x, c("numeric", "integer")) && isTRUE(internal))  {
+      if (type == "weight") {stop(paste(type, " variable has to be 'numeric' necessarily. Automatic transformation is not recommended. Please transform by yourself.\n",sep=""))}
+      cat(paste(type, " variable has to be 'numeric'. Variable '",varname,"' of class '",class(x),"' will be transformed to 'numeric'.\n",sep=""))
+      x <- suppressWarnings(unlist(eatTools::asNumericIfPossible(x = data.frame(x, stringsAsFactors = FALSE), transform.factors = TRUE, maintain.factor.scores = FALSE, force.string = FALSE)))
+      if(!inherits(x, "numeric"))  {                          ### erst wenn asNumericIfPossible fehlschlaegt, wird mit Gewalt numerisch gemacht, denn fuer Conquest MUSS es numerisch sein
+        x <- as.numeric(as.factor(x))
       }
-      y       <- paste0("V", x)
-      n.werte <- lapply(itemdata, FUN = function(iii) {by(iii, INDICES = list(y), FUN=table, simplify=FALSE)} )
-      completeMissingGroupwise <- data.frame(t(sapply(n.werte, function(ll){
-        lapply(ll, FUN = function(uu){
-          length(uu[uu > 0])
-        })
-      })), stringsAsFactors = FALSE)
-
-      for(iii in seq(along=completeMissingGroupwise)){
+      cat(paste("    '", varname, "' was converted into numeric variable of ",length(table(x))," categories. Please check whether this was intended.\n",sep=""))
+      if(length(table(x)) < 12 ) { cat(paste("    Values of '", varname, "' are: ",paste(names(table(x)), collapse = ", "),"\n",sep=""))}
+   }
+   toRemove<- NULL
+   mis     <- length(unique(x))
+   if(mis == 0 )  {
+      if ( suppressAbort == FALSE ) {
+          stop(paste("Error: ",type," Variable '",varname,"' without any values.",sep=""))
+     }  else  {
+          cat(paste0("Warning: ", type," Variable '",varname,"' without any values. '",varname,"' will be removed.\n"))
+          toRemove <- varname
+      }
+   }
+   if(mis == 1 )  {
+      if ( suppressAbort == FALSE ) {
+          stop(paste("Error: ",type," Variable '",varname,"' is a constant.",sep=""))
+     }  else  {
+          cat(paste0(type," Variable '",varname,"' is a constant. '",varname,"' will be removed.\n"))
+          toRemove <- varname
+      }
+   }
+   if(type == "DIF" | type == "group") {
+     if(mis > 10 && isTRUE(internal))   {cat(paste0("Warning: ", type," Variable '",varname,"' with more than 10 categories. Recommend recoding.\n"))}
+   }
+   wegDifMis <- NULL; wegDifConst <- NULL; char <- 1; weg <- which(is.na(1:12)); info <- NULL
+   if ( is.null(toRemove)) {
+       char    <- max(nchar(as.character(na.omit(x))))
+       weg     <- which(is.na(x))
+        if(length(weg) > 0 ) {cat(paste0("Found ",length(weg)," cases with missing on ",type," variable '",varname,"'. Conquest probably will collapse unless cases are not deleted.\n"))}
+       if(type == "DIF" ) {
+   if(mis > 2 && isTRUE(internal))   {cat(paste(type, " Variable '",varname,"' does not seem to be dichotomous.\n",sep=""))}
+   y       <- paste0("V", x)               ### wenn x numerisch ist, sind die Spaltennamen in completeMissingGroupwise nicht mehr den levels von x zuweisbar, da haengt R dann ein X ran
+     ### wenn man nicht simplify = FALSE setzt, passieren (aber nur in extrem seltenen ausnahmefaellen) solche Fehler wie in der mail von anne (31.07.2023, 15.54 Uhr) beschrieben ... wieso in gottes namen kann man dafuer den default TRUE setzen!?! wtf!?!
+   n.werte <- lapply(itemdata, FUN=function(iii){by(iii, INDICES=list(y), FUN=table, simplify=FALSE)})
+   completeMissingGroupwise <- data.frame(t(sapply(n.werte, function(ll){lapply(ll, FUN = function (uu) { length(uu[uu>0])}  )})), stringsAsFactors = FALSE)
+   for (iii in seq(along=completeMissingGroupwise)) {
         missingCat.i <- which(completeMissingGroupwise[,iii] == 0)
-        if(length(missingCat.i) > 0){
-          cat(paste("Warning: Following ", length(missingCat.i), " items with no values in ", type, " variable '",
-                    varname, "', group ", substring(colnames(completeMissingGroupwise)[iii], 2), ": \n", sep=""))
-          wegDifMis <- c(wegDifMis, rownames(completeMissingGroupwise)[missingCat.i])
-          cat(paste0("   ", paste(rownames(completeMissingGroupwise)[missingCat.i],collapse=", "), "\n"))
-          info <- plyr::rbind.fill(info,
-                                   data.frame(varname = varname, varlevel = substring(colnames(completeMissingGroupwise)[iii], 2),
-                                              nCases = table(y)[colnames(completeMissingGroupwise)[iii]], type = "missing",
-                                              vars = rownames(completeMissingGroupwise)[missingCat.i], stringsAsFactors = FALSE))
+        if(length(missingCat.i) > 0) {
+           cat(paste("Warning: Following ",length(missingCat.i)," items with no values in ",type," variable '",varname,"', group ",substring(colnames(completeMissingGroupwise)[iii],2),": \n",sep=""))
+           wegDifMis <- c(wegDifMis, rownames(completeMissingGroupwise)[missingCat.i] )
+           cat(paste0("   ", paste(rownames(completeMissingGroupwise)[missingCat.i],collapse=", "), "\n"))
+           info      <- plyr::rbind.fill(info, data.frame ( varname = varname, varlevel = substring(colnames(completeMissingGroupwise)[iii],2), nCases = table(y)[colnames(completeMissingGroupwise)[iii]], type = "missing", vars =rownames(completeMissingGroupwise)[missingCat.i], stringsAsFactors = FALSE))
         }
-        constantCat.i <- which(completeMissingGroupwise[,iii] == 1)
-        if(length(constantCat.i) > 0){
-          cat(paste("Warning: Following ", length(constantCat.i), " items are constants in ", type, " variable '",
-                    varname, "', group ", substring(colnames(completeMissingGroupwise)[iii], 2), ":\n",sep=""))
-          wegDifConst <- c(wegDifConst, rownames(completeMissingGroupwise)[constantCat.i])
-          values <- n.werte[rownames(completeMissingGroupwise)[constantCat.i]]
-          values <- lapply(values, FUN = function(v) {v[[colnames(completeMissingGroupwise)[iii]]]} )
-          cat(paste0("   ", paste(rownames(completeMissingGroupwise)[constantCat.i],collapse=", "), "\n"))
-          info <- plyr::rbind.fill(info,
-                                   data.frame(varname = varname, varlevel = substring(colnames(completeMissingGroupwise)[iii], 2),
-                                              nCases = table(y)[colnames(completeMissingGroupwise)[iii]], type = "constant",
-                                              vars =names(values), value =  sapply(values, names), nValue = unlist(values), stringsAsFactors = FALSE))
+        constantCat.i<- which(completeMissingGroupwise[,iii] == 1)
+        if(length(constantCat.i) > 0) {
+           cat(paste("Warning: Following ",length(constantCat.i)," items are constants in ",type," variable '",varname,"', group ",substring(colnames(completeMissingGroupwise)[iii],2),":\n",sep=""))
+           wegDifConst<- c(wegDifConst, rownames(completeMissingGroupwise)[constantCat.i] )
+           values    <- n.werte[rownames(completeMissingGroupwise)[constantCat.i]]
+           values    <- lapply(values, FUN = function(v){v[[colnames(completeMissingGroupwise)[iii]]]})
+           cat(paste0("   ", paste(rownames(completeMissingGroupwise)[constantCat.i],collapse=", "), "\n"))
+           info      <- plyr::rbind.fill(info, data.frame ( varname = varname, varlevel = substring(colnames(completeMissingGroupwise)[iii],2), nCases = table(y)[colnames(completeMissingGroupwise)[iii]], type = "constant", vars =names(values), value =  sapply(values, names), nValue = unlist(values), stringsAsFactors = FALSE))
         }
-      }
-    }
-  }
-  return(list(x = x, char = char, weg = weg, varname=varname, wegDifMis = wegDifMis, wegDifConst = wegDifConst, toRemove = toRemove, info=info))
-}
+   }
+        }
+   }
+   return(list(x = x, char = char, weg = weg, varname=varname, wegDifMis = wegDifMis, wegDifConst = wegDifConst, toRemove = toRemove, info=info))}
 
 ### called by defineModel() ----------------------------------------------------
 
@@ -216,7 +194,7 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
       }
       allNam[["HG.var"]] <- c(setdiff(allNam[["HG.var"]],vnam), colnames(ind))
       if ( length(allNam[["HG.var"]]) > 99 && software == "conquest" ) {
-        warning(paste0(length(allNam[["HG.var"]]), " background variables might be problematic in 'Conquest'. Recommend to use 'TAM' instead."))
+        cat(paste0("Warning: ", length(allNam[["HG.var"]]), " background variables might be problematic in 'Conquest'. Recommend to use 'TAM' instead.\n"))
       }
       dat <- data.frame ( dat, ind, stringsAsFactors = FALSE )
     }
@@ -314,13 +292,11 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
   noZahl  <- setdiff(1:nrow(datL), zahl)
   if (length( noZahl ) > 0 ) {
     itemNoZ <- unique(datL[noZahl,"variable"])
-    cli::cli_warn(c(paste0("Found {length(noZahl)} non-numeric value{?s} in ",length(itemNoZ)," of ",length(allNam[["variablen"]])," items:"),"i" = paste0("Items: '", paste( itemNoZ, collapse= "', '"), "'"),"i" = paste0("Non-numeric values: '", paste( unique(datL[noZahl,"value"]), collapse= "', '"), "'")))
+    cat(paste0("Warning: Found ", length(noZahl), " non-numeric value(s) in ",length(itemNoZ)," of ",length(allNam[["variablen"]])," items: '", paste( itemNoZ, collapse= "', '"), "'. Non-numeric values: '", paste( unique(datL[noZahl,"value"]), collapse= "', '"), "'.\n"))
   }
   klasse  <- unlist( lapply(dat[,allNam[["variablen"]], drop = FALSE], class) )
   if(any(unlist(lapply(dat[,allNam[["variablen"]], drop = FALSE], inherits, what=c("integer", "numeric"))) == FALSE)) {
-    warn <- c(unlist(lapply(setdiff(unique(klasse),c("integer", "numeric")), FUN = function (kls) {paste0(length(names(klasse)[which(klasse == kls)])," item columns of class '",kls, "': '",paste(names(klasse)[which(klasse == kls)], collapse="', '"), "'")})),"All item columns will be transformed to be 'numeric'. Recommend to edit your data manually prior to analysis")
-    names(warn) <- rep("i", length(warn))
-    cli::cli_warn(c("Found unexpected class type(s) in item response columns:", warn))
+    cat(paste0("Warning: Found unexpected class type(s) '", setdiff(unique(unlist(lapply(dat[,allNam[["variablen"]]], class))), c("integer", "numeric")), "' in item response columns.\n"))
     dat  <- dplyr::mutate_at(dat, .vars = allNam[["variablen"]], .funs = eatTools::asNumericIfPossible, force.string = TRUE)
   }
   values  <- lapply(dat[,allNam[["variablen"]], drop = FALSE], FUN = function ( ii ) { table(ii)})
@@ -331,7 +307,7 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
   if(length(n.mis) >0) {
     weg  <- createNamenItemsWeg(n.mis, remove = remove.missing.items)
     namen.items.weg <- c(namen.items.weg, weg[["niw"]])
-    cli::cli_warn(c(paste0("{length(n.mis)} testitem{?s} without any values:"), "i"=paste0(weg[["mess"]], "'", paste(names(n.mis), collapse="', '"),"'")))
+    cat(paste0("Warning: ",length(n.mis), " testitems(s) without any values: ",paste0(weg[["mess"]], "'", paste(names(n.mis), collapse="', '"),"'"), "\n"))
   }
 ### identifiziere Items mit Anzahl gueltiger Werte < minNperItem
   nValid <- unlist(lapply(dat[,allNam[["variablen"]], drop = FALSE], FUN = function ( ii ) { length(na.omit ( ii )) }))
@@ -339,7 +315,7 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
   if(length(below) > 0 ) {
     weg  <- createNamenItemsWeg(below, remove = removeMinNperItem)
     namen.items.weg <- c(namen.items.weg, weg[["niw"]])
-    cli::cli_warn(c(paste0("{length(below)} testitem{?s} with less than ", minNperItem, " valid responses."), "i"=paste0(weg[["mess"]], "'", paste(names(below), collapse="', '"),"'")))
+    cat(paste0("Warning: ",length(below), " testitem(s) with less than ", minNperItem, " valid responses: ", paste0(weg[["mess"]], "'", paste(names(below), collapse="', '"),"'"), "\n"))
   }
 ### identifiziere konstante Items (Items ohne Varianz)
   constant <- which(n.werte == 1)
@@ -348,7 +324,8 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
     namen.items.weg <- c(namen.items.weg, weg[["niw"]])
     uniqueVal       <- sapply(names(constant), FUN = function (ii) {unique(na.omit(dat[,ii]))})
     nVal            <- sapply(names(constant), FUN = function (ii) {length(which(!is.na(dat[,ii])))})
-    cli::cli_warn(c(paste0("{length(constant)} testitem{?s} {?is/are} constants. ", weg[["mess"]]), "i"=paste(paste0("Item '", names(constant), "', only value '", uniqueVal, "' occurs: ", nVal, " valid responses."), sep="\n")))
+    cat(paste0("Warning: ",length(constant), " testitem(s) are constants. ", weg[["mess"]]), "\n")
+    cat(paste("    Item '", names(constant), "', only value '", uniqueVal, "' occurs: ", nVal, " valid responses.", collapse="\n", sep="")); cat("\n")
   }
 ### identifiziere alle Items, die nicht dichotom (="ND") sind
   n.rasch  <- which( !isDichot )                                        ### (aber nicht die, die bereits wegen konstanter Werte aussortiert wurden!)
@@ -410,7 +387,7 @@ checkDir <- function(dir, software) {
 
 checkBoundary <- function(dat, allNam, boundary, remove.boundary) {
   datL.valid  <- reshape2::melt(dat, id.vars = allNam[["ID"]], measure.vars = allNam[["variablen"]], na.rm=TRUE)
-  if(nrow(datL.valid) == 0) {warning("No valid item values. Skip data preparation."); return(NULL)}
+  if(nrow(datL.valid) == 0) {cat("Warning: No valid item values. Skip data preparation.\n"); return(NULL)}
   nValid      <- table(datL.valid[,allNam[["ID"]]])
   inval       <- nValid[which(nValid<boundary)]
   if(length(inval)>0) {
