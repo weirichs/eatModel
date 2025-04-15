@@ -161,9 +161,9 @@ getConquestAdditionalTerms <- function(model.name, qMatrix, shw, shwFile){
       }
       vars<- c("ESTIMATE", "MNSQ", "MNSQ.1", "ERROR")
       cls <- sapply(shw[[i]][,vars], inherits, what=c("numeric", "integer"))
-      if ( !all(cls) ) {
-        warning(paste0("Expect column(s) '",paste(vars[which(cls==FALSE)],collapse= "', '"), "' in file '",shwFile,"' (statement '",i,"') to be numeric. Current column format is: '",paste(sapply(shw[[i]][,vars[which(cls==FALSE)]],class), collapse="', '"),"'. Column will be transformed."))
-        shw[[i]] <- eatTools::set.col.type(shw[[i]], col.type = list("numeric.if.possible" = names(cls[which(cls==FALSE)])), maintain.factor.scores = TRUE)
+      if(!all(cls) ) {
+         cat(paste0("Expect column(s) '",paste(vars[which(cls==FALSE)],collapse= "', '"), "' in file '",shwFile,"' (statement '",i,"') to be numeric. Current column format is: '",paste(sapply(shw[[i]][,vars[which(cls==FALSE)]],class), collapse="', '"),"'. Column will be transformed.\n"))
+         shw[[i]] <- dplyr::mutate_at(shw[[i]], .vars = names(cls[which(cls==FALSE)]), .funs = eatTools::asNumericIfPossible, maintain.factor.scores = TRUE)
       }
       shwE <- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = NA, value = shw[[i]][,"ESTIMATE"], stringsAsFactors = FALSE)
       shwE2<- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "infit", value = shw[[i]][,"MNSQ.1"], stringsAsFactors = FALSE)
