@@ -49,18 +49,18 @@ getConquestResults<- function(path, analysis.name, model.name, qMatrix, all.Name
 converged<- function (dir, logFile) {
   isConv <- TRUE
   if (!file.exists(file.path ( dir, logFile ))) {
-    warning(paste0("Model seems not to have converged. Cannot find log file '",file.path ( dir, logFile ),"'."))
+    cat(paste0("Warning: Model seems not to have converged. Cannot find log file '",file.path ( dir, logFile ),"'.\n"))
     isConv <- FALSE
   }  else  {
     logF  <- scan(file = file.path ( dir, logFile ), what="character",sep="\n",quiet=TRUE)
     if(length(logF) == 0 ) {
-      warning(paste0("Model seems not to have converged. Log file '",file.path ( dir, logFile ),"' is empty."))
+      cat(paste0("Warning: Model seems not to have converged. Log file '",file.path ( dir, logFile ),"' is empty.\n"))
       isConv <- FALSE
     }  else  {
       last  <- logF[length(logF)]
       if ( ! eatTools::crop(last) == "=>quit;" ) {
         if ( length( grep("quit;" , last)) == 0 ) {
-          warning(paste0("Model seems not to have converged. Log file unexpectedly finishs with '",last,"'.\nReading in model output might fail."))
+          cat(paste0("Warning: Model seems not to have converged. Log file unexpectedly finishs with '",last,"'.\nReading in model output might fail.\n"))
           isConv <- FALSE
         }  }  }  }
   return(isConv)  }
@@ -154,7 +154,7 @@ getConquestAdditionalTerms <- function(model.name, qMatrix, shw, shwFile){
         var1 <- unlist(apply(shw[[i]][,cols], MARGIN=1, FUN = function ( y ) {paste ( unlist(lapply ( 1:length(y), FUN = function ( yy ) { paste(names(y)[yy], y[yy],sep="_")})), sep="", collapse = "_X_")  }))
       }
       if(ncol(qMatrix) != 2 ){
-        warning(paste0("Cannot identify the group the term '",i,"' in file '",shwFile,"' belongs to. Insert 'NA' to the 'group' column."))
+        cat(paste0("Warning: Cannot identify the group the term '",i,"' in file '",shwFile,"' belongs to. Insert 'NA' to the 'group' column.\n"))
         gr <- NA
       }  else {
         gr <- colnames(qMatrix)[2]
