@@ -54,6 +54,10 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
        return(resAll) }
 
 defineModelSingle <- function (a) {
+     ### assertions
+       lapply(a[c("minNperItem", "boundary", "n.iterations", "p.nodes", "f.nodes","converge","deviancechange", "increment.factor" , "fac.oldxsi", "n.plausible")],checkmate::assert_numeric, lower = 0, len = 1)
+       checkmate::assert_numeric(a[["nodes"]], lower = 1, null.ok = TRUE, len = 1)
+       lapply(a[c("check.for.linking", "removeMinNperItem", "remove.boundary", "remove.no.answers", "remove.no.answersHG", "remove.missing.items", "remove.vars.DIF.missing", "remove.vars.DIF.constant", "verbose", "compute.fit", "fitTamMmlForBayesian", "use.letters", "allowAllScoresEverywhere", "progress")],checkmate::assert_logical, len = 1)
        for ( i in names(a)) { assign(i, a[[i]]) }                               ### alle Objekte in a auf den NAMESPACE exportieren
        dat  <- eatTools::makeDataFrame(dat, name = "dat")
      ### software checken

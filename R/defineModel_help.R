@@ -38,6 +38,11 @@ doAufb <- function ( x, argL ) {
           if(!is.null(dirI))    {argL[["dir"]]    <- dirI}
           argL[["analysis.name"]] <- nameI
           argL[["nDim"]] <- nDim
+     ### Zusatzargumente (definiert ueber add- und cross-Argumente aus splitModels() ) ggf. ergaenzen
+          add  <- setdiff(intersect(names(x), names(formals(defineModel))), "qMatrix")
+          if(length(add)>0) {
+             for(a in add) {argL[[a]] <- x[[a]]}
+          }
           return(argL)}
 
 ### ----------------------------------------------------------------------------
