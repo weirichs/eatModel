@@ -303,24 +303,31 @@ getConquestQ3 <- function(model.name, shw,Q3, q3theta, omitWle, omitPV, pv,wle,d
 ### ----------------------------------------------------------------------------
 
 getConquestDeviance <- function ( path, analysis.name, omitUntil = omitUntil) {
+    ### erstmal zusaetzliche Informationen (Anzahl nodes etc.) gewinnen
   cqc  <- scan(file.path ( path, paste0(analysis.name, ".cqc")),what="character",sep="\n",quiet=TRUE)
-  such <- c("method", "nodes")
+  such <- c("method", "nodes", "converge", "seed")
   ret  <- lapply(such, FUN = function ( su ) {
     indm <- grep(paste0(su, "="), cqc)
-    if ( length(indm)>1) {
-      hf   <- grep("f_nodes", cqc)
-      indm <- setdiff(indm, hf)
+    if ( length(indm)>1) {                                         ### schlechter Hotfix, f_nodes entfernen
+       hf   <- grep("f_nodes", cqc)
+       indm <- setdiff(indm, hf)
     }
     if(length(indm) != 1) {
-      cat(paste("Cannot identify '",su,"'from cqc file.\n",sep=""))
-      met <- NULL
+       cat(paste("Cannot identify '",su,"' from cqc file.\n",sep=""))
+       met <- NULL
     }  else  {
-      pos1<- nchar(unlist(strsplit(cqc[indm], su))[1])
-      pos2<- which(sapply(1:nchar(cqc[indm]), FUN = function(x){ substr(cqc[indm],x,x) == ","}))
-      pos2<- min(pos2[which(pos2>pos1)])
-      met <- eatTools::removePattern(substr(cqc[indm], pos1+1, pos2-1), paste0(su,"="))
+       pos1<- nchar(unlist(strsplit(cqc[indm], su))[1])            ### position finden, an der 'method' steht
+       pos2<- which(sapply(1:nchar(cqc[indm]), FUN = function(x){ substr(cqc[indm],x,x) == ","}))
+       if(length(pos2)==0) {
+          pos2<- nchar(cqc[indm])
+       } else {
+          pos2<- min(pos2[which(pos2>pos1)])
+       }
+       met <- eatTools::removePattern(substr(cqc[indm], pos1+1, pos2-1), paste0(su,"="))
     }
-    return(met)})
+    return(met)})                                                  ### Zeit als Differenz von cqc und shw file
+  names(ret) <- such
+  ret  <- Filter(Negate(is.null), ret)
   tme  <- file.info ( file.path ( path, paste0(analysis.name, ".shw")))[["mtime"]] - file.info ( file.path ( path, paste0(analysis.name, ".cqc")))[["mtime"]]
   grDevices::pdf(file = file.path ( path, paste0(analysis.name, "_dev.pdf")), width = 10, height = 7.5)
   plotDevianceConquest ( logFile = list ( path=path, analysis.name=analysis.name, ret=ret, tme=tme), omitUntil = omitUntil)
@@ -328,75 +335,79 @@ getConquestDeviance <- function ( path, analysis.name, omitUntil = omitUntil) {
 
 ### called by getConquestDeviance() --------------------------------------------
 
-plotDevianceConquest <- function (logFile, omitUntil = 1, reverse = TRUE, change = TRUE ) {
-  checkmate::assert_numeric(omitUntil, len = 1)
-  lapply(c(reverse, change), checkmate::assert_logical, len = 1)
-  #
-  if ( inherits(logFile, "character")) {lf <- logFile
-  }  else  { lf <- file.path(logFile[["path"]], paste0(logFile[["analysis.name"]],
-                                                       ".log"))}
-  checkmate::assert_file(lf)
+plotDevianceConquest <- function ( logFile, omitUntil = 1, reverse = TRUE, change = TRUE ) {
+  if ( inherits(logFile, "character")) {lf <- logFile}  else  { lf <- file.path(logFile[["path"]], paste0(logFile[["analysis.name"]], ".log"))}
   input<- scan(lf,what="character",sep="\n",quiet=TRUE)
   ind  <- grep("eviance=", input)
-  dev  <- unlist(lapply(input[ind], FUN = function (x) {
-    brace <- grep("\\(", x)
-    if(length(brace)>0) {
-      weg <- grep("\\(", unlist(strsplit(x, "")))
-      x   <- substr(x, 1, weg-1)
-    }
-    return(x)}))
-  dev  <- data.frame(lapply(data.frame(eatTools::halveString(dev, "\\."),
-                                       stringsAsFactors = FALSE), eatTools::removeNonNumeric),
-                     stringsAsFactors = FALSE)
-  mat  <- data.frame(iter = 1:length(ind), dev = as.numeric(paste(dev[,1], dev[,2], sep=".")),
-                     stringsAsFactors = FALSE)
+  dev  <- unlist(lapply(input[ind], FUN = function (x) {               ### bei negativer deviance veraenderung erzeugt conquest klammern mit
+          brace <- grep("\\(", x)                                      ### niedrigster bisheriger deviance, die muessen jetzt mitsamt der werte darinnen entfernt werden
+          if(length(brace)>0) {
+              weg <- grep("\\(", unlist(strsplit(x, "")))              ### stelle mit aufgehender klammer finden
+              x   <- substr(x, 1, weg-1)
+          }
+          return(x)}))
+  dev  <- data.frame ( lapply(data.frame ( eatTools::halveString(dev, "\\."), stringsAsFactors = FALSE), eatTools::removeNonNumeric), stringsAsFactors = FALSE)
+  mat  <- data.frame ( iter = 1:length(ind), dev = as.numeric(paste(dev[,1], dev[,2], sep=".")), stringsAsFactors = FALSE)
   if(omitUntil>0)  {
-    dc<- mat[-c(1:omitUntil),2]
+     dc<- mat[-c(1:omitUntil),2]                                       ### 'dc' = 'deviance chance'
   } else {
-    dc<- mat[,2]
+     dc<- mat[,2]
   }
   if ( change ){
-    dc<- diff(dc)
-    yl<- "Deviance Change"
+     dc<- diff(dc)
+     yl<- "Deviance Change"                                            ### labels der y-Achse definieren
   } else {
-    yl<- "Deviance"
+     yl<- "Deviance"
   }
   if(reverse){
-    dc<- -1 * dc
+     dc<- -1 * dc
   }
   dc   <- data.frame ( nr=omitUntil + 1:length(dc), dc)
   xm   <- ceiling( max(dc[,1])/10 )*10
   xt   <- NULL
   for ( i in c( 1:30 ) ){
-    xt <- c ( xt, (xm/10) %% i==0 )
+        xt <- c ( xt, (xm/10) %% i==0 )
   }
   xt   <- max ( which ( xt ) )
   cex  <- 0.85 - ( length(dc[,1]) / 1000 )
   if ( cex < 0.40 ) {
-    cex <- 0.40
+       cex <- 0.40
   }
   if (inherits(logFile,"list")) {
-    titel <- paste0("Deviance Change Plot for model '",
-                    logFile[["analysis.name"]],"'\n")
+      titel <- paste0("Deviance Change Plot for model '",logFile[["analysis.name"]],"'\n")
   }  else  {
-    titel <- "Deviance Change Plot\n"
+      titel <- "Deviance Change Plot\n"
   }
+  par(mar = c(5.1, 4.1, 8.1, 2.1))                                     ### mehr Abstand zwischen titel und plot, damit mehrzeilige ueberschriften reinpassen
   plot ( dc[,1], dc[,2], type="o",
-         main=titel,  xlab="Iteration",
-         xlim=c(min(dc[,1]),max(dc[,1])),  xaxp=c(0,xm,xt),
-         ylab=yl, pch=20, cex=cex, lwd=0.75 )
+       main=titel,  xlab="Iteration",
+       xlim=c(min(dc[,1]),max(dc[,1])),  xaxp=c(0,xm,xt),
+       ylab=yl, pch=20, cex=cex, lwd=0.75, mar = c(5, 4, 10, 2) + 0.1 )
   si   <- devtools::session_info(pkgs = "eatModel")
   si   <- si[["packages"]][which(si[["packages"]][,"package"] == "eatModel"),]
+  inf  <- Sys.getenv()
   sysi <- Sys.info()
-  stri <- paste0("'eatModel', version ", si[["loadedversion"]], ", build ",
-                 si[["date"]], ", user: ", sysi[["user"]], " (", sysi[["sysname"]],
-                 ", ",sysi[["release"]], ", ", sysi[["version"]], ")")
+  sys  <- sessionInfo()
+  cpu  <- benchmarkme::get_cpu()
+  ram  <- benchmarkme::get_ram()
+  stri <- paste0("'eatModel', version ", si[["loadedversion"]], ", build ",si[["date"]], ", user: ",sysi[["user"]], ", computername: ", ifelse(sysi[["sysname"]] == "Linux", sysi[["nodename"]], inf["COMPUTERNAME"]), "\nsystem: ", sys[["running"]], ", cpu: ", cpu[["model_name"]], ", cores: ",cpu[["no_of_cores"]], ", RAM: ",capture.output(ram))
   if (inherits(logFile,"list")) {
-    stri <- paste0("Method = '",logFile[["ret"]][[1]],"'  |  nodes = ",
-                   logFile[["ret"]][[2]],"  |  ", capture.output(logFile[["tme"]]),
-                   "\n", stri)
+      stri <- paste0(paste(names(logFile[["ret"]]), logFile[["ret"]], sep=" = ", collapse = "  |  "), "  |  elapsed time: ", timeFormat(logFile[["tme"]]), "\n" , stri, "\n")
+  } else {
+      stri <- paste0(stri, "\n")
   }
   graphics::mtext(stri)
   graphics::abline( a=0, b=0 )
   dcr  <- dc[dc[,2]<0,]
   graphics::points( dcr[,1], dcr[,2], pch=20, cex=cex, col="red") }
+
+# funktion soll mal nach CRAN -> eatTools
+timeFormat <- function(timediff, digits) {
+          if(missing(digits)) {
+             if(as.numeric(timediff) < 0.05 ) {
+                digits <- 3
+             }  else  {
+                digits <- 1
+             }
+          }
+          paste(round(as.numeric(timediff), digits = digits), attr(timediff, "units"), sep=" ")}

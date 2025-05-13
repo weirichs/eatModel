@@ -238,7 +238,7 @@ regcoefFromRes <- function (resultsObj, digits = NULL){
       mw <- reshape2::dcast(m, var1~derived.par, value.var="value")
       mw[,"p"]   <- 2*(1-pnorm(abs(mw[,"est"] / mw[,"se"])))
       mw[,"sig"] <- eatTools::num.to.cat(mw[,"p"], cut.points = c(0.001, 0.01, 0.05, 0.1),
-                                         cat.values = c("***", "**", "**", ".", ""))
+                                         cat.values = c("***", "**", "*", ".", ""))
       colnames(mw)[1] <- "parameter"
       if(!is.null(digits)) {mw <- eatTools::roundDF(mw, digits =digits)}
       return(mw)}, simplify=FALSE)
