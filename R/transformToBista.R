@@ -254,7 +254,7 @@ generateOrCheckRefPop <- function (equatingList, refPop, dims, mods, isRunM, id,
            refPop <- merge(expand.grid(model = mods, domain = dims), refPop, by.x = "domain", by.y = colnames(refPop)[1], all=TRUE)
        }
        if(ncol ( refPop ) < 5) {
-           cat ( paste("The 'refPop' data.frame does not include information about reference population mean/SD on Bista metric. Values will be defaulted to ",defaultM,"/",defaultSD,".\n",sep=""))
+           cat ( paste("The 'refPop' data.frame does not include information about reference population mean/SD on Bista metric. Values will be defaulted to mean = ",defaultM," and SD = ",defaultSD,".\n",sep=""))
            refPop <- data.frame(refPop, defaultMean = defaultM, defaultSD = defaultSD, stringsAsFactors = FALSE)
        } else {
            if ( ncol ( refPop) != 6 ) { stop ( "Invalid 'refPop'.\n") }

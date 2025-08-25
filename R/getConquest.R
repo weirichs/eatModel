@@ -388,8 +388,8 @@ plotDevianceConquest <- function ( logFile, omitUntil = 1, reverse = TRUE, chang
   inf  <- Sys.getenv()
   sysi <- Sys.info()
   sys  <- sessionInfo()
-  cpu  <- benchmarkme::get_cpu()
-  ram  <- benchmarkme::get_ram()
+  if(inherits(try(cpu  <- benchmarkme::get_cpu(), silent=TRUE ),"try-error"))  {cpu <- list()}
+  if(inherits(try(ram  <- benchmarkme::get_ram(), silent=TRUE ),"try-error"))  {ram <- list()}
   stri <- paste0("'eatModel', version ", si[["loadedversion"]], ", build ",si[["date"]], ", user: ",sysi[["user"]], ", computername: ", ifelse(sysi[["sysname"]] == "Linux", sysi[["nodename"]], inf["COMPUTERNAME"]), "\nsystem: ", sys[["running"]], ", cpu: ", cpu[["model_name"]], ", cores: ",cpu[["no_of_cores"]], ", RAM: ",capture.output(ram))
   if (inherits(logFile,"list")) {
       stri <- paste0(paste(names(logFile[["ret"]]), logFile[["ret"]], sep=" = ", collapse = "  |  "), "  |  elapsed time: ", timeFormat(logFile[["tme"]]), "\n" , stri, "\n")
