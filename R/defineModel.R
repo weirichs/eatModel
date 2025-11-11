@@ -1,12 +1,12 @@
-defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL", "2PL", "PCM", "PCM2", "RSM", "GPCM", "2PL.groups", "GPCM.design", "3PL"),
-               qMatrix=NULL, DIF.var=NULL, HG.var=NULL, group.var=NULL, weight.var=NULL, anchor = NULL, domainCol=NULL, itemCol=NULL, valueCol=NULL,check.for.linking = TRUE,
+defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL", "2PL", "PCM", "PCM2", "RSM", "GPCM", "GPCM.groups", "2PL.groups", "GPCM.design", "3PL"),
+               qMatrix=NULL, DIF.var=NULL, HG.var=NULL, group.var=NULL, weight.var=NULL, anchor = NULL, domainCol=NULL, itemCol=NULL, valueCol=NULL,catCol = NULL, check.for.linking = TRUE,
                minNperItem = 50, removeMinNperItem = FALSE, boundary = 6, remove.boundary = FALSE, remove.no.answers = TRUE, remove.no.answersHG = TRUE, remove.missing.items = TRUE, remove.constant.items = TRUE,
-               remove.failures = FALSE, remove.vars.DIF.missing = TRUE, remove.vars.DIF.constant = TRUE, verbose=TRUE, software = c("conquest","tam"), dir = NULL,
+               remove.failures = FALSE, remove.vars.DIF.missing = TRUE, remove.vars.DIF.constant = TRUE, verbose=TRUE, software = c("conquest","tam", "mirt"), dir = NULL,
                analysis.name, schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE, pvMethod = c("regular", "bayesian"), fitTamMmlForBayesian = TRUE, n.plausible=5, seed = NULL, conquest.folder=NULL,
                constraints=c("cases","none","items"),std.err=c("quick","full","none"), distribution=c("normal","discrete"), method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo"),
                n.iterations=2000,nodes=NULL, p.nodes=2000, f.nodes=2000,converge=0.001,deviancechange=0.0001, equivalence.table=c("wle","mle","NULL"), use.letters=FALSE,
                allowAllScoresEverywhere = TRUE, guessMat = NULL, est.slopegroups = NULL, fixSlopeMat = NULL, slopeMatDomainCol=NULL, slopeMatItemCol=NULL, slopeMatValueCol=NULL,
-               progress = FALSE, Msteps = NULL, increment.factor=1 , fac.oldxsi=0, export = list(logfile = TRUE, systemfile = FALSE, history = TRUE, covariance = TRUE, reg_coefficients = TRUE, designmatrix = FALSE) )   {
+               progress = NULL, Msteps = NULL, increment.factor=1 , fac.oldxsi=0, export = list(logfile = TRUE, systemfile = FALSE, history = TRUE, covariance = TRUE, reg_coefficients = TRUE, designmatrix = FALSE) )   {
        options(warn=1)
        argL <- mget(ls())                                                       ### Argumentenliste erzeugen
      ### soll der Aufruf fuer mehrere Modelle stattfinden? dann ist splittedModels NICHT null.
@@ -44,28 +44,32 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
              }
              cat(paste ( length(argL2), " models were prepared for estimation: ", sep="")); print( Sys.time() - beg, digits = 3)
          }
-         options(warn=0)
          attr(resAll, "split") <- splittedModels
          class(resAll) <- c("defineMultiple", "list")
        }  else  {
      ### kein model split
          resAll <- defineModelSingle(a=argL)
        }
+       options(warn=0)
        return(resAll) }
 
 defineModelSingle <- function (a) {
      ### assertions
        lapply(a[c("minNperItem", "boundary", "n.iterations", "p.nodes", "f.nodes","converge","deviancechange", "increment.factor" , "fac.oldxsi", "n.plausible")],checkmate::assert_numeric, lower = 0, len = 1)
        checkmate::assert_numeric(a[["nodes"]], lower = 1, null.ok = TRUE, len = 1)
-       lapply(a[c("check.for.linking", "removeMinNperItem", "remove.boundary", "remove.no.answers", "remove.no.answersHG", "remove.missing.items", "remove.vars.DIF.missing", "remove.vars.DIF.constant", "verbose", "compute.fit", "fitTamMmlForBayesian", "use.letters", "allowAllScoresEverywhere", "progress")],checkmate::assert_logical, len = 1)
+       lapply(a[c("check.for.linking", "removeMinNperItem", "remove.boundary", "remove.no.answers", "remove.no.answersHG", "remove.missing.items", "remove.vars.DIF.missing", "remove.vars.DIF.constant", "verbose", "compute.fit", "fitTamMmlForBayesian", "use.letters", "allowAllScoresEverywhere")],checkmate::assert_logical, len = 1)
        for ( i in names(a)) { assign(i, a[[i]]) }                               ### alle Objekte in a auf den NAMESPACE exportieren
+       checkmate::assert_logical(progress, null.ok = TRUE, len = 1)
+       if(is.null(progress)) {progress <- software != "tam"}
        dat  <- eatTools::makeDataFrame(dat, name = "dat")
      ### software checken
        software <- match.arg(arg = tolower(software), choices = eval(formals(defineModel)[["software"]]))
        if(software == "conquest" && is.null(a[["conquest.folder"]]) ) {conquest.folder <- identifyConquestFolder() }
-       irtmodel <- match.arg(irtmodel, choices = eval(formals(defineModel)[["irtmodel"]]))
-       if(is.null(Msteps) ) {                                                   ### den Default fuer Msteps so setzen wie in TAM
-          if ( irtmodel == "3PL" ) { Msteps <- 10 } else { Msteps <- 4 }
+       if(software %in% c("conquest", "tam")) {
+          irtmodel <- match.arg(irtmodel, choices = eval(formals(defineModel)[["irtmodel"]]))
+          if(is.null(Msteps) ) {                                                ### den Default fuer Msteps so setzen wie in TAM
+             if ( irtmodel == "3PL" ) { Msteps <- 10 } else { Msteps <- 4 }
+          }
        }
        method   <- match.arg(method, choices = eval(formals(defineModel)[["method"]]))
        pvMethod <- match.arg(pvMethod, choices = eval(formals(defineModel)[["pvMethod"]]))
@@ -142,7 +146,7 @@ defineModelSingle <- function (a) {
        }
        flush.console()
      ### Sektion 'Alle Items auf einfache Konsistenz pruefen'
-       cic <- checkItemConsistency(dat=dat, allNam = all.Names, remove.missing.items=remove.missing.items, verbose=verbose, removeMinNperItem=removeMinNperItem, minNperItem=minNperItem, remove.constant.items=remove.constant.items, model.statement=model.statement)
+       cic <- checkItemConsistency(dat=dat, allNam = all.Names, remove.missing.items=remove.missing.items, verbose=verbose, removeMinNperItem=removeMinNperItem, minNperItem=minNperItem, remove.constant.items=remove.constant.items, model.statement=model.statement, software=software)
      ### Sektion 'Hintergrundvariablen auf Konsistenz zu sich selbst und zu den Itemdaten pruefen'. Ausserdem Stelligkeit (Anzahl der benoetigten character) fuer jede Variable herausfinden
        cbc <- checkBGV(allNam = cic[["allNam"]], dat=cic[["dat"]], software=software, remove.no.answersHG=remove.no.answersHG, remove.vars.DIF.missing=remove.vars.DIF.missing, namen.items.weg=cic[["namen.items.weg"]], remove.vars.DIF.constant=remove.vars.DIF.constant)
      ### Sektion 'Itemdatensatz zusammenbauen' (fuer Conquest ggf. mit Buchstaben statt Ziffern)
@@ -205,7 +209,7 @@ defineModelSingle <- function (a) {
        }
        lab <- data.frame(itemNr = 1:length(cbc[["allNam"]][["variablen"]]), item = cbc[["allNam"]][["variablen"]], stringsAsFactors = FALSE)
        if(!is.null(a[["anchor"]]))  {
-          ankFrame <- anker (lab = lab, prm = anchor, qMatrix = qMatrix, domainCol=domainCol, itemCol=itemCol, valueCol=valueCol)
+          ankFrame <- anker (lab = lab, prm = anchor, qMatrix = qMatrix, domainCol=domainCol, itemCol=itemCol, valueCol=valueCol, catCol=catCol)
        } else {
           ankFrame <- NULL
           if(fitTamMmlForBayesian == FALSE ) {
@@ -241,16 +245,29 @@ defineModelSingle <- function (a) {
           class(ret) <-  c("defineConquest", "list")
        }
      ### Sektion 'Rueckgabeobjekt fuer tam'
-       if(software == "tam" )   {
+       if(software %in% c("tam", "mirt") )   {
           cat(paste("Q matrix specifies ",ncol(qMatrix)-1," dimension(s).\n",sep=""))
-          anchor          <- prepAnchorTAM(ank = ankFrame[["resTam"]], allNam = cbc[["allNam"]])
           est.slopegroups <- prepEstSlopegroupsTAM(esg = est.slopegroups, allNam = cbc[["allNam"]])
-          fixSlopeMat     <- prepFixSlopeMatTAM(fsm = fixSlopeMat, allNam = cbc[["allNam"]], qma =  qMatrix, slopeMatDomainCol=slopeMatDomainCol, slopeMatItemCol=slopeMatItemCol, slopeMatValueCol=slopeMatValueCol, dat=daten, irtmodel=irtmodel)
-          guessMat        <- prepGuessMat(guessMat, allNam = fixSlopeMat[["allNam"]])
+     ### Ladungsmatrix fuer 2pl und gpcm
+          fixSlopeMatPrep <- prepFixSlopeMatTAM(fsm = fixSlopeMat, allNam = cbc[["allNam"]], qma =  qMatrix, slopeMatDomainCol=slopeMatDomainCol, slopeMatItemCol=slopeMatItemCol, slopeMatValueCol=slopeMatValueCol, dat=daten, irtmodel=irtmodel)
+          fixSlopeMatPrep[["ori"]] <- fixSlopeMat
+          guessMat        <- prepGuessMat(guessMat, allNam = fixSlopeMatPrep[["allNam"]])
+       }
+       if(software == "tam" )   {
           control         <- list ( snodes = met[["snodes"]] , QMC=met[["QMC"]], convD = deviancechange ,conv = converge , convM = .0001 , Msteps = Msteps , maxiter = n.iterations, max.increment = 1 ,
                                   min.variance = .001 , progress = progress , ridge=0 , seed = seed , xsi.start0=FALSE,  increment.factor=increment.factor , fac.oldxsi= fac.oldxsi)
           if ( !is.null(met[["nodes"]])) { control$nodes <- met[["nodes"]] }
-          ret     <- list ( software = software, constraint = match.arg(constraints, choices = eval(formals(defineModel)[["constraints"]])) , qMatrix=qMatrix, anchor=anchor,  all.Names=fixSlopeMat[["allNam"]], daten=daten, irtmodel=fixSlopeMat[["irtmodel"]], est.slopegroups = est.slopegroups, guessMat=guessMat, control = control, n.plausible=n.plausible, dir = dir, analysis.name=analysis.name, deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]], perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], fixSlopeMat = fixSlopeMat[["slopMat"]], estVar = fixSlopeMat[["estVar"]], pvMethod = pvMethod,  fitTamMmlForBayesian=fitTamMmlForBayesian)
+          ret     <- list ( software = software, constraint = match.arg(constraints, choices = eval(formals(defineModel)[["constraints"]])) , qMatrix=qMatrix, anchor=list(ank = ankFrame[["resTam"]], allNam = cbc[["allNam"]]),  
+                            all.Names=fixSlopeMatPrep[["allNam"]], daten=daten, irtmodel=fixSlopeMatPrep[["irtmodel"]], est.slopegroups = est.slopegroups[["esgNm"]], guessMat=guessMat, control = control,
+                            n.plausible=n.plausible, dir = dir, analysis.name=analysis.name, deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]],
+                            perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], fixSlopeMat = fixSlopeMatPrep[["slopMat"]], estVar = fixSlopeMatPrep[["estVar"]], pvMethod = pvMethod,  fitTamMmlForBayesian=fitTamMmlForBayesian)
           class(ret) <-  c("defineTam", "list")
+       }
+       if(software == "mirt" )   {
+          irtmodel <- prepItemTypeMirt(irtmodel = irtmodel, allNam = cbc[["allNam"]], qMatrix=qMatrix)
+          ret      <- list ( software = software, qMatrix=qMatrix, allNam = fixSlopeMatPrep[["allNam"]], daten=daten, irtmodel=irtmodel, anchor=list(ank = ankFrame[["resTam"]], allNam = cbc[["allNam"]]), fixSlopeMat = fixSlopeMatPrep,
+                            n.plausible=n.plausible, dir = dir, analysis.name=analysis.name, deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]],
+                            perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], est.slopegroups = est.slopegroups, progress=progress)
+          class(ret) <-  c("defineMirt", "list")
        }
        return(ret)}

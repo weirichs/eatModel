@@ -1,45 +1,41 @@
 \name{runModel}
 \alias{runModel}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{Run IRT model specified by 'defineModel' using Conquest or TAM}
+\title{Run IRT model specified by 'defineModel' using Conquest, TAM, ort mirt}
 \description{Start the estimation of an IRT model defined by \code{\link{defineModel}}. \code{runModel}
 should be called with the argument returned by \code{\link{defineModel}}.}
 \usage{
 runModel(defineModelObj, show.output.on.console = FALSE, 
-    show.dos.console = TRUE, wait = TRUE) }
-%- maybe also 'usage' for other objects documented here.
+    show.dos.console = TRUE, wait = TRUE, onlySkeleton = FALSE) }
 \arguments{
   \item{defineModelObj}{
-%%     ~~Describe \code{file} here~~
 The object returned by \code{\link{defineModel}}.
 }
   \item{show.output.on.console}{
-%%     ~~Describe \code{dif.term} here~~
 Applies only if \code{\link{defineModel}} previously was called with \code{software = "conquest"}.
 Logical: Should the output of the conquest console be printed on the R console during estimation?
 }
   \item{show.dos.console}{
-%%     ~~Describe \code{split.dif} here~~
 Applies only if \code{\link{defineModel}} previously was called with \code{software = "conquest"}.
 Logical: Should the output of the conquest console be printed on screen?
 }
   \item{wait}{
-%%     ~~Describe \code{abs.dif.bound} here~~
 Applies only if \code{\link{defineModel}} previously was called with \code{software = "conquest"}.
 A logical (not NA) indicating whether the R interpreter should wait for the command to finish,
 or run it asynchronously.
 }
+  \item{onlySkeleton}{
+Applies only if \code{\link{defineModel}} previously was called with \code{software = "mirt"}.
+If \code{TRUE}, the IRT model is not estimated. Instead, only the model specification is returned
+as a data.frame, allowing the user to check whether the model has been specified as desired.
+}
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
 If \code{\link{defineModel}} previously was called with \code{software = "tam"}, the returned value
-is identically to the corresponding TAM output. If \code{\link{defineModel}} previously was called
-with \code{software = "conquest"}, the returned value contains only internally used information
-useful for \code{\link{getResults}}.
+is nearly identically to the corresponding TAM output. Accordingly, if \code{\link{defineModel}}
+previously was called with \code{software = "mirt"}, the returned value is nearly identically to the
+corresponding mirt output. If \code{\link{defineModel}} previously was called with
+\code{software = "conquest"}, the returned value contains only internally used information useful for
+\code{\link{getResults}}.
 }
 \author{
 Sebastian Weirich

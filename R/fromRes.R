@@ -88,108 +88,97 @@ pvFromRes <- function(resultsObj, toWideFormat = TRUE, idVarName = NULL, verbose
   }  }
 
 ### called by getRestuls(), equat1pl(), transformToBista() and prepareAndCheckEatModelObject()
-
-itemFromRes<- function(resultsObj){
-  res <- do.call(plyr::rbind.fill, by(data = resultsObj, INDICES = resultsObj[,"model"],
-                                      FUN = function(mod){
-    sel <- mod[intersect(which(mod[,"par"] %in% c("est", "estSlope", "Nvalid", "itemP", "ptBis", "itemDiscrim", "offset")),
-                         which(mod[,"indicator.group"] == "items")),]
-    if (nrow(sel)==0) {
-      return(NULL)
-    }  else  {
-      isDif <- intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "DIF.var"))
-      if(length(isDif) > 0) {
-        vars     <- mod[intersect(which(mod[,"type"] == "tech"),
-                                  which(mod[,"par"] == "variablen")),"derived.par"]
-        itemList <- do.call("rbind", lapply ( vars, FUN = function ( v ) {
-          ind <- grep( paste0("_",v,"_"), sel[,"var1"])
-          it  <- sort ( unique ( sel[ind,"var1"]))
-          if(length(it)>2) {
-            warning(paste0("DIF variable '",mod[isDif,"derived.par"],
-                           "' seems to have more than two categories. To date, this is not supported by 'eatModel'."))
+### Funktion wird so oft ausgefuehrt, wie es Modelle gibt
+itemFromRes <- function ( resultsObj, longFormat = TRUE ) {
+     ### hier muss "rbind.fill" genommen werden, denn 1pl und 2pl Modelle unterscheiden sich in den Spalten (bei 2pl gibt es zusaetzliche Diskriminationsspalten)
+          res <- do.call(plyr::rbind.fill, by ( data = resultsObj, INDICES = resultsObj[,"model"], FUN = function ( mod ) {
+                 sel  <- mod[intersect( which(mod[,"par"] %in% c("est", "estSlope", "Nvalid", "itemP", "ptBis", "itemDiscrim", "offset")),which(mod[,"indicator.group"] == "items")),]
+                 if (nrow(sel)==0) {
+                     return(NULL)
+                 }  else  {
+     ### gibt es DIF? wenn ja, wird das separat ausgelesen nd drangemergt
+                     isDif<- intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "DIF.var"))
+                     if(length(isDif) > 0) {                                    ### untere Zeile: alle Variablen auslesen (quasi ein Hilfsobjekt)
+                        vars     <- mod[intersect(which(mod[,"type"] == "tech"),which(mod[,"par"] == "variablen")),"derived.par"]
+                        itemList <- do.call("rbind", lapply ( vars, FUN = function ( v ) {
+                                    ind <- grep( paste0("_",v,"_"), sel[,"var1"])
+                                    it  <- sort ( unique ( sel[ind,"var1"]))
+                                    if(length(it)>2) {
+                                       warning(paste0("DIF variable '",mod[isDif,"derived.par"],"' seems to have more than two categories. To date, this is not supported by 'eatModel'."))
+                                    }
+                                    return ( data.frame ( item = v, dif = it[1], weg = it[length(it)] , stringsAsFactors = FALSE) ) }))
+                        weg      <- eatTools::whereAre ( itemList[,"weg"], sel[,"var1"], verbose=FALSE)
+                        forDif   <- eatTools::whereAre ( itemList[,"dif"], sel[,"var1"], verbose=FALSE)
+                        stopifnot(length( intersect(weg, forDif)) == 0 )
+                        selForDif<- sel[forDif, ]
+                        sel      <- sel[-c(weg, forDif) , ]
+                        sel      <- sel[which ( sel[,"par"] != "ptBis" ) , ] ### Hotfix: wenn DIF ausgegeben, wird keine ptBis berechnet
+                        selDIF   <- do.call("rbind", by(selForDif, INDICES = selForDif[,"group"], FUN = function ( gr ) {
+                                    res  <- reshape2::dcast ( gr , model+var1~par+derived.par, value.var = "value")
+                                    mat  <- lapply( vars, FUN = function ( v ) { grep(paste0("_",v,"_"), res[,"var1"])})
+                                    stopifnot (  all ( sapply(mat, length) == 1) )
+                                    res[unlist(mat),"item"]  <- vars
+                                    colnames(res) <- car::recode ( colnames(res) , "'est_infit'='infitDif'; 'est_se'='seDif'; 'est_NA'='estDif'")
+                                    res[,"absDif"]<- abs ( res[,"estDif"]  * 2 )
+                                    pval <- intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")), which(mod[,"derived.par"] == "p.value"))
+                                    stopifnot (length(pval) == 1)
+                                    pval <- mod[pval, "value"]               ### untere Zeile: adb = 'abs.dif.bound'; sdb = 'sig.dif.bound'
+                                    adb  <- mod[intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")), which(mod[,"derived.par"] == "abs.dif.bound")),"value"]
+                                    sdb  <- mod[intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")), which(mod[,"derived.par"] == "sig.dif.bound")),"value"]
+                                    res[,paste("CI__", pval ,"__lb",sep="")] <- res[,"absDif"] - 2*abs(qnorm(0.5*(1-pval))) * res[,"seDif"]
+                                    res[,paste("CI__", pval ,"__ub",sep="")] <- res[,"absDif"] + 2*abs(qnorm(0.5*(1-pval))) * res[,"seDif"]
+                                    res  <- data.frame ( res, do.call("rbind", apply(res[,c("absDif", "seDif", paste("CI__",pval,"__lb",sep=""), paste("CI__",pval,"__ub",sep=""))], MARGIN = 1, FUN = function ( d ) {
+                                                        check <- all ( !is.na(d) )
+                                                        if(check == TRUE) {
+                                                           crit1 <- d[["absDif"]] > adb
+                                                           crit2 <- !all ( sort ( c ( d[[paste("CI__",pval,"__lb",sep="")]], sdb , d[[paste("CI__",pval,"__ub",sep="")]]), index.return = TRUE)$ix == 1:3 )
+                                                           if ( crit1 == TRUE & crit2 == TRUE) { res <- 1 }  else { res <- 0}
+     ### Implementiere Formel nach Lord (1980) und ETS-Klassifikation von DIF; siehe Funktion equating.rasch aus 'eatRest'
+                                                           ets   <- "A"
+                                                           ets1  <- d[["absDif"]] > 0.43
+                                                           ets2  <- !all ( sort ( c ( d[[paste("CI__",pval,"__lb",sep="")]], 0 , d[[paste("CI__",pval,"__ub",sep="")]]), index.return = TRUE)$ix == 1:3 )
+                                                           if ( ets1 == TRUE & ets2 == TRUE) { ets <- "B" }
+                                                           etsC1 <- d[["absDif"]] > 0.64
+                                                           etsC2 <- !all ( sort ( c ( d[[paste("CI__",pval,"__lb",sep="")]], 0.43 , d[[paste("CI__",pval,"__ub",sep="")]]), index.return = TRUE)$ix == 1:3 )
+                                                           if ( etsC1 == TRUE & etsC2 == TRUE) { ets <- "C" }
+                                                           res   <- data.frame(difIndex = res, ETS = ets )
+                                                        }  else  {
+                                                           res   <- data.frame(difIndex = NA, ETS = NA )
+                                                        }
+                                                        return(res)}) ) )
+                                    return(res)}))
+                     }
+                     sel  <- do.call(plyr::rbind.fill, by(sel, INDICES = sel[,"group"], FUN = function ( gr ) {
+     ### erstmal ohne schulformspezifische p-Werte (die kommen spaeter dazu)
+                             for(v in c("var2", "par", "derived.par")) { gr[,v] <- car::recode(gr[,v], "NA=''")}
+                             res  <- reshape2::dcast ( unique(gr), model+var1~var2+par+derived.par, value.var = "value")
+                             colnames(res) <- eatTools::crop(colnames(res), char = "_") |> car::recode(recodes = "'var1'='item'; 'est_infit'='infit'; 'est_outfit'='outfit'; 'estSlope_se'='seSlope'; 'estSlope_NA'='estSlope'; 'offset_NA'='estOffset'; 'ptBis_NA'='ptBis'") |> stringr::str_replace_all(pattern ="est_se", replacement = "se") |> stringr::str_replace_all(pattern ="est_NA", replacement = "est") |> eatTools::crop(char="NA") |> eatTools::crop(char="_")
+     ### wenn es nur Cat1 in den Spaltennamen gibt, es also Rasch/2pl ist, soll Cat1 rausgeloescht werden 
+                             if(length(grep("Cat2", colnames(res)))==0) {colnames(res) <- eatTools::crop(eatTools::removePattern(colnames(res), "Cat1"), char="_") |> car::recode(recodes = "'offset'='estOffset'")}
+                             cols <- c("Nvalid", "itemP", "itemDiscrim", "est", "estOffset", "se", "estSlope", "seSlope", "infit","outfit", "ptBis")
+                             cols2<- sort(grep("^step|^Cat", colnames(res), value=TRUE))
+                             drin1<- which(cols %in% colnames(res))
+                             drin2<- grep("ptBis_", colnames(res))
+                             drin3<- grep("itemP", colnames(res))
+                             res  <- data.frame ( res[,c("model", "item")], dimension = as.character(gr[1,"group"]),  res[,c(cols[drin1], colnames(res)[drin2] , setdiff (colnames(res)[drin3], cols[drin1])),drop=FALSE], res[,cols2],stringsAsFactors = FALSE)
+                             return(res)}))
+                     if(length(isDif) > 0) {
+                        ciCo<- colnames(selDIF)[grep("^CI__", colnames(selDIF))]
+                        sel <- merge(sel, selDIF[,c("item", "model", "estDif", "seDif", "infitDif", "absDif", ciCo, "difIndex", "ETS")], by=c("item","model"), all=TRUE)
+                     }
+                     return(sel)
+                 }
+          }))
+     ### simplify and reshape ... die alte Funktion endete hier
+          if(length(grep("^Cat2", colnames(res)))>0 && longFormat == TRUE) {     ### das soll nur fuer partial credit stattfinden
+              cols <- grep("^Cat", colnames(res), value=TRUE, ignore.case=TRUE)
+              resL <- reshape2::melt(res, measure.vars = cols, na.rm=TRUE) |> tidyr::separate(col = "variable", into = c("category", "parameter", "fit")) |> suppressWarnings()
+              ind  <- which(resL[,"fit"] == "thurstone")
+              if(length(ind)>0) {resL[ind,"parameter"] <- ""}
+              res  <- reshape2::dcast(resL, ... ~ parameter+fit, value.var = "value")
+              colnames(res) <- eatTools::crop(eatTools::crop(colnames(res), "NA"), "_")
           }
-          return ( data.frame ( item = v, dif = it[1], weg = it[length(it)] , stringsAsFactors = FALSE) ) }))
-        weg      <- eatTools::whereAre ( itemList[,"weg"], sel[,"var1"], verbose=FALSE)
-        forDif   <- eatTools::whereAre ( itemList[,"dif"], sel[,"var1"], verbose=FALSE)
-        stopifnot(length( intersect(weg, forDif)) == 0 )
-        selForDif<- sel[forDif, ]
-        sel      <- sel[-c(weg, forDif) , ]
-        sel      <- sel[which ( sel[,"par"] != "ptBis" ) , ]
-        selDIF   <- do.call("rbind", by(selForDif, INDICES = selForDif[,"group"], FUN = function(gr){
-          res  <- reshape2::dcast ( gr , model+var1~par+derived.par, value.var = "value")
-          mat  <- lapply( vars, FUN = function ( v ) { grep(paste0("_",v,"_"), res[,"var1"])})
-          stopifnot (  all ( sapply(mat, length) == 1) )
-          res[unlist(mat),"item"]  <- vars
-          colnames(res) <- car::recode ( colnames(res) , "'est_infit'='infitDif'; 'est_se'='seDif'; 'est_NA'='estDif'")
-          res[,"absDif"]<- abs ( res[,"estDif"]  * 2 )
-          pval <- intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")),
-                            which(mod[,"derived.par"] == "p.value"))
-          stopifnot (length(pval) == 1)
-          pval <- mod[pval, "value"]
-          adb  <- mod[intersect(intersect(which(mod[,"type"] == "tech"),
-                                          which(mod[,"par"] == "dif")),
-                                which(mod[,"derived.par"] == "abs.dif.bound")),"value"]
-          sdb  <- mod[intersect(intersect(which(mod[,"type"] == "tech"),
-                                          which(mod[,"par"] == "dif")),
-                                which(mod[,"derived.par"] == "sig.dif.bound")),"value"]
-          res[,paste("CI__", pval ,"__lb",sep="")] <- res[,"absDif"] - 2*abs(qnorm(0.5*(1-pval))) * res[,"seDif"]
-          res[,paste("CI__", pval ,"__ub",sep="")] <- res[,"absDif"] + 2*abs(qnorm(0.5*(1-pval))) * res[,"seDif"]
-          res  <- data.frame ( res, do.call("rbind", apply(res[,c("absDif", "seDif",
-                                                                  paste("CI__",pval,"__lb",sep=""),
-                                                                  paste("CI__",pval,"__ub",sep=""))],
-                                                           MARGIN = 1, FUN = function(d){
-            check <- all ( !is.na(d) )
-            if(check == TRUE) {
-              crit1 <- d[["absDif"]] > adb
-              crit2 <- !all(sort(c(d[[paste("CI__",pval,"__lb",sep="")]], sdb,
-                                   d[[paste("CI__",pval,"__ub",sep="")]]), index.return = TRUE)$ix == 1:3)
-              if ( crit1 == TRUE & crit2 == TRUE) { res <- 1 }  else { res <- 0}
-              ets   <- "A"
-              ets1  <- d[["absDif"]] > 0.43
-              ets2  <- !all(sort(c(d[[paste("CI__",pval,"__lb",sep="")]], 0 ,
-                                   d[[paste("CI__",pval,"__ub",sep="")]]), index.return = TRUE)$ix == 1:3 )
-              if ( ets1 == TRUE & ets2 == TRUE) { ets <- "B" }
-              etsC1 <- d[["absDif"]] > 0.64
-              etsC2 <- !all(sort(c(d[[paste("CI__",pval,"__lb",sep="")]], 0.43,
-                                   d[[paste("CI__",pval,"__ub",sep="")]]), index.return = TRUE)$ix == 1:3 )
-              if ( etsC1 == TRUE & etsC2 == TRUE) { ets <- "C" }
-              res   <- data.frame(difIndex = res, ETS = ets )
-            }  else  {
-              res   <- data.frame(difIndex = NA, ETS = NA )
-            }
-            return(res)}) ) )
-          return(res)}))
-      }
-      sel  <- do.call(plyr::rbind.fill, by(sel, INDICES = sel[,"group"], FUN = function ( gr ) {
-        sfp  <- intersect ( which ( gr[,"par"] == "itemP"), which ( !is.na(gr[,"var2"])))
-        if ( length ( sfp ) > 0 ) {
-          res  <- reshape2::dcast ( gr[-sfp,] , model+var1~par+derived.par, value.var = "value")
-          sfp  <- reshape2::dcast ( gr[sfp,] , model+var1~par+var2, value.var = "value")
-          res  <- merge ( res, sfp, by = c("model", "var1"), all = TRUE)
-        }  else  {
-          res  <- reshape2::dcast ( gr , model+var1~par+derived.par, value.var = "value")
-        }
-        colnames(res) <- car::recode(colnames(res),"'var1'='item'; 'est_infit'='infit'; 'est_outfit'='outfit'; 'est_se'='se'; 'est_NA'='est'; 'estSlope_se'='seSlope'; 'estSlope_NA'='estSlope'; 'offset_NA'='estOffset'; 'Nvalid_NA'='Nvalid'; 'ptBis_NA'='ptBis'; 'itemP_NA'='itemP'; 'itemDiscrim_NA'='itemDiscrim'")
-        cols <- c("Nvalid", "itemP", "itemDiscrim", "est", "estOffset", "se",
-                  "estSlope", "seSlope", "infit","outfit", "ptBis")
-        drin1<- which(cols %in% colnames(res))
-        drin2<- grep("ptBis_", colnames(res))
-        drin3<- grep("itemP", colnames(res))
-        res  <- data.frame(res[,c("model", "item")], dimension = as.character(gr[1,"group"]),
-                           res[,c(cols[drin1], colnames(res)[drin2],
-                                  setdiff(colnames(res)[drin3], cols[drin1])),drop=FALSE],
-                           stringsAsFactors = FALSE)
-        return(res)}))
-      if ( length( isDif ) > 0 ) {
-        ciCo<- colnames(selDIF)[grep("^CI__", colnames(selDIF))]
-        sel <- merge(sel, selDIF[,c("item", "model", "estDif", "seDif", "infitDif",
-                                    "absDif", ciCo, "difIndex", "ETS")],
-                     by=c("item","model"), all=TRUE)
-      }
-      return(sel)
-    }
-  }))
-  return(res)}
+          return (res )}
 
 ### called by getRestuls() and addQ3() -----------------------------------------
 

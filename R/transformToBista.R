@@ -11,6 +11,7 @@ transformToBista <- function(equatingList, refPop, cuts, weights = NULL,
 
 ### function -------------------------------------------------------------------
        mr    <- FALSE
+       isPCM <- isItPCM(eql = equatingList)
        if(missing(refPop)) {mr <- TRUE}
        checkmate::assert_character(idVarName, null.ok = TRUE, len = 1)
     ### Wenn die Funktion ein Objekt kriegt, wo nur zwei Itemparameterlisten equated wurden, muss hier anders verfahren werden, dann gibt es bspw. keine Linkingfehler auf Kompetenzstufenmetrik. Das kriegt die Funktion hier erstmal raus. Wenn 'isRunM' gleich TRUE, dann default
@@ -48,22 +49,20 @@ transformToBista <- function(equatingList, refPop, cuts, weights = NULL,
                           resMD<- equatingList[["results"]][unique(c(wahl,  which(equatingList[["results"]][,"type"] == "tech"))),]
                           rex  <- pvFromRes(resMD, toWideFormat = TRUE, idVarName = idVarName, verbose=FALSE)
                           if (!is.null(rex)) {
-                              if ( length ( rex[,id]) != unique(length ( rex[,id])) ) {
-                                   stop(paste( "Model '",mod,"', Dimension '",dimname,"': cases according to '", id,"' variable are not unique.\n",sep=""))
-                              }
+                              if(length(rex[,id]) != unique(length(rex[,id]))) {stop(paste( "Model '",mod,"', Dimension '",dimname,"': cases according to '", id,"' variable are not unique.\n",sep=""))}
                           }
     ### check: keine verankerten parameter?
                           offSet  <- grep("offset", as.character(resMD[,"par"]))
-                          if(length(offSet)>0) {  resMD[,"par"] <- car::recode ( resMD[,"par"], "'offset'='est'") }
+                          if(length(offSet)>0) {resMD[,"par"] <- car::recode ( resMD[,"par"], "'offset'='est'")}
                           itFrame <- itemFromRes(resMD)
                       }  else  {
                           itFrame <- it[intersect(which(it[,"model"] == mod), which(it[,"dimension"] == dimname)),]
                       }
-                      if ( !is.null(itFrame) && !itFrame[1,"dimension"] %in% refPop[,"domain"] ) {
+                      if (!is.null(itFrame) && !itFrame[1,"dimension"] %in% refPop[,"domain"] ) {
                             cat(paste("Cannot found dimension '",itFrame[1,"dimension"],"' in the first column of the 'refPop' argument. Skip transformation ... \n",sep=""))
                             return ( list ( itempars = NULL, personpars = NULL, rp = NULL))
                       }  else  {
-                            if ( is.null ( itFrame ) ) {
+                            if (is.null(itFrame)) {
                                 cat(paste0("Model '",mod,"', dimension '",dimname,"': No item parameters found. This should only occur for bayesian plausible values imputation. Transformation of item parameters will be skipped.\n"))
                             }  else  {
     ### wenn cuts vom user definiert, wird hier auf plausibilitaet geprueft (kuenftig ggf. auslagern in separate funktion)
@@ -77,8 +76,12 @@ transformToBista <- function(equatingList, refPop, cuts, weights = NULL,
                                 }
                                 mat <- merge(unique(itFrame[,c("dimension", "model")]), unique(refPop), by.x = c("dimension", "model"), by.y = c("domain", "model"),all=FALSE)
                                 stopifnot(nrow(mat)==1)
-    ### 1. Transformation fuer Itemparameter
-                                itFrame[,"estTransf"] <- itFrame[,"est"] + equatingList[["items"]][[mod]][[dimname]][["eq"]][["B.est"]][[ equatingList[["items"]][[mod]][[dimname]][["method"]] ]]
+    ### 1. Transformation fuer Itemparameter: in dichotomen modellen transformieren mit equatingkonstante
+                                if(!isPCM) {                                    ### hier fuer dichotom (non-PCM)
+                                   itFrame[,"estTransf"] <- itFrame[,"est"] + equatingList[["items"]][[mod]][[dimname]][["eq"]][["B.est"]][[ equatingList[["items"]][[mod]][[dimname]][["method"]] ]]
+                                } else {                                        ### in (g)pcm ist das ja bereits der fixierte itemparameter
+                                   itFrame[,"estTransf"] <- "est"
+                                }
     ### Achtung, heikel: wenn equatet wurde, aber der Datensatz aus der Normpopulation kommt, werden hier die empirischen Mittelwerte,
     ### die oben (mit oder ohne Gewichte) berechnet wurden, nochmal transformiert ... sollte praktisch nie der Fall sein.
                                 if ( isTRUE(mr) ) {
@@ -87,7 +90,11 @@ transformToBista <- function(equatingList, refPop, cuts, weights = NULL,
                                           mat[,3] <- mat[,3] + equatingList[["items"]][[mod]][[dimname]][["eq"]][["B.est"]][[ equatingList[["items"]][[mod]][[dimname]][["method"]] ]]
                                      }
                                 }
-                                itFrame[,"estTransf625"]   <- itFrame[,"estTransf"] + log(0.625/(1-0.625))
+                                if(!isPCM) {                                    ### transformation auf .625 fuer dichotom
+                                   itFrame[,"estTransf625"]<- itFrame[,"estTransf"] + log(0.625/(1-0.625))
+                                } else {                                        ### in pcm ist das der .625-thurstonian threshold
+                                   itFrame[,"estTransf625"]<- itFrame[,"thurstone"]
+                                }
                                 itFrame[,"estTransfBista"] <- (itFrame[,"estTransf625"] - mat[,3]) / mat[,4] * mat[,6] + mat[,5]
                                 if ( isFALSE(cutsMis) ) {
     ### Achtung: dieser Umweg ist notwendig, weil 'num.to.cat' Attribute ausgibt die unten wieder gebraucht werden!
@@ -95,18 +102,21 @@ transformToBista <- function(equatingList, refPop, cuts, weights = NULL,
                                      itFrame[,"traitLevel"]<- traitLevel
                                 }
     ### Achtung!! Linkingfehler sollte eigentlich nur ausgegeben werden, wenn das vorherige equating NICHT durchgeschleift wurde!
-                                itFrame[,"linkingConstant"]<- equatingList[["items"]][[mod]][[dimname]][["eq"]][["B.est"]][[ equatingList[["items"]][[mod]][[dimname]][["method"]] ]]
-                                itFrame[,"linkingMethod"]  <- equatingList[["items"]][[mod]][[dimname]][["method"]]
-                                itFrame[,"nLinkitems"]     <- equatingList[["items"]][[mod]][[dimname]][["eq"]][["descriptives"]][["N.Items"]]
-                                itFrame[,"linkingError"]   <- equatingList[["items"]][[mod]][[dimname]][["eq"]][["descriptives"]][["linkerror"]]
+                                if(!isPCM) {
+                                   itFrame[,"linkingConstant"]<- equatingList[["items"]][[mod]][[dimname]][["eq"]][["B.est"]][[ equatingList[["items"]][[mod]][[dimname]][["method"]] ]]
+                                   itFrame[,"linkingMethod"]  <- equatingList[["items"]][[mod]][[dimname]][["method"]]
+                                   itFrame[,"nLinkitems"]     <- equatingList[["items"]][[mod]][[dimname]][["eq"]][["descriptives"]][["N.Items"]]
+                                   itFrame[,"linkingError"]   <- equatingList[["items"]][[mod]][[dimname]][["eq"]][["descriptives"]][["linkerror"]]
     ### Transformation des Linkingfehlers entsprechend der Rechenregeln fuer Varianzen. ist geprueft, dass dasselbe rauskommt, wie wenn man Parameter transformiert und dann Linkingfehler bestimmt
-                                itFrame[,"linkingErrorTransfBista"] <- ( (itFrame[,"linkingError"]^2) * (mat[,6]^2) / (mat[,4]^2) )^0.5
+                                   itFrame[,"linkingErrorTransfBista"] <- ( (itFrame[,"linkingError"]^2) * (mat[,6]^2) / (mat[,4]^2) )^0.5
+                                }
     ### Deltamethode, wie in eatTrend (Funktion 'seKompstuf'). Dazu wird MW und SD der Fokuspopulation benoetigt! (wurde oben als 'msd' berechnet)
     ### das ganze findet nur statt, wenn sowohl cut scores bereits definiert sind und wenn equatet wurde (denn nur dann gibt es einen Linkingfehler, den man transformieren kann)
                             }
                             if (isRunM) {
                                 pv  <- pvFromRes(resMD, toWideFormat = FALSE, idVarName=idVarName, verbose=FALSE)
                                 equ <- equatingList[["items"]][[mod]][[dimname]][["eq"]][["B.est"]][[ equatingList[["items"]][[mod]][[dimname]][["method"]] ]]
+                                if(isPCM) {stopifnot(equ==0)}
     ### Hotfix fuer bayesianisch
                                 if (!exists("mat")) { mat <- refPop[match(dimname,  refPop[,"domain"]),] }
                                 pv[,"valueTransfBista"] <- (pv[,"value"] + equ - mat[,3]) / mat[,4] * mat[,6] + mat[,5]
@@ -129,8 +139,8 @@ transformToBista <- function(equatingList, refPop, cuts, weights = NULL,
                                 }  else  {
                                     message("Results object does not contain any plausible values. Skip transformation of linking error for competence levels.")
                                 }
-                                if ( !is.null(pv) && !is.null ( itFrame )) {    ### Cuts mit Schwelle nach unten und nach oben offen
-                                    if ( cutsMis == FALSE & !is.null ( equatingList[["items"]] )) {
+                                if ( !is.null(pv) && !is.null ( itFrame )) {    ### Cuts mit Schwelle nach unten und nach oben offen ... das erstmal nicht fuer PCM
+                                    if ( cutsMis == FALSE & !is.null ( equatingList[["items"]] ) & !isPCM) {
                                          cts <- c( -10^6, cuts[[mat1]][["values"]], 10^6)
                                          le  <- do.call("rbind", lapply ( (length(cts)-1):1 , FUN = function ( l ) {
                                                 kmp<- c(cts[l], cts[l+1])       ### Linkingfehler fuer einzelnen Kompetenzintervalle; absteigend wie bei karoline
@@ -212,7 +222,7 @@ transformToBista <- function(equatingList, refPop, cuts, weights = NULL,
            context    <- NULL
        }
        ret        <- list ( itempars = itempars, personpars = personpars, refPop = refPop, means = rp, all.Names = context, itemparsVera = itemVera, linkingErrors = leo)
-       class(ret) <- c("list", "transfBista")
+       class(ret) <- c("transfBista", "list")
        return( ret ) }
 
 ### Hilfsfunktion fuer 'transformToBista'

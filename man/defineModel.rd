@@ -1,35 +1,31 @@
 \name{defineModel}
 \alias{defineModel}
-\title{Prepares IRT analysis for Conquest and TAM}
-\description{Facilitates data analysis using the software Conquest and/or TAM. It automatically
+\title{Prepares IRT analysis for Conquest, TAM, or mirt}
+\description{Facilitates data analysis using the software Conquest, TAM, or mirt. It automatically
 checks data for IRT consistency, generates Conquest syntax, label, anchor and data files or
-corresponding TAM call for a single model specified by several arguments in R. Finally, an
+corresponding TAM/mirt call for a single model specified by several arguments in R. Finally, an
 R object is created which contain the required input for Conquest or TAM. To start the estimation,
 call \code{\link{runModel}} with the argument returned by \code{defineModel}.}
 \usage{
 defineModel (dat, items, id, splittedModels = NULL,
-   irtmodel = c("1PL", "2PL", "PCM", "PCM2", "RSM", "GPCM", "2PL.groups",
-   "GPCM.design", "3PL"), qMatrix=NULL, DIF.var=NULL, HG.var=NULL, group.var=NULL,
-   weight.var=NULL, anchor = NULL, domainCol=NULL, itemCol=NULL, valueCol=NULL,
-   check.for.linking = TRUE, minNperItem = 50, removeMinNperItem = FALSE,
-   boundary = 6, remove.boundary = FALSE, remove.no.answers = TRUE,
-   remove.no.answersHG = TRUE, remove.missing.items = TRUE,
-   remove.constant.items = TRUE, remove.failures = FALSE,
-   remove.vars.DIF.missing = TRUE, remove.vars.DIF.constant = TRUE,
-   verbose=TRUE, software = c("conquest","tam"), dir = NULL, analysis.name,
+   irtmodel = c("1PL", "2PL", "PCM", "PCM2", "RSM", "GPCM", "GPCM.groups", "2PL.groups", "GPCM.design", "3PL"),
+   qMatrix=NULL, DIF.var=NULL, HG.var=NULL, group.var=NULL, weight.var=NULL, anchor = NULL, 
+   domainCol=NULL, itemCol=NULL, valueCol=NULL, catCol = NULL, check.for.linking = TRUE, minNperItem = 50, removeMinNperItem = FALSE,
+   boundary = 6, remove.boundary = FALSE, remove.no.answers = TRUE, remove.no.answersHG = TRUE, 
+   remove.missing.items = TRUE, remove.constant.items = TRUE, remove.failures = FALSE, 
+   remove.vars.DIF.missing = TRUE, remove.vars.DIF.constant = TRUE, 
+   verbose=TRUE, software = c("conquest","tam", "mirt"), dir = NULL, analysis.name,
    schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE,
    pvMethod = c("regular", "bayesian"), fitTamMmlForBayesian = TRUE,
-   n.plausible=5, seed = NULL,
-   conquest.folder= NULL,
-   constraints=c("cases","none","items"), std.err=c("quick","full","none"),
-   distribution=c("normal","discrete"),
-   method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo"),
-   n.iterations=2000, nodes=NULL, p.nodes=2000, f.nodes=2000,converge=0.001,
-   deviancechange=0.0001, equivalence.table=c("wle","mle","NULL"), use.letters=FALSE,
+   n.plausible=5, seed = NULL, conquest.folder= NULL,
+   constraints=c("cases","none","items"), std.err=c("quick","full","none"), distribution=c("normal","discrete"),
+   method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo"), n.iterations=2000,
+   nodes=NULL, p.nodes=2000, f.nodes=2000,converge=0.001,deviancechange=0.0001,
+   equivalence.table=c("wle","mle","NULL"), use.letters=FALSE,
    allowAllScoresEverywhere = TRUE, guessMat = NULL, est.slopegroups = NULL,
-   fixSlopeMat = NULL, slopeMatDomainCol=NULL, slopeMatItemCol=NULL,
-   slopeMatValueCol=NULL, progress = FALSE, Msteps = NULL, increment.factor=1 ,
-   fac.oldxsi=0, export = list(logfile = TRUE, systemfile = FALSE, history = TRUE,
+   fixSlopeMat = NULL, slopeMatDomainCol=NULL, slopeMatItemCol=NULL, slopeMatValueCol=NULL, 
+   progress = NULL, Msteps = NULL, increment.factor=1 , fac.oldxsi=0,
+   export = list(logfile = TRUE, systemfile = FALSE, history = TRUE,
    covariance = TRUE, reg_coefficients = TRUE, designmatrix = FALSE))}
 \arguments{
   \item{dat}{
@@ -37,9 +33,9 @@ A data frame containing all variables necessary for analysis.
 }
   \item{items}{
 Names or column numbers of variables with item responses. Item response values must
-be numeric (i.e. 0, 1, 2, 3 ... ). Character values (i.e. A, B, C ... or a, b, c, ...)
-are not allowed. Class of item columns are expected to be numeric or integer.
-Columns of class \code{character} will be transformed.
+be numeric (i.e. 0, 1, 2, 3 ... ). Character values (i.e. A, B, C ... or a, b, c, ...) 
+are not allowed. Class of item columns are expected to be numeric or integer. 
+Columns of class \code{character} will be transformed. 
 }
   \item{id}{
 Name or column number of the identifier (ID) variable.
@@ -48,11 +44,17 @@ Name or column number of the identifier (ID) variable.
 Optional: Object returned by \code{\link{splitModels}}. Definition for multiple model handling.
 }
   \item{irtmodel}{
-Specification of the IRT model. The argument corresponds to the \code{irtmodel}
-argument of \code{\link[TAM]{tam.mml}}. See the help page of \code{\link[TAM]{tam.mml}} for further details.
+If \code{software = "conquest"}, the argument is ignored as the IRT model is specified
+with the \code{model.statement} argument. If \code{software = "tam"}, the argument
+\code{irtmodel} corresponds to the \code{irtmodel} argument of \code{\link[TAM]{tam.mml}}.
+See the help page of \code{\link[TAM]{tam.mml}} for further details. If \code{software = "mirt"},
+\code{irtmodel} is a data.frame with two columns. First column: item identifier.
+Second column: Type of response model for this item. See the \code{itemtype} argument
+in the help file of \code{\link[mirt]{mirt}} for further details. Additionally,
+see example 10 below for specifying a mixed model with Rasch-, 2pl, partial credit,
+and generalized partial credit items.
 }
-  \item{qMatrix}{
-Optional: A named data frame indicating how items should be grouped to dimensions. The
+  \item{qMatrix}{Optional: A named data frame indicating how items should be grouped to dimensions. The
 first column contains the unique names of all items and should be named ``item''. The other
 columns contain dimension definitions and should be named with the respective
 dimension names. A positive value (e.g., 1 or 2 or 1.4) indicates the loading weight
@@ -77,32 +79,39 @@ group in Conquest.
 Optional: Name or column number of one weighting variable.
 }
   \item{anchor}{
-Optional: A named data frame with anchor parameters. The first column contains the
-names of all items which are used to be anchor items and may be named item.
-The second column contains anchor parameters. Anchor items can be a subset of the
-items in the dataset and vice versa. If the data frame contains more than two
-columns, columns must be named explicitly using the following arguments
-\code{domainCol}, \code{itemCol}, and \code{valueCol}.
+Optional: A named data frame with anchor parameters. If the data.frame only has two 
+columns, the columns do not need to be named. In this case, the item name should be 
+in the first column. The second column contains anchor parameters. Anchor items can 
+be a subset of the items in the dataset and vice versa. If the data frame contains 
+more than two columns, columns must be named explicitly using the following arguments 
+\code{domainCol}, \code{itemCol}, \code{valueCol}, and \code{catCol}.
 }
   \item{domainCol}{
 Optional: Only necessary if the \code{anchor} argument was used to define
 anchor parameters. Moreover, specifying \code{domainCol} is only necessary, if the
 item identifiers in \code{anchor} are not unique---for example, if a specific item
 occurs with two parameters, one domain-specific item parameter and one additional
-``global'' item parameter. The domain column than must specify which parameter
-belongs to which domain.
+``global'' item parameter. The domain column than must specify which parameter 
+belongs to which domain. 
 }
   \item{itemCol}{
 Optional: Only necessary if the \code{anchor} argument was used to define
 anchor parameters. Moreover, specifying \code{itemCol} is only necessary, if the
 \code{anchor} data frame has more than two columns. The \code{itemCol} column then
-must specify which column contains the item identifier.
+must specify which column contains the item identifier. 
 }
   \item{valueCol}{
 Optional: Only necessary if the \code{anchor} argument was used to define
 anchor parameters. Moreover, specifying \code{valueCol} is only necessary, if the
 \code{anchor} data frame has more than two columns. The \code{valueCol} column then
-must specify which column contains the item parameter values.
+must specify which column contains the item parameter values. 
+}
+  \item{catCol}{
+Optional: Only necessary if the \code{anchor} argument was used to define
+anchor parameters in a partial credit model. The \code{catCol} column then
+must specify which column contains the item parameter category indices. The values
+in this column must be named according to the convention \code{"Cat1"}, \code{"Cat2"},
+\code{"Cat3"}, and so on.
 }
   \item{check.for.linking}{
 A logical value indicating whether the items in dataset are checked for being
@@ -117,7 +126,7 @@ Logical: Remove items with less valid responses than defined in \code{minNperIte
 }
   \item{boundary}{
 Numerical: A message is printed on console if a subject has answered less than the number of items
-defined in boundary.
+defined in boundary. 
 }
   \item{remove.boundary}{
 Logical: Remove subjects who have answered less items than defined in the \code{boundary} argument?
@@ -138,14 +147,14 @@ Logical: Should items without variance being removed prior to analysis?
 Logical: Should persons without any correct item response (i.e., only \dQuote{0} responses) being removed prior to analysis?
 }
   \item{remove.vars.DIF.missing}{
-Logical: Applies only in DIF analyses. Should items without any responses in at least one
+Logical: Applies only in DIF analyses. Should items without any responses in at least one 
 DIF group being removed prior to analyses? Note: Conquest may crash if these items
-remain in the data.
+remain in the data. 
 }
   \item{remove.vars.DIF.constant}{
-Logical: Applies only in DIF analyses. Should items without variance in at least one
-DIF group being removed prior to analyses? Note: Conquest may crash if these items
-remain in the data.
+Logical: Applies only in DIF analyses. Should items without variance in at least one 
+DIF group being removed prior to analyses? Note: Conquest may crash if these items 
+remain in the data. 
 }
   \item{verbose}{
 A logical value indicating whether messages are printed on the R console.
@@ -159,15 +168,15 @@ The directory in which the output will be written to. If \code{software = "conqu
 }
   \item{analysis.name}{
 A character string specifying the analysis name. If \code{software = "conquest"},
-\code{analysis.name} must be specified. All Conquest input and output files will
-named \code{analysis.name} with their corresponding extensions. If \code{software = "tam"},
-\code{analysis.name} is not mandatory. In the case of multiple models estimation,
+\code{analysis.name} must be specified. All Conquest input and output files will 
+named \code{analysis.name} with their corresponding extensions. If \code{software = "tam"}, 
+\code{analysis.name} is not mandatory. In the case of multiple models estimation, 
 \code{split.models} automatically defines \code{analysis.name} for each model.
 }
   \item{schooltype.var}{
 Optional: Name or column number of the variable indicating the school type (e.g.
-academic track, non-academic track). Only necessary if \emph{p} values should be
-computed for each school type separately.
+academic track, non-academic track). Only necessary if \emph{p} values should be 
+computed for each school type separately. 
 }
   \item{model.statement}{
 Optional: Applies only if \code{software = "conquest"}. A character string given the model
@@ -193,17 +202,16 @@ The number of plausible values which are to be drawn from the conditioning model
   \item{seed}{
 Optional: Set seed value for analysis. The value will be used in Conquest syntax file ('set seed'-statement,
 see conquest manual, p. 225) or in TAM (control$seed). Note that seed only occurs for stochastic integration.
-}
+}koennen 
   \item{conquest.folder}{
 Applies only if \code{software = "conquest"}. A character string with path and name
 of the Conquest console, for example \code{"c:/programme/conquest/console_Feb2007.exe"}.
-If \code{NULL}, function tries to retrieve Conquest console from
-\code{"i:/Methoden/00_conquest_console/console_Feb2007.exe"}. If the path is'nt valid,
-the user is requested to specify the path of the console.
+In package version 0.7.24 and later, conquest executable file is included in the package,
+so the user needn't to specify this argument.
 }
   \item{constraints}{
 A character string specifying how the scale should be constrained. Possible options
-are \code{"cases"} (default), \code{"items"} and \code{"none"}. When anchor parameter are specified in
+are \code{"cases"} (default), \code{"items"} and \code{"none"}. When anchor parameter are specified in 
 anchor, constraints will be set to \code{"none"} automatically. In \code{TAM} the option
 \code{"none"} is not allowed. (See the help file of \code{\link[TAM]{tam.mml}} for further details.)
 }
@@ -219,53 +227,49 @@ See Conquest manual pp.167 for details on population distributions.
 }
   \item{method}{
 A character string indicating which method should be used for numerical or stochastic
-integration. Possible options are \code{"gauss"} (Gauss-Hermmite quadrature: default),
-\code{"quadrature"} (Bock/Aitken quadrature) and \code{"montecarlo"}. See Conquest manual
-pp.167 for details on these methods. When using \code{software = "tam"}, \code{"gauss"} and
+integration. Possible options are \code{"gauss"} (Gauss-Hermite quadrature: default),
+\code{"quadrature"} (Bock/Aitken quadrature) and \code{"montecarlo"}. See Conquest manual 
+pp.167 for details on these methods. When using \code{software = "tam"}, \code{"gauss"} and 
 \code{"quadrature"} essentially leads to numerical integration, i.e TAM is called with
 \code{control$snodes = 0} and with \code{control$nodes = seq(-6,6,len=nn)}, where
 \code{nn} equals the number of nodes specified in the \code{nodes} argument of
-\code{defineModel} (see below). When using \code{software = "tam"}, \code{"montecarlo"}
-leads to calling TAM with \code{control$QMC = FALSE} and \code{snodes = nn}, where
-\code{nn} equals the number of nodes specified in the \code{nodes} argument of
-\code{defineModel}. When using \code{software = "tam"}, \code{"quasiMontecarlo"}
-leads to calling TAM with \code{control$QMC = TRUE} and \code{snodes = nn}, where
-\code{nn} equals the number of nodes specified in the \code{nodes} argument of
-\code{defineModel}. To met the \code{software = "tam"} default (numerical integration), use
-\code{software="tam", nodes = 21}.
+\code{defineModel} (see below). Whether or not \code{control$QMC} is set to TRUE or FALSE,
+depends on whether \code{"montecarlo"} or \code{"quasiMontecarlo"} is chosen.
+\code{"montecarlo"} leads to calling TAM with \code{control$QMC = FALSE} and
+\code{snodes = nn}, where \code{nn} equals the number of nodes specified in the \code{nodes} argument of
+\code{defineModel}. \code{"quasiMontecarlo"} leads to calling TAM with \code{control$QMC = TRUE} and
+\code{snodes = nn}, where \code{nn} equals the number of nodes specified in the \code{nodes} argument of
+\code{defineModel}. To met the \code{software = "tam"} default (Quasi Monte Carlo integration with
+\code{control$QMC = TRUE}), use \code{software="tam", nodes = 21, method = "quasiMontecarlo"}.
 }
   \item{n.iterations}{
 %%     ~~Describe \code{dif.term} here~~
 An integer value specifying the maximum number of iterations for which estimation
-will proceed without improvement in the deviance.
+will proceed without improvement in the deviance. 
 }
   \item{nodes}{
-%%     ~~Describe \code{dif.term} here~~
 An integer value specifying the number of nodes to be used in the analysis. The
 default value is 20. When using \code{software = "tam"}, the value specified here
-leads to calling TAM with \code{nodes = 20} AND \code{snodes = 0} if \code{"gauss"} or
-\code{"quadrature"} was used in the \code{method} argument. If \code{"montecarlo"} or \code{"quasiMontecarlo"}
-was used in the \code{method} argument, the value specified here leads to calling TAM with
-\code{control$snodes = 20}. For numerical integration, for example,
-\code{method = "gauss"} and \code{nodes = 21} (TAM default) may be appropriate.
+leads to calling TAM with \code{nodes = 20} AND \code{snodes = 0} if \code{"gauss"} or 
+\code{"quadrature"} or \code{"quasiMontecarlo"} was used in the \code{method} argument.
+If \code{"montecarlo"} was used in the \code{method} argument, the value specified here
+leads to calling TAM with \code{control$snodes = 20}. For numerical integration, for example,
+\code{method = "gauss"} and \code{nodes = 21} (TAM default) may be appropriate. 
 For quasi monte carlo integration, \code{method = "quasiMontecarlo"} and \code{nodes = 1000}
-may be appropriate (TAM authors recommend to use at least 1000 nodes).
+may be appropriate (TAM authors recommend to use at least 1000 nodes). 
 }
   \item{p.nodes}{
-%%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "conquest"}. An integer value specifying the
 number of nodes that are used in the approximation of the posterior distributions,
 which are used in the drawing of plausible values and in the calculation of EAP
 estimates. The default value is 2000.
 }
   \item{f.nodes}{
-%%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "conquest"}. An integer value specifying the
 number of nodes that are used in the approximation of the posterior distributions
 in the calculation of fit statistics. The default value is 2000.
 }
   \item{converge}{
-%%     ~~Describe \code{dif.term} here~~
 An integer value specifying the convergence criterion for parameter estimates.
 The estimation will terminate when the largest change in any parameter estimate
 between successive iterations of the EM algorithm is less than converge. The
@@ -291,15 +295,13 @@ credit models comprising items with more than 10 categories to avoid response co
 with width 2 in Conquest.
 }
   \item{allowAllScoresEverywhere}{
-%%     ~~Describe \code{dif.term} here~~
-Applies only if \code{software = "Conquest"}. Defines score statement generation
+Applies only if \code{software = "Conquest"}. Defines score statement generation 
 in multidimensional polytomous models. Consider two dimensions, `reading' and `listening'.
 In `reading', values 0, 1, 2, 3 occur. In `listening', values 1, 2, 3, 4 occur. If \code{TRUE},
 values 0, 1, 2, 3, 4 are defined for both dimensions. Otherwise, values 0, 1, 2, 3
 are defined for `reading', values 1, 2, 3, 4 are defined for `listening'.
 }
   \item{guessMat}{
-%%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "tam"} for 3PL models. A named data frame
 with two columns indicating for which items a common guessing parameter should
 be estimated. The first column contains the names of all items in the analysis
@@ -309,78 +311,66 @@ separate guessing parameter is estimated. If the value in the second columns equ
 zero, the guessing parameter is fixed to zero.
 }
   \item{est.slopegroups}{
-%%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "tam"} for 2PL models. Optionally, a named data frame
 with two columns indicating for which items a common discrimination parameter should
 be estimated. The first column contains the names of all items in the analysis
 and should be named \code{"item"}. The second column is numerical (integer values
 recommended) and allocates the items to groups. For each group of items, a
-separate discrimination parameter is estimated. Without specifying \code{est.slopegroups},
+separate discrimination parameter is estimated. Without specifying \code{est.slopegroups}, 
 a discrimination parameter for each item is estimated.
 }
   \item{fixSlopeMat}{
-%%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "tam"} for 2PL models. Optionally, a named data frame
 with two columns indicating for which items a fixed discrimination should be assumed.
-The first column contains the names of the items which discrimination should be fixed.
-Note that item indicators should be unique---if not, use further arguments \code{slopeMatDomainCol},
-\code{slopeMatItemCol} and \code{slopeMatValueCol}. The second column is numerical and contains
-the discrimination value. Note: To date, this works only for between item dimensionality models.
-Within item dimensionality models must be specified directly in TAM, using the \code{B.fixed}
+The first column contains the names of the items which discrimination should be fixed. 
+Note that item indicators should be unique---if not, use further arguments \code{slopeMatDomainCol}, 
+\code{slopeMatItemCol} and \code{slopeMatValueCol}. The second column is numerical and contains 
+the discrimination value. Note: To date, this works only for between item dimensionality models. 
+Within item dimensionality models must be specified directly in TAM, using the \code{B.fixed} 
 argument of \code{\link[TAM]{tam.mml}}. Items which discrimation should be estimated should not occur in this data frame.
 }
   \item{slopeMatDomainCol}{
-%%     ~~Describe \code{dif.term} here~~
 Optional: Only necessary if the \code{fixSlopeMat} argument was used to define fixed slope
-parameters. Moreover, specifying \code{slopeMatDomainCol} is only necessary, if the item
-identifiers in \code{fixSlopeMat} are not unique---for example, if a specific item occurs
-with two slope parameters, one domain-specific item slope parameter and one additional
-``global'' item parameter. The domain column than must specify which parameter belongs to which domain.
+parameters. Moreover, specifying \code{slopeMatDomainCol} is only necessary, if the item 
+identifiers in \code{fixSlopeMat} are not unique---for example, if a specific item occurs 
+with two slope parameters, one domain-specific item slope parameter and one additional 
+``global'' item parameter. The domain column than must specify which parameter belongs to which domain. 
 }
   \item{slopeMatItemCol}{
-%%     ~~Describe \code{dif.term} here~~
-Optional: Only necessary if the \code{fixSlopeMat} argument was used to define fixed slope
-parameters. Moreover, specifying \code{itemCol} is only necessary, if the \code{fixSlopeMat}
-data frame has more than two columns. The \code{itemCol} column than must specify which column
-contains the item identifier.
+Optional: Only necessary if the \code{fixSlopeMat} argument was used to define fixed slope 
+parameters. Moreover, specifying \code{itemCol} is only necessary, if the \code{fixSlopeMat} 
+data frame has more than two columns. The \code{itemCol} column then must specify which column
+contains the item identifier. 
 }
   \item{slopeMatValueCol}{
-%%     ~~Describe \code{dif.term} here~~
-Optional: Only necessary if the \code{fixSlopeMat} argument was used to define slope parameters.
-Moreover, specifying \code{valueCol} is only necessary, if the \code{fixSlopeMat} data frame has
-more than two columns. The \code{valueCol} column than must specify which column contains the item parameter values.
+Optional: Only necessary if the \code{fixSlopeMat} argument was used to define slope parameters. 
+Moreover, specifying \code{valueCol} is only necessary, if the \code{fixSlopeMat} data frame has 
+more than two columns. The \code{valueCol} column than must specify which column contains the item parameter values. 
 }
   \item{progress}{
-%%     ~~Describe \code{dif.term} here~~
-Applies only if \code{software = "tam"}. Print estimation progress messages on console?
+Logical: Applies only if \code{software = "tam"} or \code{software = "mirt"}. Print estimation progress messages on console?
+If \code{NULL} (the default), progress is printed for \code{software = "mirt"}, but not for \code{software = "tam"}.
+
 }
   \item{Msteps}{
 Number of M steps for item parameter estimation. A high value of M steps could be helpful in cases of non-convergence.
 The default value is 4; the default for 3pl models is set to 10.
 }
   \item{increment.factor}{
-%%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "tam"}. Should only be varied if the model does not converge.
 See help page of \code{\link[TAM]{tam.mml}} for further details.
 }
   \item{fac.oldxsi}{
-%%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "tam"}. Should only be varied if the model does not converge.
 See help page of \code{\link[TAM]{tam.mml}} for further details.
 }
   \item{export}{
-%%     ~~Describe \code{dif.term} here~~
 Applies only if \code{software = "conquest"}. Specifies which additional files should be written
 on hard disk.
 }
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-A list which contains information about the desired estimation. The list is intended for
+A list which contains information about the desired estimation. The list is intended for 
 further processing via \code{\link{runModel}}. Structure of the list varies depending on
 whether multiple models were called using \code{\link{splitModels}} or not. If
 \code{\link{splitModels}} was called, the number of elements in the list equals
@@ -397,58 +387,58 @@ The Q matrix allocating items to dimensions.
 Named list of all relevant variables of the data set.
 }
   \item{dir}{
-Character string of the directory the results are to be saved.
+Character string of the directory the results are to be saved. 
 }
   \item{analysis.name}{
-Character string of the analysis' name.
+Character string of the analysis' name. 
 }
   \item{deskRes}{
-Data frame with descriptives (e.g., p values) of the test items.
+Data frame with descriptives (e.g., p values) of the test items. 
 }
   \item{discrim}{
-Data frame with item discrimination values.
+Data frame with item discrimination values. 
 }
   \item{perNA}{
 The person identifiers of examinees which are excluded from the analysis due to solely missing values.
 }
   \item{per0}{
-The person identifiers of examinees which have solely false responses. if \code{remove.failues} was set
-to be TRUE, these persons are excluded from the data set.
+The person identifiers of examinees which have solely false responses. if \code{remove.failues} was set 
+to be TRUE, these persons are excluded from the data set. 
 }
   \item{perA}{
-The person identifiers of examinees which have solely correct responses.
+The person identifiers of examinees which have solely correct responses. 
 }
   \item{perExHG}{
 The person identifiers of examinees which are excluded from the analysis due to missing values on explicit variables.
 }
   \item{itemsExcluded}{
-Character string of items which were excluded, for example due to zero variance or solely missing values.
+Character string of items which were excluded, for example due to zero variance or solely missing values. 
 }
 If \code{software == "conquest"}, the output additionally includes the following elements:
   \item{input}{
-Character string of the path with Conquest input (cqc) file.
+Character string of the path with Conquest input (cqc) file. 
 }
   \item{conquest.folder}{
-Character string of the path of the conquest executable file.
+Character string of the path of the conquest executable file. 
 }
   \item{model.name}{
-Character string of the model name.
+Character string of the model name. 
 }
 If \code{software == "tam"}, the output additionally includes the following elements:
   \item{anchor}{
 Optional: data frame of anchor parameters (if anchor parameters were defined).
 }
   \item{daten}{
-The prepared data for TAM analysis.
+The prepared data for TAM analysis. 
 }
   \item{irtmodel}{
-Character string of the used IRT model.
+Character string of the used IRT model. 
 }
   \item{est.slopegroups}{
-Applies for 2pl modeling. Information about which items share a common slope parameter.
+Applies for 2pl modeling. Information about which items share a common slope parameter. 
 }
   \item{guessMat}{
-Applies for 3pl modeling. Information about which items share a common guessing parameter.
+Applies for 3pl modeling. Information about which items share a common guessing parameter. 
 }
   \item{control}{
 List of control parameters for TAM estimation.
@@ -474,7 +464,7 @@ data(trends)
 datW <- reshape2::dcast(trends[which(trends[,"year"] == 2010),],
                         idstud+sex+ses+language~item, value.var="value")
 
-# second, create the q matrix from the long format data frame
+# second, create the q matrix from tLinking and main")])
 qMat <- unique(trends[ ,c("item","domain")])
 qMat <- data.frame ( qMat[,"item", drop=FALSE], model.matrix(~domain-1, data = qMat))
 
@@ -484,11 +474,21 @@ qMat <- data.frame ( qMat[,"item", drop=FALSE], model.matrix(~domain-1, data = q
 ################################################################################
 
 # Example 1: define and run a unidimensional Rasch model with all variables in dataset
-# (reading and listening together) using "TAM".
+# (reading and listening together) using "Conquest".
+
+# using conquest under windows, mirt under linux
+sys  <- Sys.info()
+if(sys[["sysname"]] == "Linux") {
+   software <- "mirt"
+   irtmodel <- data.frame(item = unique(trends[,"item"]), irtmod = "Rasch", stringsAsFactors = FALSE)
+} else {
+   software <- "conquest" 
+   irtmodel <- "1PL"
+}
 
 # defining the model: specifying q matrix is not necessary
 mod1 <- defineModel(dat=datW, items= -c(1:4), id="idstud", analysis.name = "unidim",
-        software="tam" )
+        irtmodel=irtmodel, software = software, dir = tempdir() )
 
 # run the model
 run1 <- runModel(mod1)
@@ -497,7 +497,7 @@ run1 <- runModel(mod1)
 res1 <- getResults(run1)
 
 # extract the item parameters from the results object
-item <- itemFromRes ( res1 )
+item <- itemFromRes ( res1 ) 
 
 
 ################################################################################
@@ -506,23 +506,47 @@ item <- itemFromRes ( res1 )
 
 # nearly the same procedure as in example 1. Using 'sex' as DIF variable
 # note that 'sex' is a factor variable here. Conquest needs all explicit variables
-# to be numeric. Variables will be automatically transformed to numeric by
+# to be numeric. Variables will be automatically transformed to numeric by 
 # 'defineModels'. However, it might be the better idea to transform the variable
-# manually.
+# manually. 
 datW[,"sexNum"] <- car::recode ( datW[,"sex"] , "'male'=0; 'female'=1", as.factor = FALSE)
-
-# as we have defined a new variable ('sexNum') in the data, it is a good idea
+                   
+# as we have defined a new variable ('sexNum') in the data, it is a good idea 
 # to explicitly specify item columns ... instead of saying 'items= -c(1:3)' which
 # means: Everything except column 1 to 3 are item columns
+if(software != "mirt") {
 items<- grep("^T[[:digit:]]{2}", colnames(datW))
 mod1a<- defineModel(dat=datW, items= items, id="idstud", DIF.var = "sexNum",
-        analysis.name = "unidimDIF", software="tam",fac.oldxsi=.1, increment.factor=1.07)
+        irtmodel=irtmodel, software = software, analysis.name = "unidimDIF", dir = tempdir())
 
 # run the model
 run1a<- runModel(mod1a)
 
 # get the results
 res1a<- getResults(run1a)
+
+
+################################################################################
+### Example 1b: Rasch Model with DIF variable in customized model statement  ###
+################################################################################
+
+# builing on example 1a, the DIF variable should be used without interaction term
+# and without eliminating items which do not vary within DIF groups. We need the
+# 'sexNum' variable which was defined previously
+# Example based on 'model 6' in 'r:\Nawi\main\10_Studien\Auswertung\Alex Robitzsch R-Skripte\skalierung_conquest_mit_R_04.R'
+items<- grep("^T[[:digit:]]{2}", colnames(datW))
+mod1b<- defineModel(dat=datW, items= items, id="idstud", model.statement = "item + sexNum",
+        irtmodel=irtmodel, software = software, analysis.name = "unidimCustom", dir = tempdir())
+
+# run the model
+run1b<- runModel(mod1b)
+
+# get the results
+res1b<- getResults(run1b)
+
+# item parameter
+it <- itemFromRes(res1b)
+}
 
 
 ################################################################################
@@ -541,9 +565,9 @@ aPar <- aPar[,c("item", "est")]
 # If regression variables are factors, dummy variables automatically will be used.
 # (This behavior is equivalent as in lm() for example.)
 mod2a<- defineModel(dat=datW, items= grep("^T[[:digit:]]{2}", colnames(datW)),
-        id="idstud", analysis.name = "twodim",  qMatrix = qMat,
+        id="idstud", analysis.name = "twodim",  qMatrix = qMat,irtmodel=irtmodel, 
         HG.var = c("language","sex", "ses"), anchor = aPar, n.plausible = 20,
-        software="tam", fac.oldxsi=.1, increment.factor=1.07)
+        software = software, dir = tempdir())
 
 # run the model
 run2a<- runModel(mod2a)
@@ -560,16 +584,16 @@ res2a<- getResults(run2a)
 # defining the model: specifying q matrix now is necessary.
 mod2b<- defineModel(dat=datW, items= grep("^T[[:digit:]]{2}", colnames(datW)),
         id="idstud", analysis.name = "twodim2", qMatrix = qMat,
-        n.plausible = 20, software="tam", fac.oldxsi=.1, increment.factor=1.07)
+        irtmodel=irtmodel, software = software, n.plausible = 20, dir = tempdir())
 
 # run the model
-run2b<- runModel(mod2b)
+run2b <- runModel(mod2b)
 
 # get the results
 res2b<- getResults(run2b)
 
 ### equating (wenn nicht verankert)
-eq2b <- equat1pl( results = res2b, prmNorm = aPar)
+eq2b <- equat1pl( results = res2b, prmNorm = aPar, difBound=.64, iterativ=TRUE)
 
 ### transformation to the 'bista' metric: needs reference population definition
 ref  <- data.frame ( domain = c("domainreading", "domainlistening"),
@@ -583,11 +607,8 @@ tf2b <- transformToBista ( equatingList = eq2b, refPop = ref, cuts = cuts)
 ###            Example 3: Multidimensional Rasch Model in TAM                ###
 ################################################################################
 
-# Example 3: the same model in TAM
-# we use the same anchor parameters from example 1
-
 # estimate model 2 with latent regression and anchored parameters in TAM
-# specification of an output folder (via 'dir' argument) no longer necessary
+# specification of an output folder (via 'dir' argument) no longer necessary 
 mod2T<- defineModel(dat=datW, items= grep("^T[[:digit:]]{2}", colnames(datW)),
         id="idstud", qMatrix = qMat, HG.var = "sex", anchor = aPar, software = "tam")
 
@@ -604,6 +625,15 @@ wle  <- tam.wle(run2T)
 
 # Finally, the model result are collected in a single data frame
 res2T<- getResults(run2T)
+
+# repeat the same model with mirt 
+items<- grep("^T[[:digit:]]{2}", colnames(datW), value=TRUE)
+irtM <- data.frame(item = items, task = substr(items,1,4), stringsAsFactors = FALSE) |> dplyr::mutate(irtmod = "Rasch") 
+mod2M<- defineModel(dat=datW, items= grep("^T[[:digit:]]{2}", colnames(datW)),id="idstud", 
+        irtmodel = irtM[,c("item", "irtmod")],  anchor = aPar, qMatrix = qMat, HG.var = "sex",  software = "mirt")
+run2M<- runModel(mod2M)
+res2M<- getResults(run2M)
+itM  <- itemFromRes(res2M)
 
 
 ################################################################################
@@ -626,10 +656,10 @@ l1    <- splitModels ( qMatrix = qMat, person.groups = pers, nCores = 1)
 modMul<- defineModel(dat = datW, items = grep("^T[[:digit:]]{2}", colnames(datW)),
          id = "idstud", check.for.linking = TRUE, splittedModels = l1, software = "tam")
 
-# run all models
+# run all models 
 runMul<- runModel(modMul)
 
-# get results of all models
+# get results of all models 
 resMul<- getResults(runMul)
 
 
@@ -638,7 +668,7 @@ resMul<- getResults(runMul)
 ################################################################################
 
 # Example 5: define und run multiple models according to different domains (item groups)
-# and further linking/equating. This example mimics the routines necessary for the
+# and further linking/equating. This example mimics the routines necessary for the 
 # 'Vergleichsarbeiten' at the Institute of Educational Progress (IQB)
 
 # specify two models according to the two domains 'reading' and 'listening'
@@ -648,47 +678,49 @@ l2    <- splitModels ( qMatrix = qMat,  nCores = 1)
 mods  <- defineModel(dat = datW, id = "idstud", check.for.linking = TRUE,
          splittedModels = l2, software = "tam")
 
-# run 2 models
+# run 2 models 
 runs  <- runModel(mods)
 
-# get the results
+# get the results 
 ress  <- getResults(runs)
 
 # only for illustration, we create arbitrary 'normed' parameters for anchoring
-prmNrm<- itemFromRes(ress)[ sample ( 1:56, 31,FALSE) ,c("item", "est")]
-prmNrm[,"est"] <- prmNrm[,"est"] - 0.6 + rnorm ( 31, 0, 0.75)
+prmNrm<- itemFromRes(ress)
+prmNrm<- do.call("rbind", by(data = prmNrm, INDICES = prmNrm[,"dimension"], FUN = function (d) {
+         d[sample(1:nrow(d), size = sample(16:40, 1), replace = FALSE),]}))[,c("item", "est")]
+prmNrm[,"est"] <- prmNrm[,"est"] - 0.6 + rnorm ( nrow(prmNrm), 0, 0.75)
 
 # anchoring without exclusion of linking DIF items (DIF items will only be identified)
-anch  <- equat1pl ( results = ress, prmNorm = prmNrm, excludeLinkingDif = FALSE,
+anch  <- equat1pl ( results = ress, prmNorm = prmNrm, excludeLinkingDif = FALSE, 
          difBound = 0.6)
 
 # anchoring with exclusion of linking DIF items
-anch2 <- equat1pl ( results = ress, prmNorm = prmNrm, excludeLinkingDif = TRUE,
+anch2 <- equat1pl ( results = ress, prmNorm = prmNrm, excludeLinkingDif = TRUE, 
          difBound = 0.6, iterativ = FALSE)
 
 # anchoring with iterative exclusion of linking DIF items
-anch3 <- equat1pl ( results = ress, prmNorm = prmNrm, excludeLinkingDif = TRUE,
+anch3 <- equat1pl ( results = ress, prmNorm = prmNrm, excludeLinkingDif = TRUE, 
          difBound = 0.6, iterativ = TRUE)
 
 # transformation to the Bista metric
-# first we arbitrarily define mean and standard deviation of the reference
-# population according to both dimensions (defined in the Q matrix):
+# first we arbitrarily define mean and standard deviation of the reference 
+# population according to both dimensions (defined in the Q matrix): 
 # reading and listening
-# Note that the the first column of the 'refPop' data frame must include the
+# Note that the the first column of the 'refPop' data frame must include the 
 # domain names. Domain names must match the names defined in the Q matrix
 refPop<- data.frame ( domain = c("domainreading", "domainlistening"),
         m = c(0.03890191, 0.03587727), sd= c(1.219, 0.8978912))
 
 # second, we specify a list with cut scores. Values must be in ascending order.
-# Labels of the competence stages are optional. If no labels are specified,
+# Labels of the competence stages are optional. If no labels are specified, 
 # the will be defaulted to 1, 2, 3 ... etc.
-# Note: if labels are specified, there must be one label more than cut scores.
+# Note: if labels are specified, there must be one label more than cut scores. 
 # (i.e. 4 cut scores need 5 labels, etc.)
 cuts  <- list ( domainreading = list ( values = 390+0:3*75),
          domainlistening = list ( values = 360+0:3*85))
 
 # transformation
-dfr   <- transformToBista ( equatingList = anch3, refPop = refPop, cuts=cuts )
+dfr   <- transformToBista ( equatingList = anch3, refPop = refPop, cuts=cuts ) 
 head(dfr$itempars)
 head(dfr$personpars)
 
@@ -698,8 +730,8 @@ head(dfr$personpars)
 ################################################################################
 
 # Example 5a: define und run multiple models according to different domains (item groups)
-# and further linking/equating. Same as example 5, but extended for the 'global'
-# domain.
+# and further linking/equating. Same as example 5, but extended for the 'global' 
+# domain. 
 
 # add the 'global' domain (reading and listening together) in the Q matrix
 qMat2 <- qMat
@@ -715,47 +747,57 @@ mods3 <- defineModel(dat = datW, id = "idstud", check.for.linking = TRUE,
 # run 3 models
 runs3 <- runModel(mods3)
 
-# get the results
+# get the results 
 res3  <- getResults(runs3)
 
 # only for illustration, we create arbitrary 'normed' parameters for anchoring.
 # Each item now has to item parameter: one is domain-specific, one is the global
 # item parameter. Hence, each item occurs two times in 'prmNrm'
-prmNrm<- itemFromRes(ress)[ sample ( 1:56, 31,FALSE) ,c("dimension", "item", "est")]
-prmNrm[,"est"] <- prmNrm[,"est"] - 0.6 + rnorm ( 31, 0, 0.75)
+prmNrm<- do.call("rbind", by(data = itemFromRes(ress),
+         INDICES = itemFromRes(ress)[,"dimension"], FUN = function (d) {
+             d    <- d[sample(1:nrow(d), size = round(nrow(d)/3), replace=FALSE), c("dimension", "item", "est")]
+             const<- ifelse(d[1,"dimension"] == "domainlistening", 0.6, 0.4)
+             err  <- ifelse(d[1,"dimension"] == "domainlistening", 0.75, 0.6)
+             d[,"est"] <- d[,"est"] - const + rnorm ( nrow(d), 0, err)
+             return(d) }))
 prmGlo<- prmNrm
 prmGlo[,"dimension"] <- "global"
 prmNrm<- rbind ( prmNrm, prmGlo)
 
-# if the item identifier in 'prmNrm' is not unique, 'equat1pl' has to know which
+# if the item identifier in 'prmNrm' is not unique, 'equat1pl' has to know which 
 # parameter in 'prmNrm' belongs to which dimension/domain. Hence, the dimension
 # is added to 'prmNrm'.
-
-# anchoring: if 'prmNrm' has more than 2 columns, the columns of 'prmNrm' must be
+ 
+# anchoring: if 'prmNrm' has more than 2 columns, the columns of 'prmNrm' must be 
 # specified in 'equat1pl'
-anch3 <- equat1pl ( results = res3, prmNorm = prmNrm, item = "item", value = "est",
+anch3 <- equat1pl ( results = res3, prmNorm = prmNrm, item = "item", value = "est", 
          domain = "dimension", excludeLinkingDif = FALSE, difBound = 0.6)
+         
+# for illustration: consequences of linking the global domain if linking constants
+# differ between domains
+anch4 <- equat1pl ( results = res3, prmNorm = prmNrm, item = "item", value = "est",
+         domain = "dimension", excludeLinkingDif = TRUE, iterativ = TRUE, difBound = 0.64)
 
 # transformation to the Bista metric
-# first we arbitrarily define mean and standard deviation of the reference
-# population according to the three dimensions (defined in the Q matrix):
+# first we arbitrarily define mean and standard deviation of the reference 
+# population according to the three dimensions (defined in the Q matrix): 
 # reading, listening, and global
-# Note that the the first column of the 'refPop' data frame must include the
+# Note that the the first column of the 'refPop' data frame must include the 
 # domain names. Domain names must match the names defined in the Q matrix
 refPop<- data.frame ( domain = c("domainreading", "domainlistening", "global"),
         m = c(0.03890191, 0.03587727, 0.03), sd= c(1.219, 0.8978912, 1.05))
 
 # second, we specify a list with cut scores. Values must be in ascending order.
-# Labels of the competence stages are optional. If no labels are specified,
+# Labels of the competence stages are optional. If no labels are specified, 
 # the will be defaulted to 1, 2, 3 ... etc.
-# Note: if labels are specified, there must be one label more than cut scores.
+# Note: if labels are specified, there must be one label more than cut scores. 
 # (i.e. 4 cut scores need 5 labels, etc.)
 cuts  <- list ( domainreading = list ( values = 390+0:3*75),
          domainlistening = list ( values = 360+0:3*85),
          global = list ( values = 400+0:2*100, labels = c("A1", "A2", "B1", "B2")))
 
 # transformation
-dfr   <- transformToBista ( equatingList = anch3, refPop = refPop, cuts=cuts )
+dfr   <- transformToBista ( equatingList = anch3, refPop = refPop, cuts=cuts ) 
 head(dfr$itempars)
 head(dfr$personpars)
 
@@ -764,10 +806,10 @@ head(dfr$personpars)
 ###    Example 6: Scaling, linking and equating for multiple models (II)     ###
 ################################################################################
 
-# Example 6 and 6a: define und run multiple models according to different domains
-# (item groups) and different person groups. This example mimics the routines
-# necessary for the 'Laendervergleich/Bildungstrend' at the Institute for
-# Educational Progress (IQB). Example 6 demonstrates routines without trend
+# Example 6 and 6a: define und run multiple models according to different domains 
+# (item groups) and different person groups. This example mimics the routines 
+# necessary for the 'Laendervergleich/Bildungstrend' at the Institute for 
+# Educational Progress (IQB). Example 6 demonstrates routines without trend 
 # estimation, i.e. for the first (or solely) measurement occasion. Example 6a
 # demonstrates routines for the second measurement occasion (t2) which is linked
 # to t1. Example 6b demonstrates routines for the third measurement occasion (t3)
@@ -790,7 +832,7 @@ qMat <- data.frame ( qMat[,"item", drop=FALSE], model.matrix(~domain-1, data = q
 modsT1<- splitModels ( qMatrix = qMat, nCores = 1)
 
 # define 2 models. Note: not all items of the Q matrix are present in the data.
-# Items which occur only in the Q matrix will be ignored.
+# Items which occur only in the Q matrix will be ignored. 
 defT1 <- defineModel(dat = datT1, id = "idstud", check.for.linking = TRUE,
          splittedModels = modsT1, software = "tam")
 
@@ -836,7 +878,7 @@ table(datT1[,c("country", "language")])
 modT1P<- splitModels ( person.groups = datT1[,c("idstud", "country")],
          all.persons = FALSE, nCores = 1)
 
-# define the 2 country-specific 2-dimensional models, specifying latent regression
+# define the 2 country-specific 2-dimensional models, specifying latent regression 
 # model and fixed item parameters.
 defT1P<- defineModel(dat = datT1, items = itemT1[,"item"], id = "idstud",
          check.for.linking = TRUE, splittedModels = modT1P, qMatrix = qMat,
@@ -1054,8 +1096,8 @@ pers  <- rbind(persT1, persT2, persT3)
 # first we have to create the 'domain' column in plausible values data
 pers[,"domain"] <- car::recode(pers[,"dimension"], "'domainlistening'='listening'; 'domainreading'='reading'")
 pers[,"dimension"] <- NULL
-pers  <- merge(unique(trends[,c("year", "idclass", "idstud", "wgt", "jkzone", "jkrep", "domain",
-         "country", "language", "ses", "sex")]), pers, by = c("year", "idstud", "domain"), all = FALSE)
+pers  <- eatTools::mergeAttr(unique(trends[,c("year", "idclass", "idstud", "wgt", "jkzone", "jkrep", "domain", "country", "language", "ses", "sex")]),
+         pers, by = c("year", "idstud", "domain"), all = FALSE, setAttr=FALSE)
 
 # collect original linking errors
 # t1 vs. t2: linking errors were computed in example 6a.
@@ -1067,7 +1109,7 @@ let2t3<- T.t2t3[["linkingErrors"]]
 # t1 vs. t3: linking errors were not yet computed: link t3 to t1 to create linking error template
 L.t1t3<- equat1pl ( results = resT3, prmNorm = itemT1[,c("item", "est")],
          excludeLinkingDif = TRUE, difBound = 0.64, iterativ = TRUE)
-
+         
 # indirect linking ('chained' linking)
 chain <- multiEquatError (eq.1_2=L.t1t2, eq.2_3=L.t2t3, eq.1_3=L.t1t3)
 
@@ -1098,11 +1140,12 @@ library(eatRep)
 means <- by(data = pers, INDICES = pers[,"domain"], FUN = function ( dim ) {
          m <- repMean(datL = dim, ID="idstud", PSU = "idclass", type = "jk1",
               imp = "imp", groups = "country", dependent = "valueTransfBista",
-              trend = "year", linkErr = lErr[which(lErr[,"domain"] == dim[1,"domain"]),])
+              trend = "year", linkErr = lErr[which(lErr[,"domain"] == dim[1,"domain"]),],
+              engine="BIFIEsurvey")
          r <- report(m, add = list(domain = dim[1,"domain"]))
          return(r)})
 means <- do.call("rbind", means)
-
+         
 # additionally: differ the sex-specific means in each country from the sex-specific means
 # in the whole population? Are the differences (male vs. female) in each country different
 # from the difference (male vs. female) in the whole population?
@@ -1111,7 +1154,8 @@ means2<- by(data = pers, INDICES = pers[,"domain"], FUN = function ( dim ) {
               imp = "imp", groups = c("country","sex"), group.differences.by = "sex",
               group.splits = 0:1, cross.differences = TRUE,crossDiffSE.engine= "lm",
               dependent = "valueTransfBista", trend = "year",
-              linkErr = lErr[which(lErr[,"domain"] == dim[1,"domain"]),])
+              linkErr = lErr[which(lErr[,"domain"] == dim[1,"domain"]),],
+              engine="BIFIEsurvey")
          r <- report(m, add = list(domain = dim[1,"domain"]))
          return(r)})
 means2<- do.call("rbind", means2)
@@ -1218,5 +1262,265 @@ runT1P<- runModel(defT1P)
 
 # get the results
 resT1P<- getResults(runT1P, Q3 = FALSE)
+
+
+################################################################################
+###   Example 8: partial credit model with anchoring excluding linking DIF   ###
+################################################################################
+
+# load partial credit long format data
+data(reading)
+
+# transform into wide format
+datW <- reshape2::dcast(reading[which(reading[,"type"] != "iglu"),],uniqueID+sex+language+country~item, value.var = "valueSum")
+
+# only some items are partial credit, which ones?
+pc.it<- reading[which(reading[,"valueSum"] > 1),"item"] |> unique()
+
+# give values of partial credit items
+# few observation of 1-category for item D223143 ... may cause convergence trouble
+lapply(datW[,pc.it], FUN = table)
+
+# combine the two lowest categories to avoid categories with too few observations
+datW[,"D205143"] <- car::recode(datW[,"D205143"], "1=0; 2=1; 3=2; 4=3; 5=4")
+
+# partial credit model ... we consider the female subgroup to be the reference population
+# (norm population) that defines the scale and reference item parameters
+dFema<- datW[which(datW[,"sex"] == "female"),]                                  ### data for females
+lapply(dFema[,pc.it], FUN = table)                                              ### very few observations for some categories ... may cause convergence trouble
+def1 <- defineModel(dat=dFema, items = -c(1:4), id=1, irtmodel = "PCM", software="tam", nodes = 21)
+run1 <- runModel(def1)
+res1 <- getResults(run1)
+it1  <- itemFromRes(res1)
+
+# males are focus group: initial free estimation of item parameters
+def2 <- defineModel(dat=datW[which(datW[,"sex"] == "male"),], items = -c(1:4), id=1, irtmodel = "PCM",software="tam")
+run2 <- runModel(def2)
+res2 <- getResults(run2)
+it2  <- itemFromRes(res2)
+
+# link males to females ... males perform worse
+# 10 items with linking dif identified 
+eq   <- equat1pl(results = res2, prmNorm = it1, item = "item", cat="category", value = "est", difBound=.64, iterativ = TRUE)
+
+# re-calibrate males with anchoring: use the DIF-cleaned set of anchor parameters for calibrating males on the reference scale
+# variant 1: use the original item parameters for females and exclude linking dif items (it1_cleaned)
+weg  <- eq[["items"]][["not_specified"]][["Dim1"]][["info"]][-1,"itemExcluded"]
+weg  <- eatTools::whereAre(weg, paste(it1[,"item"], it1[,"category"], sep="_"))
+it1C <- it1[-weg,]
+def3A<- defineModel(dat=datW[which(datW[,"sex"] == "male"),], items = -c(1:4), id=1, irtmodel = "PCM",
+        anchor = it1C, itemCol = "item", valueCol = "est", catCol = "category", software="tam")
+run3A<- runModel(def3A)
+res3A<- getResults(run3A)
+it3A <- itemFromRes(res3A)                                                      ### all items except the ones with linking dif with equal item parameters? check 
+comp <- merge(it1[,c("item", "category", "est")], it3A[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"))
+equal<- na.omit(comp[,c("est_ref", "offset")])
+stopifnot(all(equal[,1] == equal[,2]))                                          ### all item parameters without linking dif should be equal
+lDif <- subset(comp, !is.na(est_foc))                                           ### all items with specific focus parameter must be included in linking DIF exclusion list 
+stopifnot(all(paste(lDif[,"item"], lDif[,"category"], sep="_") \%in\% eq$items[["not_specified"]][["Dim1"]][["info"]][,"itemExcluded"]))
+
+# variant 2: use the item parameters for males (linking dif items excluded), transformed to the metric of females
+def3B<- defineModel(dat=datW[which(datW[,"sex"] == "male"),], items = -c(1:4), id=1, irtmodel = "PCM",
+        anchor = eq[["items"]][["not_specified"]][["Dim1"]][["cleanedLinkItemPars"]],
+        itemCol = "item", valueCol = "est", catCol = "category", software="tam")
+run3B<- runModel(def3B)
+res3B<- getResults(run3B)
+it3B <- itemFromRes(res3B)                                                      ### all items except the ones with linking dif with equal item parameters? check 
+link <- eq[["items"]][["not_specified"]][["Dim1"]][["cleanedLinkItemPars"]][,c("item", "category", "est")]
+comp <- merge(link, it3B[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"))
+equal<- na.omit(comp[,c("est_ref", "offset")])
+stopifnot(all(equal[,1] == equal[,2]))                                          ### all item parameters without linking dif should be equal
+lDif <- subset(comp, !is.na(est_foc))                                           ### all items with specific focus paraeter must be included in linking DIF exclusion list 
+stopifnot(all(paste(lDif[,"item"], lDif[,"category"], sep="_") \%in\% eq$items[["not_specified"]][["Dim1"]][["info"]][,"itemExcluded"]))
+
+# transform to Bista metric
+eq4  <- equat1pl(results = res3B)                                               ### reference population mean and SD
+refP <- data.frame(domain = "Dim1", m = 0.0389, sd = 1.07108, stringsAsFactors = FALSE)
+cuts <- list ( Dim1 = list(values = 390+0:3*75))
+tf4  <- transformToBista(equatingList=eq4, refPop=refP, cuts=cuts, vera = FALSE)
+
+
+################################################################################
+### Example 9: (restricted) generalized partial credit model with anchoring  ###
+################################################################################
+
+# load partial credit long format data
+data(reading)
+
+# transform into wide format
+datW <- reshape2::dcast(reading[which(reading[,"type"] != "iglu"),],uniqueID+sex+language+country~item, value.var = "valueSum")
+
+# combine the two lowest categories to avoid categories with too few observations
+datW[,"D205143"] <- car::recode(datW[,"D205143"], "1=0; 2=1; 3=2; 4=3; 5=4")
+
+# restricted generalized partial credit model ... we consider the female subgroup to be the reference population
+# we assume that task D223 and D224 are created for students with special educational need and therefore have
+# different slope. Non-SPF items should have slope = 1
+dFema<- datW[which(datW[,"sex"] == "female"),]                                  ### data for females
+items<- colnames(dFema)[-c(1:4)]
+items<- data.frame(item = items, task = substr(items,1,4), slopeGrp = as.numeric(substr(items,1,4) \%in\% c("D223", "D224")), stringsAsFactors = FALSE) |> dplyr::mutate(slope = car::recode(slopeGrp, "0=1; else=NA"))
+items[,"dim"] <- car::recode(substr(items[,"item"], 1,2),"'D0'='norm'; 'D2'='pilot'")
+items<- data.frame ( items, model.matrix(~dim-1, data = items), stringsAsFactors = FALSE)
+def1T<- defineModel(dat=dFema, items = items[,"item"], id=1, irtmodel = "GPCM.groups", software="tam", fixSlopeMat = na.omit(items[,c("item", "slope")]), est.slopegroups = items[,c("item", "slopeGrp")], nodes = 21, fac.oldxsi =0.6, increment.factor=1.05)
+run1T<- runModel(def1T)
+res1T<- getResults(run1T)
+it1T <- itemFromRes(res1T)
+
+# males are focus group: initial free estimation of item parameters
+def2T<- defineModel(dat=datW[which(datW[,"sex"] == "male"),], items = -c(1:4), id=1, irtmodel = "GPCM.groups",software="tam", fixSlopeMat = na.omit(items[,c("item", "slope")]), est.slopegroups = items[,c("item", "slopeGrp")], nodes = 21)
+run2T<- runModel(def2T)
+res2T<- getResults(run2T)
+it2T <- itemFromRes(res2T)
+unique(it1T[,"estSlope"]); unique(it2T[,"estSlope"])                            ### average discrimination (reg vs. spf) differs for males, but not for females
+
+# use only slope=1 items for 1pl linking
+eq   <- equat1pl(results = res2T, prmNorm = it1T[which(it1T[,"estSlope"] ==1),], item = "item", cat="category", value = "est", difBound=.64, iterativ = TRUE)
+
+# variant 1
+# use the DIF-cleaned set of original anchor parameters for calibrating males on the reference scale
+weg  <- eq[["items"]][["not_specified"]][["Dim1"]][["info"]][-1,"itemExcluded"]
+weg  <- eatTools::whereAre(weg, paste(it1T[,"item"], it1T[,"category"], sep="_"))
+it1C <- subset(it1T[-weg,], estSlope == 1)
+def3T<- defineModel(eatTools::na_omit_selection(dat=datW[which(datW[,"sex"] == "male"),],"language"), 
+        items = -c(1:4), id=1, irtmodel = "GPCM.groups", anchor = it1C, HG.var = c("language", "country"), 
+        itemCol = "item", valueCol = "est", catCol = "category", fixSlopeMat = na.omit(items[,c("item", "slope")]),
+        qMatrix = items[,c("item", "dimnorm", "dimpilot")], est.slopegroups = items[,c("item", "slopeGrp")], nodes = 21, software="tam")
+run3T<- runModel(def3T)
+res3T<- getResults(run3T)
+it3T <- itemFromRes(res3T)                                                      ### all items except the ones with linking dif with equal item parameters? check 
+comp <- merge(subset(it1T[,c("item", "category", "est", "estSlope")],estSlope == 1), it3T[,c("item", "category", "est", "offset")], by=c("item", "category"), all=TRUE, suffixes = c("_ref", "_foc"))
+equal<- na.omit(comp[,c("est_ref", "offset")])
+stopifnot(all(equal[,1] == equal[,2]))                                          ### all item parameters without linking dif should be equal
+lDif <- subset(comp, !is.na(est_foc))
+stopifnot(all(paste(subset(lDif, !is.na(est_ref))[,"item"], subset(lDif, !is.na(est_ref))[,"category"], sep="_") \%in\% eq$items[["not_specified"]][["Dim1"]][["info"]][,"itemExcluded"]))
+
+# variant 2: use the 1pl item parameters for males (linking dif items excluded), transformed to the metric of females
+def4T<- defineModel(eatTools::na_omit_selection(dat=datW[which(datW[,"sex"] == "male"),],"language"), 
+        items = -c(1:4), id=1, irtmodel = "GPCM.groups",  anchor = eq[["items"]][["not_specified"]][["Dim1"]][["cleanedLinkItemPars"]],
+        HG.var = c("language", "country"), itemCol = "item", valueCol = "est", catCol = "category", fixSlopeMat = na.omit(items[,c("item", "slope")]),
+        qMatrix = items[,c("item", "dimnorm", "dimpilot")], est.slopegroups = items[,c("item", "slopeGrp")], nodes = 21, software="tam")
+run4T<- runModel(def4T)
+res4T<- getResults(run4T)
+it4T <- itemFromRes(res4T)                                                      ### all items except the ones with linking dif with equal item parameters? check 
+link <- eq[["items"]][["not_specified"]][["Dim1"]][["cleanedLinkItemPars"]][,c("item", "category", "est")]
+comp <- merge(link, it4T[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"), all=TRUE)
+equal<- na.omit(comp[,c("est_ref", "offset")])
+stopifnot(all(equal[,1] == equal[,2]))                                          ### all item parameters without linking dif should be equal
+lDif <- subset(comp, !is.na(est_foc))                                           ### all items with specific focus paraeter must be included in linking DIF exclusion list 
+stopifnot(all(paste(subset(lDif, !is.na(est_ref))[,"item"], subset(lDif, !is.na(est_ref))[,"category"], sep="_") \%in\% eq$items[["not_specified"]][["Dim1"]][["info"]][,"itemExcluded"]))
+
+# transform to Bista metric
+eq4  <- equat1pl(results = res4T)                                               ### reference population mean and SD
+refP <- data.frame(domain = c("dimnorm", "dimpilot"), m = 0.0389, sd = 1.07108, stringsAsFactors = FALSE)
+cuts <- list ( dimnorm = list(values = 390+0:3*75), dimpilot = list(values = 390+0:3*75))
+tf4  <- transformToBista(equatingList=eq4, refPop=refP, cuts=cuts, vera = FALSE)
+
+
+################################################################################
+###       Example 10: GPCM, similar like example 9, but now using mirt       ###
+################################################################################
+
+# load package Hmisc if necesary
+if(!"Hmisc" \%in\% .packages()) {library(Hmisc)}
+
+# load partial credit long format data
+data(reading)
+
+# transform into wide format
+datW <- reshape2::dcast(reading[which(reading[,"type"] != "iglu"),],uniqueID+sex+language+country~item, value.var = "valueSum")
+
+# only some items are partial credit, which ones?
+pc.it<- reading[which(reading[,"valueSum"] > 1),"item"] |> unique()
+
+# combine the two lowest categories to avoid categories with too few observations
+datW[,"D205143"] <- car::recode(datW[,"D205143"], "1=0; 2=1; 3=2; 4=3; 5=4")
+
+# restricted generalized partial credit model ... we consider the female subgroup to be the reference population
+# we assume that task D223 and D224 are created for students with special educational need and therefore have
+# different slope (gpcm). Non-SPF items should have slope = 1
+dFema<- datW[which(datW[,"sex"] == "female"),]                                  ### data for females
+items<- colnames(dFema)[-c(1:4)]
+items<- data.frame(item = items, task = substr(items,1,4), slopeGrp = as.numeric(substr(items,1,4) \%in\% c("D223", "D224")), stringsAsFactors = FALSE) |> dplyr::mutate(irtmod = NA)
+
+# add model information to 'item'
+items[intersect(intersect(which(items[,"slopeGrp"] == 0), which(items[,"task"] \%nin\% c("D223", "D224"))), which(items[,"item"] \%nin\% pc.it)),"irtmod"] <- "Rasch"
+items[intersect(intersect(which(items[,"slopeGrp"] == 1), which(items[,"task"] \%in\% c("D223", "D224"))), which(items[,"item"] \%nin\% pc.it)),"irtmod"] <- "2PL"
+
+# this is partial credit which is specified in 'mirt' with 'Rasch' statement as the slope equals 1 like in dichotomous Rasch models
+items[intersect(intersect(which(items[,"slopeGrp"] == 0), which(items[,"task"] \%nin\% c("D223", "D224"))), which(items[,"item"] \%in\% pc.it)),"irtmod"] <- "Rasch"
+
+# generalized partial credit for unidimensional models
+items[intersect(which(items[,"slopeGrp"] == 1), which(items[,"item"] \%in\% pc.it)),"irtmod"] <- "gpcm"
+
+# define arbitrary dimensions
+items[,"dim"] <- car::recode(substr(items[,"item"], 1,2),"'D0'='norm'; 'D2'='pilot'")
+items<- data.frame ( items, model.matrix(~dim-1, data = items), stringsAsFactors = FALSE)
+
+# procedure similar to conquest/tam
+def1 <- defineModel(dat=eatTools::na_omit_selection(dFema,varsToOmitIfNA="language"), items = items[,"item"], 
+        id=1,irtmodel = items[,c("item", "irtmod")], software="mirt")
+skel1<- runModel(def1, onlySkeleton = TRUE)                                     ### check the model "skeleton"
+run1 <- runModel(def1)                                                          ### run the model finally 
+res1 <- getResults(run1)
+it1  <- itemFromRes(res1)
+
+# males are focus group: initial free estimation of item parameters
+def2 <- defineModel(dat=eatTools::na_omit_selection(datW[which(datW[,"sex"] == "male"),],varsToOmitIfNA="language"), 
+        items = -c(1:4), id=1, irtmodel = items[,c("item", "irtmod")],software="mirt")
+run2 <- runModel(def2)
+res2 <- getResults(run2)
+it2  <- itemFromRes(res2)
+
+# link males to females, using only 1pl items ... males perform worse. 10 items with linking dif identified 
+eq   <- equat1pl(results = res2, prmNorm = subset(it1,estSlope ==1), item = "item", cat="category", value = "est", difBound=.64, iterativ = TRUE)
+
+# re-calibrate males with anchoring: use the DIF-cleaned set of anchor parameters for calibrating males on the reference scale
+# variant 1: use the original (1pl) item parameters for females and exclude linking dif items (it1_cleaned)
+weg  <- eq[["items"]][["not_specified"]][["Dim1"]][["info"]][-1,"itemExcluded"]
+weg  <- eatTools::whereAre(weg, paste(it1[,"item"], it1[,"category"], sep="_"))
+it1C <- subset(it1[-weg,], estSlope == 1)
+def3A<- defineModel(dat=eatTools::na_omit_selection(datW[which(datW[,"sex"] == "male"),],varsToOmitIfNA="language"), items = -c(1:4), id=1,  irtmodel = items[,c("item", "irtmod")],
+        anchor = it1C, itemCol = "item", valueCol = "est", catCol = "category", software="mirt")
+run3A<- runModel(def3A)
+res3A<- getResults(run3A)
+it3A <- itemFromRes(res3A)                                                      ### all items except the ones with linking dif with equal item parameters? check 
+comp <- merge(subset(it1, estSlope==1)[,c("item", "category", "est")], subset(it3A, !is.na(offset))[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"))
+stopifnot(all(round(comp[,"est_ref"],5) == round(comp[,"offset"],5)))           ### all item parameters without linking dif should be equal
+# all items with specific focus parameter must be included in linking DIF exclusion list 
+stopifnot(all((paste(comp[,"item"], comp[,"category"],sep="_") \%in\% eq$items[["not_specified"]][["Dim1"]][["info"]][-1,"itemExcluded"]) == FALSE))
+
+# variant 2: use the item parameters for males (linking dif items excluded), transformed to the metric of females
+def3B<- defineModel(dat=eatTools::na_omit_selection(datW[which(datW[,"sex"] == "male"),],varsToOmitIfNA="language"), items = -c(1:4), id=1,  irtmodel = items[,c("item", "irtmod")],
+        anchor = eq[["items"]][["not_specified"]][["Dim1"]][["cleanedLinkItemPars"]],
+        itemCol = "item", valueCol = "est", catCol = "category", software="mirt")
+run3B<- runModel(def3B)
+res3B<- getResults(run3B)
+it3B <- itemFromRes(res3B)                                                      ### all items except the ones with linking dif with equal item parameters? check 
+link <- eq[["items"]][["not_specified"]][["Dim1"]][["cleanedLinkItemPars"]][,c("item", "category", "est", "estSlope")]
+stopifnot(all(link[,"estSlope"] == 1))
+comp <- merge(link, it3B[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"))
+stopifnot(all(round(comp[,"est_ref"],5) == round(comp[,"offset"],5)))           ### all item parameters without linking dif should be equal
+# all items with specific focus parameter must be included in linking DIF exclusion list 
+stopifnot(all((paste(comp[,"item"], comp[,"category"],sep="_") \%in\% eq$items[["not_specified"]][["Dim1"]][["info"]][-1,"itemExcluded"]) == FALSE))
+
+# transform to Bista metric
+eq4  <- equat1pl(results = res3B)                                               ### reference population mean and SD
+refP <- data.frame(domain = "Dim1", m = 0.0389, sd = 1.07108, stringsAsFactors = FALSE)
+cuts <- list ( Dim1 = list(values = 390+0:3*75))
+tf4  <- transformToBista(equatingList=eq4, refPop=refP, cuts=cuts, vera = FALSE)
+
+
+
+#to do, plausibilitaets-checks:
+#- check, dass thurstone thresholds mit 0.625 groesser sind als mit 0.5
+#- transformToBista#
+# funktioniert die verankerung einzelner stufen in mirt ueber adaptSkelForAnchor bereits?
+
+
+# probieren, mit neuer version alte result-Objekte einzulesen und dann itemfromres auszufuehren ... weiss nicht, ob das klappt 
 }
+
+
+
+
 

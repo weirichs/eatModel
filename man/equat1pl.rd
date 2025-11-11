@@ -5,8 +5,8 @@
 Moreover, optional elimination of items with linking DIF is allowed and linking error may be estimated
 via the jackknife method if testlets are specified.}
 \usage{
-equat1pl(results, prmNorm, item = NULL, domain = NULL, testlet = NULL, value = NULL, 
-         excludeLinkingDif = TRUE, difBound = 1, iterativ = FALSE,
+equat1pl(results, prmNorm, item = NULL, domain = NULL, testlet = NULL, cat=NULL,
+         value = NULL, excludeLinkingDif = TRUE, difBound = 1, iterativ = FALSE,
          method = c("Mean.Mean", "Haebara", "Stocking.Lord", "robust", "Haberman"), itemF = NULL,
          domainF = NULL, testletF = NULL, valueF = NULL, estimation=c("OLS", "BSQ", "HUB", "MED", "LTS", "L1", "L0"),
          b_trim=Inf, lts_prop=.5)}
@@ -36,6 +36,10 @@ in prmNorm must match dimension names in the object returned by \code{\link{getR
   \item{testlet}{
 Optional: Give the number or name of the testlet name in prmNorm. Only necessary if
 linking errors should be estimated via the jackknife method. 
+}
+  \item{cat}{
+Optional: Give the number or name of the category column in \code{prmNorm}. Only
+necessary for partial credit models. See example 8 in the help file of \code{\link{defineModel}}
 }
   \item{value}{
 Optional: Give the number or name of the parameter column in \code{prmNorm}.
@@ -92,5 +96,5 @@ A list with equating information intended for further transformation by the \cod
 function. 
 }
 \examples{
-# see example 5, 6, and 6a in the help file of defineModel()
+# see example 5, 6, 6a, and 8 in the help file of defineModel()
 }

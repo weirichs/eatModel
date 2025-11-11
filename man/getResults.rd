@@ -1,6 +1,6 @@
 \name{getResults}
 \alias{getResults}
-\title{Collect all results from Conquest/TAM analysis into a common data frame}
+\title{Collect all results from Conquest, TAM, or mirt analyses into a common data frame}
 \description{First the IRT model should be defined using \code{\link{defineModel}}. Afterwards,
 call \code{\link{runModel}} with the argument returned by \code{\link{defineModel}} to start the estimation.
 The last step then is to create a results frame using \code{getResults}. }
@@ -26,7 +26,7 @@ Logical. Estimate the Q3 statistic according to Yen (1984)? Note: this is only
 possible for uni-dimensional models. If \code{software == "tam"}, Q3 statistic
 is estimated using the \code{\link[TAM]{tam.modelfit}} function. If \code{software == "Conquest"},
 Q3 statistic is estimated using the \code{\link[sirt]{Q3}} function from the \code{sirt}
-package.
+package. Note that Q3 estimation does not work yet if \code{software == "mirt"}.
 }
   \item{q3theta}{
 Specify whether the Q3 statistic should be estimated using PVs, WLEs or EAPs

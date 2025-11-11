@@ -2,41 +2,46 @@
 
 ### also called by transformItemParListIntoResults () --------------------------
 
-checkItemParLists <- function (prmNorm, item, domain, testlet, value, dims = NULL) {
-  if ( ncol ( prmNorm ) == 2 ) {
-    if ( is.null(item) && is.null(value) ) {
-      item <- colnames(prmNorm)[1]
-      value<- colnames(prmNorm)[2]
-    }
-    if ( is.null(item) && !is.null(value) || !is.null(item) && is.null(value)) {
-      stop("If 'prmNorm' has two columns, either both 'item' and 'value' or none of them should be specified.")
-    }
-  }  else  {
-    if ( is.null(item) || is.null(value)) { stop("If 'prmNorm' has more than two columns, 'item' and 'value' columns must be specified explicitly.") }
-  }
-  allF <- list(item=item, domain = domain, testlet=testlet, value = value)
-  allF <- lapply(allF, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = prmNorm, variable=ii)})
-  if(isTRUE(allF[["testlet"]] == "dimension")) {                       ### hier muss isTRUE stehen, weil es sonst fehlschlaegt, wenn xx == yy logical(0) ergibt
-    message(paste0("'dimension' is not allowed for testlet column name in 'prmNorm'. Rename column to 'dimensionName'."))
-    allF[["testlet"]] <- "dimensionName"
-    colnames(prmNorm) <- car::recode(colnames(prmNorm), "'dimension'='dimensionName'")
-  }
-  nomis<- sapply(prmNorm[,unlist(allF)], FUN = function ( i ) { length(which(is.na(i)))})
-  if ( any(nomis>0)) {
-    warning("Found ", length(which(nomis>0)), " column(s) in 'prmNorm' with missing values: '", paste(names(nomis[which(nomis>0)]), collapse= "', '"), "'")
-  }
-  tab  <- table(prmNorm[,c(allF[["item"]], allF[["domain"]]), drop=FALSE])
-  if (!all(tab %in% 0:1)) {stop("Items must be unique for each domain in reference parameter frame 'prmNorm'.")}
-  if(!inherits(prmNorm[,allF[["value"]]], "numeric")) {stop("Parameter value column in 'prmNorm' must be numeric.")}
-  if (!is.null ( allF[["domain"]]) && !is.null(dims) ) {
-    mis <- setdiff ( dims,  names(table(prmNorm[, allF[["domain"]] ])) )
-    if ( length( mis ) > 0 ) { stop ( paste ( "Domain '",mis,"' is missing in 'prmNorm'.\n",sep="")) }
-    uni <- by ( data = prmNorm, INDICES = prmNorm[, allF[["domain"]] ], FUN = function ( g ) {
-      if (!length(g[,allF[["item"]]]) == length(unique(g[,allF[["item"]]]))) { stop(paste ( "Item identifiers are not unique in 'prmNorm' for domain '",g[1,allF[["domain"]]],"'.\n",sep=""))}
-    }, simplify = FALSE)
-  }
-  allF[["prmNorm"]] <- prmNorm
-  return(allF)}
+checkItemParLists <- function (prmNorm, item, domain, testlet, value, dims = NULL, cat=NULL) {
+    ### wenn data.frame zwei spalten hat, muessen die Item- und value-Spalten nicht explizit benannt werden
+           if(ncol(prmNorm) == 2 ) {
+              if(is.null(item) && is.null(value) ) {
+                 item <- colnames(prmNorm)[1]
+                 value<- colnames(prmNorm)[2]
+              }
+              if(is.null(item) && !is.null(value) || !is.null(item) && is.null(value)) {
+                 stop("If 'prmNorm' has two columns, either both 'item' and 'value' or none of them should be specified.")
+              }
+           }  else  {
+                if ( is.null(item) || is.null(value)) { stop("If 'prmNorm' has more than two columns, 'item' and 'value' columns must be specified explicitly.") }
+           }
+           allF <- list(item=item, domain = domain, testlet=testlet, value = value, cat=cat)
+           allF <- lapply(allF, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = prmNorm, variable=ii)})
+           if(isTRUE(allF[["testlet"]] == "dimension")) {                       ### hier muss isTRUE stehen, weil es sonst fehlschlaegt, wenn xx == yy logical(0) ergibt
+              message(paste0("'dimension' is not allowed for testlet column name in 'prmNorm'. Rename column to 'dimensionName'."))
+              allF[["testlet"]] <- "dimensionName"
+              colnames(prmNorm) <- car::recode(colnames(prmNorm), "'dimension'='dimensionName'")
+           }
+    ### keine Missings in Spalten
+           nomis<- sapply(prmNorm[,unlist(allF)], FUN = function ( i ) { length(which(is.na(i)))})
+           if(any(nomis>0)) {
+              cli::cli_warn(c("Found following {length(which(nomis>0))} column{?s} in 'prmNorm' with missing values:", "i"=paste0("'", paste(names(nomis[which(nomis>0)]), collapse= "', '"),"'")))
+           }
+    ### items muessen unique sein
+           tab  <- table(prmNorm[,c(allF[["item"]], allF[["domain"]], allF[["cat"]]), drop=FALSE])
+           if(!all(tab %in% 0:1)) {stop("Items must be unique for each domain in reference parameter frame 'prmNorm'.")}
+    ### value-Spalte muss numerisch sein
+           if(!inherits(prmNorm[,allF[["value"]]], "numeric")) {stop("Parameter value column in 'prmNorm' must be numeric.")}
+    ### check: match domain names
+           if(!is.null(allF[["domain"]]) && !is.null(dims)) {
+               mis <- setdiff ( dims,  names(table(prmNorm[, allF[["domain"]] ])) )
+               if(length(mis) > 0) {stop( paste ( "Domain '",mis,"' is missing in 'prmNorm'.\n",sep="")) }
+               uni <- by(data = prmNorm, INDICES = prmNorm[, allF[["domain"]] ], FUN = function ( g ) {
+                      if(!length(g[,allF[["item"]]]) == length(unique(g[,allF[["item"]]]))) { stop(paste ( "Item identifiers are not unique in 'prmNorm' for domain '",g[1,allF[["domain"]]],"'.\n",sep=""))}
+                      }, simplify = FALSE)                                      ### check: items unique within domains?
+           }
+           allF[["prmNorm"]] <- prmNorm
+           return(allF)}
 
 ### ----------------------------------------------------------------------------
 
@@ -184,5 +189,16 @@ equAux  <- function ( x, y, allN = NULL ) {
   }
   return(eq)}
 
+eqPartialCredit <- function(ret, cat, eld, prmM, allN, excludeLinkingDif){
+     if(!is.null(cat)) {
+        if("itemExcluded" %in% colnames(eld[["info"]]) && length(setdiff(eld[["info"]][,"itemExcluded"], "")) > 0 && excludeLinkingDif) {
+           weg <- eatTools::whereAre(eld[["info"]][,"itemExcluded"],prmM[,allN[["item"]]], verbose=FALSE)
+           prmM<- prmM[-weg,]
+        }
+        prmM[,allN[["item"]]]        <- prmM[,"itemOri"]
+        prmM[,"itemOri"]             <- NULL
+        ret[["cleanedLinkItemPars"]] <- prmM
+     }
+     return(ret)}
 
 

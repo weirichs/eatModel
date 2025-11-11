@@ -86,83 +86,115 @@ prepGuessMat <- function(guessMat, allNam){
 ### ----------------------------------------------------------------------------
 
 prepFixSlopeMatTAM <- function (fsm, allNam, qma, slopeMatDomainCol, slopeMatItemCol, slopeMatValueCol, dat, irtmodel){
-  if(!is.null(fsm))  {
-    fsm  <- eatTools::facToChar(fsm)
-    if(!is.null( slopeMatDomainCol ) ) {
-      allV  <- list(slopeMatDomainCol=slopeMatDomainCol , slopeMatItemCol=slopeMatItemCol, slopeMatValueCol =slopeMatValueCol)
-      allNam<- c(allNam, lapply(allV, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = fsm, variable=ii)}))
-      if ( ncol(qma) != 2) { stop ( "Duplicated item identifiers in 'fixSlopeMat' are only allowed for unidimensional models.\n") }
-      mtch  <- eatTools::whereAre( colnames(qma)[2], fsm[, allNam[["slopeMatDomainCol"]]], verbose=FALSE)
-      if ( length( mtch) < 2 ) { stop(cat(paste ( "Cannot found dimension '",colnames(qma)[2],"' in 'fixSlopeMat'. Found following values in '",allNam[["slopeMatDomainCol"]],"' column of 'fixSlopeMat': \n    '", paste( sort(unique(fsm[, allNam[["slopeMatDomainCol"]] ])), collapse="', '"),"'.\n",sep="")))}
-      fsm   <- fsm[mtch, c(allNam[["slopeMatItemCol"]],allNam[["slopeMatValueCol"]])]
-    }
-    cat( "Warning: To date, fixing slopes only works for dichotomous unidimensional or between-item multidimensional models.\n")
-    estVar <- TRUE
-    weg2   <- setdiff(fsm[,1], allNam[["variablen"]])
-    if(length(weg2)>0) {
-      message(paste0("Following ",length(weg2), " items in matrix for items with fixed slopes ('fixSlopeMat') which are not in dataset:\n   ", paste(weg2, collapse=", "), "\nRemove these item(s) from 'fixSlopeMat' matrix."))
-      fsm <- fsm[-match(weg2,fsm[,1]),]
-      if(nrow(fsm)==0) {
-        message("No items left in 'fixSlopeMat' if items which do not occur in data are removed. Set 'fixSlopeMat' to NULL and 'irtmodel' to '1PL'")
-        return(list(allNam=allNam, estVar=FALSE, slopMat = NULL, irtmodel = "1PL"))
-      }
-    }
-    weg3   <- setdiff(allNam[["variablen"]], fsm[,1])
-    if(length(weg3)>0) {
-      cat(paste("Following ",length(weg3), " items in dataset without fixed slopes in 'fixSlopeMat'. Slope(s) will be estimated freely.\n",sep=""))
-      cat("   "); cat(paste(weg3, collapse=", ")); cat("\n")
-    }
-    if ( nrow(fsm) != length(unique(fsm[,1])) ) { stop ( "Item identifiers in 'fixSlopeMat' are not unique.\n")}
-    fsm[,"reihenfolge"] <- 1:nrow(fsm)
-    dims  <- (1:ncol(qma))[-1]
-    slopMa<- do.call("rbind", by ( data = fsm, INDICES = fsm[,"reihenfolge"], FUN = function (zeile ) {
-      zeile <- zeile[,-ncol(zeile)]
-      stopifnot ( nrow(zeile) == 1 )
-      qSel  <- qma[which( qma[,1] == zeile[[1]]),]
-      anzKat<- length(unique(na.omit(dat[,as.character(zeile[[1]])])))
-      zeilen<- anzKat * length(dims)
-      block <- cbind ( rep ( match(zeile[[1]], allNam[["variablen"]]), times = zeilen), rep ( 1:anzKat, each = length(dims) ), rep ( 1:length(dims), times = anzKat), rep(0, zeilen))
-      matchD<- which ( qSel[,-1] != 0 )
-      stopifnot ( length( matchD ) == 1)
-      match2<- intersect(which(block[,2] == max(block[,2])), which(block[,3] == (matchD)))
-      stopifnot ( length( na.omit(match2 )) == 1)
-      block[match2,4] <- as.numeric(zeile[[2]])
-      return(block) }))
-  }  else  {
-    estVar   <- FALSE
-    slopMa   <- NULL
-  }
-  return(list(allNam=allNam, estVar=estVar, slopMat = slopMa, irtmodel=irtmodel))}
+       if(!is.null(fsm))  {                                                     ### Achtung: wenn Items identifiers NICHT unique sind (z.B., Item gibt es global und domaenenspezifisch, dann wird jetzt 'fixSlopeMat'
+           fsm  <- eatTools::facToChar(fsm)                                     ### auf die Dimension in der Q Matrix angepasst ... das ist nur erlaubt, wenn es ein eindimensionales Modell ist!!
+           if(!is.null( slopeMatDomainCol ) ) {
+                allV  <- list(slopeMatDomainCol=slopeMatDomainCol , slopeMatItemCol=slopeMatItemCol, slopeMatValueCol =slopeMatValueCol)
+                allNam<- c(allNam, lapply(allV, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = fsm, variable=ii)}))
+                if ( ncol(qma) != 2) { stop ( "Duplicated item identifiers in 'fixSlopeMat' are only allowed for unidimensional models.\n") }
+                mtch  <- eatTools::whereAre( colnames(qma)[2], fsm[, allNam[["slopeMatDomainCol"]]], verbose=FALSE)
+                if ( length( mtch) < 2 ) { stop(cat(paste ( "Cannot found dimension '",colnames(qma)[2],"' in 'fixSlopeMat'. Found following values in '",allNam[["slopeMatDomainCol"]],"' column of 'fixSlopeMat': \n    '", paste( sort(unique(fsm[, allNam[["slopeMatDomainCol"]] ])), collapse="', '"),"'.\n",sep="")))}
+                fsm   <- fsm[mtch, c(allNam[["slopeMatItemCol"]],allNam[["slopeMatValueCol"]])]
+           }
+           if(is.null(slopeMatItemCol)) {
+              if(ncol(fsm)!=2) {stop("If 'slopeMatItemCol' is not defined, 'fixSlopeMat' must have two colums.")}
+              slopeMatItemCol <- allNam[["slopeMatItemCol"]] <- colnames(fsm)[1]
+           }
+           if(is.null(slopeMatValueCol)) {
+              if(ncol(fsm)!=2) {stop("If 'slopeMatValueCol' is not defined, 'fixSlopeMat' must have two colums.")}
+              slopeMatValueCol <-  allNam[["slopeMatValueCol"]] <- colnames(fsm)[2]
+           }
+           cat( "Warning: To date, fixing slopes only works for dichotomous unidimensional or between-item multidimensional models.\n")
+           estVar <- TRUE
+           weg2   <- setdiff(fsm[,slopeMatItemCol], allNam[["variablen"]])
+           if(length(weg2)>0) {
+              message(paste0("Following ",length(weg2), " items in matrix for items with fixed slopes ('fixSlopeMat') which are not in dataset:\n   ", paste(weg2, collapse=", "), "\nRemove these item(s) from 'fixSlopeMat' matrix."))
+              fsm <- fsm[-match(weg2,fsm[,slopeMatItemCol]),]
+     ### Achtung: wenn nach dem Entfernen der nicht im Datensatz enthaltenen Items keine Items in fsm uebrig bleiben, muss slopeMa auf NULL und irtmodel auf 1pl gesetzt werden
+              if(nrow(fsm)==0) {
+                 message("No items left in 'fixSlopeMat' if items which do not occur in data are removed. Set 'fixSlopeMat' to NULL and 'irtmodel' to '1PL'")
+                 return(list(allNam=allNam, estVar=FALSE, slopMat = NULL, irtmodel = "1PL"))
+              }
+           }
+           weg3   <- setdiff(allNam[["variablen"]], fsm[,slopeMatItemCol])
+           if(length(weg3)>0) {
+              cat(paste("Following ",length(weg3), " items in dataset without fixed slopes in 'fixSlopeMat'. Slope(s) will be estimated freely.\n",sep=""))
+              cat("   "); cat(paste(weg3, collapse=", ")); cat("\n")
+           }
+     ### Achtung, grosser Scheiss: wenn man nicht (wie oben) eine Reihenfolgespalte angibt, aendert die untere 'by'-Schleife die Sortierung!
+           if ( nrow(fsm) != length(unique(fsm[,slopeMatItemCol])) ) { stop ( "Item identifiers in 'fixSlopeMat' are not unique.\n")}
+           fsm[,"reihenfolge"] <- 1:nrow(fsm)
+           dims  <- (1:ncol(qma))[-1]                                           ### Slopematrix muss itemweise zusammengebaut werden
+     ### Achtung: fuer partial credit brauche ich jetzt die Anzahl der Kategorien des Items mit den meisten Kategorien!
+           ncatMx<- max(as.numeric(names(eatTools::tableUnlist(dat[,allNam[["variablen"]]])))) + 1
+           slopMa<- do.call("rbind", by ( data = fsm, INDICES = fsm[,"reihenfolge"], FUN = function (zeile ) {
+                    zeile <- zeile[,-ncol(zeile)]
+                    stopifnot ( nrow(zeile) == 1 )
+                    qSel  <- qma[which( qma[,1] == zeile[[1]]),]
+                    zeilen<- ncatMx * length(dims)                              ### fuer jedes Items gibt es [max. Anzahl Kategorien] * [Anzahl Dimensionen] Zeilen in der TAM matrix
+                    block <- cbind ( rep ( match(zeile[[1]], allNam[["variablen"]]), times = zeilen), rep ( 1:ncatMx, each = length(dims) ), rep ( 1:length(dims), times = ncatMx), rep(0, zeilen))
+                    matchD<- which ( qSel[,-1] != 0 )
+                    stopifnot ( length( matchD ) == 1)
+                    match2<- intersect(which(block[,2] == min(block[,2])+1), which(block[,3] == (matchD)))
+                    stopifnot ( length( na.omit(match2 )) == 1)
+                    block[match2,4] <- as.numeric(zeile[[slopeMatValueCol]])
+     ### unteres jetzt nur fuer partial credit
+                    if(ncatMx > 2) {
+                       block[which(block[,4] == 0)[-1],4] <- 1
+                       block[,4] <- block[,4] * (block[,2] - 1)
+                    }
+                    return(block) }))
+       }  else  {
+           estVar   <- FALSE
+           slopMa   <- NULL
+       }
+       return(list(allNam=allNam, estVar=estVar, slopMat = slopMa, irtmodel=irtmodel))}
+
 
 ### ----------------------------------------------------------------------------
 
 prepEstSlopegroupsTAM <- function(esg, allNam){
-  if(!is.null(esg))  {
-    weg1 <- setdiff(allNam[["variablen"]], esg[,1])
-    if(length(weg1)>0) {stop("Items in dataset which are not defined in design matrix for item groups with common slopes ('est.slopegroups').\n")}
-    weg2 <- setdiff(esg[,1], allNam[["variablen"]])
-    if(length(weg2)>0) {
-      cat(paste("Following ",length(weg2), " Items in design matrix for item groups with common slopes ('est.slopegroups') which are not in dataset:\n",sep=""))
-      cat("   "); cat(paste(weg2, collapse=", ")); cat("\n")
-      cat("Remove these item(s) from design matrix.\n")
-      esg <- esg[-match(weg2,esg[,1]),]
-    }
-    weg3 <- c(which(is.na(esg[,2])), which(esg[,2] ==""))
-    if(length(weg3)>0) {stop("Items in 'est.slopegroups' with missing or empty values.\n")}
-    esg  <- as.numeric(as.factor(as.character(esg[match(allNam[["variablen"]], esg[,1]),2])))
-  }
-  return(esg)}
+       esgNm <- NULL                                                            ### initialisieren
+       if(!is.null(esg))  {
+           weg1 <- setdiff(allNam[["variablen"]], esg[,1])
+           if(length(weg1)>0) {stop("Items in dataset which are not defined in design matrix for item groups with common slopes ('est.slopegroups').\n")}
+           weg2 <- setdiff(esg[,1], allNam[["variablen"]])
+           if(length(weg2)>0) {
+              cat(paste("Following ",length(weg2), " Items in design matrix for item groups with common slopes ('est.slopegroups') which are not in dataset:\n",sep=""))
+              cat("   "); cat(paste(weg2, collapse=", ")); cat("\n")
+              cat("Remove these item(s) from design matrix.\n")
+              esg <- esg[-match(weg2,esg[,1]),]
+           }                                                                    ### untere zeile: pruefen, ob keine fehlenden oder leeren Eintraege in der Liste sind
+           weg3 <- c(which(is.na(esg[,2])), which(esg[,2] ==""))
+           if(length(weg3)>0) {stop("Items in 'est.slopegroups' with missing or empty values.\n")}
+           esgNm<- as.numeric(as.factor(as.character(esg[match(allNam[["variablen"]], esg[,1]),2])))
+       }
+       return(list(esg=esg, esgNm=esgNm))}
 
 ### ----------------------------------------------------------------------------
 
-prepAnchorTAM <- function (ank, allNam) {
-  if(!is.null(ank)) {
-    stopifnot(ncol(ank) == 2 )
-    notInData   <- setdiff(ank[,1], allNam[["variablen"]])
-    if(length(notInData)>0)  {ank <- ank[-match(notInData, ank[,1]),]}
-    ank[,1]    <- match(as.character(ank[,1]), allNam[["variablen"]])
-  }
-  return(ank)}
+prepAnchorTAM <- function (dfm, skeleton = NULL) {                              ### dfm = defineModelObject
+        ank <- NULL                                                             ### initialisieren
+        if(!is.null(dfm[["anchor"]][["ank"]])) {
+            ank         <- dfm[["anchor"]][["ank"]]
+            allNam      <- dfm[["anchor"]][["allNam"]]
+            if(ncol(ank) != 2 && dfm[["irtmodel"]] %nin% c("PCM", "GPCM", "GPCM.groups")) {stop("Anchor parameter frame must have two columns for non-PCM models without specifying item and/or domain column.")}
+            notInData   <- setdiff(ank[,1], allNam[["variablen"]])              ### Untere Zeile: Wichtig! Sicherstellen, dass Reihenfolge der Items in Anker-Statement der Reihenfolge im datensatz entspricht
+            if(length(notInData)>0)  {ank <- ank[-match(notInData, ank[,1]),]}  ### messages entfernt, denn die werden ja schon in anker() durch mergeAttr() ausgegeben
+            if(dfm[["irtmodel"]] %in% c("PCM", "GPCM", "GPCM.groups") && !is.null(skeleton)) {
+               ankLong  <- ank |> dplyr::mutate(name = paste(item,category, sep="_"))
+               weg      <- which(rownames(skeleton) %nin% ankLong[,"name"])     ### partial credit anchoring using skeleton
+               if(length(weg)>0) {skeleton <- skeleton[-weg,]}
+               stopifnot(length(ankLong[,"name"]) == length(unique(ankLong[,"name"])))
+               stopifnot(length(rownames(skeleton)) == length(unique(rownames(skeleton))))
+               ank        <- skeleton
+               ank[,"xsi"]<- ankLong[match(rownames(ank), ankLong[,"name"]),"parameter"]
+            } else {                                                            ### conventional anchoring
+               ank[,1]    <- match(as.character(ank[,1]), allNam[["variablen"]])
+            }
+        }
+        return(ank)}
+
 
 ### ----------------------------------------------------------------------------
 
@@ -192,29 +224,33 @@ personWithoutValidValues <- function (dat, allNam, remove.no.answers){
 ### ----------------------------------------------------------------------------
 
 adaptMethod <- function(method, software,nodes){
-  snodes <- NULL; QMC <- NULL
-  if(method == "quasiMontecarlo" && software == "conquest") {
-    cat("Method 'quasiMontecarlo' is not available for software 'conquest'. Set method to 'montecarlo'.\n")
-    method <- "montecarlo"
-  }
-  if(method %in% c("montecarlo", "quasiMontecarlo"))  {
-    if(is.null(nodes) )   {
-      cat(paste("'",method,"' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 1000.\n",sep=""))
-      nodes <- 1000
-    } else {
-      if (nodes < 500 ) {
-          cat(paste0("Warning: Due to user specification, only ",nodes," nodes are used for '",method,"' estimation. Please note or re-specify your analysis.\n"))
-      }
-    }
-    if ( software == "tam" )   {snodes <- nodes; nodes <- NULL; QMC <- as.logical(car::recode ( method, "'montecarlo'=FALSE; 'quasiMontecarlo'=TRUE"))}
-  }  else {
-    if(is.null(nodes) )   {
-      cat(paste("'",method,"' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.\n",sep=""))
-      nodes <- 20
-    }
-    if ( software == "tam" )   { nodes <- seq(-6,6,len=nodes); snodes <- 0; QMC <- FALSE}
-  }
-  return(list(method=method, nodes=nodes, snodes=snodes, QMC=QMC))}
+        snodes <- NULL; QMC <- NULL                                             ### initialisieren
+        if(software == "mirt") {
+           cat("Specifying 'method' and 'nodes' not yet implemented for 'mirt'.\n")
+           return(list(method=method, nodes=nodes, snodes=snodes, QMC=QMC))
+        }
+        if(method == "quasiMontecarlo" && software == "conquest") {
+           cat("Method 'quasiMontecarlo' is not available for software 'conquest'. Set method to 'montecarlo'.\n")
+           method <- "montecarlo"
+        }
+        if(method %in% c("montecarlo", "quasiMontecarlo"))  {                   ### stochastische Integration
+           if(is.null(nodes) )   {
+              cat(paste("'",method,"' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 1000.\n",sep=""))
+              nodes <- 1000
+           } else {
+              if (nodes < 500 ) {
+                  cat(paste0("Warning: Due to user specification, only ",nodes," nodes are used for '",method,"' estimation. Please note or re-specify your analysis.\n"))
+              }
+           }                                                                    ### untere Zeile: Reihenfolge ist wichtig! erst snodes auf nodes setzen, dann nodes auf NULL
+           if ( software == "tam" )   {snodes <- nodes; nodes <- NULL; QMC <- as.logical(car::recode ( method, "'montecarlo'=FALSE; 'quasiMontecarlo'=TRUE"))}
+        }  else {                                                               ### numerische Integration
+           if(is.null(nodes) )   {
+              cat(paste("'",method,"' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.\n",sep=""))
+              nodes <- 20
+           }
+           if ( software == "tam" )   { nodes <- seq(-6,6,len=nodes); snodes <- 0; QMC <- FALSE}
+        }
+    		return(list(method=method, nodes=nodes, snodes=snodes, QMC=QMC))}
 
 ### ----------------------------------------------------------------------------
 
@@ -242,78 +278,85 @@ return(string)}
 
 ### ----------------------------------------------------------------------------
 
-anker <- function(lab, prm, qMatrix, domainCol, itemCol, valueCol)  {
-         stopifnot(ncol(lab)==2)
-         if(!ncol(prm) == 2 )   {                                    ### wenn itemliste nicht unique ... 'domain'-Spalte kann ausgelassen werden
-            if(is.null(itemCol))  { stop("If anchor parameter frame has more than two columns, 'itemCol' must be specified.\n")}
-            if(is.null(valueCol)) { stop("If anchor parameter frame has more than two columns, 'valueCol' must be specified.\n")}
-            allVars <- list(domainCol = domainCol, itemCol=itemCol, valueCol=valueCol)
-            allNams <- lapply(allVars, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = prm, variable=ii)})
-            notIncl <- setdiff ( colnames(qMatrix)[-1], prm[,allNams[["domainCol"]]])
-            if(length(notIncl) > 0 ) { stop(paste ( "Q matrix contains domain(s) ",paste("'",paste(notIncl, collapse="', '"),"'",sep="")," which are not included in the '",allNams[["domainCol"]],"' column of the anchor parameter frame.\n",sep="")) }
-            weg     <- setdiff ( unique(prm[,allNams[["domainCol"]]]), colnames(qMatrix)[-1])
-            if(length ( weg ) > 0 ) {
-               ind <- eatTools::whereAre ( weg, prm[,allNams[["domainCol"]]], verbose=FALSE)
-               cat(paste("Remove ",length(ind)," rows from the anchor parameter frame which do not belong to any of the specified domains in the Q matrix.\n",sep=""))
-               prm <- prm[-ind,]
-            }
-            prm     <- prm[,c(allNams[["itemCol"]], allNams[["valueCol"]])]
-         }
-         colnames(prm) <- c("item","parameter")
-         dopp<- which(duplicated(prm[,"item"]))
-         if(length(dopp)>0) { cat(paste("W A R N I N G !!   Found ",length(dopp)," duplicate item identifiers in anchor list. Duplicated entries will be deleted.\n",sep="")) ; prm <- prm[which(!duplicated(prm[,"item"])), ] }
-         ind <- intersect(lab[,"item"],prm[,"item"])
-         if(length(ind) == 0) {stop("No common items found in 'anchor' list and data frame.\n")}
-         if(length(ind) > 0)  {cat(paste(length(ind), " common items found in 'anchor' list and data frame.\n",sep="")) }
-         resT<- eatTools::mergeAttr(lab, prm, by = "item", sort = FALSE, all = FALSE, setAttr = FALSE, unitName = "item", xName = "item response data", yName = "anchor list", verbose = c("match", "unique"))
-         res <- data.frame(resT[sort(resT[,2],decreasing=FALSE,index.return=TRUE)$ix,], stringsAsFactors = FALSE)[,-1]
-         stopifnot(nrow(res) == length(ind))
-         return(list ( resConquest = res, resTam = resT[,-2]))}
+anker <- function(lab, prm, qMatrix, domainCol, itemCol, valueCol, catCol)  {
+                  stopifnot(ncol(lab)==2)
+                  if(!ncol(prm) == 2 ) {                                        ### wenn itemliste nicht unique ... 'domain'-Spalte kann ausgelassen werden
+                     if(is.null(itemCol) || is.null(valueCol))  { stop("If anchor parameter frame has more than two columns, 'itemCol' and 'valueCol' must be specified.\n")}
+                     allVars <- list(domainCol = domainCol, itemCol=itemCol, valueCol=valueCol, catCol=catCol)
+                     allNams <- lapply(allVars, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = prm, variable=ii)})
+                     notIncl <- setdiff ( colnames(qMatrix)[-1], prm[,allNams[["domainCol"]]])
+                     if(length(notIncl) > 0 && !is.null(allNams[["domainCol"]]) ) {stop(paste ( "Q matrix contains domain(s) ",paste("'",paste(notIncl, collapse="', '"),"'",sep="")," which are not included in the '",allNams[["domainCol"]],"' column of the anchor parameter frame.\n",sep=""))}
+                     weg     <- setdiff ( unique(prm[,allNams[["domainCol"]]]), colnames(qMatrix)[-1])
+                     if(length(weg) > 0 ) {
+                        ind <- eatTools::whereAre ( weg, prm[,allNams[["domainCol"]]], verbose=FALSE)
+                        cat(paste("Remove ",length(ind)," rows from the anchor parameter frame which do not belong to any of the specified domains in the Q matrix.\n",sep=""))
+                        prm <- prm[-ind,]
+                     }
+                     prm     <- prm[,c(allNams[["itemCol"]], allNams[["valueCol"]], allNams[["catCol"]], allNams[["domainCol"]])]
+                  }
+                  colnames(prm) <- c("item", "parameter", "category", "domain")[1:ncol(prm)]
+                  if("category" %in% colnames(prm)) {                           ### wenn es die Spalte "category" gibt, darf sie nur Werte enthalten, die "Cat1", "Cat2", ... lauten
+                     if(!all(unique(prm[,"category"]) %in% paste0("Cat", 1:9))) {stop(paste0("Invalid values in 'category' column: '",paste( setdiff(unique(prm[,"category"]), paste0("Cat", 1:9)), collapse="', '"), "'"))}
+                  }
+                  nru <- nrow(unique(prm))                                      ### nru = nrow unique
+                  if(nru != nrow(prm)) {
+                     dopp<- which(duplicated(prm[,"item"]))
+                     warning(paste0("Found ", length(dopp)," duplicate item identifiers (per domain and/or category) in anchor list. Duplicated entries will be deleted."))
+                     prm <- unique(prm)
+                  }
+                  ind <- intersect(lab[,"item"],prm[,"item"])
+                  if(length(ind) == 0) {stop("No common items found in 'anchor' list and data frame.\n")}
+                  if(length(ind) > 0)  {cat(paste(length(ind), " common items found in 'anchor' list and data frame.\n",sep="")) }
+                  resT<- eatTools::mergeAttr(lab, prm, by = "item", sort = FALSE, all = FALSE, setAttr = FALSE, unitName = "item", xName = "item response data", yName = "anchor list", verbose = c("match", "unique"))
+                  res <- resT |> dplyr::arrange(dplyr::across(tidyselect::all_of(intersect(c("itemNr", "category"), names(resT))))) |> dplyr::select(-tidyselect::any_of("item"))
+                  return(list ( resConquest = res, resTam = resT[,-2]))}
 
 ### ----------------------------------------------------------------------------
 
 desk.irt <- function(daten, itemspalten, na=NA,percent=FALSE,reduce=TRUE,codebook=list(datei=NULL,item=NULL,value=NULL,lab=NULL, komp=NULL), quiet = FALSE ) {
-  daten <- eatTools::makeDataFrame(daten)
-  if(!missing(itemspalten)) {daten <- daten[,itemspalten,drop=FALSE]}
-  if (is.na(na[1])==FALSE) {
-    recode.statement <- paste(na,"= NA",collapse="; ")
-    daten            <- data.frame(sapply(daten,FUN=function(ii) {car::recode(ii,recode.statement)}),stringsAsFactors=FALSE)
-  }
-  specific.codes <- lapply(daten,function(ii){NULL})
-  if(!is.null(codebook$datei) & !is.null(codebook$value))  {
-    specific.codes <- lapply(as.list(colnames(daten)), FUN=function(ii) {
-      codebook$datei[codebook$datei[,codebook$item] == ii,c(codebook$item,codebook$value)] } )
-    kein.eintrag   <- which(sapply(specific.codes,FUN=function(ii) {nrow(ii)==0}))
-    if(length(kein.eintrag)>0)  {cat(paste(length(kein.eintrag)," item(s) missing in codebook:\n",sep=""))
-      cat(paste(colnames(daten)[kein.eintrag],collapse=", ")); cat("\n")}
-  }
-  results        <- lapply(1:ncol(daten), FUN=function(ii) {
-    res.i <- eatTools::tablePattern(x=daten[,ii], pattern=specific.codes[[ii]]$value)
-    namen.res.i <- names(res.i)
-    if(length(res.i)==0) {
-      if(quiet == FALSE ) { cat(paste("Item '",colnames(daten)[ii],"' without any valid values.\n",sep=""))}
-      res.i <- 0
-      namen.res.i <- NA}
-    Label <- NA
-    KB <- NA
-    if(!is.null(codebook$lab))  {Label <- codebook$datei[codebook$datei[,codebook$item] == colnames(daten)[ii],codebook$lab]}
-    if(!is.null(codebook$komp)) {KB    <- codebook$datei[codebook$datei[,codebook$item] == colnames(daten)[ii],codebook$komp]}
-    res.i <- data.frame(item.nr = ii, item.name = colnames(daten)[ii], Label = Label, KB = KB, cases = length(daten[,ii]),Missing=sum(is.na(daten[,ii])),valid=sum(!is.na(daten[,ii])),Codes=namen.res.i,Abs.Freq=as.numeric(res.i),Rel.Freq=as.numeric(res.i)/sum(!is.na(daten[,ii])), item.p=mean(na.omit(daten[,ii])), stringsAsFactors=FALSE)
-  })
-  results        <- do.call("rbind",results)
-  if(reduce == TRUE)  {
-    weg   <- which ( results[,"Codes"] == min(results[,"Codes"]) )
-    drin  <- setdiff ( 1:nrow(results), weg )
-    zusatz<- setdiff ( results[weg,"item.name"], results[drin,"item.name"])
-    if ( length(zusatz)>0) {
-      zusatz <- match ( zusatz, results[,"item.name"])
-      drin   <- unique ( c ( zusatz, drin ))
-      weg    <- setdiff ( 1:nrow(results), drin )
-    }
-    results <- results[drin,]
-  }
-  if(percent == TRUE) {results$Rel.Freq <- 100 * results$Rel.Freq}
-  return(results)}
+             daten <- eatTools::makeDataFrame(daten)
+             if(!missing(itemspalten)) {daten <- daten[,itemspalten,drop=FALSE]}
+             if (is.na(na[1])==FALSE) {                                         ### wenn spezifiziert, werden hier missings recodiert
+                 recode.statement <- paste(na,"= NA",collapse="; ")
+                 daten            <- data.frame(sapply(daten,FUN=function(ii) {car::recode(ii,recode.statement)}),stringsAsFactors=FALSE)
+             }
+             specific.codes <- lapply(daten,function(ii){NULL})                 ### definiert ggf. Spezifische Codes, nach denen je Variable gesucht werden soll
+             if(!is.null(codebook$datei) & !is.null(codebook$value))  {
+               specific.codes <- lapply(as.list(colnames(daten)), FUN=function(ii) {
+                                 codebook$datei[codebook$datei[,codebook$item] == ii,c(codebook$item,codebook$value)] } )
+               kein.eintrag   <- which(sapply(specific.codes,FUN=function(ii) {nrow(ii)==0}))
+               if(length(kein.eintrag)>0)  {cat(paste(length(kein.eintrag)," item(s) missing in codebook:\n",sep=""))
+                                            cat(paste(colnames(daten)[kein.eintrag],collapse=", ")); cat("\n")}
+             }
+             results        <- lapply(1:ncol(daten), FUN=function(ii) {
+                               res.i <- eatTools::tablePattern(x=daten[,ii], pattern=specific.codes[[ii]]$value)
+                               namen.res.i <- names(res.i)
+                               if(length(res.i)==0) {
+                                  if(quiet == FALSE ) { cat(paste("Item '",colnames(daten)[ii],"' without any valid values.\n",sep=""))}
+                                  res.i <- 0
+                                  namen.res.i <- NA
+                               }
+                               Label <- NA
+                               KB <- NA
+                               if(!is.null(codebook$lab))  {Label <- codebook$datei[codebook$datei[,codebook$item] == colnames(daten)[ii],codebook$lab]}
+                               if(!is.null(codebook$komp)) {KB    <- codebook$datei[codebook$datei[,codebook$item] == colnames(daten)[ii],codebook$komp]}
+                               values<- daten[,ii] / max(daten[,ii], na.rm=TRUE)### fuer partial credit
+                               res.i <- data.frame(item.nr = ii, item.name = colnames(daten)[ii], Label = Label, KB = KB, cases = length(daten[,ii]),Missing=sum(is.na(daten[,ii])),valid=sum(!is.na(daten[,ii])),Codes=namen.res.i,Abs.Freq=as.numeric(res.i),Rel.Freq=as.numeric(res.i)/sum(!is.na(daten[,ii])), item.p=mean(na.omit(values)), stringsAsFactors=FALSE)
+             })
+             results        <- do.call("rbind",results)
+             if(reduce == TRUE)  {
+                weg   <- which ( results[,"Codes"] == min(results[,"Codes"]) )
+                drin  <- setdiff ( 1:nrow(results), weg )
+                zusatz<- setdiff ( results[weg,"item.name"], results[drin,"item.name"])
+                if ( length(zusatz)>0) {
+                     zusatz <- match ( zusatz, results[,"item.name"])
+                     drin   <- unique ( c ( zusatz, drin ))
+                     weg    <- setdiff ( 1:nrow(results), drin )
+                }
+                results <- results[drin,]
+             }
+             if(percent == TRUE) {results$Rel.Freq <- 100 * results$Rel.Freq}
+             return(results)}
 
 ### ----------------------------------------------------------------------------
 

@@ -2,67 +2,116 @@
 ### the other functions are called by getTamResult()
 
 getTamResults <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV, nplausible , ntheta , normal.approx, samp.regr, theta.model, np.adj, Q3=Q3, q3MinObs =  q3MinObs, q3MinType = q3MinType,
-                          pvMethod , group, beta_groups , level , n.iter , n.burnin, adj_MH , adj_change_MH , refresh_MH, accrate_bound_MH,	sample_integers, theta_init, print_iter , verbose, calc_ic, seed) {
-  qMatrix<- attr(runModelObj, "defineModelObj")[["qMatrix"]]
-  qL     <- reshape2::melt(qMatrix, id.vars = colnames(qMatrix)[1], variable.name = "dimensionName", na.rm=TRUE)
-  qL     <- qL[which(qL[,"value"] != 0 ) , ]
-  varName<- colnames(qMatrix)[1]
-  if( omitRegr == FALSE && !inherits(runModelObj, "tamBayes")) {
-    beg <- Sys.time()
-    txt <- capture.output ( regr <- tam.se(runModelObj))
-    stopifnot ( nrow(regr$beta) == ncol(attr(runModelObj, "Y") )+1)
-    rownames(regr$beta) <- c("(Intercept)", colnames(attr(runModelObj, "Y")))
-  } else {
-    regr <- NULL
-  }
-  if ( !inherits(runModelObj, "tamBayes") ) {leseAlles <- TRUE} else {leseAlles <- FALSE}
-  ret    <- NULL
-  resItem<- getTamItempars(runModelObj=runModelObj, qL=qL, qMatrix=qMatrix, leseAlles = leseAlles)
-  ret    <- rbind(ret, resItem[["shw1"]], resItem[["shw2"]])
-  ret    <- rbind(ret, getTamDescriptives(runModelObj=runModelObj, qL=qL, qMatrix=qMatrix, leseAlles = leseAlles))
-  ret    <- rbind(ret, getTamDiscrim(runModelObj=runModelObj, qL=qL, qMatrix = qMatrix, leseAlles = leseAlles))
-  ret    <- rbind(ret, getTam2plDiscrim(runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles, regr = regr, omitRegr=omitRegr))
-  beg    <- Sys.time()
-  ret    <- rbind(ret, getTamInfit(runModelObj=runModelObj, qL=qL, qMatrix = qMatrix, leseAlles = leseAlles, omitFit = omitFit, seed=seed))
-  ret    <- rbind(ret, getTamPopPar(runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles))
-  ret    <- rbind(ret, getTamRegPar(runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles, omitRegr = omitRegr, regr=regr))
-  ret    <- rbind(ret, getTamModInd(runModelObj=runModelObj, leseAlles = leseAlles))
-  beg    <- Sys.time()
-  ret    <- rbind(ret, getTamWles(runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles, omitWle = omitWle))
-  beg    <- Sys.time()
-  tamArg <- as.list(match.call(definition = getTamResults))
-  weg    <- which(names(tamArg) %in% c("tamobj", "Y", "runModelObj", "qMatrix", "leseAlles", "omitPV", "pvMethod", "omitFit", "omitRegr", "omitWle"))
-  if ( length(weg)>0) {tamArg <- tamArg[-weg]}
-  tamarg <- list()
-  for ( i in 2:length(tamArg)) {
-    tamarg[[names(tamArg)[i]]] <- eval(tamArg[[i]])
-  }
-  retPVs <- getTamPVs ( runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles, omitPV = omitPV, pvMethod = pvMethod, tam.pv.arguments = tamarg)
-  ret    <- rbind(ret, retPVs)
-  ret    <- rbind(ret, getTamEAPs(runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles))
-  ret    <- rbind(ret, getTamQ3(runModelObj=runModelObj, leseAlles = leseAlles, shw1 = resItem[["shw1"]], Q3=Q3, q3MinObs=q3MinObs, q3MinType=q3MinType))
-  return(ret)}
+                     pvMethod , group, beta_groups , level , n.iter , n.burnin, adj_MH , adj_change_MH , refresh_MH, accrate_bound_MH,	sample_integers, theta_init, print_iter , verbose, calc_ic, seed) {
+         qMatrix<- attr(runModelObj, "defineModelObj")[["qMatrix"]]
+         qL     <- eatTools::facToChar(reshape2::melt(qMatrix, id.vars = colnames(qMatrix)[1], variable.name = "dimensionName", na.rm=TRUE))
+         qL     <- qL[which(qL[,"value"] != 0 ) , ]
+         varName<- colnames(qMatrix)[1]                                         ### untere Zeile: Standardfehler auslesen, falls vorhanden
+         if( omitRegr == FALSE && !inherits(runModelObj, "tamBayes")) {
+             beg <- Sys.time()
+             txt <- capture.output ( regr <- tam.se(runModelObj))               ### Namen der Regressoren stehen nicht im tam-Output 'reg' drin, nur Ziffern
+             diffe <- Sys.time() - beg
+             if(as.numeric(diffe) > 0.2) {message(paste0("Getting standard errors with the tam.se function: ", timeFormat(diffe)))}
+             stopifnot ( nrow(regr$beta) == ncol(attr(runModelObj, "Y") )+1)    ### die Namen muessen daher jetzt wieder aus den Spaltennamen der Y-Matrix rekonstruiert werden
+             rownames(regr$beta) <- c("(Intercept)", colnames(attr(runModelObj, "Y")))
+         } else {
+             regr <- NULL
+         }
+    ### wenn PVs bayesianisch gezogen werden sollen ohne dass 'tam.mml' aufgerufen wurde, muessen alle Schritte bis zur PV-Ziehung nun uebersprungen werden
+         if ( !inherits(runModelObj, "tamBayes") ) {leseAlles <- TRUE} else {leseAlles <- FALSE}
+         ret    <- NULL                                                         ### Rueckgabeobjekt initialisieren, und untere Zeile: Itemparameter auslesen
+         resItem<- getTamItempars(runModelObj=runModelObj, qL=qL, qMatrix=qMatrix, leseAlles = leseAlles)
+         ret    <- rbind(ret, resItem[["shw1"]], resItem[["shw2"]], resItem[["shw3"]])
+    ### deskriptive Werte auslesen
+         ret    <- rbind(ret, getTamDescriptives(runModelObj=runModelObj, qL=qL, qMatrix=qMatrix, leseAlles = leseAlles, software = "tam"))
+    ### Diskriminationswerte auslesen
+         ret    <- rbind(ret, getTamDiscrim(runModelObj=runModelObj, qL=qL, qMatrix = qMatrix, leseAlles = leseAlles, software="tam"))
+    ### 2pl- und gpcm-Diskriminationsparameter auslesen
+         ret    <- rbind(ret, getTam2plDiscrim(runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles, regr = regr, omitRegr=omitRegr))
+    ### Infit auslesen
+         beg    <- Sys.time()
+         ret    <- rbind(ret, getTamInfit(runModelObj=runModelObj, qL=qL, qMatrix = qMatrix, leseAlles = leseAlles, omitFit = omitFit, seed=seed))
+         diffe <- Sys.time() - beg
+         if(as.numeric(diffe) > 0.2) {message(paste0("Getting infit parameters calling tam.fit from getTamInfit: ", timeFormat(diffe)))}
+    ### Populationsparameter auslesen
+         ret    <- rbind(ret, getTamPopPar(runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles))
+    ### Regressionsparameter auslesen
+         ret    <- rbind(ret, getTamRegPar(runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles, omitRegr = omitRegr, regr=regr))
+    ### Modellindizes auslesen
+         ret    <- rbind(ret, getTamModInd(runModelObj=runModelObj, leseAlles = leseAlles))
+    ### Personenparameter auslesen (WLEs)
+         beg    <- Sys.time()
+         ret    <- rbind(ret, getTamWles(runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles, omitWle = omitWle))
+         diffe <- Sys.time() - beg
+         if(as.numeric(diffe) > 0.2) {message(paste0("Getting WLEs calling tam.wle from getTamWles: ", timeFormat(diffe)))}
+    ### PVs auslesen
+         beg    <- Sys.time()
+         tamArg <- as.list(match.call(definition = getTamResults))
+         weg    <- which(names(tamArg) %in% c("tamobj", "Y", "runModelObj", "qMatrix", "leseAlles", "omitPV", "pvMethod", "omitFit", "omitRegr", "omitWle"))
+         if ( length(weg)>0) {tamArg <- tamArg[-weg]}
+         # tamArg <- lapply ( tamArg[2:length(tamArg)], eval )                  ### das klappt irgendwie nicht, also in den folgenden
+         tamarg <- list()                                                       ### vier Zeilen auf die komplizierte Variante
+         for ( i in 2:length(tamArg)) {
+              tamarg[[names(tamArg)[i]]] <- eval(tamArg[[i]])
+         }
+         retPVs <- getTamPVs ( runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles, omitPV = omitPV, pvMethod = pvMethod, tam.pv.arguments = tamarg)
+         ret    <- rbind(ret, retPVs)
+         diffe <- Sys.time() - beg
+         if(as.numeric(diffe) > 0.2) {message(paste0("Getting PVs calling tam.pv from getTamPVs: ", timeFormat(diffe)))}
+    ### EAPs auslesen
+         ret    <- rbind(ret, getTamEAPs(runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles))
+    ### Q3 auslesen
+         beg    <- Sys.time()
+         ret    <- rbind(ret, getTamQ3(runModelObj=runModelObj, leseAlles = leseAlles, shw1 = resItem[["shw1"]], Q3=Q3, q3MinObs=q3MinObs, q3MinType=q3MinType))
+         diffe  <- Sys.time() - beg
+         if(as.numeric(diffe) > 0.2) {message(paste0("Getting Q3 statistic calling tam.modelfit from getTamQ3: ", timeFormat(diffe)))}
+         return(ret)}
+
 
 ### ----------------------------------------------------------------------------
 
+### Teilfunktionen fuer 'getTamResults()' zum Auslesen der Itemparameter (Schwierigkeiten, p-Werte) auslesen
+### DIF + partial credit funktioniert noch nicht
 getTamItempars    <- function(runModelObj, qL, qMatrix, leseAlles) {
-  if(leseAlles == FALSE) {return(NULL)}
-  if ( is.null(attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.var"]])) {
-    xsis <- merge(data.frame ( item = rownames(runModelObj[["xsi"]]), runModelObj[["xsi"]], stringsAsFactors = FALSE), qL[,-match("value", colnames(qL))],  by.x = "item", by.y = colnames(qMatrix)[1], all = TRUE)
-  }  else  {
-    xsis <- mergeDimensionIfDIF (dat = data.frame ( item = rownames(runModelObj[["xsi"]]), runModelObj[["xsi"]], stringsAsFactors = FALSE), qmatLong = qL[,-match("value", colnames(qL))], datMergingVar="item", remove = "toMerge")
-  }
-  shw1 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = xsis[,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = xsis[,"dimensionName"], par = "est",  derived.par = NA, value = xsis[,"xsi"], stringsAsFactors = FALSE)
-  shw2 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = xsis[,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = xsis[,"dimensionName"], par = "est",  derived.par = "se", value = xsis[,"se.xsi"], stringsAsFactors = FALSE)
-  if ( !is.null(attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.var"]])) {
-    shw1 <- renameDifParameters (dat=shw1, qmatLong = qL[,-match("value", colnames(qL))])
-    shw2 <- renameDifParameters (dat=shw2, qmatLong = qL[,-match("value", colnames(qL))])
-  }
-  toOff<- shw2[ which(shw2[,"value"] == 0 ), "var1"]
-  if(length(toOff)>0) {
-    shw1[match(toOff, shw1[,"var1"]), "par"] <- "offset"
-    shw2  <- shw2[-which(shw2[,"value"] == 0 ),] }                      ### entferne Zeilen aus shw2, die in der "value"-Spalte NA haben, danach: p-Werte einfuegen
-  return(list ( shw1=shw1, shw2=shw2))}
+         if(leseAlles == FALSE) {return(NULL)}                                  ### wenn kein DIF: konventionell mergen
+         if(is.null(attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.var"]])) {
+    ### partial credit auslesen
+              ttLong<- NULL                                                     ### initialisieren
+              if(attr(runModelObj, "defineModelObj")[["irtmodel"]] %in% c("PCM", "PCM2", "GPCM", "GPCM.groups")) {
+                 tt    <- TAM::tam.threshold(runModelObj, prob.lvl=0.625)       ### 0.625 entsprechend Bista-Konvention
+                 ttLong<- data.frame(item = rownames(tt), tt, stringsAsFactors = FALSE) |> reshape2::melt(id.vars = "item", na.rm=TRUE, variable.name = "var2", value.name = "thurstone")
+                 items <- eatTools::crop(stringr::str_remove(rownames(runModelObj[["xsi"]]), pattern="step[:digit:]{1}$|Cat[:digit:]{1}$"), "_")
+                 var2  <- car::recode(eatTools::crop(stringr::str_remove(rownames(runModelObj[["xsi"]]), pattern = items), "_"), "''=NA")
+              } else {
+                 items <- rownames(runModelObj[["xsi"]])
+                 var2  <- "Cat1"
+              }
+              xsis <- merge(data.frame ( item = items, var2=var2, runModelObj[["xsi"]], stringsAsFactors = FALSE), qL[,-match("value", colnames(qL))],  by.x = "item", by.y = colnames(qMatrix)[1], all = TRUE)
+              if(!is.null(ttLong)) {xsis <- eatTools::mergeAttr(xsis, ttLong, by=c("item", "var2"), setAttr=FALSE, verbose=FALSE)}
+         }  else  {                                                             ### bei DIF anders mergen
+              xsis <- mergeDimensionIfDIF (dat = data.frame ( item = rownames(runModelObj[["xsi"]]), runModelObj[["xsi"]], var2 = "Cat1", stringsAsFactors = FALSE), qmatLong = qL[,-match("value", colnames(qL))], datMergingVar="item", remove = "toMerge")
+         }
+         xsis[,"par"] <- "est"
+         ind  <- which(xsis[,"se.xsi"] ==0)
+         if(length(ind)>0) {xsis[ind,"par"] <- "offset"}
+         shw1 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = xsis[,"item"], var2 = xsis[,"var2"] , type = "fixed", indicator.group = "items", group = xsis[,"dimensionName"], par = xsis[,"par"],  derived.par = NA, value = xsis[,"xsi"], stringsAsFactors = FALSE)
+         shw2 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = xsis[,"item"], var2 = xsis[,"var2"] , type = "fixed", indicator.group = "items", group = xsis[,"dimensionName"], par = xsis[,"par"],  derived.par = "se", value = xsis[,"se.xsi"], stringsAsFactors = FALSE)
+         if("thurstone" %in% colnames(xsis)) {
+            shw3 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = xsis[,"item"], var2 = xsis[,"var2"] , type = "fixed", indicator.group = "items", group = xsis[,"dimensionName"], par = xsis[,"par"],  derived.par = "thurstone", value = xsis[,"thurstone"], stringsAsFactors = FALSE)
+         } else {
+            shw3 <- NULL
+         }                                                                      ### wenn DIF: items umbenennen
+         if ( !is.null(attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.var"]])) {          
+               shw1 <- renameDifParameters (dat=shw1, qmatLong = qL[,-match("value", colnames(qL))])
+               shw2 <- renameDifParameters (dat=shw2, qmatLong = qL[,-match("value", colnames(qL))])
+         }
+         if(attr(runModelObj, "defineModelObj")[["irtmodel"]] %nin% c("PCM", "PCM2", "GPCM", "GPCM.groups")) {
+            toOff<- shw2[ which(shw2[,"value"] == 0 ), "var1"]                  ### verankerte Parameter identifizieren
+            if(length(toOff)>0) {
+               shw1[match(toOff, shw1[,"var1"]), "par"] <- "offset"
+               shw2  <- shw2[-which(shw2[,"value"] == 0 ),] }                   ### entferne Zeilen aus shw2, die in der "value"-Spalte NA haben, danach: p-Werte einfuegen
+         }
+         return(list ( shw1=shw1, shw2=shw2, shw3=shw3))}
 
 ### called by getTamItempars() and getTamInfit ---------------------------------
 
@@ -93,74 +142,84 @@ renameDifParameters <- function(dat, qmatLong) {
 
 ### ----------------------------------------------------------------------------
 
-getTamDescriptives    <- function(runModelObj, qL, qMatrix, leseAlles) {
-  if(leseAlles == FALSE || is.null ( attr(runModelObj, "defineModelObj")[["deskRes"]] )) {return(NULL)}
-  deskR<- merge(attr(runModelObj, "defineModelObj")[["deskRes"]], qL[,-match("value", colnames(qL))],  by.x = "item.name", by.y = colnames(qMatrix)[1], all = TRUE)
-  shw3 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = as.character(deskR[,"item.name"]), var2 = NA , type = "fixed", indicator.group = "items", group = deskR[,"dimensionName"], par = "itemP",  derived.par = NA, value = deskR[,"item.p"], stringsAsFactors = FALSE)
-  shw4 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = as.character(deskR[,"item.name"]), var2 = NA , type = "fixed", indicator.group = "items", group = deskR[,"dimensionName"], par = "Nvalid",  derived.par = NA, value = deskR[,"valid"], stringsAsFactors = FALSE)
-  cols <- setdiff ( colnames(deskR)[grep("^item.p", colnames(deskR))], "item.p")
-  if ( length ( cols ) > 0 ) {
-    colsR <- data.frame ( original = cols, reduziert = eatTools::removePattern ( string = cols, pattern = "item.p.") , stringsAsFactors = FALSE)
-    shw31 <- do.call("rbind", apply ( colsR, MARGIN = 1, FUN = function ( zeile ) { data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = as.character(deskR[,"item.name"]), var2 = zeile[["reduziert"]] , type = "fixed", indicator.group = "items", group = deskR[,"dimensionName"], par = "itemP",  derived.par = NA, value = deskR[,zeile[["original"]]], stringsAsFactors = FALSE) }))
-    return(rbind(shw3, shw4, shw31))
-  }  else  {
-    return(rbind(shw3, shw4))
-  } }
+getTamDescriptives    <- function(runModelObj, qL, qMatrix, leseAlles, software) {
+         if(leseAlles == FALSE || is.null ( attr(runModelObj, "defineModelObj")[["deskRes"]] )) {return(NULL)}
+         deskR<- merge(attr(runModelObj, "defineModelObj")[["deskRes"]], qL[,-match("value", colnames(qL))],  by.x = "item.name", by.y = colnames(qMatrix)[1], all = TRUE)
+         shw3 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = software, var1 = as.character(deskR[,"item.name"]), var2 = NA , type = "fixed", indicator.group = "items", group = deskR[,"dimensionName"], par = "itemP",  derived.par = NA, value = deskR[,"item.p"], stringsAsFactors = FALSE)
+         shw4 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = software, var1 = as.character(deskR[,"item.name"]), var2 = NA , type = "fixed", indicator.group = "items", group = deskR[,"dimensionName"], par = "Nvalid",  derived.par = NA, value = deskR[,"valid"], stringsAsFactors = FALSE)
+    ### Achtung! wenn in dem 'deskRes'-Objekt noch mehr p-Werte (schulformspezifische p-Werte drinstehen, werden die jetzt auch in die Ergebnisstruktur eingetragen)
+         cols <- setdiff ( colnames(deskR)[grep("^item.p", colnames(deskR))], "item.p")
+         if ( length ( cols ) > 0 ) {
+              colsR <- data.frame ( original = cols, reduziert = eatTools::removePattern ( string = cols, pattern = "item.p.") , stringsAsFactors = FALSE)
+              shw31 <- do.call("rbind", apply ( colsR, MARGIN = 1, FUN = function ( zeile ) { data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = software, var1 = as.character(deskR[,"item.name"]), var2 = zeile[["reduziert"]] , type = "fixed", indicator.group = "items", group = deskR[,"dimensionName"], par = "itemP",  derived.par = NA, value = deskR[,zeile[["original"]]], stringsAsFactors = FALSE) }))
+              return(rbind(shw3, shw4, shw31))
+         }  else  {
+              return(rbind(shw3, shw4))
+         } }
 
 ### ----------------------------------------------------------------------------
 
-getTamDiscrim    <- function(runModelObj, qL, qMatrix, leseAlles) {
-  if(leseAlles == FALSE || is.null ( attr(runModelObj, "defineModelObj")[["discrim"]] )) {return(NULL)}
-  discR<- merge( attr(runModelObj, "defineModelObj")[["discrim"]] , qL[,-match("value", colnames(qL))],  by.x = "item.name", by.y = colnames(qMatrix)[1], all = TRUE)
-  shw5 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = discR[,"item.name"], var2 = NA , type = "fixed", indicator.group = "items", group = discR[,"dimensionName"], par = "itemDiscrim",  derived.par = NA, value = discR[,"item.diskrim"], stringsAsFactors = FALSE)
-  return(shw5)}
+
+getTamDiscrim    <- function(runModelObj, qL, qMatrix, leseAlles, software) {
+         if(leseAlles == FALSE || is.null ( attr(runModelObj, "defineModelObj")[["discrim"]] )) {return(NULL)}
+         discR<- merge( attr(runModelObj, "defineModelObj")[["discrim"]] , qL[,-match("value", colnames(qL))],  by.x = "item.name", by.y = colnames(qMatrix)[1], all = TRUE)
+         shw5 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = software, var1 = discR[,"item.name"], var2 = NA , type = "fixed", indicator.group = "items", group = discR[,"dimensionName"], par = "itemDiscrim",  derived.par = NA, value = discR[,"item.diskrim"], stringsAsFactors = FALSE)
+         return(shw5)}
 
 ### ----------------------------------------------------------------------------
 
 getTam2plDiscrim <- function(runModelObj, qMatrix, leseAlles, regr, omitRegr) {
-  if(leseAlles == FALSE || !attr(runModelObj, "defineModelObj")[["irtmodel"]] %in% c("2PL", "2PL.groups", "GPCM", "3PL") ) {return(NULL)}
-  shw6 <- do.call("rbind", lapply (  1 : length ( colnames( qMatrix ) [-1] ) , FUN = function ( dims ) {
-    if ( isFALSE(omitRegr) ) {
-      obj <- regr[["B"]]
-    } else {
-      obj <- as.data.frame ( runModelObj[["B"]])
-      colnames(obj) <- paste0("B.", gsub("Dim0", "Dim", colnames(obj)))
-      obj[,"item"]  <- rownames(obj)
-      isNull        <- which(sapply(obj, FUN = function ( x ) { all(x==0)})==TRUE)
-      if (length (isNull)>0) {
-        obj <- obj[,-isNull]
-      }
-    }
-    cols  <- grep(paste0(".Dim",dims,"$" ), colnames(obj), value=TRUE)
-    tamMat<- obj[,c("item",cols)]
-    weg   <- which(tamMat[,2] == 0)
-    if(length(weg)>0) {tamMat <- tamMat[-weg,]}
-    shw6D <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = tamMat[,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = colnames(qMatrix)[dims+1], par = "estSlope",  derived.par = NA, value = tamMat[,2], stringsAsFactors = FALSE)
-    if (ncol(tamMat) == 3 ) {
-      shw6se<- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = tamMat[,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = colnames(qMatrix)[dims+1], par = "estSlope",  derived.par = "se", value = tamMat[,3], stringsAsFactors = FALSE)
-    }  else  {
-      shw6se<- NULL
-    }
-    return(rbind(shw6D, shw6se)) }))
-  return(shw6)}
+         if(leseAlles == FALSE || !attr(runModelObj, "defineModelObj")[["irtmodel"]] %in% c("2PL", "2PL.groups", "GPCM", "GPCM.groups", "3PL") ) {return(NULL)}
+         shw6 <- do.call("rbind", lapply (  1 : length(colnames(qMatrix)[-1] ) , FUN = function(dims) {
+                 if ( isFALSE(omitRegr) ) {                                     ### wenn omitRegr == FALSE, werden die Diskriminationsparameter aus diesem Objekt,
+                      obj <- regr[["B"]]                                        ### ansonsten aus dem direkten TAM-Rueckgabeobjekt ausgelesen
+                 } else {                                                       ### wenn omitRegr == FALSE, kommen die Diskriminationen als data.frame,
+                      obj <- as.data.frame ( runModelObj[["B"]])                ### andernfalls als array, muss also umgewandelt werden
+                      colnames(obj) <- paste0("B.", gsub("Dim0", "Dim", colnames(obj)))
+                      obj[,"item"]  <- rownames(obj)                            ### Spalten rauswerfen, in denen ausschliesslich nullen stehen
+                      isNull        <- which(sapply(obj, FUN = function ( x ) { all(x==0)})==TRUE)
+                      if (length (isNull)>0) {
+                          obj <- obj[,-isNull]
+                      }
+                 }
+                 cols  <- grep(paste0(".Dim",dims,"$" ), colnames(obj), value=TRUE)
+                 tamMat<- obj[,c("item",cols)]
+                 weg   <- which(tamMat[,2] == 0)
+                 if(length(weg)>0) {tamMat <- tamMat[-weg,]}
+                 shw6D <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = tamMat[,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = colnames(qMatrix)[dims+1], par = "estSlope",  derived.par = NA, value = tamMat[,2], stringsAsFactors = FALSE)
+                 if (ncol(tamMat) >= 3 && !all(tamMat[,3] == 0)) {
+                     shw6se<- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = tamMat[,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = colnames(qMatrix)[dims+1], par = "estSlope",  derived.par = "se", value = tamMat[,3], stringsAsFactors = FALSE)
+                 }  else  {
+                     shw6se<- NULL
+                 }
+                 return(rbind(shw6D, shw6se)) }))
+         return(shw6)}
+
 
 ### ----------------------------------------------------------------------------
-
 getTamInfit    <- function(runModelObj, qL, qMatrix, leseAlles, omitFit, seed) {
-  if(leseAlles == FALSE || omitFit == TRUE ) {return(NULL)}
-  infit<- tam.fit(runModelObj, progress=FALSE, seed=seed)
-  fits <- merge(infit[["itemfit"]], qL[,-match("value", colnames(qL))],  by.x = "parameter", by.y = colnames(qMatrix)[1], all = TRUE)
-  if ( is.null(attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.var"]])) {
-    ret  <- rbind(data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = fits[,"parameter"], var2 = NA , type = "fixed", indicator.group = "items", group = fits[,"dimensionName"], par = "est",  derived.par = "infit", value = fits[,"Infit"], stringsAsFactors = FALSE),
-                  data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = fits[,"parameter"], var2 = NA , type = "fixed", indicator.group = "items", group = fits[,"dimensionName"], par = "est",  derived.par = "outfit", value = fits[,"Outfit"], stringsAsFactors = FALSE))
-  }  else  {
-    ret  <- rbind(data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = infit$itemfit[,"parameter"], var2 = NA , type = "fixed", indicator.group = "items", group = NA, par = "est",  derived.par = "infit", value = infit$itemfit[,"Infit"], stringsAsFactors = FALSE),
-                  data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = infit$itemfit[,"parameter"], var2 = NA , type = "fixed", indicator.group = "items", group = NA, par = "est",  derived.par = "outfit", value = infit$itemfit[,"Outfit"], stringsAsFactors = FALSE) )
-    ret  <- mergeDimensionIfDIF(dat=ret, qmatLong=qL[,-match("value", colnames(qL))], datMergingVar="var1", remove = c("group", "toMerge"))
-    colnames(ret) <- car::recode(colnames(ret), "'dimensionName'='group'")
-    ret  <- renameDifParameters(dat=ret, qmatLong=qL[,-match("value", colnames(qL))])
-  }
-  return(ret)}
+         if(leseAlles == FALSE || omitFit == TRUE ) {return(NULL)}
+         infit<- tam.fit(runModelObj, progress=FALSE, seed=seed)                ### Achtung: wenn DIF-Analyse, dann misslingt untere Zeile: Workarond! ... ausserdem separate behandlung fuer partial credit
+         if(!is.null(attributes(runModelObj)[["defineModelObj"]][["irtmodel"]]) && attributes(runModelObj)[["defineModelObj"]][["irtmodel"]] %in% c("PCM", "PCM2", "GPCM", "GPCM.groups")) {
+            fits <- infit[["itemfit"]] |> dplyr::mutate(var2 = NA)
+            ind  <- grep("Cat|step", fits[,"parameter"])
+            fits[ind,"var2"] <- eatTools::halveString(fits[ind,"parameter"], "_", first = FALSE)[,2]
+            fits[ind,"parameter"] <- eatTools::crop(stringr::str_remove_all(string = fits[ind,"parameter"], pattern =  fits[ind,"var2"]), "_")
+            fits <- merge(fits, qL[,-match("value", colnames(qL))],  by.x = "parameter", by.y = colnames(qMatrix)[1], all = TRUE)
+         } else {
+            fits <- data.frame(var2 = NA, merge(infit[["itemfit"]], qL[,-match("value", colnames(qL))],  by.x = "parameter", by.y = colnames(qMatrix)[1], all = TRUE), stringsAsFactors = FALSE)
+         }
+         if ( is.null(attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.var"]])) {           ### wenn kein DIF: mergen
+              ret  <- rbind(data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = fits[,"parameter"], var2 = fits[,"var2"] , type = "fixed", indicator.group = "items", group = fits[,"dimensionName"], par = "est",  derived.par = "infit", value = fits[,"Infit"], stringsAsFactors = FALSE),
+                            data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = fits[,"parameter"], var2 = fits[,"var2"] , type = "fixed", indicator.group = "items", group = fits[,"dimensionName"], par = "est",  derived.par = "outfit", value = fits[,"Outfit"], stringsAsFactors = FALSE))
+         }  else  {                                                             ### wenn DIF: workaround ... DIF-Parameter umbenennen, so dass es konsistent zu "getConquestResults" ist
+              ret  <- rbind(data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = infit$itemfit[,"parameter"], var2 = fits[,"var2"] , type = "fixed", indicator.group = "items", group = NA, par = "est",  derived.par = "infit", value = infit$itemfit[,"Infit"], stringsAsFactors = FALSE),
+                            data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = infit$itemfit[,"parameter"], var2 = fits[,"var2"] , type = "fixed", indicator.group = "items", group = NA, par = "est",  derived.par = "outfit", value = infit$itemfit[,"Outfit"], stringsAsFactors = FALSE) )
+              ret  <- mergeDimensionIfDIF(dat=ret, qmatLong=qL[,-match("value", colnames(qL))], datMergingVar="var1", remove = c("group", "toMerge"))
+              colnames(ret) <- car::recode(colnames(ret), "'dimensionName'='group'")
+              ret  <- renameDifParameters(dat=ret, qmatLong=qL[,-match("value", colnames(qL))])
+         }
+         return(ret)}
 
 ### ----------------------------------------------------------------------------
 

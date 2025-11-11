@@ -274,81 +274,96 @@ createNamenItemsWeg <- function (crit, remove) {
   return(list(niw=niw, mess=mess))}
 
 ### Hilfsfunktion fuer defineModel
-checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, removeMinNperItem, minNperItem, remove.constant.items, model.statement){
-  options(warn=1)                                                       ### alle Warnungen in dieser Funktion sollen immer angezeigt werden
-  namen.items.weg <- NULL                                               ### initialisieren
-### Wandle NaN in NA, falls es welche gibt
-  is.NaN <- do.call("cbind", lapply(dat[,allNam[["variablen"]], drop = FALSE], FUN = function (uu) { is.nan(uu) } ) )
-  if(sum(is.NaN) > 0 ) {
-    cat(paste("Found ",sum(is.NaN)," 'NaN' values in the data. Convert 'NaN' to 'NA'.\n",sep=""))
-    for ( j in allNam[["variablen"]]) {
-      weg <- which ( is.nan(dat[,j] ))
-      if(length(weg)>0) {  dat[weg,j] <- NA }
-    }
-  }
-### sind die responses numerisch bzw. stehen da Ziffern drin? (notfalls sowas wie as.character(1) )
-  datL    <- dplyr::mutate_at(reshape2::melt(dat, measure.vars = allNam[["variablen"]], id.vars = allNam[["ID"]], na.rm=TRUE), .vars = "value", .funs = as.character)
-  zahl    <- grep("[[:digit:]]", datL[,"value"])                        ### sind das alles Ziffern? (auch wenn die Spalten als "character" klassifiziert sind)
-  noZahl  <- setdiff(1:nrow(datL), zahl)
-  if (length( noZahl ) > 0 ) {
-    itemNoZ <- unique(datL[noZahl,"variable"])
-    cat(paste0("Warning: Found ", length(noZahl), " non-numeric value(s) in ",length(itemNoZ)," of ",length(allNam[["variablen"]])," items: '", paste( itemNoZ, collapse= "', '"), "'. Non-numeric values: '", paste( unique(datL[noZahl,"value"]), collapse= "', '"), "'.\n"))
-  }
-  klasse  <- unlist( lapply(dat[,allNam[["variablen"]], drop = FALSE], class) )
-  if(any(unlist(lapply(dat[,allNam[["variablen"]], drop = FALSE], inherits, what=c("integer", "numeric"))) == FALSE)) {
-    cat(paste0("Warning: Found unexpected class type(s) '", setdiff(unique(unlist(lapply(dat[,allNam[["variablen"]]], class))), c("integer", "numeric")), "' in item response columns.\n"))
-    dat  <- dplyr::mutate_at(dat, .vars = allNam[["variablen"]], .funs = eatTools::asNumericIfPossible, force.string = TRUE)
-  }
-  values  <- lapply(dat[,allNam[["variablen"]], drop = FALSE], FUN = function ( ii ) { table(ii)})
-  isDichot<- unlist(lapply(values, FUN = function ( vv ) { identical(c("0","1"), names(vv)) }))
-  n.werte <- sapply(values, FUN=function(ii) {length(ii)})
-  n.mis   <- which(n.werte == 0)
-### identifiziere Items ohne jegliche gueltige Werte
-  if(length(n.mis) >0) {
-    weg  <- createNamenItemsWeg(n.mis, remove = remove.missing.items)
-    namen.items.weg <- c(namen.items.weg, weg[["niw"]])
-    cat(paste0("Warning: ",length(n.mis), " testitems(s) without any values: ",paste0(weg[["mess"]], "'", paste(names(n.mis), collapse="', '"),"'"), "\n"))
-  }
-### identifiziere Items mit Anzahl gueltiger Werte < minNperItem
-  nValid <- unlist(lapply(dat[,allNam[["variablen"]], drop = FALSE], FUN = function ( ii ) { length(na.omit ( ii )) }))
-  below  <- which ( nValid < minNperItem )                              ### identifiziere Items mit weniger gueltigen Werte als in 'minNperItem' angegeben (nur wenn 'removeMinNperItem' = TRUE)
-  if(length(below) > 0 ) {
-    weg  <- createNamenItemsWeg(below, remove = removeMinNperItem)
-    namen.items.weg <- c(namen.items.weg, weg[["niw"]])
-    cat(paste0("Warning: ",length(below), " testitem(s) with less than ", minNperItem, " valid responses: ", paste0(weg[["mess"]], "'", paste(names(below), collapse="', '"),"'"), "\n"))
-  }
-### identifiziere konstante Items (Items ohne Varianz)
-  constant <- which(n.werte == 1)
-  if(length(constant) >0) {
-    weg             <- createNamenItemsWeg(constant, remove = remove.constant.items)
-    namen.items.weg <- c(namen.items.weg, weg[["niw"]])
-    uniqueVal       <- sapply(names(constant), FUN = function (ii) {unique(na.omit(dat[,ii]))})
-    nVal            <- sapply(names(constant), FUN = function (ii) {length(which(!is.na(dat[,ii])))})
-    cat(paste0("Warning: ",length(constant), " testitem(s) are constants. ", weg[["mess"]]), "\n")
-    cat(paste("    Item '", names(constant), "', only value '", uniqueVal, "' occurs: ", nVal, " valid responses.", collapse="\n", sep="")); cat("\n")
-  }
-### identifiziere alle Items, die nicht dichotom (="ND") sind
-  n.rasch  <- which( !isDichot )                                        ### (aber nicht die, die bereits wegen konstanter Werte aussortiert wurden!)
-  if(length(n.rasch) >0 )   {                                           ### also polytome Items oder Items, die mit 1/2 anstatt 0/1 kodiert sind
-    valND <- values[ which(names(values) %in% names(n.rasch)) ]
-    valND <- valND[which(sapply(valND, length) > 1)]
-    if(length(valND)>0) {
-      cat(paste("Warning: ",length(valND)," variable(s) are not strictly dichotomous with 0/1.\n",sep=""))
-      for (ii in 1:length(valND))  {
-        max.nchar <-  max(nchar(names(table(dat[,names(valND)[ii]]))))
-        if(max.nchar>1) {
-          cat(paste("Arity of variable",names(valND)[ii],"exceeds 1.\n"))
-        }
-        if(verbose == TRUE) {
-          cat(paste(names(valND)[ii],": ", paste( names(table(dat[,names(valND)[ii]])),collapse=", "),"\n",sep=""))
-        }
-      }
-      cat("Expect a rating scale model or partial credit model.\n")
-      if(model.statement == "item") { warning("Sure you want to use 'model statement = item' even when items are not dichotomous?")}
-    }
-  }
-  options(warn=0)
-  return(list(dat=dat,allNam=allNam, namen.items.weg=unique(namen.items.weg)))}
+checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, removeMinNperItem, minNperItem, remove.constant.items, model.statement, software){
+          namen.items.weg <- NULL                                               ### initialisieren
+     ### Wandle NaN in NA, falls es welche gibt
+          is.NaN <- do.call("cbind", lapply(dat[,allNam[["variablen"]], drop = FALSE], FUN = function (uu) { is.nan(uu) } ) )
+          if(sum(is.NaN) > 0 ) {
+             cat(paste("Found ",sum(is.NaN)," 'NaN' values in the data. Convert 'NaN' to 'NA'.\n",sep=""))
+             for ( j in allNam[["variablen"]]) {
+                   weg <- which ( is.nan(dat[,j] ))
+                   if(length(weg)>0) {  dat[weg,j] <- NA }
+             }
+          }
+     ### sind die responses numerisch bzw. stehen da Ziffern drin? (notfalls sowas wie as.character(1) )
+          datL    <- dplyr::mutate_at(reshape2::melt(dat, measure.vars = allNam[["variablen"]], id.vars = allNam[["ID"]], na.rm=TRUE), .vars = "value", .funs = as.character)
+          zahl    <- grep("[[:digit:]]", datL[,"value"])                        ### sind das alles Ziffern? (auch wenn die Spalten als "character" klassifiziert sind)
+          noZahl  <- setdiff(1:nrow(datL), zahl)
+          if (length( noZahl ) > 0 ) {
+              itemNoZ <- unique(datL[noZahl,"variable"])                        ### alle warnungen ueber cat, weil sonst das capturen der warnungen in multicore nicht funktioniert
+              cat(paste0("Warning: Found ", length(noZahl), " non-numeric value(s) in ",length(itemNoZ)," of ",length(allNam[["variablen"]])," items: '", paste( itemNoZ, collapse= "', '"), "'. Non-numeric values: '", paste( unique(datL[noZahl,"value"]), collapse= "', '"), "'.\n"))
+          }
+          klasse  <- unlist( lapply(dat[,allNam[["variablen"]], drop = FALSE], class) )
+          if(any(unlist(lapply(dat[,allNam[["variablen"]], drop = FALSE], inherits, what=c("integer", "numeric"))) == FALSE)) {
+               cat(paste0("Warning: Found unexpected class type(s) '", setdiff(unique(unlist(lapply(dat[,allNam[["variablen"]]], class))), c("integer", "numeric")), "' in item response columns.\n"))
+               dat  <- dplyr::mutate_at(dat, .vars = allNam[["variablen"]], .funs = eatTools::asNumericIfPossible, force.string = TRUE)
+          }
+          values  <- lapply(dat[,allNam[["variablen"]], drop = FALSE], FUN = function ( ii ) { table(ii)})
+          isDichot<- unlist(lapply(values, FUN = function ( vv ) { identical(c("0","1"), names(vv)) }))
+          n.werte <- sapply(values, FUN=function(ii) {length(ii)})
+          n.mis   <- which(n.werte == 0)
+     ### identifiziere Items ohne jegliche gueltige Werte
+          if(length(n.mis) >0) {
+             weg  <- createNamenItemsWeg(n.mis, remove = remove.missing.items)
+             namen.items.weg <- c(namen.items.weg, weg[["niw"]])
+             cat(paste0("Warning: ",length(n.mis), " testitems(s) without any values: ",paste0(weg[["mess"]], "'", paste(names(n.mis), collapse="', '"),"'"), "\n"))
+          }
+     ### identifiziere Items mit Anzahl gueltiger Werte < minNperItem
+          nValid <- unlist(lapply(dat[,allNam[["variablen"]], drop = FALSE], FUN = function ( ii ) { length(na.omit ( ii )) }))
+          below  <- which ( nValid < minNperItem )                              ### identifiziere Items mit weniger gueltigen Werte als in 'minNperItem' angegeben (nur wenn 'removeMinNperItem' = TRUE)
+          if(length(below) > 0 ) {
+             weg  <- createNamenItemsWeg(below, remove = removeMinNperItem)
+             namen.items.weg <- c(namen.items.weg, weg[["niw"]])
+             cat(paste0("Warning: ",length(below), " testitem(s) with less than ", minNperItem, " valid responses: ", paste0(weg[["mess"]], "'", paste(names(below), collapse="', '"),"'"), "\n"))
+          }
+     ### identifiziere konstante Items (Items ohne Varianz)
+          constant <- which(n.werte == 1)
+          if(length(constant) >0) {
+             weg             <- createNamenItemsWeg(constant, remove = remove.constant.items)
+             namen.items.weg <- c(namen.items.weg, weg[["niw"]])
+             uniqueVal       <- sapply(names(constant), FUN = function (ii) {unique(na.omit(dat[,ii]))})
+             nVal            <- sapply(names(constant), FUN = function (ii) {length(which(!is.na(dat[,ii])))})
+             cat(paste0("Warning: ",length(constant), " testitem(s) are constants. ", weg[["mess"]]), "\n")
+             cat(paste("    Item '", names(constant), "', only value '", uniqueVal, "' occurs: ", nVal, " valid responses.", collapse="\n", sep="")); cat("\n")
+          }
+     ### identifiziere alle Items, die nicht dichotom (="ND") sind
+          n.rasch  <- which(!isDichot)                                          ### (aber nicht die, die bereits wegen konstanter Werte aussortiert wurden!)
+          if(length(n.rasch) >0 )   {                                           ### also polytome Items oder Items, die mit 1/2 anstatt 0/1 kodiert sind
+             valND <- values[ which(names(values) %in% names(n.rasch)) ]
+             valND <- valND[which(sapply(valND, length) > 1)]
+             if(length(valND)>0) {
+                cat(paste(length(valND)," variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.\n",sep=""))
+                for(ii in 1:length(valND))  {
+                    max.nchar <-  max(nchar(names(table(dat[,names(valND)[ii]]))))
+                    if(max.nchar>1) {cat(paste("Arity of variable",names(valND)[ii],"exceeds 1.\n"))}
+                }
+                foo <- printPartialCreditInfToConsole(valND=valND, verbose = verbose)
+             }
+             if(model.statement == "item" && software=="conquest") { warning("Sure you want to use 'model statement = item' even when items are not dichotomous?")}
+          }
+          return(list(dat=dat,allNam=allNam, namen.items.weg=unique(namen.items.weg)))}
+
+### Hilfsfunktion fuer checkItemConsistency
+printPartialCreditInfToConsole <- function(valND, verbose){
+          patt <- unique(lapply(valND, names))
+          prnt <- do.call("rbind", lapply(patt, FUN = function(x){
+                  it <- names(valND)[suppressWarnings(which(unlist(lapply(valND, FUN = function (y) {all(names(y)==x)}))))]
+                  if(!all(x == 0:(length(x)-1))) {add <- "      !!! INSUFFICIENT PATTERN !!! "} else {add <- ""}
+                  if(length(it)>8) {
+                     st <- paste0("'",paste(it[1:8], collapse="', '"), "' [truncated]:")
+                  } else {
+                     st <- paste0("'",paste(it, collapse="', '"), "':")
+                  }
+                  return(data.frame ( v1 = "   Items(s)", v2 = st, v4 = paste(x,collapse=", "), v5 = add, v6 = "\n", stringsAsFactors = FALSE))}))
+          einr <- lapply(c("v2", "v4"), FUN = function (col){                   ### einrueckungen fuer spalten 2 und 4
+                  mxCh <- max(nchar(prnt[,col]))
+                  add  <- mxCh - nchar(prnt[,col])
+                  return(add)})
+          for(i in 1:nrow(prnt)) {
+              prnt[i,"v2"] <- paste0(prnt[i,"v2"], paste(rep(" ", times = einr[[1]][i]), collapse=""))
+              prnt[i,"v4"] <- paste0(prnt[i,"v4"], paste(rep(" ", times = einr[[2]][i]), collapse=""))
+              cat(paste0(prnt[i,]))}
+}
 
 
 ### called by defineModel() ----------------------------------------------------

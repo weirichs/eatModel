@@ -1,15 +1,17 @@
 \name{itemFromRes}
 \alias{itemFromRes}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{Collect all item results from the object returned by getResults()}
 \description{Collect items results in a wide data frame. }
 \usage{
-itemFromRes(resultsObj)}
-%- maybe also 'usage' for other objects documented here.
+itemFromRes(resultsObj, longFormat = TRUE)}
 \arguments{
   \item{resultsObj}{
-%%     ~~Describe \code{file} here~~
 The object returned by \code{\link{getResults}}.
+}
+  \item{longFormat}{
+Only applies for partial credit models: Should the output apply in wide format (i.e,
+parameters of an item's categories appear side by side in multiple columns), or
+long format (parameters of an item's categories appear below each other in several lines)
 }
 }
 \value{

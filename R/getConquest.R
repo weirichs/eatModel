@@ -95,14 +95,14 @@ getConquestItn <- function (model.name, analysis.name, qMatrix, qL, allFiles, is
 ### ----------------------------------------------------------------------------
 
 getConquestShw <- function (model.name, qMatrix, qL, shw, altN){
-  shw1 <- data.frame ( model = model.name, source = "conquest", var1 = shw$item[,"item"], var2 = NA , type = "fixed", indicator.group = "items", group = shw$item[,"dimensionName"], par = "est",  derived.par = NA, value = as.numeric(shw$item[,"ESTIMATE"]), stringsAsFactors = FALSE)
-  shw2 <- data.frame ( model = model.name, source = "conquest", var1 = shw$item[,"item"], var2 = NA , type = "fixed", indicator.group = "items",group = shw$item[,"dimensionName"], par = "est",  derived.par = "se", value = as.numeric(shw$item[,"ERROR"]), stringsAsFactors = FALSE)
-  toOff<- shw2[ which(is.na(shw2[,"value"])), "var1"]
-  if(length(toOff)>0) {
-    shw1[match(toOff, shw1[,"var1"]), "par"] <- "offset"
-    shw2  <- shw2[-which(is.na(shw2[,"value"])),]                       ### entferne Zeilen aus shw2, die in der "value"-Spalte NA haben
-  }
-  return(list(shw1=shw1, shw2=shw2))}
+         shw1 <- data.frame ( model = model.name, source = "conquest", var1 = shw$item[,"item"], var2 = "Cat1" , type = "fixed", indicator.group = "items", group = shw$item[,"dimensionName"], par = "est",  derived.par = NA, value = as.numeric(shw$item[,"ESTIMATE"]), stringsAsFactors = FALSE)
+         shw2 <- data.frame ( model = model.name, source = "conquest", var1 = shw$item[,"item"], var2 = "Cat1", type = "fixed", indicator.group = "items",group = shw$item[,"dimensionName"], par = "est",  derived.par = "se", value = as.numeric(shw$item[,"ERROR"]), stringsAsFactors = FALSE)
+         toOff<- shw2[ which(is.na(shw2[,"value"])), "var1"]
+         if(length(toOff)>0) {
+            shw1[match(toOff, shw1[,"var1"]), "par"] <- "offset"
+            shw2  <- shw2[-which(is.na(shw2[,"value"])),]                       ### entferne Zeilen aus shw2, die in der "value"-Spalte NA haben
+         }
+         return(list(shw1=shw1, shw2=shw2))}
 
 ### ----------------------------------------------------------------------------
 
@@ -140,44 +140,49 @@ getConquestInfit <- function (model.name,  shw){
 ### ----------------------------------------------------------------------------
 
 getConquestAdditionalTerms <- function(model.name, qMatrix, shw, shwFile){
-  if(length(shw) <= 4 )  {  return(NULL)}
-  res   <- NULL
-  read  <- 2 : (length(shw) - 3)
-  for ( i in names(shw)[read] ) {
-    cols <- unlist(isLetter(i))
-    if( !all(cols %in% colnames(shw[[i]])) ) {
-      cat(paste("Cannot identify variable identifier for additional term '",i,"' in file '",shwFile,"'. Skip procedure.\n",sep=""))
-    }  else  {
-      if(length(cols) == 1 ) {
-        var1 <- paste( cols, shw[[i]][,cols],sep="_")
-      } else {
-        var1 <- unlist(apply(shw[[i]][,cols], MARGIN=1, FUN = function ( y ) {paste ( unlist(lapply ( 1:length(y), FUN = function ( yy ) { paste(names(y)[yy], y[yy],sep="_")})), sep="", collapse = "_X_")  }))
-      }
-      if(ncol(qMatrix) != 2 ){
-        cat(paste0("Warning: Cannot identify the group the term '",i,"' in file '",shwFile,"' belongs to. Insert 'NA' to the 'group' column.\n"))
-        gr <- NA
-      }  else {
-        gr <- colnames(qMatrix)[2]
-      }
-      vars<- c("ESTIMATE", "MNSQ", "MNSQ.1", "ERROR")
-      cls <- sapply(shw[[i]][,vars], inherits, what=c("numeric", "integer"))
-      if(!all(cls) ) {
-         cat(paste0("Expect column(s) '",paste(vars[which(cls==FALSE)],collapse= "', '"), "' in file '",shwFile,"' (statement '",i,"') to be numeric. Current column format is: '",paste(sapply(shw[[i]][,vars[which(cls==FALSE)]],class), collapse="', '"),"'. Column will be transformed.\n"))
-         shw[[i]] <- dplyr::mutate_at(shw[[i]], .vars = names(cls[which(cls==FALSE)]), .funs = eatTools::asNumericIfPossible, maintain.factor.scores = TRUE)
-      }
-      shwE <- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = NA, value = shw[[i]][,"ESTIMATE"], stringsAsFactors = FALSE)
-      shwE2<- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "infit", value = shw[[i]][,"MNSQ.1"], stringsAsFactors = FALSE)
-      shwE3<- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "outfit", value = shw[[i]][,"MNSQ"], stringsAsFactors = FALSE)
-      shwSE<- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "se", value = shw[[i]][,"ERROR"], stringsAsFactors = FALSE)
-      toOff<- shwSE[ which(is.na(shwSE[,"value"])), "var1"]
-      if(length(toOff)>0) {
-        shwE[match(toOff, shwE[,"var1"]), "par"] <- "offset"
-        shwSE <- shwSE[-which(is.na(shwSE[,"value"])),]
-      }
-      res  <- rbind ( res, shwE, shwE2, shwE3, shwSE)
-    }
-  }
-  return(res)}
+         if(length(shw) <= 4 )  {  return(NULL)}                                ### ggf. Parameter zusaetzlicher Conquest-Terme einlesen, wenn length(shw) <= 4, gibt es keinen zusaetzlichen Terme
+         res   <- NULL                                                          ### initialisieren
+         read  <- 2 : (length(shw) - 3)                                         ### Diese Terme muessen eingelesen werden
+         for ( i in names(shw)[read] ) {
+               cols <- unlist(isLetter(i))                                      ### versuche Spalte(n) zu identifizieren
+               if( !all(cols %in% colnames(shw[[i]])) ) {
+                   cat(paste("Cannot identify variable identifier for additional term '",i,"' in file '",shwFile,"'. Skip procedure.\n",sep=""))
+               }  else  {
+                   if(length(cols) == 1 ) {
+                      var1 <- paste( cols, shw[[i]][,cols],sep="_")
+                   } else {
+                      var1 <- unlist(apply(shw[[i]][,cols], MARGIN=1, FUN = function ( y ) {paste ( unlist(lapply ( 1:length(y), FUN = function ( yy ) { paste(names(y)[yy], y[yy],sep="_")})), sep="", collapse = "_X_")  }))
+                   }
+                   if(ncol(qMatrix) != 2 ){
+                      cat(paste0("Warning: Cannot identify the group the term '",i,"' in file '",shwFile,"' belongs to. Insert 'NA' to the 'group' column.\n"))
+                      gr <- NA
+                   }  else {
+                      gr <- colnames(qMatrix)[2]
+                   }                                                            ### untere zeile: gesonderte partial credit behandlung
+                   if(length(grep("step",i)) == 1 && "step" %in% colnames(shw[[i]])){
+                       shwI <- eatTools::na_omit_selection(shw[[i]], "ESTIMATE")
+                       res  <- rbind(res, data.frame ( model = model.name, source = "conquest", var1 = shwI[,"item"], var2 = paste0("step",shwI[,"step"]) , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = NA, value = shwI[,"ESTIMATE"], stringsAsFactors = FALSE),  data.frame ( model = model.name, source = "conquest", var1 = shwI[,"item"], var2 = paste0("step",shwI[,"step"]) , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "se", value = shwI[,"ERROR"], stringsAsFactors = FALSE))
+                   }  else  {
+                       vars<- c("ESTIMATE", "MNSQ", "MNSQ.1", "ERROR")
+                       cls <- sapply(shw[[i]][,vars], inherits, what=c("numeric", "integer"))
+                       if ( !all(cls) ) {
+                            cat(paste0("Expect column(s) '",paste(vars[which(cls==FALSE)],collapse= "', '"), "' in file '",shwFile,"' (statement '",i,"') to be numeric. Current column format is: '",paste(sapply(shw[[i]][,vars[which(cls==FALSE)]],class), collapse="', '"),"'. Column will be transformed.\n"))
+                            shw[[i]] <- dplyr::mutate_at(shw[[i]], .vars = names(cls[which(cls==FALSE)]), .funs = eatTools::asNumericIfPossible, maintain.factor.scores = TRUE)
+                       }
+                       shwE <- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = NA, value = shw[[i]][,"ESTIMATE"], stringsAsFactors = FALSE)
+                       shwE2<- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "infit", value = shw[[i]][,"MNSQ.1"], stringsAsFactors = FALSE)
+                       shwE3<- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "outfit", value = shw[[i]][,"MNSQ"], stringsAsFactors = FALSE)
+                       shwSE<- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "se", value = shw[[i]][,"ERROR"], stringsAsFactors = FALSE)
+                       toOff<- shwSE[ which(is.na(shwSE[,"value"])), "var1"]
+                       if(length(toOff)>0) {
+                          shwE[match(toOff, shwE[,"var1"]), "par"] <- "offset"
+                          shwSE <- shwSE[-which(is.na(shwSE[,"value"])),]
+                       }
+                       res  <- rbind ( res, shwE, shwE2, shwE3, shwSE)
+                   }
+               }
+         }
+         return(res)}
 
 ### ----------------------------------------------------------------------------
 
@@ -402,12 +407,22 @@ plotDevianceConquest <- function ( logFile, omitUntil = 1, reverse = TRUE, chang
   graphics::points( dcr[,1], dcr[,2], pch=20, cex=cex, col="red") }
 
 # funktion soll mal nach CRAN -> eatTools
-timeFormat <- function(timediff, digits) {
-          if(missing(digits)) {
-             if(as.numeric(timediff) < 0.05 ) {
-                digits <- 3
-             }  else  {
-                digits <- 1
+timeFormat <- function(timediff, digits, format = NULL) {
+          if(is.null(format)) {
+             if(missing(digits)) {
+                if(as.numeric(timediff) < 0.05 ) {
+                   digits <- 3
+                }  else  {
+                   digits <- 1
+                }
              }
-          }
-          paste(round(as.numeric(timediff), digits = digits), attr(timediff, "units"), sep=" ")}
+             return(paste(round(as.numeric(timediff), digits = digits), attr(timediff, "units"), sep=" "))
+          } else {
+             format <- match.arg(arg = format, choices = c("s", "m", "h"))
+             if(format == "s") {
+                if(timediff < 120)    {time <- paste(round(timediff, digits = digits), "secs")}
+                if(timediff > 120)    {time <- paste(round(timediff / 60, digits = digits), "mins")}
+                if(timediff > 432000) {time <- paste(round(timediff / 3600, digits = digits), "hrs")}
+             }
+             return(time)
+          }}
