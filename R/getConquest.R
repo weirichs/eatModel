@@ -422,7 +422,8 @@ timeFormat <- function(timediff, digits, format = NULL) {
              if(format == "s") {
                 if(timediff < 120)    {time <- paste(round(timediff, digits = digits), "secs")}
                 if(timediff > 120)    {time <- paste(round(timediff / 60, digits = digits), "mins")}
-                if(timediff > 432000) {time <- paste(round(timediff / 3600, digits = digits), "hrs")}
+                if(timediff > 7200) {time <- paste(round(timediff / 3600, digits = digits), "hrs")}
+                if(timediff > 172800) {time <- paste(round(timediff / 86400, digits = digits), "days")}
              }
              return(time)
           }}
