@@ -6,14 +6,16 @@ P_get_k <- function(theta, k, m, ds, a) {
     denom <- sum(exp(sapply(0:m, FUN = function(t) {if (t == 0) {return(0)} else {return(a * sum(theta - ds[1:t]))} })))
     return(sum(num) / denom)  }
 
-plotDevianceMirt <- function ( mirt.obj, omitUntil = 1) {
-           sysInfo  <- Sys.info()  
-           if(sysInfo[["sysname"]] == "Linux") {
-              x11(width = 800/72, height = 600/72)
-           } else  {
-              windows(width = 800/72, height = 600/72)
+plotDevianceMirt <- function ( mirt.obj, omitUntil = 1, adaptWindow = TRUE) {
+           sysInfo  <- Sys.info()
+           if(isTRUE(adaptWindow)) {
+              if(sysInfo[["sysname"]] == "Linux") {
+                  x11(width = 800/72, height = 600/72)
+              } else  {
+                  windows(width = 800/72, height = 600/72)
+              }
            }
-           dev <- (-1) * diff( (-2) * mirt.obj@Internals$collectLL ) 
+           dev <- (-1) * diff( (-2) * mirt.obj@Internals$collectLL )
            mat <- data.frame ( iter = 1:length(dev), dev = dev, stringsAsFactors = FALSE)
            if(omitUntil>0)  {
               dc<- mat[-c(1:omitUntil),2]                                       ### 'dc' = 'deviance chance'
@@ -35,30 +37,37 @@ plotDevianceMirt <- function ( mirt.obj, omitUntil = 1) {
                 main=titel,  xlab="Iteration",
                 xlim=c(min(dc[,1]),max(dc[,1])),  xaxp=c(0,xm,xt),
                 ylab="deviance change", pch=20, cex=cex, lwd=0.75, mar = c(5, 4, 10, 2) + 0.1)
-           si   <- devtools::session_info(pkgs = "eatModel")
-           si   <- si[["packages"]][which(si[["packages"]][,"package"] == "eatModel"),]
-           inf  <- Sys.getenv()
-           sysi <- Sys.info()
-           sys  <- sessionInfo()
+           si  <- sessioninfo::package_info()
+		   row <- eatTools::whereAre("eatModel", si[,"package"], verbose=FALSE)
+           inf <- Sys.getenv()
+           sysi<- Sys.info()
+           sys <- sessionInfo()
            if(inherits(try(cpu  <- benchmarkme::get_cpu(), silent=TRUE ),"try-error"))  {cpu <- list()}
            if(inherits(try(ram  <- benchmarkme::get_ram(), silent=TRUE ),"try-error"))  {ram <- list()}
-           stri <- paste0("'eatModel', version ", si[["loadedversion"]], ", build ",si[["date"]], ", user: ",sysi[["user"]], ", computername: ", ifelse(sysi[["sysname"]] == "Linux", sysi[["nodename"]], inf["COMPUTERNAME"]), "\nsystem: ", sys[["running"]], ", cpu: ", cpu[["model_name"]], ", cores: ",cpu[["no_of_cores"]], ", RAM: ",capture.output(ram))
-           stri <- paste0("method = '",mirt.obj@Options[["method"]], "', quadrature points = ",mirt.obj@Options[["quadpts"]], ", final log Likelihood = ",round(mirt.obj@Fit[["logLik"]],digits = 1), ", dims = '",paste(mirt.obj@Model[["factorNames"]], collapse="', '"), "'. Elapsed time: ",timeFormat(mirt.obj@time[[1]],digits = 1, format="s"),"\n", stri, "\n")
+           stri<- paste0("'eatModel', version ",  as.data.frame(si)[row,"ondiskversion"], ", build ",as.data.frame(si)[row,"date"], ", user: ",sysi[["user"]], ", computername: ", ifelse(sysi[["sysname"]] == "Linux", sysi[["nodename"]], inf["COMPUTERNAME"]), "\nsystem: ", sys[["running"]], ", cpu: ", cpu[["model_name"]], ", cores: ",cpu[["no_of_cores"]], ", RAM: ",capture.output(ram))
+           stri<- paste0("method = '",mirt.obj@Options[["method"]], "', quadrature points = ",mirt.obj@Options[["quadpts"]], ", final log Likelihood = ",round(mirt.obj@Fit[["logLik"]],digits = 1), ", dims = '",paste(mirt.obj@Model[["factorNames"]], collapse="', '"), "'. Elapsed time: ",timeFormat(mirt.obj@time[[1]],digits = 1, format="s"),"\n", stri, "\n")
            graphics::mtext(stri)
            graphics::abline( a=0, b=0 )
-           dcr  <- dc[dc[,2]<0,]
+           dcr <- dc[dc[,2]<0,]
            graphics::points( dcr[,1], dcr[,2], pch=20, cex=cex, col="red")  }
 
 getMirtRegPar <- function(runModelObj, qMatrix) {
    coefs <- coef(runModelObj,  IRTpars = TRUE, printSE = TRUE)[["lr.betas"]]
-   if(!is.null(coefs)) {
-      for(i in 1:length(coefs)) {colnames(coefs[[i]]) <- colnames(qMatrix)[-1]} ### das jetzt in die Ergebnisstruktur pressen
-      mrg <- merge(data.frame(var1 = rownames(coefs[[1]]), coefs[[1]], stringsAsFactors = FALSE), data.frame(var1 = rownames(coefs[[2]]), coefs[[2]], stringsAsFactors = FALSE), by="var1", all=TRUE, suffixes = c("_est", "_se"))
-      mrgL<- reshape2::melt(mrg, id.vars = "var1", na.rm=TRUE)
-      mrgL<- suppressWarnings(tidyr::separate(mrgL, col = "variable", into = c("group", "derived.par")) |> dplyr::mutate_at(.vars = "derived.par", .funs = car::recode, recodes = "'est'=NA"))
-      ret <- data.frame ( par="est", model = attr(runModelObj, "defineModelObj")[["analysis.name"]],source = "mirt", var2 = NA, type = "regcoef", indicator.group = NA,mrgL, stringsAsFactors = FALSE)
+   if(!is.null(coefs)) {                                                        
+      if(inherits(coefs, "matrix")) {                                           ### manchmal werden keine Standardfehler ausgegeben, dann ist das Objekt keine Liste mit zwei Eintraegen, sondern eine matrix
+         colnames(coefs) <- colnames(qMatrix)[-1]
+         mrgL<- reshape2::melt(data.frame(var1 = rownames(coefs), coefs), id.vars = "var1", variable.name = "group", na.rm=TRUE)
+         ret <- data.frame ( par="est", model = attr(runModelObj, "defineModelObj")[["analysis.name"]],source = "mirt", var2 = NA, type = "regcoef", derived.par = NA, indicator.group = NA,mrgL, stringsAsFactors = FALSE)
+      } else {
+         for(i in 1:length(coefs)) {colnames(coefs[[i]]) <- colnames(qMatrix)[-1]}# das jetzt in die Ergebnisstruktur pressen
+         mrg <- merge(data.frame(var1 = rownames(coefs[[1]]), coefs[[1]], stringsAsFactors = FALSE), data.frame(var1 = rownames(coefs[[2]]), coefs[[2]], stringsAsFactors = FALSE), by="var1", all=TRUE, suffixes = c("_est", "_se"))
+         mrgL<- reshape2::melt(mrg, id.vars = "var1", na.rm=TRUE)
+         mrgL<- suppressWarnings(tidyr::separate(mrgL, col = "variable", into = c("group", "derived.par")) |> dplyr::mutate_at(.vars = "derived.par", .funs = car::recode, recodes = "'est'=NA"))
+         ret <- data.frame ( par="est", model = attr(runModelObj, "defineModelObj")[["analysis.name"]],source = "mirt", var2 = NA, type = "regcoef", indicator.group = NA,mrgL, stringsAsFactors = FALSE)
+      }
       return(ret)
    }}
+
 
 getMirtPopPar <- function(runModelObj=runModelObj, qMatrix=qMatrix) {
    vals <- mod2values(runModelObj)
@@ -238,8 +247,8 @@ getMirtResults <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV) {
          #ret    <- rbind(ret, getTamQ3(runModelObj=runModelObj, leseAlles = leseAlles, shw1 = resItem[["shw1"]], Q3=Q3, q3MinObs=q3MinObs, q3MinType=q3MinType))
          #diffe  <- Sys.time() - beg
          #if(as.numeric(diffe) > 0.2) {message(paste0("Getting Q3 statistic calling tam.modelfit from getTamQ3: ", timeFormat(diffe)))}
-         return(ret)}         
-
+         return(ret)}   
+               
 getMirtItempars <- function(runModelObj, qL, qMatrix, leseAlles, software) {
       coefs <- coef(runModelObj, IRTpars = TRUE, printSE = TRUE) 
       coef2 <- coef(runModelObj, IRTpars = TRUE, simplify = TRUE)$items         ### notwendig fuer thurstonian thresholds 
@@ -251,7 +260,8 @@ getMirtItempars <- function(runModelObj, qL, qMatrix, leseAlles, software) {
                if(length(colSlo) != 1) {browser()}                              ### das sollte nie passieren
                if("b" %in% colnames(coefs[[i]])) {                              ### dichotomer Fall (Rasch und 2pl)
                   est    <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "mirt",  var1 = i, var2 = NA , type = "fixed", indicator.group = "items", group = subset(qL, item==i)[,"dimensionName"],  par = car::recode(coefs[[i]][rowSE,"b"],"NA='offset';else='est'"),  derived.par = NA, value = coefs[[i]][rowEst,"b"], stringsAsFactors = FALSE)
-                  se     <- est |> dplyr::mutate(derived.par = "se", value = coefs[[i]][rowSE,"b"])
+                  if(length(coefs[[i]][rowSE,"b"]) == 0) {wert <- NA} else {wert <- coefs[[i]][rowSE,"b"]}
+                  se     <- est |> dplyr::mutate(derived.par = "se", value = wert)# diese Umstaendlichkeit scheint fuer multicore notwendig zu sein, sonst crasht es
                } else {                                                         ### polytomer Fall (pcm und gpcm)
                   se     <- NULL                                                ### initialisieren, damit es am ende ge-rbinded werden kann
                   cols   <- grep("^b", colnames(coefs[[i]]), value=TRUE)
@@ -261,7 +271,8 @@ getMirtItempars <- function(runModelObj, qL, qMatrix, leseAlles, software) {
                             return(rbind(est1, se1))}))
                }
                slope  <- est[1,] |> dplyr::mutate(par = "estSlope", value = coefs[[i]][rowEst,colSlo])
-               slopeSE<- est[1,] |> dplyr::mutate(par = "estSlope", derived.par = "se",value = coefs[[i]][rowSE,colSlo]) |> eatTools::na_omit_selection(varsToOmitIfNA = "value")
+               if(length(coefs[[i]][rowSE,colSlo]) == 0) {wert <- NA} else {wert <- coefs[[i]][rowSE,colSlo]}
+               slopeSE<- est[1,] |> dplyr::mutate(par = "estSlope", derived.par = "se",value = wert) |> eatTools::na_omit_selection(varsToOmitIfNA = "value")
     ### Thurstonian thresholds ausgeben lassen
     ### im dichotomen modell werden thresholds analog zur itemparametertransformaton bestimmt: wegen der abweichenden mirt 
     ### parametrisierung kann man nicht dieselbe Funktion nehmen, obwohl es konzeptuell aequivalent ist 
@@ -295,11 +306,17 @@ getMirtWles <- function(runModelObj, qMatrix, omitWle) {
          }
          ids  <- attr(runModelObj, "personID")
          wleL <- reshape2::melt(data.frame(ID = ids, wle,stringsAsFactors = FALSE), id.vars = "ID",  na.rm=TRUE)
-         dims <- colnames(qMatrix)[-1]
-         wleL[,"group"] <- dims[as.numeric(eatTools::removeNonNumeric(stringr::str_remove(as.character(wleL[,"variable"]), pattern = "^SE_")))]
-         wleL[,"derived.par"] <- car::recode(eatTools::halveString(as.character(wleL[,"variable"]), "_")[,2], "NA='est'; else = 'se'")
-         res  <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "mirt", var1 = wleL[,"ID"], var2 = NA,  type = "indicator", indicator.group = "persons",  group = wleL[,"group"], par = "wle", derived.par = wleL[,"derived.par"], value = wleL[,"value"], stringsAsFactors = FALSE)
+         if(nrow(wleL)>0) {
+            dims <- colnames(qMatrix)[-1]
+            wleL[,"group"] <- dims[as.numeric(eatTools::removeNonNumeric(stringr::str_remove(as.character(wleL[,"variable"]), pattern = "^SE_")))]
+            wleL[,"derived.par"] <- car::recode(eatTools::halveString(as.character(wleL[,"variable"]), "_")[,2], "NA='est'; else = 'se'")
+            res  <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "mirt", var1 = wleL[,"ID"], var2 = NA,  type = "indicator", indicator.group = "persons",  group = wleL[,"group"], par = "wle", derived.par = wleL[,"derived.par"], value = wleL[,"value"], stringsAsFactors = FALSE)
+         } else {
+            warning("No common WLEs found.")
+            res <- NULL
+         }   
          return(res)}           
+         
 
 mirtWlesMultidim <- function(m) {
     sysInfo  <- Sys.info()

@@ -464,7 +464,7 @@ data(trends)
 datW <- reshape2::dcast(trends[which(trends[,"year"] == 2010),],
                         idstud+sex+ses+language~item, value.var="value")
 
-# second, create the q matrix from tLinking and main")])
+# second, create the q matrix from long format data
 qMat <- unique(trends[ ,c("item","domain")])
 qMat <- data.frame ( qMat[,"item", drop=FALSE], model.matrix(~domain-1, data = qMat))
 
