@@ -313,50 +313,31 @@ anker <- function(lab, prm, qMatrix, domainCol, itemCol, valueCol, catCol)  {
 
 ### ----------------------------------------------------------------------------
 
-desk.irt <- function(daten, itemspalten, na=NA,percent=FALSE,reduce=TRUE,codebook=list(datei=NULL,item=NULL,value=NULL,lab=NULL, komp=NULL), quiet = FALSE ) {
-             daten <- eatTools::makeDataFrame(daten)
+desk.irt <- function(daten, itemspalten, reduce=TRUE) {
+             daten <- eatTools::makeDataFrame(daten, verbose=FALSE)
              if(!missing(itemspalten)) {daten <- daten[,itemspalten,drop=FALSE]}
-             if (is.na(na[1])==FALSE) {                                         ### wenn spezifiziert, werden hier missings recodiert
-                 recode.statement <- paste(na,"= NA",collapse="; ")
-                 daten            <- data.frame(sapply(daten,FUN=function(ii) {car::recode(ii,recode.statement)}),stringsAsFactors=FALSE)
-             }
-             specific.codes <- lapply(daten,function(ii){NULL})                 ### definiert ggf. Spezifische Codes, nach denen je Variable gesucht werden soll
-             if(!is.null(codebook$datei) & !is.null(codebook$value))  {
-               specific.codes <- lapply(as.list(colnames(daten)), FUN=function(ii) {
-                                 codebook$datei[codebook$datei[,codebook$item] == ii,c(codebook$item,codebook$value)] } )
-               kein.eintrag   <- which(sapply(specific.codes,FUN=function(ii) {nrow(ii)==0}))
-               if(length(kein.eintrag)>0)  {cat(paste(length(kein.eintrag)," item(s) missing in codebook:\n",sep=""))
-                                            cat(paste(colnames(daten)[kein.eintrag],collapse=", ")); cat("\n")}
-             }
-             results        <- lapply(1:ncol(daten), FUN=function(ii) {
-                               res.i <- eatTools::tablePattern(x=daten[,ii], pattern=specific.codes[[ii]]$value)
-                               namen.res.i <- names(res.i)
-                               if(length(res.i)==0) {
-                                  if(quiet == FALSE ) { cat(paste("Item '",colnames(daten)[ii],"' without any valid values.\n",sep=""))}
-                                  res.i <- 0
-                                  namen.res.i <- NA
-                               }
-                               Label <- NA
-                               KB <- NA
-                               if(!is.null(codebook$lab))  {Label <- codebook$datei[codebook$datei[,codebook$item] == colnames(daten)[ii],codebook$lab]}
-                               if(!is.null(codebook$komp)) {KB    <- codebook$datei[codebook$datei[,codebook$item] == colnames(daten)[ii],codebook$komp]}
-                               values<- daten[,ii] / max(daten[,ii], na.rm=TRUE)### fuer partial credit
-                               res.i <- data.frame(item.nr = ii, item.name = colnames(daten)[ii], Label = Label, KB = KB, cases = length(daten[,ii]),Missing=sum(is.na(daten[,ii])),valid=sum(!is.na(daten[,ii])),Codes=namen.res.i,Abs.Freq=as.numeric(res.i),Rel.Freq=as.numeric(res.i)/sum(!is.na(daten[,ii])), item.p=mean(na.omit(values)), stringsAsFactors=FALSE)
-             })
-             results        <- do.call("rbind",results)
+             res   <- do.call("rbind", lapply(1:ncol(daten), FUN=function(ii) {
+                      pVals<- unlist(lapply(1:max(daten[,ii], na.rm=TRUE), FUN = function(j) {
+                              y <- eatTools::num.to.cat(daten[,ii], j-0.0001, c(0,1))
+                              return(mean(y, na.rm=TRUE))}))
+                      modm <- eatTools::makeDataFrame(model.matrix( as.formula(paste0("~factor(",colnames(daten)[ii], ")-1")), data = daten), verbose=FALSE)
+                      res.i<- lapply(modm, table)
+                      codes<- eatTools::halveString(names(res.i), "\\.", first=FALSE)[,2]
+                      abs  <- unlist(lapply(res.i, FUN = function(j) {j[2]}))
+                      res.i <- data.frame(item.nr = ii, item.name = colnames(daten)[ii], cases = length(daten[,ii]),Missing=sum(is.na(daten[,ii])),valid=sum(!is.na(daten[,ii])),category = paste0("Cat",codes), Codes=codes,Abs.Freq=abs,item.p=c(NA, pVals), stringsAsFactors=FALSE)
+                      return(res.i)}))
              if(reduce == TRUE)  {
-                weg   <- which ( results[,"Codes"] == min(results[,"Codes"]) )
-                drin  <- setdiff ( 1:nrow(results), weg )
-                zusatz<- setdiff ( results[weg,"item.name"], results[drin,"item.name"])
+                weg   <- which ( res[,"Codes"] == min(res[,"Codes"]) )
+                drin  <- setdiff ( 1:nrow(res), weg )
+                zusatz<- setdiff ( res[weg,"item.name"], res[drin,"item.name"])
                 if ( length(zusatz)>0) {
-                     zusatz <- match ( zusatz, results[,"item.name"])
+                     zusatz <- match ( zusatz, res[,"item.name"])
                      drin   <- unique ( c ( zusatz, drin ))
-                     weg    <- setdiff ( 1:nrow(results), drin )
+                     weg    <- setdiff ( 1:nrow(res), drin )
                 }
-                results <- results[drin,]
+                res <- res[drin,]
              }
-             if(percent == TRUE) {results$Rel.Freq <- 100 * results$Rel.Freq}
-             return(results)}
+             return(res)}
 
 ### ----------------------------------------------------------------------------
 
@@ -390,7 +371,8 @@ cleanifySplittedModels <- function (lst, argL) {
   return(lst)}
 
 generateConsoleInfo <- function (argL, x) {
-    listing <- data.frame ( name = c("Model name", "Number of items", "Number of persons", "Number of dimensions"), wert = as.character(c(x[["model.name"]],length(argL[["items"]]), nrow(argL[["dat"]]) , argL[["nDim"]])), stringsAsFactors = FALSE)
+    items   <- eatTools::existsBackgroundVariables(dat = argL[["dat"]], variable=argL[["items"]])
+    listing <- data.frame ( name = c("Model name", "Number of items", "Number of persons", "Number of dimensions"), wert = as.character(c(x[["model.name"]],length(items), nrow(argL[["dat"]]) , argL[["nDim"]])), stringsAsFactors = FALSE)
     zusatz  <- setdiff(names(x),  c("model.no", "model.name", "model.subpath", "dim", "Ndim", "group", "Ngroup", "qMatrix", "person.grouping"))
     if(length(zusatz)>0) {listing <- rbind(listing, data.frame ( name = zusatz, wert = unlist(x[zusatz]), stringsAsFactors=FALSE))}
     listing[,"leerz"] <- max (nchar(listing[,"name"])) - nchar(listing[,"name"]) + 1
@@ -398,3 +380,4 @@ generateConsoleInfo <- function (argL, x) {
     nDots   <- max(nchar(listing[,"name"])) + max(na.omit(nchar(listing[,"wert"]))) + 6
     txtRet  <- capture.output(cat(paste("\n\n",paste(rep("=",times = nDots), sep="", collapse=""),"\nModel No. ",x[["model.no"]], paste(txt,sep="", collapse=""), "\n",paste(rep("=",times = nDots), sep="", collapse=""),"\n\n", sep="")))
     return(txtRet)}
+

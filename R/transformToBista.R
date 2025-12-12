@@ -80,7 +80,7 @@ transformToBista <- function(equatingList, refPop, cuts, weights = NULL,
                                 if(!isPCM) {                                    ### hier fuer dichotom (non-PCM)
                                    itFrame[,"estTransf"] <- itFrame[,"est"] + equatingList[["items"]][[mod]][[dimname]][["eq"]][["B.est"]][[ equatingList[["items"]][[mod]][[dimname]][["method"]] ]]
                                 } else {                                        ### in (g)pcm ist das ja bereits der fixierte itemparameter
-                                   itFrame[,"estTransf"] <- "est"
+                                   itFrame[,"estTransf"] <- itFrame[,"est"]
                                 }
     ### Achtung, heikel: wenn equatet wurde, aber der Datensatz aus der Normpopulation kommt, werden hier die empirischen Mittelwerte,
     ### die oben (mit oder ohne Gewichte) berechnet wurden, nochmal transformiert ... sollte praktisch nie der Fall sein.

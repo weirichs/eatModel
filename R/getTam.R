@@ -145,8 +145,9 @@ renameDifParameters <- function(dat, qmatLong) {
 getTamDescriptives    <- function(runModelObj, qL, qMatrix, leseAlles, software) {
          if(leseAlles == FALSE || is.null ( attr(runModelObj, "defineModelObj")[["deskRes"]] )) {return(NULL)}
          deskR<- merge(attr(runModelObj, "defineModelObj")[["deskRes"]], qL[,-match("value", colnames(qL))],  by.x = "item.name", by.y = colnames(qMatrix)[1], all = TRUE)
-         shw3 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = software, var1 = as.character(deskR[,"item.name"]), var2 = NA , type = "fixed", indicator.group = "items", group = deskR[,"dimensionName"], par = "itemP",  derived.par = NA, value = deskR[,"item.p"], stringsAsFactors = FALSE)
-         shw4 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = software, var1 = as.character(deskR[,"item.name"]), var2 = NA , type = "fixed", indicator.group = "items", group = deskR[,"dimensionName"], par = "Nvalid",  derived.par = NA, value = deskR[,"valid"], stringsAsFactors = FALSE)
+         var2 <- compatibility1(dat=deskR, name="category")
+         shw3 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = software, var1 = as.character(deskR[,"item.name"]), var2 = var2 , type = "fixed", indicator.group = "items", group = deskR[,"dimensionName"], par = "itemP",  derived.par = NA, value = deskR[,"item.p"], stringsAsFactors = FALSE)
+         shw4 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = software, var1 = as.character(deskR[,"item.name"]), var2 = var2, type = "fixed", indicator.group = "items", group = deskR[,"dimensionName"], par = "Nvalid",  derived.par = NA, value = deskR[,"valid"], stringsAsFactors = FALSE)
     ### Achtung! wenn in dem 'deskRes'-Objekt noch mehr p-Werte (schulformspezifische p-Werte drinstehen, werden die jetzt auch in die Ergebnisstruktur eingetragen)
          cols <- setdiff ( colnames(deskR)[grep("^item.p", colnames(deskR))], "item.p")
          if ( length ( cols ) > 0 ) {

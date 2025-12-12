@@ -185,12 +185,12 @@ defineModelSingle <- function (a) {
        }
      ### Sektion 'deskriptive Ergebnisse berechnen und durchschleifen' ###
        daten   <- data.frame(ID=as.character(cpsc[["dat"]][,cbc[["allNam"]][["ID"]]]), cpsc[["dat"]][,cbc[["namen.all.hg"]], drop = FALSE], cpsc[["dat"]][,cbc[["allNam"]][["variablen"]], drop = FALSE], stringsAsFactors = FALSE)
-       deskRes <- desk.irt(daten = daten, itemspalten = match(cbc[["allNam"]][["variablen"]], colnames(daten)), percent = TRUE)
+       deskRes <- desk.irt(daten = daten, itemspalten = match(cbc[["allNam"]][["variablen"]], colnames(daten)))
        crit    <- which (deskRes[,"valid"] < minNperItem)
        if(length(crit)>0) {
           cat ( paste ( "Following ",length(crit), " items with less than ",minNperItem," item responses:\n",sep=""))
           options(width=1000)
-          print(deskRes[crit,-match(c("item.nr", "Label", "KB", "Codes", "Abs.Freq", "Rel.Freq"), colnames(deskRes))], digits = 3)
+          deskRes[crit,] |> dplyr::select(-tidyselect::any_of(c("item.nr", "Label", "KB", "Codes", "Abs.Freq", "category"))) |> unique() |> print(digits = 3)
        }                                                                        ### diskriminierung kann nicht bestimmt werden, wenn letters = TRUE, weil hier dann bereits buchstaben drin stehen
        if(inherits(try(discrim <- item.diskrim(daten,match(cbc[["allNam"]][["variablen"]], colnames(daten)))  ),"try-error"))  {
           discrim <- item.diskrim(daten.temp,match(cbc[["allNam"]][["variablen"]], colnames(daten.temp)))
@@ -198,11 +198,11 @@ defineModelSingle <- function (a) {
        }
        if(length ( cbc[["allNam"]][["schooltype.var"]] ) > 0 ) {                ### jetzt ggf. noch schulformspezifische p-Werte, falls gewuenscht
           deskS <- by ( data = cpsc[["dat"]], INDICES = cpsc[["dat"]][, cbc[["allNam"]][["schooltype.var"]] ], FUN = function ( st ) {
-                   drst <- desk.irt(daten = st, itemspalten = match(cbc[["allNam"]][["variablen"]], colnames(st)), percent = TRUE)
+                   drst <- desk.irt(daten = st, itemspalten = match(cbc[["allNam"]][["variablen"]], colnames(st)))
                    colnames(drst) <- car::recode (colnames(drst) , paste0("'item.p'='item.p.",st[1,cbc[["allNam"]][["schooltype.var"]]],"'") )
                    return(drst)})
           for(uu in 1:length( deskS) ) {
-             matchU <- match(c("item.nr","Label", "KB", "cases", "Missing", "valid", "Codes" , "Abs.Freq", "Rel.Freq"), colnames(deskS[[uu]]))
+             matchU <- match(c("item.nr","Label", "KB", "cases", "Missing", "valid", "Codes" , "Abs.Freq"), colnames(deskS[[uu]]))
              stopifnot ( length (which(is.na(matchU))) == 0 , ncol(deskS[[uu]]) - length ( matchU) == 2)
              deskRes <- merge ( deskRes, deskS[[uu]][,-matchU], by = "item.name", all = TRUE)
           }
@@ -257,7 +257,7 @@ defineModelSingle <- function (a) {
           control         <- list ( snodes = met[["snodes"]] , QMC=met[["QMC"]], convD = deviancechange ,conv = converge , convM = .0001 , Msteps = Msteps , maxiter = n.iterations, max.increment = 1 ,
                                   min.variance = .001 , progress = progress , ridge=0 , seed = seed , xsi.start0=FALSE,  increment.factor=increment.factor , fac.oldxsi= fac.oldxsi)
           if ( !is.null(met[["nodes"]])) { control$nodes <- met[["nodes"]] }
-          ret     <- list ( software = software, constraint = match.arg(constraints, choices = eval(formals(defineModel)[["constraints"]])) , qMatrix=qMatrix, anchor=list(ank = ankFrame[["resTam"]], allNam = cbc[["allNam"]]),  
+          ret     <- list ( software = software, constraint = match.arg(constraints, choices = eval(formals(defineModel)[["constraints"]])) , qMatrix=qMatrix, anchor=list(ank = ankFrame[["resTam"]], allNam = cbc[["allNam"]]),
                             all.Names=fixSlopeMatPrep[["allNam"]], daten=daten, irtmodel=fixSlopeMatPrep[["irtmodel"]], est.slopegroups = est.slopegroups[["esgNm"]], guessMat=guessMat, control = control,
                             n.plausible=n.plausible, dir = dir, analysis.name=analysis.name, deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]],
                             perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], fixSlopeMat = fixSlopeMatPrep[["slopMat"]], estVar = fixSlopeMatPrep[["estVar"]], pvMethod = pvMethod,  fitTamMmlForBayesian=fitTamMmlForBayesian)
@@ -271,3 +271,4 @@ defineModelSingle <- function (a) {
           class(ret) <-  c("defineMirt", "list")
        }
        return(ret)}
+

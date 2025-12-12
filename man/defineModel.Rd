@@ -878,14 +878,14 @@ table(datT1[,c("country", "language")])
 modT1P<- splitModels ( person.groups = datT1[,c("idstud", "country")],
          all.persons = FALSE, nCores = 1)
 
-# define the 2 country-specific 2-dimensional models, specifying latent regression 
+# define the 3 country-specific 2-dimensional models, specifying latent regression
 # model and fixed item parameters.
 defT1P<- defineModel(dat = datT1, items = itemT1[,"item"], id = "idstud",
          check.for.linking = TRUE, splittedModels = modT1P, qMatrix = qMat,
          anchor = itemT1[,c("item", "est")],
          HG.var = c("sex", "ses_scaled", "language"),  software = "tam")
 
-# run the 2 models (estimation needs approx. 20 seconds)
+# run the 3 models (estimation needs approx. 20 seconds)
 runT1P<- runModel(defT1P)
 
 # get the results (to save time, item fit estimation is skipped)
@@ -963,7 +963,7 @@ head(T.t1t2$personpars)
 modT2P<- splitModels ( person.groups = datT2[,c("idstud", "country")] ,
          all.persons = FALSE, nCores = 1)
 
-# define the 2 country-specific 2-dimensional models, specifying latent regression
+# define the 3 country-specific 2-dimensional models, specifying latent regression
 # model and fixed item parameters. We used the transformed item parameters (captured
 # in 'T.t1t2[["itempars"]]' --- using the 'estTransf' column) for anchoring.
 # Again, 'ses' is scaled (mean = 0, sd = 1)
@@ -973,7 +973,7 @@ defT2P<- defineModel(dat = datT2, items = itemT2[,"item"], id = "idstud",
          anchor = T.t1t2[["itempars"]][,c("item", "estTransf")],
          HG.var = c("sex", "ses_scaled", "language"), software = "tam")
 
-# run the 2 models (estimation takes approx. 29 seconds)
+# run the 3 models (estimation takes approx. 29 seconds)
 runT2P<- runModel(defT2P)
 
 # get the results
@@ -1038,7 +1038,7 @@ T.t2t3<- transformToBista ( equatingList = L.t2t3, refPop=ref, cuts = cuts,
 modT3P<- splitModels ( person.groups = datT3[,c("idstud", "country")] ,
          all.persons = FALSE, nCores = 1)
 
-# define the 2 country-specific 2-dimensional models, specifying latent regression
+# define the 3 country-specific 2-dimensional models, specifying latent regression
 # model and fixed item parameters. We used the transformed item parameters (captured
 # in 'T.t2t3[["itempars"]]' --- using the 'estTransf' column) for anchoring.
 # Again, 'ses' is scaled (mean = 0, sd = 1)
@@ -1048,7 +1048,7 @@ defT3P<- defineModel(dat = datT3, items = itemT3[,"item"], id = "idstud",
          anchor = T.t2t3[["itempars"]][,c("item", "estTransf")],
          HG.var = c("sex", "ses_scaled", "language"), software = "tam")
 
-# run the 2 models (estimation takes approx. 20 seconds)
+# run the 3 models (estimation takes approx. 20 seconds)
 runT3P<- runModel(defT3P)
 
 # get the results
@@ -1250,14 +1250,14 @@ itemT1<- itemFromRes(resT1)
 # a separate distinct group.)
 modT1P<- splitModels ( person.groups = datT1[,c("idstud", "country")], all.persons = FALSE, nCores = 1)
 
-# define the 2 country-specific 2-dimensional models, specifying latent regression
+# define the 3 country-specific 2-dimensional models, specifying latent regression
 # model and fixed item and fixed slope parameters.
 defT1P<- defineModel(dat = datT1, items = itemT1[,"item"], id = "idstud", irtmodel = "2PL",
          check.for.linking = TRUE, splittedModels = modT1P, qMatrix = qMat,
          anchor = itemT1[,c("item", "est")], fixSlopeMat = itemT1[,c("item", "estSlope")],
          HG.var = c("ses", "sex", "language"), software = "tam")
 
-# run the 2 models
+# run the 3 models
 runT1P<- runModel(defT1P)
 
 # get the results
@@ -1265,7 +1265,7 @@ resT1P<- getResults(runT1P, Q3 = FALSE)
 
 
 ################################################################################
-###   Example 8: partial credit model with anchoring excluding linking DIF   ###
+###   Example 8: anchored partial credit model excluding linking DIF (TAM)   ###
 ################################################################################
 
 # load partial credit long format data
@@ -1290,6 +1290,10 @@ dFema<- datW[which(datW[,"sex"] == "female"),]                                  
 lapply(dFema[,pc.it], FUN = table)                                              ### very few observations for some categories ... may cause convergence trouble
 def1 <- defineModel(dat=dFema, items = -c(1:4), id=1, irtmodel = "PCM", software="tam", nodes = 21)
 run1 <- runModel(def1)
+
+# plot polytomous item "D205143": category 3 isn't necessary
+ind1 <- grep("D205143", run1$item$item)                                         ### where is item "D205143"
+foo1 <- capture.output(plot(run1, items = ind1, type="items", export=FALSE, low=-6, high=6))
 res1 <- getResults(run1)
 it1  <- itemFromRes(res1)
 
@@ -1341,6 +1345,87 @@ tf4  <- transformToBista(equatingList=eq4, refPop=refP, cuts=cuts, vera = FALSE)
 
 
 ################################################################################
+### Example 8.1: same like example 8 (anchored 1pl PCM), now using Conquest  ###
+################################################################################
+
+# load partial credit long format data
+data(reading)
+
+# transform into wide format
+datW <- reshape2::dcast(reading[which(reading[,"type"] != "iglu"),],uniqueID+sex+language+country~item, value.var = "valueSum")
+
+# only some items are partial credit, which ones?
+pc.it<- reading[which(reading[,"valueSum"] > 1),"item"] |> unique()
+
+# give values of partial credit items
+# few observation of 1-category for item D223143 ... may cause convergence trouble
+lapply(datW[,pc.it], FUN = table)
+
+# combine the two lowest categories to avoid categories with too few observations
+datW[,"D205143"] <- car::recode(datW[,"D205143"], "1=0; 2=1; 3=2; 4=3; 5=4")
+
+# partial credit model ... we consider the female subgroup to be the reference population
+# (norm population) that defines the scale and reference item parameters
+dFema<- datW[which(datW[,"sex"] == "female"),]                                  ### data for females
+lapply(dFema[,pc.it], FUN = table)                                              ### very few observations for some categories ... may cause convergence trouble
+def1 <- defineModel(dat=dFema, items = -c(1:4), id=1, model.statement = "item+item*step", nodes = 21, analysis.name = "pcm_conquest_females", dir=tempdir())
+run1 <- runModel(def1)
+res1 <- getResults(run1)
+it1  <- itemFromRes(res1)
+
+# males are focus group: initial free estimation of item parameters
+def2 <- defineModel(dat=datW[which(datW[,"sex"] == "male"),], items = -c(1:4), id=1, model.statement = "item+item*step", nodes = 21, analysis.name = "pcm_conquest_males", dir=tempdir())
+run2 <- runModel(def2)
+res2 <- getResults(run2)
+it2  <- itemFromRes(res2)
+
+# link males to females ... males perform worse
+# 11 items with linking dif identified
+eq   <- equat1pl(results = res2, prmNorm = it1, item = "item", cat="category", value = "est", difBound=.64, iterativ = TRUE)
+
+# re-calibrate males with anchoring: use the DIF-cleaned set of anchor parameters for calibrating males on the reference scale
+# variant 1: use the original item parameters for females and exclude linking dif items (it1_cleaned)
+# please note that to date in Conquest only dichotomous items can be used for anchoring
+weg  <- eq[["items"]][["pcm_conquest_males"]][["Dim1"]][["info"]][-1,"itemExcluded"]
+weg  <- eatTools::whereAre(weg, paste(it1[,"item"], it1[,"category"], sep="_"))
+it1C <- it1[-weg,]
+pcmIt<- unique(subset(it1C, category == "Cat2")[,"item"])                       ### additionally exclude pcm items
+it1C <- it1C[-eatTools::whereAre(pcmIt, it1C[,"item"]),]
+def3A<- defineModel(dat=datW[which(datW[,"sex"] == "male"),], items = -c(1:4), id=1,
+        model.statement = "item+item*step", nodes = 21, analysis.name = "pcm_conquest_males_anchored1", dir=tempdir(),
+        anchor = it1C[,c("item", "est")])
+run3A<- runModel(def3A)
+res3A<- getResults(run3A)
+it3A <- itemFromRes(res3A)                                                      ### all dichotomous items except the ones with linking dif with equal item parameters? check
+comp <- merge(it1[,c("item", "category", "est")], it3A[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"))
+equal<- na.omit(comp[,c("est_ref", "offset")])
+stopifnot(all(equal[,1] == equal[,2]))                                          ### all item parameters without linking dif should be equal
+### TO DO: all items with specific focus parameter must be included in linking DIF exclusion list or must be pcm items
+
+# variant 2: use the item parameters for males (linking dif items excluded), transformed to the metric of females
+ank3B<- eq[["items"]][["pcm_conquest_males"]][["Dim1"]][["cleanedLinkItemPars"]]
+pcmIt<- unique(subset(ank3B, category == "Cat2")[,"item"])                      ### additionally exclude pcm items
+ank3B<- ank3B[-eatTools::whereAre(pcmIt, ank3B[,"item"]),]
+def3B<- defineModel(dat=datW[which(datW[,"sex"] == "male"),], items = -c(1:4), id=1,
+        model.statement = "item+item*step", analysis.name = "pcm_conquest_males_anchored2",
+        dir=tempdir(), anchor = ank3B[,c("item", "est")])
+run3B<- runModel(def3B)
+res3B<- getResults(run3B)
+it3B <- itemFromRes(res3B)                                                      ### all items except the ones with linking dif with equal item parameters? check
+link <- eq[["items"]][["pcm_conquest_males"]][["Dim1"]][["cleanedLinkItemPars"]][,c("item", "category", "est")]
+comp <- merge(link, it3B[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"))
+equal<- na.omit(comp[,c("est_ref", "offset")])
+stopifnot(all(equal[,1] == equal[,2]))                                          ### all item parameters without linking dif should be equal
+### TO DO: all items with specific focus parameter must be included in linking DIF exclusion list or must be pcm items
+
+# transform to Bista metric
+eq4  <- equat1pl(results = res3B)                                               ### reference population mean and SD
+refP <- data.frame(domain = "Dim1", m = 0.0389, sd = 1.07108, stringsAsFactors = FALSE)
+cuts <- list ( Dim1 = list(values = 390+0:3*75))
+tf4  <- transformToBista(equatingList=eq4, refPop=refP, cuts=cuts, vera = FALSE)
+
+
+################################################################################
 ### Example 9: (restricted) generalized partial credit model with anchoring  ###
 ################################################################################
 
@@ -1371,7 +1456,7 @@ def2T<- defineModel(dat=datW[which(datW[,"sex"] == "male"),], items = -c(1:4), i
 run2T<- runModel(def2T)
 res2T<- getResults(run2T)
 it2T <- itemFromRes(res2T)
-unique(it1T[,"estSlope"]); unique(it2T[,"estSlope"])                            ### average discrimination (reg vs. spf) differs for males, but not for females
+unique(round(it1T[,"estSlope"],3)); unique(round(it2T[,"estSlope"],3))          ### average discrimination (reg vs. spf) differs for males, but not for females
 
 # use only slope=1 items for 1pl linking
 eq   <- equat1pl(results = res2T, prmNorm = it1T[which(it1T[,"estSlope"] ==1),], item = "item", cat="category", value = "est", difBound=.64, iterativ = TRUE)
@@ -1508,16 +1593,6 @@ eq4  <- equat1pl(results = res3B)                                               
 refP <- data.frame(domain = "Dim1", m = 0.0389, sd = 1.07108, stringsAsFactors = FALSE)
 cuts <- list ( Dim1 = list(values = 390+0:3*75))
 tf4  <- transformToBista(equatingList=eq4, refPop=refP, cuts=cuts, vera = FALSE)
-
-
-
-#to do, plausibilitaets-checks:
-#- check, dass thurstone thresholds mit 0.625 groesser sind als mit 0.5
-#- transformToBista#
-# funktioniert die verankerung einzelner stufen in mirt ueber adaptSkelForAnchor bereits?
-
-
-# probieren, mit neuer version alte result-Objekte einzulesen und dann itemfromres auszufuehren ... weiss nicht, ob das klappt 
 }
 
 

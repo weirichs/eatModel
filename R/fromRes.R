@@ -89,7 +89,7 @@ pvFromRes <- function(resultsObj, toWideFormat = TRUE, idVarName = NULL, verbose
 
 ### called by getRestuls(), equat1pl(), transformToBista() and prepareAndCheckEatModelObject()
 ### Funktion wird so oft ausgefuehrt, wie es Modelle gibt
-itemFromRes <- function ( resultsObj, longFormat = TRUE ) {
+itemFromRes <- function ( resultsObj) {
      ### hier muss "rbind.fill" genommen werden, denn 1pl und 2pl Modelle unterscheiden sich in den Spalten (bei 2pl gibt es zusaetzliche Diskriminationsspalten)
           res <- do.call(plyr::rbind.fill, by ( data = resultsObj, INDICES = resultsObj[,"model"], FUN = function ( mod ) {
                  sel  <- mod[intersect( which(mod[,"par"] %in% c("est", "estSlope", "Nvalid", "itemP", "ptBis", "itemDiscrim", "offset")),which(mod[,"indicator.group"] == "items")),]
@@ -151,16 +151,10 @@ itemFromRes <- function ( resultsObj, longFormat = TRUE ) {
                      sel  <- do.call(plyr::rbind.fill, by(sel, INDICES = sel[,"group"], FUN = function ( gr ) {
      ### erstmal ohne schulformspezifische p-Werte (die kommen spaeter dazu)
                              for(v in c("var2", "par", "derived.par")) { gr[,v] <- car::recode(gr[,v], "NA=''")}
-                             res  <- reshape2::dcast ( unique(gr), model+var1~var2+par+derived.par, value.var = "value")
+                             res  <- reshape2::dcast ( unique(gr), model+var1~var2+par+derived.par, value.var = "value") |> dplyr::mutate(dimension= as.character(gr[1,"group"]))
                              colnames(res) <- eatTools::crop(colnames(res), char = "_") |> car::recode(recodes = "'var1'='item'; 'est_infit'='infit'; 'est_outfit'='outfit'; 'estSlope_se'='seSlope'; 'estSlope_NA'='estSlope'; 'offset_NA'='estOffset'; 'ptBis_NA'='ptBis'") |> stringr::str_replace_all(pattern ="est_se", replacement = "se") |> stringr::str_replace_all(pattern ="est_NA", replacement = "est") |> eatTools::crop(char="NA") |> eatTools::crop(char="_")
-     ### wenn es nur Cat1 in den Spaltennamen gibt, es also Rasch/2pl ist, soll Cat1 rausgeloescht werden 
-                             if(length(grep("Cat2", colnames(res)))==0) {colnames(res) <- eatTools::crop(eatTools::removePattern(colnames(res), "Cat1"), char="_") |> car::recode(recodes = "'offset'='estOffset'")}
-                             cols <- c("Nvalid", "itemP", "itemDiscrim", "est", "estOffset", "se", "estSlope", "seSlope", "infit","outfit", "ptBis")
-                             cols2<- sort(grep("^step|^Cat", colnames(res), value=TRUE))
-                             drin1<- which(cols %in% colnames(res))
-                             drin2<- grep("ptBis_", colnames(res))
-                             drin3<- grep("itemP", colnames(res))
-                             res  <- data.frame ( res[,c("model", "item")], dimension = as.character(gr[1,"group"]),  res[,c(cols[drin1], colnames(res)[drin2] , setdiff (colnames(res)[drin3], cols[drin1])),drop=FALSE], res[,cols2],stringsAsFactors = FALSE)
+     ### wenn es nur Cat1 in den Spaltennamen gibt, es also Rasch/2pl ist, soll Cat1 rausgeloescht werden
+                             if(length(grep("Cat2", colnames(res)))==0) {res <- adaptOutputForNonPCM(res)}
                              return(res)}))
                      if(length(isDif) > 0) {
                         ciCo<- colnames(selDIF)[grep("^CI__", colnames(selDIF))]
@@ -170,15 +164,36 @@ itemFromRes <- function ( resultsObj, longFormat = TRUE ) {
                  }
           }))
      ### simplify and reshape ... die alte Funktion endete hier
-          if(length(grep("^Cat2", colnames(res)))>0 && longFormat == TRUE) {     ### das soll nur fuer partial credit stattfinden
+          if(length(grep("^Cat2", colnames(res)))>0) {                          ### das soll nur fuer partial credit stattfinden
               cols <- grep("^Cat", colnames(res), value=TRUE, ignore.case=TRUE)
-              resL <- reshape2::melt(res, measure.vars = cols, na.rm=TRUE) |> tidyr::separate(col = "variable", into = c("category", "parameter", "fit")) |> suppressWarnings()
-              ind  <- which(resL[,"fit"] == "thurstone")
+              resL <- reshape2::melt(res, measure.vars = cols, na.rm=TRUE) |> tidyr::separate(col = "variable", into = c("category", "parameter", "crit")) |> suppressWarnings()
+              ind  <- which(resL[,"crit"] == "thurstone")
               if(length(ind)>0) {resL[ind,"parameter"] <- ""}
-              res  <- reshape2::dcast(resL, ... ~ parameter+fit, value.var = "value")
+              res  <- reshape2::dcast(resL, ... ~ parameter+crit, value.var = "value")
               colnames(res) <- eatTools::crop(eatTools::crop(colnames(res), "NA"), "_")
           }
           return (res )}
+
+
+adaptOutputForNonPCM <- function(res){
+       newNam <- eatTools::crop(eatTools::removePattern(colnames(res), "Cat1"), char="_") |> car::recode(recodes = "'offset'='estOffset'")
+       if(length(newNam) != length(unique(newNam))) {
+          colnames(res) <- make.unique(newNam, sep="___")
+          resL <- reshape2::melt(res, id.vars = c("model", "item", "dimension"), na.rm=TRUE)
+          resL[,"variable"] <- eatTools::halveString(as.character(resL[,"variable"]), "___")[,1]
+          res  <- reshape2::dcast(resL, model + item + dimension~...,value.var = "value")
+       } else {
+          colnames(res) <- newNam
+       }
+       return(res)}
+
+compatibility1 <- function (dat, name) {
+             if(name %in% colnames(dat)) {
+                var2 <- dat[,name]
+             } else {
+                var2 <- "Cat1"
+             }
+             return(var2)}
 
 ### called by getRestuls() and addQ3() -----------------------------------------
 

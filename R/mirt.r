@@ -83,9 +83,9 @@ getMirtPopPar <- function(runModelObj=runModelObj, qMatrix=qMatrix) {
 adaptSkelForAnchor<- function (allNam, skel, anch, qmat, slope, irtmodel, est.slopegroups){
      ### pro dimension checken: wenn es mindestens ein item mit explizit fixierter Trennschaerfe oder eines des Typs 'Rasch'
      ### gibt, muessen die latenten Varianzen frei geschaetzt werden
-       dims   <- unlist(lapply(qmat[,-1, drop=FALSE], FUN = function (d) {      ### objekt slope ist fixSlopeMat       
+       dims   <- unlist(lapply(qmat[,-1, drop=FALSE], FUN = function (d) {      ### objekt slope ist fixSlopeMat
           it  <- qmat[which(d != 0),1]
-          it1 <- intersect(it, irtmodel[which(irtmodel[,2]== "Rasch"),1])       ### untere Zeile, hotfix fuer 'it2'! wenn es mehr als zwei spalten im slope data.frame gibt, heissen die 
+          it1 <- intersect(it, irtmodel[which(irtmodel[,2]== "Rasch"),1])       ### untere Zeile, hotfix fuer 'it2'! wenn es mehr als zwei spalten im slope data.frame gibt, heissen die
           it2 <- intersect(it, slope[["ori"]][,allNam[["slopeMatItemCol"]]])    ### nicht zwangslaeufig "item" und "slope" ... bzw. die item-spalte ist nicht zwangslaeufig die erste
           if(length(it1) > 0 || length(it2) > 0 ) {ret <- TRUE} else {ret <- FALSE}
           return(ret)}))
@@ -105,7 +105,7 @@ adaptSkelForAnchor<- function (allNam, skel, anch, qmat, slope, irtmodel, est.sl
        ind3   <- which(ind2[,1] != ind2[,2])
        ind4   <- intersect(ind1, ind3)
        skel[ind4,"est"] <- TRUE
-     ### est.slopegroups: setze die werte in parnum-Spalte gleich, fuer die ein gemeinsamer diskriminationsparameter geschaetzt werden soll 
+     ### est.slopegroups: setze die werte in parnum-Spalte gleich, fuer die ein gemeinsamer diskriminationsparameter geschaetzt werden soll
        if(!is.null(est.slopegroups)){                                           ### est.slopegroups hat immer nur zwei spalten, deshalb sollten hier die spalten numerisch adressiert werden, damit es egal ist, wie der user sie benannt hat
           grps <- by(data= est.slopegroups, INDICES = est.slopegroups[,2], FUN = function(g) {g[,"item"]})
           neu  <- as.numeric(as.factor(names(grps)))
@@ -119,7 +119,7 @@ adaptSkelForAnchor<- function (allNam, skel, anch, qmat, slope, irtmodel, est.sl
               }
           }
        }
-     ### welche Dimensionen enthalten mindestens 1 verankertes Item? deren latente Mittelwerte muessen frei geschaetzt werden     
+     ### welche Dimensionen enthalten mindestens 1 verankertes Item? deren latente Mittelwerte muessen frei geschaetzt werden
        itemsA <- qmat[which(qmat[,"item"] %in% anch[["ank"]][,"item"]),]
        if(nrow(itemsA)>0) {
           toAnk  <- which(colSums(itemsA[,-1, drop=FALSE])>0)
@@ -127,8 +127,8 @@ adaptSkelForAnchor<- function (allNam, skel, anch, qmat, slope, irtmodel, est.sl
           skel[which(skel[,"name"] %in% paste0("MEAN_", toAnk)),"est"] <- TRUE
        }
      ### wenn es ein hintergrundmodell gibt, muessen die intercepte der dimensionen mit mindestens einem verankerten Item frei geschaetzt werden
-       lr     <- grep("^BETA", skel[,"item"]) 
-       if(length(lr)>0 && nrow(itemsA)>0) {                                     ### das unter soll ja nur passieren, wenn es hgm UND verankerte items gibt 
+       lr     <- grep("^BETA", skel[,"item"])
+       if(length(lr)>0 && nrow(itemsA)>0) {                                     ### das unter soll ja nur passieren, wenn es hgm UND verankerte items gibt
           ind1<- grep("(Intercept)", skel[,"name"])
           ind2<- unlist(lapply(names(toAnk), FUN = function (nam) {grep(nam, skel[,"name"])}))
           ind3<- intersect(ind1, ind2)
@@ -144,21 +144,22 @@ adaptSkelForAnchor<- function (allNam, skel, anch, qmat, slope, irtmodel, est.sl
                 stop(paste0("Item '",i,"': You cannot anchoring difficulty parameter without also specifying slope for non-Raschtype items. '",i,"' has type '",unique(subIrt[,2]),"'."))
              } else {
                 slp <- 1
-             }   
+             }
           } else {
              slp <- subS[,allNam[["slopeMatValueCol"]]]
-          }  
-     ### slope-Parameter in skeleton eintragen und Wert in der "est"-Spalte auf FALSE setzen 
-          stopifnot(nrow(skel[intersect(intersect(which(skel[,"item"]==i), grep("^a", skel[,"name"])), which(skel[,"value"] != 0)),])==1)
-          skel[intersect(intersect(which(skel[,"item"]==i), grep("^a", skel[,"name"])), which(skel[,"value"] != 0)),"est"] <- FALSE
-          skel[intersect(intersect(which(skel[,"item"]==i), grep("^a", skel[,"name"])), which(skel[,"value"] != 0)),"value"] <- slp
-          if(unique(skel[which(skel[,"item"] == i),"class"]) == "dich") {       ### dichotome Items: nur einen parameter uebertragen 
+          }
+     ### slope-Parameter in skeleton eintragen und Wert in der "est"-Spalte auf FALSE setzen
+     ### das funktioniert vermutlich erstmal alles nur fuer between item multidimensinality
+          stopifnot(nrow(skel[intersect(intersect(which(skel[,"item"]==i), grep("^a[[:digit:]]", skel[,"name"])), which(skel[,"value"] != 0)),])==1)
+          skel[intersect(intersect(which(skel[,"item"]==i), grep("^a[[:digit:]]", skel[,"name"])), which(skel[,"value"] != 0)),"est"] <- FALSE
+          skel[intersect(intersect(which(skel[,"item"]==i), grep("^a[[:digit:]]", skel[,"name"])), which(skel[,"value"] != 0)),"value"] <- slp
+          if(unique(skel[which(skel[,"item"] == i),"class"]) == "dich") {       ### dichotome Items: nur einen parameter uebertragen
              stopifnot(nrow(subI) == 1)
              skel[intersect(which(skel[,"item"] == i),which(skel[,"name"] == "d")), "value"] <- (-1) * subI[,"parameter"] * slp
              skel[intersect(which(skel[,"item"] == i),which(skel[,"name"] == "d")), "est"]   <- FALSE
           } else {                                                              ### polytom
      ### das was in metarep auf Anregung von Janines Mail passiert, muss hier nicht geschehen, da hier nicht einzelnen Stufen
-     ### parametrisiert werden und nicht ein "globaler" Itemparameter und die STufen dann als Differenz davon (glaube ich zumindest) 
+     ### parametrisiert werden und nicht ein "globaler" Itemparameter und die STufen dann als Differenz davon (glaube ich zumindest)
              for(z in 1:nrow(subI)) {
                  skel[intersect(which(skel[,"item"] == i), which(skel[,"name"] == paste0("d", eatTools::removeNonNumeric(subI[z,"category"])))),"est"] <- FALSE
                  skel[intersect(which(skel[,"item"] == i), which(skel[,"name"] == paste0("d", eatTools::removeNonNumeric(subI[z,"category"])))),"value"] <- (-1) * subI[z,"parameter"] * slp
@@ -172,14 +173,24 @@ isItPCM <- function(eql) {
        if(inherits(attr(eql[["results"]], "runModelAttributes")[["defineModelObj"]][["irtmodel"]], "data.frame")) {
           pcm <- any(grepl("pcm", attr(eql[["results"]], "runModelAttributes")[["defineModelObj"]][["irtmodel"]][,2], ignore.case=TRUE))
        } else {
-          pcm <- FALSE
-       }   
+          isCt<- grep("^Cat", eql[["results"]][,"var2"])
+          if(length(isCt)>0) {
+             if(max(as.numeric(eatTools::removeNonNumeric(eql[["results"]][isCt,"var2"])))>1) {
+                pcm <- TRUE
+             } else {
+                pcm <- FALSE
+             }
+          } else {
+             pcm <- FALSE
+          }
+       }
        if(isFALSE(pcm)) {
           isPCM <- FALSE                                                        ### das hier zur kompatibilitaet mit aelteren Versionen, wo pcm-Abfrage noch nicht stattfand
        } else {                                                                 ### und ansonsten NA zurueckgegeben wird, was dann zur Fehlermeldung fuehrt
           isPCM <-  pcm || unique(attr(eql[["results"]], "runModelAttributes")[["defineModelObj"]][["irtmodel"]] %in% c("PCM", "PCM2", "GPCM", "GPCM.groups"))
        }
        return(isPCM)}
+
 
 ### Hilfsfunktion fuer defineModel()
 prepItemTypeMirt <- function(irtmodel, allNam, qMatrix) {
