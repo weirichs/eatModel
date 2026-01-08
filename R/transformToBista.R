@@ -194,7 +194,8 @@ transformToBista <- function(equatingList, refPop, cuts, weights = NULL,
     ### 'refPop' Informationstabelle bauen
                             colnames(mat) <- c("domain", "model", "refMean", "refSD", "bistaMean", "bistaSD")
                             if (!isRunM) {pv <- NULL}
-                            return(list ( itempars = itFrame, personpars = pv, rp = mat))
+                            mat  <- cbind(mat, focusMean = msdFok[1], focusSD = msdFok[2])
+                            return(list( itempars = itFrame, personpars = pv, rp = mat))
                       }  })                                                     ### untere Zeile: hier muss man rbind.fill nehmen, das gibt sonst im LV2021 einen Fehler, wenn bei der PV-Ziehung manche Items verankert sind, andere nicht
               itempars<- do.call(plyr::rbind.fill, lapply ( dimN, FUN = function ( x ) { x[["itempars"]]}))
               perspar <- do.call("rbind", lapply ( dimN, FUN = function ( x ) { x[["personpars"]]}))
