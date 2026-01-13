@@ -318,8 +318,9 @@ desk.irt <- function(daten, itemspalten, reduce=TRUE) {
              if(!missing(itemspalten)) {daten <- daten[,itemspalten,drop=FALSE]}
              res   <- do.call("rbind", lapply(1:ncol(daten), FUN=function(ii) {
                       pVals<- unlist(lapply(1:max(daten[,ii], na.rm=TRUE), FUN = function(j) {
-                              y <- eatTools::num.to.cat(daten[,ii], j-0.0001, c(0,1))
-                              return(mean(y, na.rm=TRUE))}))
+                              if(j %in% daten[,ii]) {                           ### dieses damit mittendrin fehlende Kategorien nicht mitgezaehlt werden
+                                 y <- eatTools::num.to.cat(daten[,ii], j-0.0001, c(0,1))
+                                 return(mean(y, na.rm=TRUE))}}))
                       modm <- eatTools::makeDataFrame(model.matrix( as.formula(paste0("~factor(",colnames(daten)[ii], ")-1")), data = daten), verbose=FALSE)
                       res.i<- lapply(modm, table)
                       codes<- eatTools::halveString(names(res.i), "\\.", first=FALSE)[,2]
