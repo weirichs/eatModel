@@ -100,8 +100,19 @@ defineModelSingle <- function (a) {
        }
        allVars     <- list(ID = id, variablen=items, DIF.var=DIF.var, HG.var=HG.var, group.var=group.var, weight.var=weight.var, schooltype.var = schooltype.var, add.vars = vars)
        all.Names   <- lapply(allVars, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = dat, variable=ii)})
-     ### wenn software = conquest, duerfen variablennamen nicht mehr als 11 Zeichen haben!
-       if(software == "conquest") {if(max(nchar(all.Names[["variablen"]]))>11) {stop("In Conquest, maximum length of variable names must not exceed 11 characters. Please shorten variables names.\n")}  }
+     ### wenn software = conquest, duerfen variablennamen nicht mehr als 11 Zeichen haben! das heisst, falls doch, werden die items hier umbenannt
+       renam       <- NULL                                                      ### initialisieren
+       if(software == "conquest") {if(max(nchar(all.Names[["variablen"]]))>10) {
+          neu   <- paste0("a", as.numeric(as.factor(all.Names[["variablen"]])))
+          i     <- 1
+          while(length(intersect(neu, colnames(dat))) > 0) {
+             i  <- i+1;
+             neu<- paste0(letters[i], as.numeric(as.factor(all.Names[["variablen"]])))
+          }
+          renam <- data.frame(old = all.Names[["variablen"]], new = neu, stringsAsFactors = FALSE)
+          all.Names[["variablen"]] <- eatTools::recodeLookup(all.Names[["variablen"]], renam)
+          colnames(dat) <- eatTools::recodeLookup(colnames(dat), renam)
+       }}
      ### ID-Variable pruefen und ggf. aendern
        dat <- checkID_consistency(dat=dat, allNam=all.Names, software=software)
      ### Verzeichnis ('dir') pruefen oder erzeugen
@@ -241,7 +252,7 @@ defineModelSingle <- function (a) {
           }
      ### Sektion 'Rueckgabeobjekt bauen', hier fuer Conquest                    ### setze Optionen wieder in Ausgangszustand
           options(scipen = unlist(original.options)); flush.console()           ### Achtung: setze Konsolenpfade in Hochkommas, da andernfalls keine Leerzeichen in den Ordner- bzw. Dateinamen erlaubt sind!
-          ret <- list ( software = software, input = paste("\"", file.path(dir, paste(analysis.name,"cqc",sep=".")), "\"", sep=""), conquest.folder = paste("\"", conquest.folder, "\"", sep=""), dir=dir, analysis.name=analysis.name, model.name = analysis.name, qMatrix=qMatrix, all.Names=cbc[["allNam"]], deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]], perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], daten=daten, method=met[["method"]], nodes=met[["nodes"]], p.nodes=p.nodes, f.nodes=f.nodes)
+          ret <- list ( software = software, input = paste("\"", file.path(dir, paste(analysis.name,"cqc",sep=".")), "\"", sep=""), conquest.folder = paste("\"", conquest.folder, "\"", sep=""), dir=dir, analysis.name=analysis.name, model.name = analysis.name, qMatrix=qMatrix, all.Names=cbc[["allNam"]], deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]], perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], daten=daten, method=met[["method"]], nodes=met[["nodes"]], p.nodes=p.nodes, f.nodes=f.nodes, renam=renam)
           class(ret) <-  c("defineConquest", "list")
        }
      ### Sektion 'Rueckgabeobjekt fuer tam'

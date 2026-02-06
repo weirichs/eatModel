@@ -84,7 +84,7 @@ getResults <- function(runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c("p
                             Q3 <- FALSE
                         }
                     }
-                    do  <- paste ( "res <- getConquestResults ( ", paste(names(formals(getConquestResults)), car::recode(names(formals(getConquestResults)), "'path'='runModelObj$dir'; 'analysis.name'='runModelObj$analysis.name'; 'model.name'='runModelObj$model.name'; 'qMatrix'='runModelObj$qMatrix'; 'all.Names'='runModelObj$all.Names'; 'deskRes'='runModelObj$deskRes'; 'discrim'='runModelObj$discrim'; 'daten'='runModelObj$daten'"), sep =" = ", collapse = ", "), ")",sep="")
+                    do  <- paste ( "res <- getConquestResults ( ", paste(names(formals(getConquestResults)), car::recode(names(formals(getConquestResults)), "'path'='runModelObj$dir'; 'analysis.name'='runModelObj$analysis.name'; 'model.name'='runModelObj$model.name'; 'qMatrix'='runModelObj$qMatrix'; 'all.Names'='runModelObj$all.Names'; 'renam'='runModelObj$renam'; 'deskRes'='runModelObj$deskRes'; 'discrim'='runModelObj$discrim'; 'daten'='runModelObj$daten'"), sep =" = ", collapse = ", "), ")",sep="")
                     eval(parse(text=do))                                        ### obere Zeile: baue Aufruf zusammen; rufe 'getConquestResults' mit seinen eigenen Argumenten auf
                     dir <- runModelObj[["dir"]]                                 ### wo Argumente neu vergeben werden, geschieht das in dem 'recode'-Befehl; so wird als 'path'-
                     name<- runModelObj[["analysis.name"]]                       ### Argument 'runModelObj$dir' uebergeben
@@ -92,8 +92,8 @@ getResults <- function(runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c("p
                }
      ### Software = TAM
                if( isTRUE(attr(runModelObj, "software") == "tam")  || is_true(obj = runModelObj[["software"]], crit = "tam")) {
-                    isTa<- TRUE                                                 ### logisches Argument: wurde mit Tam gerechnet?        
-                    if ( Q3 ) {                                                 
+                    isTa<- TRUE                                                 ### logisches Argument: wurde mit Tam gerechnet?
+                    if ( Q3 ) {
                         if ( ncol ( attr(runModelObj, "defineModelObj")[["qMatrix"]]) !=2 ) {
                             cat("Q3 is only available for unidimensional models. Estimation will be skipped.\n")
                             Q3 <- FALSE
@@ -105,7 +105,7 @@ getResults <- function(runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c("p
                     dir <- attr(runModelObj, "defineModelObj")[["dir"]]         ### untere zeilen(n): tam summary ergaenzen, wenn mit tam gerechnet wurde
                     name<- attr(runModelObj, "defineModelObj")[["analysis.name"]]## wird als Attribut in Ergebnisstruktur angehangen (nicht so superclever;
                     allN<- attr(runModelObj, "defineModelObj")[["all.Names"]]   ### schoener waers, man wuerde das direkt in die Ergebnisstruktur einbauen)
-               } 
+               }
      ### Software = MIRT
                if(isTRUE(attr(runModelObj, "software") == "mirt")  || is_true(obj = runModelObj[["software"]], crit = "mirt") ) {
                     do  <- paste ( "res <- getMirtResults ( ", paste(names(formals(getMirtResults)),names(formals(getMirtResults)),  sep =" = ", collapse = ", "), ")",sep="")
@@ -114,14 +114,24 @@ getResults <- function(runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c("p
                     allN<- attr(runModelObj, "defineModelObj")[["allNam"]]
                     name<- attr(runModelObj, "defineModelObj")[["analysis.name"]]
                }                                                                ### wenn es ein Rueckgabeobjekt gibt, wird das jetzt um einige technische Eintraege erweitert (geht noch nicht fuer mirt)
-               if(!is.null(res) && isFALSE(attr(runModelObj, "software") == "mirt") ) {  
+               if(!is.null(res) && isFALSE(attr(runModelObj, "software") == "mirt") ) {
                     stopifnot ( length(unique(res[,"model"])) == 1)             ### (das was frueher ueber Attribute gemacht wurde, aber das ist zu krass schlimm beschissen scheiss untransparent, das muss weg!!)
-     ### Rueckgabeobjekt mit technischen Parametern 'anreichern', first: 'all.Names'
+     ### Rueckgabeobjekt mit technischen Parametern 'anreichern', first: 'all.Names' ... auch hier muss die Itemnamenrueckbenennung im falle von conquest mit mehr als 11 Zeichen im Variablennamen stattfinden
+                    if(inherits(runModelObj, "runMultiple")) {
+                       renam <- do.call("rbind", lapply(runModelObj, FUN = function(y) {y[["renam"]]}))
+                    } else {
+                       renam <- runModelObj[["renam"]]
+                    }
                     alln<- do.call("rbind", lapply(names(allN), FUN = function ( x ) {
-                           if ( length( allN[[x]] ) > 0 ) {
-                                res <- data.frame ( type = "tech", par = x, derived.par = allN[[x]])
-                           }  else  {
-                                res <- NULL
+                           if(length(allN[[x]]) > 0) {
+                              if(x == "variablen" && !is.null(renam)) {
+                                 dp <- recodeLookup(allN[[x]], renam[,c("new", "old")])
+                              } else {
+                                 dp <- allN[[x]]
+                              }
+                              res <- data.frame ( type = "tech", par = x, derived.par = dp)
+                           } else {
+                              res <- NULL
                            }
                            return(res)}))
                     res <- plyr::rbind.fill ( res, data.frame ( res[1,c("model", "source")], alln, stringsAsFactors = FALSE) ) |> suppressWarnings()
