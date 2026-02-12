@@ -89,184 +89,173 @@ get.wle <- function(file){
 ### "dif.term" definiert dabei die Variable, nach der ggf. DIF-Analysen ausgelesen werden sollen, z.B. "item*sex". Wird "dif.term" nicht
 ### spezifiziert, werden keine DIF-Daten ausgegeben.
 get.shw <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, sig.dif.bound = 0.3, p.value = 0.9) {
-  checkmate::assert_file(file)
-  checkmate::assert_logical(split.dif, len = 1)
-  lapply(c(abs.dif.bound, sig.dif.bound, p.value), checkmate::assert_numeric, len = 1)
-  #
-  all.output<- list();   all.terms <- NULL                            ### "dif.term" muss nur angegeben werden, wenn DIF-Analysen geschehen sollen.
-  input.all <- scan(file,what="character",sep="\n",quiet=TRUE)
-  rowToFind <- c("Final Deviance","Total number of estimated parameters")
-  rowToFind <- sapply(rowToFind, FUN = function(ii) {                 ### Find the rows indicated in "rowToFind"
-    row.ii <- grep(ii,input.all)                           ### get the parameter of desired rows
-    stopifnot(length(row.ii) == 1)
-    row.ii <- as.numeric(unlist(lapply (strsplit(input.all[row.ii], " +"), FUN=function(ll) {ll[length(ll)]}) ))
-    return(row.ii)})
-  ind       <- grep("TERM",input.all)                                 ### Wieviele Tabellen gibt es einzulesen?
-  grenzen   <- grep("An asterisk",input.all)
-  if(length(ind)==0) {stop(paste("No TERM-statement found in file ",file,".\n",sep=""))}
-  for (i in 1:length(ind)) {
-    term <- eatTools::crop(unlist(strsplit(input.all[ind[i]], ":"))[2])
-    cat(paste0("Found TERM ",i,": '",term,"' \n"))
-    all.terms <- c(all.terms,term)                                 ### Dies dient nur dazu, hinterher die Liste mit ausgelesenen Tabellen beschriften zu koennen.
-    bereich <- (ind[i]+6) : (grenzen[i] -2)                        ### Dies der Bereich, der ausgewaehlt werden muss
-    namen   <- gsub("\\^","",c("No.", strsplit(input.all[bereich[1]-2]," +")[[1]][-1]))
-    namen   <- rep(namen, car::recode(namen, "'CI'=2; else=1"))    ### Wenn ein "CI" als Spaltenname erscheint, muessen daraus im R-Dataframe zwei Spalten werden!
-    inp.sel <- gsub("\\(|)|,"," ",eatTools::crop(input.all[bereich]))# Textfile wird reduziert, und voranstehende und abschliessende Leerzeichen werden entfernt. entferne ausserdem Klammern und Kommas (wenns welche gibt)
-    inp.sel <- gsub("\\*    ", "  NA", inp.sel)                    ### hier: gefaehrlich: wenn mittendrin Werte fehlen, wuerde stringsplit eine unterschiedliche Anzahl Elemente je Zeile finden und die fehlenden Elemente stets ans Ende setzen. Fatal!
-    if(!is.null(attr(file, "allNames"))) {                         ### uebel! wenn die Items genau 11 Zeichen haben, gibt es im DIF-Statement kein Leerzeichen zwischen itembezeichner und Indexwert fuer den DIF-Wert, damit wuerde strsplit(...) nicht trennen. Leerzeichen muss kuenstlich dazu!
-      inp.sel <- eatTools::gsubAll(inp.sel, old = attr(file, "allNames")[["variablen"]], new = paste0(attr(file, "allNames")[["variablen"]], " "))
-    }
-    foo        <- strsplit(inp.sel," +")
-    maxColumns <- max(sapply(foo, length))                         ### Gefahr 2: '*' bezeichnet fixierte Parameter, die keinen Standardfehler haben. Manchmal steht aber trotzdem einer da (z.B. in DIF). Ersetzung soll nur stattfinden, wenn mehr als vier Leerzeichen hinterher
-    nDifferentColumns <- length( table(sapply(foo, length)))
-    maxColumns <- which( sapply(foo, FUN=function(ii){ length(ii) == maxColumns  }) )[1]
+            all.output<- list();   all.terms <- NULL                            ### "dif.term" muss nur angegeben werden, wenn DIF-Analysen geschehen sollen.
+            input.all <- scan(file,what="character",sep="\n",quiet=TRUE)
+            rowToFind <- c("Final Deviance","Total number of estimated parameters")
+            rowToFind <- sapply(rowToFind, FUN = function(ii) {                 ### Find the rows indicated in "rowToFind"
+                         row.ii <- grep(ii,input.all)                           ### get the parameter of desired rows
+                         stopifnot(length(row.ii) == 1)
+                         row.ii <- as.numeric(unlist(lapply (strsplit(input.all[row.ii], " +"), FUN=function(ll) {ll[length(ll)]}) ))
+                         return(row.ii)})
+            ind       <- grep("TERM",input.all)                                 ### Wieviele Tabellen gibt es einzulesen?
+            grenzen   <- grep("An asterisk",input.all)
+            if(length(ind)==0) {stop(paste("No TERM-statement found in file ",file,".\n",sep=""))}
+            for (i in 1:length(ind)) {
+                 term <- eatTools::crop(unlist(strsplit(input.all[ind[i]], ":"))[2])
+                 cat(paste0("Found TERM ",i,": '",term,"' \n"))
+                 all.terms <- c(all.terms,term)                                 ### Dies dient nur dazu, hinterher die Liste mit ausgelesenen Tabellen beschriften zu koennen.
+                 bereich <- (ind[i]+6) : (grenzen[i] -2)                        ### Dies der Bereich, der ausgewaehlt werden muss
+                 namen   <- gsub("\\^","",c("No.", strsplit(input.all[bereich[1]-2]," +")[[1]][-1]))
+                 namen   <- rep(namen, car::recode(namen, "'CI'=2; else=1"))    ### Wenn ein "CI" als Spaltenname erscheint, muessen daraus im R-Dataframe zwei Spalten werden!
+                 inp.sel <- gsub("\\(|)|,"," ",eatTools::crop(input.all[bereich]))# Textfile wird reduziert, und voranstehende und abschliessende Leerzeichen werden entfernt. entferne ausserdem Klammern und Kommas (wenns welche gibt)
+                 inp.sel <- gsub("\\*    ", "  NA", inp.sel)                    ### hier: gefaehrlich: wenn mittendrin Werte fehlen, wuerde stringsplit eine unterschiedliche Anzahl Elemente je Zeile finden und die fehlenden Elemente stets ans Ende setzen. Fatal!
+                 foo        <- strsplit(inp.sel," +")
+                 maxColumns <- max(sapply(foo, length))                         ### Gefahr 2: '*' bezeichnet fixierte Parameter, die keinen Standardfehler haben. Manchmal steht aber trotzdem einer da (z.B. in DIF). Ersetzung soll nur stattfinden, wenn mehr als vier Leerzeichen hinterher
+                 nDifferentColumns <- length( table(sapply(foo, length)))
+                 maxColumns <- which( sapply(foo, FUN=function(ii){ length(ii) == maxColumns  }) )[1]
     ### untere Zeile: WICHTIG! wo stehen in der Zeile mit den meisten nicht fehlenden Werten Leerzeichen?
-    foo.2      <- stringr::str_locate_all(inp.sel[maxColumns], " ")[[1]][,1]
-    foo.3      <- diff(foo.2)                                      ### zeige die Position des letzten Leerzeichens vor einem Nicht-Leerzeichen
-    foo.3      <- foo.2[foo.3 !=1]                                 ### suche nun in jeder Zeile von input.sel: ist das Zeichen zwei Stellen nach foo.3 ein Leerzeichen? Wenn ja: NA!
-    ESTIMATE   <- stringr::str_locate(input.all[ind[i] + 4], "ESTIMATE")[1,1]
-    foo.3      <- foo.3[foo.3>(ESTIMATE-3)]                        ### Achtung: das alles soll aber nur fuer Spalten beginnen, die hinter ESTIMATE stehen! (missraet sonst fuer Produktterme, z.B. "item*sex")
-    if(nDifferentColumns>1) {
-      if(length(foo.3)>0) {                                       ### Und nochmal: das soll NUR geschehen, wenn es in mindestens einer Zeile nicht die vollstaendige (=maximale) Anzahl von Elementen gibt!
-        for (ii in 1:length(inp.sel)) {                          ### also wenn nDifferentColumns groesser als EINS ist (kleiner darf es nicht sein)
-          for (iii in 1:length(foo.3)) {
-            if(substr( inp.sel[ii], foo.3[iii] + 2 , foo.3[iii] + 2 ) == " ") {inp.sel[ii] <- paste(substr(inp.sel[ii],1,foo.3[iii]), "NA", substring(inp.sel[ii],foo.3[iii]+3) , sep="")}
-          }
-        }
-      }
-      if(length(foo.3)==0) {
-        cat(paste("There seem to be no values in any columns behind 'ESTIMATE'. Check outputfile for term '",all.terms[length(all.terms)],"' in file: '",file,"'. \n",sep=""))
-      }
-    }
-    inp.sel    <- strsplit(inp.sel," +")
-    if(length(inp.sel[[1]]) == 0 ) {
-      cli::cli_warn(c(paste("There seem to be no valid values associated with term '",all.terms[length(all.terms)],"' in file: '",file,"'.",sep=""), "i"=paste("Term '",all.terms[length(all.terms)], "' will be ignored.", sep="")))
-      all.terms <- all.terms[-i]
-    }
-    if(length(inp.sel[[1]]) > 0 ) {
-      referenzlaenge <- max (sapply( inp.sel, length) )
-      if(referenzlaenge < length(namen) ) {
-        cat(paste("Several columns seem to be empty for term '",all.terms[length(all.terms)],"' in file: '",file,"'.\n",sep=""))
-    ### spezialfall: wenn dif-Analyse mit 'compute.fit=FALSE' gemacht wurde, fehlen die infit-Spalten ... die eigentlich notwendige zusaetzliche spalte 'add.column' wird dann nicht eingefuegt. Finde raus, ob das der Fall ist
-        head <- eatTools::crop(input.all[bereich[1]-2])          ### Ueberschrift
-        leerz<- gregexpr(" ", head)[[1]]                         ### suche: wo beginnt der zweite Block aufeinanderfolgender leerzeichen?
-        leerd<- which ( diff ( leerz) > 1 )[2]
-        vgl  <- length(strsplit ( eatTools::crop(substr(input.all[bereich[1]], 1, leerd)), split = " +")[[1]])
-        if ( vgl == 4 ) {
-          namen <- c(namen[1:2], "add.column1", namen[3:(referenzlaenge-1)])
-        }  else  {
-          referenzlaenge <- length(namen)
-        }
-      }
+                 foo.2      <- stringr::str_locate_all(inp.sel[maxColumns], " ")[[1]][,1]
+                 foo.3      <- diff(foo.2)                                      ### zeige die Position des letzten Leerzeichens vor einem Nicht-Leerzeichen
+                 foo.3      <- foo.2[foo.3 !=1]                                 ### suche nun in jeder Zeile von input.sel: ist das Zeichen zwei Stellen nach foo.3 ein Leerzeichen? Wenn ja: NA!
+                 ESTIMATE   <- stringr::str_locate(input.all[ind[i] + 4], "ESTIMATE")[1,1]
+                 foo.3      <- foo.3[foo.3>(ESTIMATE-3)]                        ### Achtung: das alles soll aber nur fuer Spalten beginnen, die hinter ESTIMATE stehen! (missraet sonst fuer Produktterme, z.B. "item*sex")
+                 if(nDifferentColumns>1) {
+                    if(length(foo.3)>0) {                                       ### Und nochmal: das soll NUR geschehen, wenn es in mindestens einer Zeile nicht die vollstaendige (=maximale) Anzahl von Elementen gibt!
+                       for (ii in 1:length(inp.sel)) {                          ### also wenn nDifferentColumns groesser als EINS ist (kleiner darf es nicht sein)
+                            for (iii in 1:length(foo.3)) {
+                                 if(substr( inp.sel[ii], foo.3[iii] + 2 , foo.3[iii] + 2 ) == " ") {inp.sel[ii] <- paste(substr(inp.sel[ii],1,foo.3[iii]), "NA", substring(inp.sel[ii],foo.3[iii]+3) , sep="")}
+                            }
+                       }
+                    }
+                    if(length(foo.3)==0) {cat(paste("There seem to be no values in any columns behind 'ESTIMATE'. Check outputfile for term '",all.terms[length(all.terms)],"' in file: '",file,"'. \n",sep=""))}
+                 }
+                 inp.sel    <- strsplit(inp.sel," +")
+                 if(length(inp.sel[[1]]) == 0 ) {
+                    cli::cli_warn(c(paste("There seem to be no valid values associated with term '",all.terms[length(all.terms)],"' in file: '",file,"'.",sep=""), "i"=paste("Term '",all.terms[length(all.terms)], "' will be ignored.", sep="")))
+                    all.terms <- all.terms[-i]
+                 }
+                 if(length(inp.sel[[1]]) > 0 ) {
+                    referenzlaenge <- max (sapply( inp.sel, length) )
+                    if(referenzlaenge < length(namen) ) {
+                       cat(paste("Several columns seem to be empty for term '",all.terms[length(all.terms)],"' in file: '",file,"'.\n",sep=""))
+    ### bloeder spezialfall: wenn dif-Analyse mit 'compute.fit=FALSE' gemacht wurde, fehlen die infit-Spalten ... die eigentlich notwendige zusaetzliche spalte 'add.column' wird dann nicht eingefuegt. Finde raus, ob das der Fall ist
+                       head <- eatTools::crop(input.all[bereich[1]-2])          ### Ueberschrift
+                       leerz<- gregexpr(" ", head)[[1]]                         ### suche: wo beginnt der zweite Block aufeinanderfolgender leerzeichen?
+                       leerd<- which ( diff ( leerz) > 1 )[2]
+                       vgl  <- length(strsplit ( eatTools::crop(substr(input.all[bereich[1]], 1, leerd)), split = " +")[[1]])
+                       if ( vgl == 4 ) {
+                            namen <- c(namen[1:2], "add.column1", namen[3:(referenzlaenge-1)])
+                       }  else  {
+                            referenzlaenge <- length(namen)
+                       }
+                    }
     ### Ende spezialfall
-      if(referenzlaenge > length(namen) ) {
-        if(referenzlaenge == length(namen) + 1) {
-          cat(paste("There seem to be one more column than columns names. Expect missing column name before 'ESTIMATE'. \nCheck outputfile for term '",all.terms[length(all.terms)],"' in file: '",file,"'. \n",sep=""))
-          ind.name <- which(namen == "ESTIMATE")
-          namen    <- append(namen, "add.column", after = 3)
-        }
-        if(referenzlaenge >  length(namen) + 1) {
-          cli::cli_warn(c("There seem to be more columns than names for it.", "i"=paste("Check outputfile for term '",all.terms[length(all.terms)],"' in file: '",file,"'. \n",sep="")))
-          namen<- c(namen, rep("add.column",referenzlaenge-length(namen) ))
-        }
-      }
-      inp.sel  <- t(sapply(inp.sel, FUN=function(ii){ c(ii, rep(NA,referenzlaenge-length(ii))) }))
-      colnames(inp.sel) <- namen                                  ### untere Zeile: entferne eventuelle Sternchen und wandle in Dataframe um!
-      inp.sel  <- suppressWarnings(eatTools::asNumericIfPossible(data.frame( gsub("NNA", NA, gsub("NA", NA, gsub("\\*","",inp.sel))), stringsAsFactors = FALSE), force.string = FALSE))
-      ### estimate und error muessen auf jeden fall numerisch sein
-      results.sel<- data.frame(inp.sel,filename=as.character(file),stringsAsFactors = FALSE)
-      sapply(intersect(c("ESTIMATE", "ERROR"), colnames(results.sel)), FUN = function (colx) {if(any(is.na(as.numeric(results.sel[,colx])))) {cat(paste0("'",colx,"' column in Outputfile for term '",all.terms[length(all.terms)],"' in file: '",file,"' does not seem to be a numeric value. Please check!\n"))}})
-      if(!missing(dif.term)) {                                    ### Der absolute DIF-Wert ist 2 * "Betrag des Gruppenunterschieds". Fuer DIF muessen ZWEI Kriterien erfuellt sein:
-        checkmate::assert_character(dif.term, len = 1)
-        ind2 <- grep(dif.term, input.all, fixed = TRUE)
-        checkmate::assert_numeric(ind2, len = 1)
-        if(all.terms[length(all.terms)] == dif.term) {           ### Der absolute DIF-Wert muss groesser als 'abs.dif.bound' (z.B. 0.6) und zugleich signifikant groesser als 'sig.dif.bound' (z.B. 0.3) sein
-          cat(paste("Treat '",all.terms[length(all.terms)],"' as DIF TERM.\n",sep=""))
-          results.sel <- data.frame(results.sel,abs.dif = 2*results.sel$ESTIMATE,stringsAsFactors=FALSE)
-          konfNiveau  <- round(100*p.value)                     ### Das bedeutet, fuer Werte groesser 0.6 darf 0.3 NICHT im 90 bzw. 95%-Konfidenzintervall liegen. Nur dann haben wir DIF!
-          results.sel[,paste("KI.",konfNiveau,".u",sep="")] <- results.sel$abs.dif-2*abs(qnorm(0.5*(1-p.value)))*results.sel$ERROR
-          results.sel[,paste("KI.",konfNiveau,".o",sep="")] <- results.sel$abs.dif+2*abs(qnorm(0.5*(1-p.value)))*results.sel$ERROR
-          results.sel[,paste("sig.",konfNiveau,sep="")] <- ifelse(abs(results.sel[,"abs.dif"])>abs.dif.bound & abs(results.sel[,paste("KI.",konfNiveau,".u",sep="")])>sig.dif.bound & abs(results.sel[,paste("KI.",konfNiveau,".o",sep="")])>sig.dif.bound,1,0)
-          results.sel$filename <- file
-          if(split.dif==TRUE) {
-            results.sel <- results.sel[1:(dim(results.sel)[1]/2),]
-            if(dim(results.sel)[1]!=dim(results.sel)[1]) {warning("missing variables in DIF table.")}
-          }
-        }
-      }
-    all.output[[i]] <- results.sel
-    }
-  }
-  if(!missing(dif.term)) {if(sum(all.terms==dif.term)==0) {cat(paste("Term declarated as DIF: '",dif.term,"' was not found in file: '",file,"'. \n",sep=""))  }}
-  names(all.output) <- all.terms
+                    if(referenzlaenge > length(namen) ) {
+                       if(referenzlaenge == length(namen) + 1) {
+                          cat(paste("There seem to be one more column than columns names. Expect missing column name before 'ESTIMATE'. \nCheck outputfile for term '",all.terms[length(all.terms)],"' in file: '",file,"'. \n",sep=""))
+                          ind.name <- which(namen == "ESTIMATE")
+                          namen    <- append(namen, "add.column", after = 3)
+                       }
+                       if(referenzlaenge >  length(namen) + 1) {
+                          cli::cli_warn(c("There seem to be more columns than names for it.", "i"=paste("Check outputfile for term '",all.terms[length(all.terms)],"' in file: '",file,"'. \n",sep="")))
+                          namen<- c(namen, rep("add.column",referenzlaenge-length(namen) ))
+                       }
+                    }
+                    inp.sel  <- t(sapply(inp.sel, FUN=function(ii){ c(ii, rep(NA,referenzlaenge-length(ii))) }))
+                    colnames(inp.sel) <- namen                                  ### untere Zeile: entferne eventuelle Sternchen und wandle in Dataframe um!
+                    inp.sel  <- suppressWarnings(eatTools::asNumericIfPossible(data.frame( gsub("NNA", NA, gsub("NA", NA, gsub("\\*","",inp.sel))), stringsAsFactors = FALSE), force.string = FALSE))
+    ### estimate und error muessen auf jeden fall numerisch sein
+                    results.sel<- data.frame(inp.sel,filename=as.character(file),stringsAsFactors = FALSE)
+                    sapply(intersect(c("ESTIMATE", "ERROR"), colnames(results.sel)), FUN = function (colx) {if(any(is.na(as.numeric(results.sel[,colx])))) {cat(paste0("'",colx,"' column in Outputfile for term '",all.terms[length(all.terms)],"' in file: '",file,"' does not seem to be a numeric value. Please check!\n"))}})
+                    if(!missing(dif.term)) {                                    ### Der absolute DIF-Wert ist 2 * "Betrag des Gruppenunterschieds". Fuer DIF muessen ZWEI Kriterien erfuellt sein:
+                       if(all.terms[length(all.terms)] == dif.term) {           ### Der absolute DIF-Wert muss groesser als 'abs.dif.bound' (z.B. 0.6) und zugleich signifikant groesser als 'sig.dif.bound' (z.B. 0.3) sein
+                          cat(paste("Treat '",all.terms[length(all.terms)],"' as DIF TERM.\n",sep=""))
+                          results.sel <- data.frame(results.sel,abs.dif = 2*results.sel$ESTIMATE,stringsAsFactors=FALSE)
+                          konfNiveau  <- round(100*p.value)                     ### Das bedeutet, fuer Werte groesser 0.6 darf 0.3 NICHT im 90 bzw. 95%-Konfidenzintervall liegen. Nur dann haben wir DIF!
+                          results.sel[,paste("KI.",konfNiveau,".u",sep="")] <- results.sel$abs.dif-2*abs(qnorm(0.5*(1-p.value)))*results.sel$ERROR
+                          results.sel[,paste("KI.",konfNiveau,".o",sep="")] <- results.sel$abs.dif+2*abs(qnorm(0.5*(1-p.value)))*results.sel$ERROR
+                          results.sel[,paste("sig.",konfNiveau,sep="")] <- ifelse(abs(results.sel[,"abs.dif"])>abs.dif.bound & abs(results.sel[,paste("KI.",konfNiveau,".u",sep="")])>sig.dif.bound & abs(results.sel[,paste("KI.",konfNiveau,".o",sep="")])>sig.dif.bound,1,0)
+                          results.sel$filename <- file
+                          if(split.dif==TRUE) {
+                             results.sel <- results.sel[1:(dim(results.sel)[1]/2),]
+                             if(dim(results.sel)[1]!=dim(results.sel)[1]) {warning("missing variables in DIF table.")}
+                          }
+                       }
+                    }
+                    all.output[[i]] <- results.sel
+                 }
+              }
+              if(!missing(dif.term)) {if(sum(all.terms==dif.term)==0) {cat(paste("Term declarated as DIF: '",dif.term,"' was not found in file: '",file,"'. \n",sep=""))  }}
+              names(all.output) <- all.terms
     ### ggf. Regressionsparameter einlesen!
-  regrStart <- grep("REGRESSION COEFFICIENTS", input.all) + 2
-  isRegression <- length(regrStart) > 0
-  if ( isRegression)   {
-    regrEnd <- grep("An asterisk next", input.all)
-    regrEnd <- regrEnd[which(regrEnd > regrStart)][1] - 2
-    if ( is.na(regrEnd)) {
-      warning(paste0("Regression coefficients seems to be missing or corrupted in '",file,"'."))
-    } else {
-      regrInput <- eatTools::crop(input.all[regrStart:regrEnd])
-      zeileDimensions <- grep("Regression Variable",input.all)
-      stopifnot(length(zeileDimensions) ==1)
-      nameDimensions  <- unlist(strsplit(input.all[zeileDimensions], "  +"))[-1]
-      regrRows <- grep("CONSTANT",input.all)
-      regrRows <- regrRows[regrRows<=regrEnd][1]
-      regrNamen <- unlist(lapply(strsplit(input.all[regrRows:regrEnd],"  +"), FUN=function(ii) {unlist(ii)[1]} ))
-      regrInputSel <- eatTools::crop(input.all[regrRows:regrEnd])
-      regrInputSel <- gsub("\\(","",regrInputSel)
-      regrInputSel <- gsub(")","",regrInputSel)
-      regrInputSel <- gsub("\\*","  NA",regrInputSel)
-      regrInputSel <- unlist( strsplit(regrInputSel," +") )
-      nDimensions  <- (length(  regrInputSel ) / length(regrNamen) - 1 )/2
-      cat(paste("Found ",nDimensions," dimension(s): ",paste(nameDimensions,collapse=", "),"\n",sep=""))
-      cat(paste("Found ",length(regrNamen)-1," regressor(s).\n",sep=""))
-      regrInputSel <- data.frame(matrix(regrInputSel, ncol=2*nDimensions+1, byrow=T),stringsAsFactors=F)
-      for (ii in 2:ncol(regrInputSel))  {regrInputSel[,ii] <- as.numeric(regrInputSel[,ii])}
-      colnames(regrInputSel) <- c("reg.var", paste(rep(c("coef","error"),nDimensions), rep(nameDimensions,each=2),sep="_") )
-      regrInputSel$filename <- file
-      all.output$regression <- regrInputSel
-    }
-  }
-  korStart <- grep("COVARIANCE/CORRELATION MATRIX", input.all)
-  korEnd   <- grep("An asterisk next", input.all)
-  korEnd   <- min(korEnd[korEnd > korStart])
-  korStriche <- grep("-----",input.all)
-  korStriche <- korStriche[korStriche > korStart & korStriche < korEnd]
-  if(length(korStriche) == 2) {
-    varRow    <- grep("Variance", input.all)
-    variance  <- as.numeric( unlist( lapply(strsplit(input.all[varRow]," +"), FUN=function(ll) {ll[length(ll)]}) ) )
-    names(variance) <- "variance"
-    all.output$cov.structure <- variance
-  }
-  if(length(korStriche) > 2) {
-    bereich     <- input.all[ (min(korStriche) + 1) : (max(korStriche) - 1 ) ]
-    bereich     <- bereich[ -grep("----",bereich)]
-    bereich     <- strsplit(eatTools::crop(bereich),"  +")
-    for (ii in 2:(length(bereich)-1) )  {
-      if(ii <= length(bereich[[ii]]) )  {
-        bereich[[ii]] <- c(bereich[[ii]][1:(ii-1)], NA, bereich[[ii]][ii:length(bereich[[ii]])])
-      }
-      if(ii > length(bereich[[ii]]) )  {
-        bereich[[ii]] <- c(bereich[[ii]][1:(ii-1)], NA)
-      }
-    }
-    bereich.data.frame <- suppressWarnings(eatTools::asNumericIfPossible(data.frame(do.call("rbind", bereich[-1]),stringsAsFactors=FALSE), force.string = FALSE))
-    colnames(bereich.data.frame) <- bereich[[1]]
-    all.output$cov.structure <- bereich.data.frame
-  }
-  all.output$final.deviance <- rowToFind
-  i1   <- grep("Dimension: \\(Dimension", input.all)
-  all.output$reliability <- do.call("rbind", lapply(i1, FUN = function (z ) {
-    stopifnot(substr(input.all[z+3], 2,35) == "WLE Person separation RELIABILITY:")
-    stopifnot(substr(input.all[z+4], 2,20) == "EAP/PV RELIABILITY:")
-    return(data.frame ( dim = eatTools::crop(eatTools::crop(substring(input.all[z], 13)), ")"),
-                        wle.rel = as.numeric(eatTools::crop(substring(input.all[z+3], 36))),
-                        eap.rel = as.numeric(eatTools::crop(substring(input.all[z+4], 36))),
-                        stringsAsFactors = FALSE))}))
-  return(all.output)}
+            	regrStart <- grep("REGRESSION COEFFICIENTS", input.all) + 2
+              isRegression <- length(regrStart) > 0
+            	if ( isRegression)   {
+                  regrEnd <- grep("An asterisk next", input.all)
+              		regrEnd <- regrEnd[which(regrEnd > regrStart)][1] - 2
+              		if ( is.na(regrEnd)) {
+              		     warning(paste0("Regression coefficients seems to be missing or corrupted in '",file,"'."))
+              		} else {
+                    	 regrInput <- eatTools::crop(input.all[regrStart:regrEnd])
+                  		 zeileDimensions <- grep("Regression Variable",input.all)
+                       stopifnot(length(zeileDimensions) ==1)
+                  		 nameDimensions  <- unlist(strsplit(input.all[zeileDimensions], "  +"))[-1]
+                  		 regrRows <- grep("CONSTANT",input.all)
+                       regrRows <- regrRows[regrRows<=regrEnd][1]
+                  		 regrNamen <- unlist(lapply(strsplit(input.all[regrRows:regrEnd],"  +"), FUN=function(ii) {unlist(ii)[1]} ))
+                       regrInputSel <- eatTools::crop(input.all[regrRows:regrEnd])
+                       regrInputSel <- gsub("\\*","  NA",gsub("\\(|)","",regrInputSel))
+                  		 regrInputSel <- unlist( strsplit(regrInputSel," +") )
+                  		 nDimensions  <- (length(  regrInputSel ) / length(regrNamen) - 1 )/2
+                       cat(paste("Found ",nDimensions," dimension(s): ",paste(nameDimensions,collapse=", "),"\n",sep=""))
+                       cat(paste("Found ",length(regrNamen)-1," regressor(s).\n",sep=""))
+                       regrInputSel <- data.frame(matrix(regrInputSel, ncol=2*nDimensions+1, byrow=TRUE),stringsAsFactors=FALSE)
+                       for (ii in 2:ncol(regrInputSel))  {regrInputSel[,ii] <- as.numeric(regrInputSel[,ii])}
+                       colnames(regrInputSel) <- c("reg.var", paste(rep(c("coef","error"),nDimensions), rep(nameDimensions,each=2),sep="_") )
+                       regrInputSel$filename <- file
+                  		 all.output$regression <- regrInputSel
+              		}
+              }
+    ### Kovarianz-/ Korrelationsmatrix einlesen: schwierig, also Trennen nach ein- vs. mehrdimensional. Eindimensional: zweimal "-----" zwischen Beginn und Ende des COVARIANCE-Statements
+              korStart <- grep("COVARIANCE/CORRELATION MATRIX", input.all)
+              korEnd   <- grep("An asterisk next", input.all)
+              korEnd   <- min(korEnd[korEnd > korStart])
+              korStriche <- grep("-----",input.all)
+              korStriche <- korStriche[korStriche > korStart & korStriche < korEnd]
+              if(length(korStriche) == 2) {                                     ### eindimensional!
+                 varRow    <- grep("Variance", input.all)
+                 variance  <- as.numeric( unlist( lapply(strsplit(input.all[varRow]," +"), FUN=function(ll) {ll[length(ll)]}) ) )
+                 names(variance) <- "variance"
+                 all.output$cov.structure <- variance
+              }
+              if(length(korStriche) > 2) {                                      ### mehrdimensional!
+                 bereich     <- input.all[ (min(korStriche) + 1) : (max(korStriche) - 1 ) ]
+                 bereich     <- bereich[ -grep("----",bereich)]
+                 bereich     <- strsplit(eatTools::crop(bereich),"  +")
+                 for (ii in 2:(length(bereich)-1) )  {
+                     if(ii <= length(bereich[[ii]]) )  {
+                        bereich[[ii]] <- c(bereich[[ii]][1:(ii-1)], NA, bereich[[ii]][ii:length(bereich[[ii]])])
+                     }
+                     if(ii > length(bereich[[ii]]) )  {
+                        bereich[[ii]] <- c(bereich[[ii]][1:(ii-1)], NA)
+                     }
+                 }
+                 bereich.data.frame <- suppressWarnings(eatTools::asNumericIfPossible(data.frame(do.call("rbind", bereich[-1]),stringsAsFactors=FALSE), force.string = FALSE))
+                 colnames(bereich.data.frame) <- bereich[[1]]
+                 all.output$cov.structure <- bereich.data.frame
+              }
+            all.output$final.deviance <- rowToFind
+    ### Reliabilitaetsindices einlesen
+            i1   <- grep("Dimension: \\(Dimension", input.all)
+            all.output$reliability <- do.call("rbind", lapply(i1, FUN = function (z ) {
+                    stopifnot(substr(input.all[z+3], 2,35) == "WLE Person separation RELIABILITY:")
+                    stopifnot(substr(input.all[z+4], 2,20) == "EAP/PV RELIABILITY:")
+                    return(data.frame ( dim = eatTools::crop(eatTools::crop(substring(input.all[z], 13)), ")"),
+                           wle.rel = as.numeric(eatTools::crop(substring(input.all[z+3], 36))),
+                           eap.rel = as.numeric(eatTools::crop(substring(input.all[z+4], 36))),
+                           stringsAsFactors = FALSE))}))
+            return(all.output)}
+
 
 ### not called -----------------------------------------------------------------
 

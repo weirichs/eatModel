@@ -102,17 +102,24 @@ defineModelSingle <- function (a) {
        all.Names   <- lapply(allVars, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = dat, variable=ii)})
      ### wenn software = conquest, duerfen variablennamen nicht mehr als 11 Zeichen haben! das heisst, falls doch, werden die items hier umbenannt
        renam       <- NULL                                                      ### initialisieren
-       if(software == "conquest") {if(max(nchar(all.Names[["variablen"]]))>10) {
-          neu   <- paste0("a", as.numeric(as.factor(all.Names[["variablen"]])))
-          i     <- 1
-          while(length(intersect(neu, colnames(dat))) > 0) {
-             i  <- i+1;
-             neu<- paste0(letters[i], as.numeric(as.factor(all.Names[["variablen"]])))
+       if(software == "conquest") {
+          if(max(nchar(all.Names[["variablen"]]))>10) {
+             neu   <- paste0("a", as.numeric(as.factor(all.Names[["variablen"]])))
+             i     <- 1
+             while(length(intersect(neu, colnames(dat))) > 0) {
+                i  <- i+1;
+                neu<- paste0(letters[i], as.numeric(as.factor(all.Names[["variablen"]])))
+             }
+             renam <- data.frame(old = all.Names[["variablen"]], new = neu, stringsAsFactors = FALSE)
+             all.Names[["variablen"]] <- eatTools::recodeLookup(all.Names[["variablen"]], renam)
+             colnames(dat) <- eatTools::recodeLookup(colnames(dat), renam)
           }
-          renam <- data.frame(old = all.Names[["variablen"]], new = neu, stringsAsFactors = FALSE)
-          all.Names[["variablen"]] <- eatTools::recodeLookup(all.Names[["variablen"]], renam)
-          colnames(dat) <- eatTools::recodeLookup(colnames(dat), renam)
-       }}
+       } else {
+          if(!is.null(all.Names[["group.var"]])) {
+             message("Specifying group.vars is only allowed for software = 'conquest'. 'group.vars' will be ignored.")
+             all.Names[["group.var"]] <- NULL
+          }
+       }
      ### ID-Variable pruefen und ggf. aendern
        dat <- checkID_consistency(dat=dat, allNam=all.Names, software=software)
      ### Verzeichnis ('dir') pruefen oder erzeugen

@@ -71,7 +71,7 @@ Optional: Names or column numbers of one or more context variables (e.g., sex, s
 These variables will be used for latent regression model in Conquest or TAM.
 }
   \item{group.var}{
-Optional: Names or column numbers of one or more grouping variables. Descriptive
+Applies only if \code{software = "tam"}. Optional: Optional: Names or column numbers of one or more grouping variables. Descriptive
 statistics for WLEs and Plausible Values will be computed separately for each
 group in Conquest.
 }
