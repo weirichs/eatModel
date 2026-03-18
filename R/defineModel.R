@@ -70,7 +70,9 @@ defineModelSingle <- function (a) {
           if(is.null(Msteps) ) {                                                ### den Default fuer Msteps so setzen wie in TAM
              if ( irtmodel == "3PL" ) { Msteps <- 10 } else { Msteps <- 4 }
           }
-       }
+       } else {                                                                 ### in mirt muss das argument ein data.frame sein 
+          checkmate::assert_data_frame(irtmodel, any.missing = FALSE, ncols = 2)
+       }  
        method   <- match.arg(method, choices = eval(formals(defineModel)[["method"]]))
        pvMethod <- match.arg(pvMethod, choices = eval(formals(defineModel)[["pvMethod"]]))
        if(software == "conquest") {
