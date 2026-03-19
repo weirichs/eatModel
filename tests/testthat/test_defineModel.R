@@ -148,17 +148,34 @@ tf4_conquest  <- transformToBista(equatingList=eq4_conquest, refPop=refP, cuts=c
 ### Tests ----------------------------------------------------------------------
 
 test_that("compare it1", {
+  #View(it1_tam)
+  #View(it1_conquest)
+  # p-value, Nvalid - exact same
+  #expect_equal(it1_tam$itemP, it1_conquest)
+
+  # est, thurstone - appr. same
+  #expect_equal(it1_tam$est, it1_conquest$est)
+  #expect_equal(it1_tam$thurstone, it1_conquest$thurstone)
 
 })
 
 test_that("compare it3A", {
+  #View(it3A_tam)
+  #View(it3A_conquest)
+  # p-value, Nvalid - exact same
+  #expect_equal(it1_tam$itemP, it1_conquest)
 
+  # est, thurstone - appr. same
+  #expect_equal(it1_tam$est, it1_conquest$est)
+  #expect_equal(it1_tam$thurstone, it1_conquest$thurstone)
 })
 
 test_that("compare it3B", {
-
+  #View(it3B_tam)
+  #View(it3B_conquest)
 })
 
 test_that("compare tf4", {
-
+  #View(tf4_tam)
+  #View(tf4_conquest)
 })
