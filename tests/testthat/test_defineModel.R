@@ -154,8 +154,8 @@ test_that("compare it1", {
   #expect_equal(it1_tam$itemP, it1_conquest)
 
   # est, thurstone - appr. same
-  #expect_equal(it1_tam$est, it1_conquest$est)
-  #expect_equal(it1_tam$thurstone, it1_conquest$thurstone)
+  expect_equal(it1_tam$est, it1_conquest$est, tolerance = 0.01)
+  expect_equal(it1_tam$thurstone, it1_conquest$thurstone, tolerance = 0.01)
 
 })
 
@@ -165,14 +165,18 @@ test_that("compare it3A", {
   # p-value, Nvalid - exact same
   #expect_equal(it1_tam$itemP, it1_conquest)
 
-  # est, thurstone - appr. same
-  #expect_equal(it1_tam$est, it1_conquest$est)
-  #expect_equal(it1_tam$thurstone, it1_conquest$thurstone)
+  # est, thurstone - appr. same - fix NA problem
+  #expect_equal(it3A_tam$est, it3A_conquest$est, tolerance = 0.01)
+  #expect_equal(it3A_tam$thurstone, it3A_conquest$thurstone, tolerance = 0.01)
 })
 
 test_that("compare it3B", {
   #View(it3B_tam)
   #View(it3B_conquest)
+
+  # est, thurstone - appr. same
+  #expect_equal(it3B_tam$est, it3B_conquest$est, tolerance = 0.01)
+  #expect_equal(it3B_tam$thurstone, it3B_conquest$thurstone, tolerance = 0.01)
 })
 
 test_that("compare tf4", {
