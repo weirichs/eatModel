@@ -151,11 +151,11 @@ tf4_conquest  <- transformToBista(equatingList=eq4_conquest, refPop=refP, cuts=c
 ### Tests ----------------------------------------------------------------------
 
 test_that("compare it1", {
-  #View(it1_tam)
-  #View(it1_conquest)
+  View(it1_tam)
+  View(it1_conquest)
   # p-value, Nvalid - exact same
   expect_equal(it1_tam$itemP, it1_conquest$itemP)
-  #expect_equal(it1_tam$Nvalid, it1_conquest$Nvalid) # not the same NAs
+  expect_equal(it1_tam$Nvalid, it1_conquest$Nvalid) # not the same NAs
   # est, thurstone - appr. same
   expect_equal(it1_tam$est, it1_conquest$est, tolerance = 0.01)
   expect_equal(it1_tam$thurstone, it1_conquest$thurstone, tolerance = 0.01)
@@ -167,10 +167,10 @@ test_that("compare it3A", {
   #View(it3A_conquest)
   # p-value, Nvalid - exact same
   expect_equal(it3A_tam$itemP, it3A_conquest$itemP)
-  #expect_equal(it3A_tam$Nvalid, it3A_conquest$Nvalid) # not the same NAs
+  expect_equal(it3A_tam$Nvalid, it3A_conquest$Nvalid) # not the same NAs
   # est, thurstone - appr. same - fix NA problem
-  #expect_equal(it3A_tam$est, it3A_conquest$est, tolerance = 0.16) # not the same NAs
-  #expect_equal(it3A_tam$thurstone, it3A_conquest$thurstone, tolerance = 0.01) # not the same NAs
+  expect_equal(it3A_tam$est, it3A_conquest$est, tolerance = 0.16) # not the same NAs
+  expect_equal(it3A_tam$thurstone, it3A_conquest$thurstone, tolerance = 0.01) # not the same NAs
 })
 
 test_that("compare it3B", {
@@ -178,9 +178,9 @@ test_that("compare it3B", {
   #View(it3B_conquest)
   # p-value, Nvalid - exact same
   expect_equal(it3B_tam$itemP, it3B_conquest$itemP)
-  #expect_equal(it3B_tam$Nvalid, it3B_conquest$Nvalid) # not the same NAs
+  expect_equal(it3B_tam$Nvalid, it3B_conquest$Nvalid) # not the same NAs
   # est, thurstone - appr. same
-  #expect_equal(it3B_tam$est, it3B_conquest$est, tolerance = 0.01) # not the same NAs
+  expect_equal(it3B_tam$est, it3B_conquest$est, tolerance = 0.01) # not the same NAs
   expect_equal(it3B_tam$thurstone, it3B_conquest$thurstone, tolerance = 0.15)
 })
 
@@ -190,9 +190,6 @@ test_that("compare tf4", {
   # Personpars: plausibel values - appr. same
   expect_equal(tf4_tam$personpars$value, tf4_conquest$personpars$value, tolerance = 1.3)
   # means
-  #expect_equal(tf4_tam$itempars$refMean, tf4_conquest$itempars$refMean, tolerance = 0.01)
-  #expect_equal(tf4_tam$itempars$refTransfMean, tf4_conquest$itempars$refTransfMean, tolerance = 0.01)
-  #expect_equal(tf4_tam$refPop$m, tf4_conquest$refPop$m, tolerance = 0.01)
   expect_equal(tf4_tam$means[3:6], tf4_conquest$means[3:6], tolerance = 0.01)
-
 })
+
