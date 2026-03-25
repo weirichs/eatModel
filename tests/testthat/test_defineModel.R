@@ -9,17 +9,12 @@ datW <- reshape2::dcast(reading[which(reading[,"type"] != "iglu"),],uniqueID+sex
 # only some items are partial credit, which ones?
 pc.it<- reading[which(reading[,"valueSum"] > 1),"item"] |> unique()
 
-# give values of partial credit items
-# few observation of 1-category for item D223143 ... may cause convergence trouble
-#lapply(datW[,pc.it], FUN = table)
-
 # combine the two lowest categories to avoid categories with too few observations
 datW[,"D205143"] <- car::recode(datW[,"D205143"], "1=0; 2=1; 3=2; 4=3; 5=4")
 
 # partial credit model ... we consider the female subgroup to be the reference population
 # (norm population) that defines the scale and reference item parameters
 dFema <- datW[which(datW[,"sex"] == "female"),]                                  ### data for females
-#lapply(dFema[,pc.it], FUN = table)                                              ### very few observations for some categories ... may cause convergence trouble
 
 
 ################################################################################
@@ -29,10 +24,6 @@ dFema <- datW[which(datW[,"sex"] == "female"),]                                 
 # partial credit model ... we consider the female subgroup to be the reference population
 def1_tam <- defineModel(dat=dFema, items = -c(1:4), id=1, irtmodel = "PCM", software="tam", nodes = 21)
 run1_tam <- runModel(def1_tam)
-
-# plot polytomous item "D205143": category 3 isn't necessary
-ind1 <- grep("D205143", run1_tam$item$item)                                         ### where is item "D205143"
-foo1 <- capture.output(plot(run1_tam, items = ind1, type="items", export=FALSE, low=-6, high=6))
 res1_tam <- getResults(run1_tam)
 it1_tam  <- itemFromRes(res1_tam)
 
@@ -59,7 +50,10 @@ it3A_tam <- itemFromRes(res3A_tam)                                              
 
 comp_tam <- merge(it1_tam[,c("item", "category", "est")], it3A_tam[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"))
 equal_tam <- na.omit(comp_tam[,c("est_ref", "offset")])
-stopifnot(all(equal_tam[,1] == equal_tam[,2]))                                          ### all item parameters without linking dif should be equal
+
+test_that("all item parameters without linking dif should be equal", {
+  expect_equal(equal_tam[,1], equal_tam[,2])
+})
 lDif <- subset(comp_tam, !is.na(est_foc))                                           ### all items with specific focus parameter must be included in linking DIF exclusion list
 stopifnot(all(paste(lDif[,"item"], lDif[,"category"], sep="_") %in% eq_tam$items[["not_specified"]][["Dim1"]][["info"]][,"itemExcluded"]))
 
@@ -73,7 +67,10 @@ it3B_tam <- itemFromRes(res3B_tam)                                              
 link_tam <- eq_tam[["items"]][["not_specified"]][["Dim1"]][["cleanedLinkItemPars"]][,c("item", "category", "est")]
 comp_tam <- merge(link_tam, it3B_tam[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"))
 equal_tam <- na.omit(comp_tam[,c("est_ref", "offset")])
-stopifnot(all(equal_tam[,1] == equal_tam[,2]))                                          ### all item parameters without linking dif should be equal
+
+test_that("all item parameters without linking dif should be equal", {
+  expect_equal(equal_tam[,1], equal_tam[,2])
+})
 lDif <- subset(comp_tam, !is.na(est_foc))                                           ### all items with specific focus paraeter must be included in linking DIF exclusion list
 stopifnot(all(paste(lDif[,"item"], lDif[,"category"], sep="_") %in% eq_tam$items[["not_specified"]][["Dim1"]][["info"]][,"itemExcluded"]))
 
@@ -120,7 +117,10 @@ res3A_conquest <- getResults(run3A_conquest)
 it3A_conquest <- itemFromRes(res3A_conquest)                                                      ### all dichotomous items except the ones with linking dif with equal item parameters? check
 comp_conquest <- merge(it1_conquest[,c("item", "category", "est")], it3A_conquest[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"))
 equal_conquest <- na.omit(comp_conquest[,c("est_ref", "offset")])
-stopifnot(all(equal_conquest[,1] == equal_conquest[,2]))                                          ### all item parameters without linking dif should be equal
+
+test_that("all item parameters without linking dif should be equal", {
+  expect_equal(equal_conquest[,1], equal_conquest[,2])
+})
 ### TO DO: all items with specific focus parameter must be included in linking DIF exclusion list or must be pcm items
 
 # variant 2: use the item parameters for males (linking dif items excluded), transformed to the metric of females
@@ -136,11 +136,14 @@ it3B_conquest <- itemFromRes(res3B_conquest)                                    
 link_conquest <- eq_conquest[["items"]][["pcm_conquest_males"]][["Dim1"]][["cleanedLinkItemPars"]][,c("item", "category", "est")]
 comp_conquest <- merge(link_conquest, it3B_conquest[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"))
 equal_conquest <- na.omit(comp_conquest[,c("est_ref", "offset")])
-stopifnot(all(equal_conquest[,1] == equal_conquest[,2]))                                          ### all item parameters without linking dif should be equal
+
+test_that("all item parameters without linking dif should be equal", {
+  expect_equal(equal_conquest[,1], equal_conquest[,2])
+})
 ### TO DO: all items with specific focus parameter must be included in linking DIF exclusion list or must be pcm items
 
 # transform to Bista metric
-eq4_conquest  <- equat1pl(results = res3B_conquest)                                               ### reference population mean and SD
+eq4_conquest  <- equat1pl(results = res3B_conquest)                                               ### reference population mean and SD (same lines as in tam model)
 #refP <- data.frame(domain = "Dim1", m = 0.0389, sd = 1.07108, stringsAsFactors = FALSE)
 #cuts <- list ( Dim1 = list(values = 390+0:3*75))
 tf4_conquest  <- transformToBista(equatingList=eq4_conquest, refPop=refP, cuts=cuts, vera = FALSE)
