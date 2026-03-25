@@ -264,29 +264,33 @@ getTamModInd    <- function(runModelObj, leseAlles) {
 ### ----------------------------------------------------------------------------
 
 getTamWles    <- function(runModelObj, qMatrix, leseAlles, omitWle) {
-  if(leseAlles == FALSE || omitWle == TRUE ) {return(NULL)}
-  txt  <- capture.output(wle  <- tam.wle(runModelObj, progress = FALSE))
-  eind1<- ncol(wle) == 7
-  if(isTRUE(eind1)) {
-    cols <- grep("^PersonScores$|^PersonMax$|^theta$|^error$|^WLE.rel$", colnames(wle))
-    stopifnot(length(cols) == 5)
-    colnames(wle)[cols] <- paste(colnames(wle)[cols], ".Dim01", sep="")
-  }
-  weg1 <- grep("WLE.rel", colnames(wle))
-  wleL <- reshape2::melt(wle, id.vars = "pid", measure.vars = colnames(wle)[-c(1:2,weg1)], na.rm=TRUE)
-  wleL[,"group"] <- colnames(qMatrix)[as.numeric(eatTools::removePattern(string = unlist(lapply(strsplit(as.character(wleL[,"variable"]),"\\."), FUN = function (l) {l[2]})), pattern = "Dim"))+1]
-  trans<- na.omit(unique(data.frame ( original = unlist(lapply(strsplit(as.character(wleL[,"variable"]),"\\."), FUN = function (l) {l[2]})), uebersetzt = wleL[,"group"], stringsAsFactors = FALSE)))
-  wleL[,"par"]   <- car::recode(unlist(lapply(strsplit(as.character(wleL[,"variable"]),"\\."), FUN = function (l) {l[1]})), "'PersonScores'='NitemsSolved'; 'PersonMax'='NitemsTotal'; 'theta'='wle'; 'error'='wle'")
-  wleL[,"derived.par"] <- car::recode(unlist(lapply(strsplit(as.character(wleL[,"variable"]),"\\."), FUN = function (l) {l[1]})), "'theta'='est'; 'error'='se';else=NA")
-  rel  <- reshape2::melt(as.data.frame ( wle)[1,weg1], na.rm = TRUE)
-  if ( "variable" %in% colnames(rel)) {
-    rel[,"original"] <- unlist(lapply(strsplit(as.character(rel[,"variable"]),"\\."), FUN = function (l) {l[length(l)]}))
-    rel  <- merge(rel, trans, by="original", all=TRUE)
-  }  else  {
-    rel[,"uebersetzt"] <- colnames(qMatrix)[-1]
-  }
-  res  <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = c(wleL[,"pid"],rep(NA,nrow(rel))), var2 = NA , type = c(rep("indicator",nrow(wleL)), rep("tech", nrow(rel))), indicator.group = "persons", group = c(wleL[,"group"],rel[,"uebersetzt"]), par = c(wleL[,"par"],rep("wle", nrow(rel))),  derived.par = c(wleL[,"derived.par"],rep("rel",nrow(rel))), value = c(wleL[,"value"] ,rel[,"value"]), stringsAsFactors = FALSE)
-  return(res)}
+         if(leseAlles == FALSE || omitWle == TRUE ) {return(NULL)}
+         txt  <- capture.output(wle  <- tam.wle(runModelObj, progress = FALSE)) ### Achtung: im eindimensionalen Fall enthalten die Spaltennamen keine Benennung der Dimension
+         eind1<- ncol(wle) == 7                                                 ### ist das eindimensional?
+         if(isTRUE(eind1)) {
+            cols <- grep("^PersonScores$|^PersonMax$|^theta$|^error$|^WLE.rel$", colnames(wle))
+            stopifnot(length(cols) == 5)
+            colnames(wle)[cols] <- paste(colnames(wle)[cols], ".Dim01", sep="")
+         }
+         weg1 <- grep("WLE.rel", colnames(wle))
+         wleL <- reshape2::melt(wle, id.vars = "pid", measure.vars = colnames(wle)[-c(1:2,weg1)], na.rm=TRUE)
+         wleL[,"group"] <- colnames(qMatrix)[as.numeric(eatTools::removePattern(string = unlist(lapply(strsplit(as.character(wleL[,"variable"]),"\\."), FUN = function (l) {l[2]})), pattern = "Dim"))+1]
+         trans<- na.omit(unique(data.frame ( original = unlist(lapply(strsplit(as.character(wleL[,"variable"]),"\\."), FUN = function (l) {l[2]})), uebersetzt = wleL[,"group"], stringsAsFactors = FALSE)))
+         wleL[,"par"]   <- car::recode(unlist(lapply(strsplit(as.character(wleL[,"variable"]),"\\."), FUN = function (l) {l[1]})), "'PersonScores'='NitemsSolved'; 'PersonMax'='NitemsTotal'; 'theta'='wle'; 'error'='wle'")
+         wleL[,"derived.par"] <- car::recode(unlist(lapply(strsplit(as.character(wleL[,"variable"]),"\\."), FUN = function (l) {l[1]})), "'theta'='est'; 'error'='se';else=NA")
+         nIt  <- do.call("rbind", by(wleL[which(wleL[,"par"] == "NitemsTotal"),], INDICES = wleL[which(wleL[,"par"] == "NitemsTotal"),"group"], FUN = function(g) {         
+                 g[,"value"] <- nrow(qMatrix[which(qMatrix[,g[1,"group"]] ==1),])
+                 return(g)}))                                                   ### in partial credit entspricht 'PersonMax' nicht der Gesamtzahl der Items der Domaene, muss also aus q matrix rekonstruiert werden 
+         wleL <- rbind(wleL[which(wleL[,"par"] != "NitemsTotal"),], nIt)
+         rel  <- reshape2::melt(as.data.frame ( wle)[1,weg1], na.rm = TRUE) |> suppressMessages()
+         if ( "variable" %in% colnames(rel)) {                                  ### das Auslesen der Dimensionsnamen fuer den ein- und zweidimensionalen Fall (Objekt 'trans') ist noch nicht wirklich schoen, muesste gegebenenfalls (wenn mal Zeit ist) elegantisiert werden
+               rel[,"original"] <- unlist(lapply(strsplit(as.character(rel[,"variable"]),"\\."), FUN = function (l) {l[length(l)]}))
+               rel  <- merge(rel, trans, by="original", all=TRUE)
+         }  else  {
+               rel[,"uebersetzt"] <- colnames(qMatrix)[-1]
+         }
+         res  <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = c(wleL[,"pid"],rep(NA,nrow(rel))), var2 = NA , type = c(rep("indicator",nrow(wleL)), rep("tech", nrow(rel))), indicator.group = "persons", group = c(wleL[,"group"],rel[,"uebersetzt"]), par = c(wleL[,"par"],rep("wle", nrow(rel))),  derived.par = c(wleL[,"derived.par"],rep("rel",nrow(rel))), value = c(wleL[,"value"] ,rel[,"value"]), stringsAsFactors = FALSE)
+         return(res)}
 
 ### ----------------------------------------------------------------------------
 
