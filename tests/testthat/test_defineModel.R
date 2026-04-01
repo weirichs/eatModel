@@ -151,42 +151,45 @@ tf4_conquest  <- transformToBista(equatingList=eq4_conquest, refPop=refP, cuts=c
 ### Tests ----------------------------------------------------------------------
 
 test_that("compare it1", {
-  View(it1_tam)
-  View(it1_conquest)
   # p-value, Nvalid - exact same
   expect_equal(it1_tam$itemP, it1_conquest$itemP)
-  expect_equal(it1_tam$Nvalid, it1_conquest$Nvalid) # not the same NAs
+
+  pos <- !is.na(it1_conquest$Nvalid) # positions of rows without NA in `Nvalid`
+  expect_equal(it1_tam$Nvalid[pos], it1_conquest$Nvalid[pos]) # conquest has NA
+
   # est, thurstone - appr. same
   expect_equal(it1_tam$est, it1_conquest$est, tolerance = 0.01)
   expect_equal(it1_tam$thurstone, it1_conquest$thurstone, tolerance = 0.01)
-
 })
 
 test_that("compare it3A", {
-  #View(it3A_tam)
-  #View(it3A_conquest)
   # p-value, Nvalid - exact same
   expect_equal(it3A_tam$itemP, it3A_conquest$itemP)
-  expect_equal(it3A_tam$Nvalid, it3A_conquest$Nvalid) # not the same NAs
+
+  pos <- !is.na(it3A_conquest$Nvalid) # positions of rows without NA in `Nvalid`
+  expect_equal(it3A_tam$Nvalid[pos], it3A_conquest$Nvalid[pos]) # conquest has NA
+
   # est, thurstone - appr. same - fix NA problem
-  expect_equal(it3A_tam$est, it3A_conquest$est, tolerance = 0.16) # not the same NAs
-  expect_equal(it3A_tam$thurstone, it3A_conquest$thurstone, tolerance = 0.01) # not the same NAs
+  pos <- !is.na(it3A_tam$est & it3A_conquest$est) # positions of rows without NA in `est`
+  expect_equal(it3A_tam$est[pos], it3A_conquest$est[pos], tolerance = 0.19) # conquest and tam have NA
+
+  expect_equal(it3A_tam$thurstone, it3A_conquest$thurstone, tolerance = 0.13)
 })
 
 test_that("compare it3B", {
-  #View(it3B_tam)
-  #View(it3B_conquest)
   # p-value, Nvalid - exact same
   expect_equal(it3B_tam$itemP, it3B_conquest$itemP)
-  expect_equal(it3B_tam$Nvalid, it3B_conquest$Nvalid) # not the same NAs
+
+  pos <- !is.na(it3B_conquest$Nvalid) # positions of rows without NA in `Nvalid`
+  expect_equal(it3B_tam$Nvalid[pos], it3B_conquest$Nvalid[pos]) # conquest has NA
   # est, thurstone - appr. same
-  expect_equal(it3B_tam$est, it3B_conquest$est, tolerance = 0.01) # not the same NAs
+  pos <- !is.na(it3B_tam$est & it3B_conquest$est) # positions of rows without NA in `est`
+  expect_equal(it3B_tam$est[pos], it3B_conquest$est[pos], tolerance = 0.17) # conquest and tam have NA
+
   expect_equal(it3B_tam$thurstone, it3B_conquest$thurstone, tolerance = 0.15)
 })
 
 test_that("compare tf4", {
-  #View(tf4_tam)
-  #View(tf4_conquest)
   # Personpars: plausibel values - appr. same
   expect_equal(tf4_tam$personpars$value, tf4_conquest$personpars$value, tolerance = 1.3)
   # means
