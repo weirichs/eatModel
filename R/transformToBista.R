@@ -258,7 +258,7 @@ generateOrCheckRefPop <- function (equatingList, refPop, dims, mods, isRunM, id,
            lapply(refPop[,-1], checkmate::assert_numeric)
            checkmate::assert_character(refPop[,1], any.missing = FALSE, unique=TRUE)
            notIncl<- setdiff(dims,refPop[,1])                                   ### fuer diese Dimensionen gibt es keine Werte in refPop
-           if(length(notIncl)>0) 
+           if(length(notIncl)>0) {
               stop(paste0("Following ",length(notIncl), " dimension(s) not included in 'refPop': '", paste(notIncl, collapse = "', '"),"'."))
            }
            refPop <- merge(expand.grid(model = mods, domain = dims), refPop, by.x = "domain", by.y = colnames(refPop)[1], all.x=TRUE, all.y = FALSE)

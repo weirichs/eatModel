@@ -34,9 +34,18 @@ gen.syntax     <- function(Name,daten, all.Names, namen.all.hg = NULL, all.hg.ch
    "descriptives !estimates=pv >> ####hier.name.einfuegen####_pvl.dsc;",
    "descriptives !estimates=wle >> ####hier.name.einfuegen####_wle.dsc;",
    "quit;")
+   sysInfo   <- Sys.info()
    if(is.null(Title))   {                                       ### wenn kein Titel gesetzt, erstelle ihn aus Sys.getenv()
+      if(sysInfo[["sysname"]] == "Linux") {
+         user <- all.inf[["USER"]]
+         comp <- sysInfo[["nodename"]]
+      } else {
+         user <- all.inf["USERNAME"]
+         comp <- all.inf["COMPUTERNAME"]
+      }
       all.inf  <- Sys.getenv()
-      Title    <- paste("Analysis name: ",Name, ", User: ",all.inf["USERNAME"],", Computername: ",all.inf["COMPUTERNAME"],", ", R.version$version.string , ", Time: ",date(),sep="")}
+      Title    <- paste("Analysis name: ",Name, ", User: ",user,", Computername: ",comp,", ", R.version$version.string , ", Time: ",date(),sep="")
+   }
    converge <- paste("0",substring(as.character(converge+1),2),sep="")
    deviancechange <- paste("0",substring(as.character(deviancechange+1),2),sep="")
    syntax    <- gsub("####hier.title.einfuegen####",Title,mustersyntax)
