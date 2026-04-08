@@ -33,11 +33,17 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
             } else {                                                            ### ab hier fuer den single model Fall
     ### runModel for conquest
                 if(inherits(defineModelObj, "defineConquest")) {
-                   oldPfad <- getwd()
-                   setwd(defineModelObj$dir)
-                   suppressWarnings(system(paste(defineModelObj$conquest.folder," ",defineModelObj$input,sep=""),invisible=!show.dos.console,show.output.on.console=show.output.on.console, wait=wait) )
-                   if(wait == FALSE) { Sys.sleep(0.2) }
-                   setwd(oldPfad)                                               ### untere Zeile: Rueckgabeobjekt definieren: Conquest
+                   sysInfo  <- Sys.info()
+                   if(sysInfo[["sysname"]] == "Linux") {
+                      if(isTRUE(wait)) {add <- ""} else {add <- " &"}
+                      paste0("xfce4-terminal -e \"bash -c \'cd /", gsub(" ", "\\ ", defineModelObj$dir, fixed = TRUE), " && wine ",gsub(" ", "\\ ", defineModelObj$conquest.folder,fixed = TRUE), " ", defineModelObj$analysis.name, ".cqc\'\"", add) |> system()
+                   } else {
+                      oldPfad <- getwd()
+                      setwd(defineModelObj$dir)
+                      suppressWarnings(system(paste(defineModelObj$conquest.folder," ",defineModelObj$input,sep=""),invisible=!show.dos.console,show.output.on.console=show.output.on.console, wait=wait) )
+                      if(wait == FALSE) { Sys.sleep(0.2) }
+                      setwd(oldPfad)                                             ### untere Zeile: Rueckgabeobjekt definieren: Conquest
+                   }
                    class(defineModelObj) <- c("runConquest", "list")
                    attr(defineModelObj, "software") <- "conquest"
                    return ( defineModelObj )
@@ -56,11 +62,11 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
                       covdata<- NULL; formula <- NULL
                    }                                                            ### wenn untere Zeile TRUE, dann wird skeleton gebraucht
                    if(!is.null(defineModelObj[["anchor"]][["ank"]]) || !is.null(defineModelObj[["fixSlopeMat"]][["slopMat"]])) {pars <- "values"} else {pars <- NULL}  
-                   if("Rasch" %in%  defineModelObj[["irtmodel"]][,"irtmod"]) {pars <- "values"}
-                   skel <- mirt(data = defineModelObj[["daten"]][,defineModelObj[["allNam"]][["variablen"]]], model = mirtMod,  itemtype = defineModelObj[["irtmodel"]][,"irtmod"], SE = TRUE,  covdata=covdata, formula=formula, verbose =defineModelObj[["progress"]], pars="values")
+                   if("Rasch" %in%  defineModelObj[["irtmodel"]][,2]) {pars <- "values"}
+                   skel <- mirt(data = defineModelObj[["daten"]][,defineModelObj[["allNam"]][["variablen"]]], model = mirtMod,  itemtype = defineModelObj[["irtmodel"]][,2], SE = TRUE,  covdata=covdata, formula=formula, verbose =defineModelObj[["progress"]], pars="values")
                    # skel[grep("^d", skel[,"name"]),"est"] <- TRUE              ### standardmaessig alle Itemschwierigkeiten frei schaetzen lassen: problematisch
                    if(!is.null(pars)) {                                         ### constraints werden in adaptSkelForAnchor() umgesetzt 
-                      if(isFALSE(onlySkeleton)) {message("Modify skeleton ... ")}## skeleton anpassen 
+                      if(isFALSE(onlySkeleton)) {message("Modify skeleton ... ")}## skeleton anpassen
                       skelN<- skel <- adaptSkelForAnchor(allNam = defineModelObj[["allNam"]], skel = skel, anch = defineModelObj[["anchor"]], qmat = defineModelObj[["qMatrix"]], slope = defineModelObj[["fixSlopeMat"]], irtmodel =  defineModelObj[["irtmodel"]], est.slopegroups =defineModelObj[["est.slopegroups"]][["esg"]])
                    } else {                                                     ### wenn skeleton angepasst wurde, soll der angepasste skeleton als attribut gespeichert werden
                       skelN<- NULL                                              ### wenn er NICHT angepasst wurde, soll der originale (d.h., der von mirt erzeugte)
@@ -68,7 +74,7 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
                    if(isTRUE(onlySkeleton)) {
                       return(skel)
                    } else {
-                      mod  <- mirt(data = defineModelObj[["daten"]][,defineModelObj[["allNam"]][["variablen"]]], model = mirtMod,  itemtype = defineModelObj[["irtmodel"]][,"irtmod"], SE = TRUE,  covdata=covdata, formula=formula, verbose =defineModelObj[["progress"]], pars=skelN)
+                      mod  <- mirt(data = defineModelObj[["daten"]][,defineModelObj[["allNam"]][["variablen"]]], model = mirtMod,  itemtype = defineModelObj[["irtmodel"]][,2], SE = TRUE,  covdata=covdata, formula=formula, verbose =defineModelObj[["progress"]], pars=skelN)
                       attr(mod, "defineModelObj") <- defineModelObj[-match("daten", names(defineModelObj))]
                       attr(mod, "personID") <- defineModelObj[["daten"]][,"ID"]
                       attr(mod, "software") <- "mirt"
@@ -98,7 +104,7 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
                                   control[["maxiter"]] <- 50
                                   skelet <- tam.mml(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], constraint = defineModelObj[["constraint"]], pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], irtmodel = defineModelObj[["irtmodel"]], pweights = wgt, control = control, group=group)
                                   diffe  <- Sys.time() - beg
-                                  if(as.numeric(diffe) > 0.2) {message(paste0("Generate skeleton for partial credit anchoring: ", timeFormat(diffe)))}
+                                  if(as.numeric(diffe) > 0.2) {message(paste0("Generate skeleton for partial credit anchoring: ", eatTools::timeFormat(diffe)))}
                                   anchor <- prepAnchorTAM(dfm = defineModelObj, skeleton = skelet[["xsi.fixed.estimated"]])
                                }
                                mod  <- tam.mml(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], constraint = defineModelObj[["constraint"]], pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = defineModelObj[["irtmodel"]], pweights = wgt, control = defineModelObj[["control"]], group=group)
@@ -124,10 +130,17 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
                    } else {
                      assign(paste("DIF_",defineModelObj[["all.Names"]][["DIF.var"]],sep="") , as.data.frame (defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["DIF.var"]]]) )
                      formel   <- as.formula(paste("~item - ",paste("DIF_",defineModelObj[["all.Names"]][["DIF.var"]],sep="")," + item * ",paste("DIF_",defineModelObj[["all.Names"]][["DIF.var"]],sep=""),sep=""))
+                     if(grepl("PCM", defineModelObj[["irtmodel"]])) {
+                        formel <- as.formula(paste0("~item+item:step + ",paste("DIF_",defineModelObj[["all.Names"]][["DIF.var"]],sep="")," * item*step"))
+                     }
                      facetten <- as.data.frame (defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["DIF.var"]]])
                      colnames(facetten) <- paste("DIF_",defineModelObj[["all.Names"]][["DIF.var"]],sep="")
                      if ( isTRUE(defineModelObj[["fitTamMmlForBayesian"]]) ) {
-                          mod  <- tam.mml.mfr(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], facets = facetten, constraint = defineModelObj[["constraint"]], formulaA = formel, pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = defineModelObj[["irtmodel"]], pweights = wgt, control = defineModelObj[["control"]], group=group)
+                          if(grepl("PCM", defineModelObj[["irtmodel"]])) {
+                             mod  <- tam.mml.mfr(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], facets = facetten, formulaA = formel, pid = defineModelObj[["daten"]][,"ID"], control = defineModelObj[["control"]], group=group)
+                          } else {
+                             mod  <- tam.mml.mfr(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], facets = facetten, constraint = defineModelObj[["constraint"]], formulaA = formel, pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = defineModelObj[["irtmodel"]], pweights = wgt, control = defineModelObj[["control"]], group=group)
+                          }
                      }  else  {
                           mod  <- tamObjForBayesianPV (anchor = anchor, qMatrix = defineModelObj[["qMatrix"]], resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y=Y, slopeMatrix = defineModelObj[["fixSlopeMat"]])
                      }                                                          ### hier werden fuer 'tam' zusaetzliche Objekte als Attribute an das Rueckgabeobjekt angehangen

@@ -139,7 +139,7 @@ getConquestDesc <- function ( model.name, deskRes, qMatrix, qL, renam){
          }
          res  <- rbind(shw3, shw31, shw4)
          if(!is.null(renam)) {res[,"var1"] <- eatTools::recodeLookup(res[,"var1"], renam[,c("new", "old")])}
-         return()}
+         return(res)}
 ### ----------------------------------------------------------------------------
 
 getConquestDiscrim <- function (model.name, discrim , qMatrix, qL, renam){
