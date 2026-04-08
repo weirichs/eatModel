@@ -257,11 +257,11 @@ generateOrCheckRefPop <- function (equatingList, refPop, dims, mods, isRunM, id,
            refPop <- eatTools::makeDataFrame(refPop)                            ### ab Spalte 2 muss alles numerisch sein
            lapply(refPop[,-1], checkmate::assert_numeric)
            checkmate::assert_character(refPop[,1], any.missing = FALSE, unique=TRUE)
-           if(!all(refPop[,1] %in% dims)) {
-              notIncl <- setdiff(dims,refPop[,1])
+           notIncl<- setdiff(dims,refPop[,1])                                   ### fuer diese Dimensionen gibt es keine Werte in refPop
+           if(length(notIncl)>0) 
               stop(paste0("Following ",length(notIncl), " dimension(s) not included in 'refPop': '", paste(notIncl, collapse = "', '"),"'."))
            }
-           refPop <- merge(expand.grid(model = mods, domain = dims), refPop, by.x = "domain", by.y = colnames(refPop)[1], all=TRUE)
+           refPop <- merge(expand.grid(model = mods, domain = dims), refPop, by.x = "domain", by.y = colnames(refPop)[1], all.x=TRUE, all.y = FALSE)
        }
        if(ncol ( refPop ) < 5) {
            cat ( paste("The 'refPop' data.frame does not include information about reference population mean/SD on Bista metric. Values will be defaulted to mean = ",defaultM," and SD = ",defaultSD,".\n",sep=""))

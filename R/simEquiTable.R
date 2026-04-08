@@ -15,7 +15,7 @@ simEquiTable <- function ( anchor, item = NULL, cat = NULL, value = NULL, mRef, 
                    if(is.null(item) || is.null(value) || is.null(cat)) { stop("If 'anchor' has more than two columns (partial credit model), 'item', 'cat', and 'value' columns must be specified explicitly.") }
                    allF  <- list(item=item, cat=cat, value = value)             ### erzeuge dichotome pseudo-items, und zwar so viele wie es maximale summenwerte gibt
                    allF  <- lapply(allF, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = anchor, variable=ii)})
-                   items <- by(anchor, INDICES = anchor[,allF[["item"]]], FUN = function(i) {sort(unique(c(0, as.numeric(eatTools::removeNonNumeric(i[,allF[["cat"]]])))))})
+                   items <- by(anchor, INDICES = anchor[,allF[["item"]]], FUN = function(i) {0:nrow(i)})
                    items1<- sum(unlist(lapply(items, max)))
                    dtmp  <- data.frame(rbind(1*(lower.tri(matrix(1, nrow = items1, ncol = items1))),1))
                    pcitem<- items[which(sapply(items, length)>2)]

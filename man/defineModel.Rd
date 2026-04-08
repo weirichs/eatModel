@@ -1272,7 +1272,7 @@ resT1P<- getResults(runT1P, Q3 = FALSE)
 data(reading)
 
 # transform into wide format
-datW <- reshape2::dcast(reading[which(reading[,"type"] != "iglu"),],uniqueID+sex+language+country~item, value.var = "valueSum")
+datW <- reshape2::dcast(reading[which(reading[,"type"] != "iglu"),],idstud+sex+language+country~item, value.var = "valueSum")
 
 # only some items are partial credit, which ones?
 pc.it<- reading[which(reading[,"valueSum"] > 1),"item"] |> unique()
@@ -1352,7 +1352,7 @@ tf4  <- transformToBista(equatingList=eq4, refPop=refP, cuts=cuts, vera = FALSE)
 data(reading)
 
 # transform into wide format
-datW <- reshape2::dcast(reading[which(reading[,"type"] != "iglu"),],uniqueID+sex+language+country~item, value.var = "valueSum")
+datW <- reshape2::dcast(reading[which(reading[,"type"] != "iglu"),],idstud+sex+language+country~item, value.var = "valueSum")
 
 # only some items are partial credit, which ones?
 pc.it<- reading[which(reading[,"valueSum"] > 1),"item"] |> unique()
@@ -1433,7 +1433,7 @@ tf4  <- transformToBista(equatingList=eq4, refPop=refP, cuts=cuts, vera = FALSE)
 data(reading)
 
 # transform into wide format
-datW <- reshape2::dcast(reading[which(reading[,"type"] != "iglu"),],uniqueID+sex+language+country~item, value.var = "valueSum")
+datW <- reshape2::dcast(reading[which(reading[,"type"] != "iglu"),],idstud+sex+language+country~item, value.var = "valueSum")
 
 # combine the two lowest categories to avoid categories with too few observations
 datW[,"D205143"] <- car::recode(datW[,"D205143"], "1=0; 2=1; 3=2; 4=3; 5=4")
@@ -1512,7 +1512,7 @@ if(!"Hmisc" \%in\% .packages()) {library(Hmisc)}
 data(reading)
 
 # transform into wide format
-datW <- reshape2::dcast(reading[which(reading[,"type"] != "iglu"),],uniqueID+sex+language+country~item, value.var = "valueSum")
+datW <- reshape2::dcast(reading[which(reading[,"type"] != "iglu"),],idstud+sex+language+country~item, value.var = "valueSum")
 
 # only some items are partial credit, which ones?
 pc.it<- reading[which(reading[,"valueSum"] > 1),"item"] |> unique()
@@ -1593,6 +1593,77 @@ eq4  <- equat1pl(results = res3B)                                               
 refP <- data.frame(domain = "Dim1", m = 0.0389, sd = 1.07108, stringsAsFactors = FALSE)
 cuts <- list ( Dim1 = list(values = 390+0:3*75))
 tf4  <- transformToBista(equatingList=eq4, refPop=refP, cuts=cuts, vera = FALSE)
+
+
+################################################################################
+###    Example 11: differential item functioning in partial credit models    ###
+################################################################################
+
+# load partial credit long format data
+data(reading)
+
+# create a small wide format exemplary data set, only booklet 08
+dw  <- reshape2::dcast(subset(reading, bookletID == "TH08"), idstud+sex~item, value.var = "valueSum") |>
+       dplyr::mutate(sex = car::recode(sex, "'male'=0; 'female'=1", as.factor=FALSE)) |>
+       eatTools::na_omit_selection("sex")
+
+# define the model: the specification resembles exemple 9 in tam.mml help page 
+defT<- defineModel(dat = dw, items = -c(1:2), DIF.var="sex", id = "idstud",  irtmodel = "PCM",software="tam")
+runT<- runModel(defT)
+resT<- getResults(runT)
+
+# the same model in conquest (recommended)
+defC<- defineModel(dat = dw, items = -c(1:2), model.statement = "item+item*step - sex + item*sex", DIF.var="sex", id = "idstud", analysis.name = "dif_pcm", dir=tempdir())
+runC<- runModel(defC, wait=FALSE)
+resC<- getResults(runC)
+it  <- itemFromRes(resC)
+shw <- get.shw(file.path(tempdir(), "dif_pcm.shw"), dif.term = "item*sex")
+
+
+################################################################################
+###    Example 12: Norm study within the realm of partial credit models      ###
+################################################################################
+
+# The following example mimics the steps the required to norm the educational standards
+# when the underlying model is a partial credit model.
+
+# load partial credit long format data. This large scale assessment data surveyed in
+# an incomplete block design is representative of a domain covered by the new standards.
+# We assume thta the sample was drawn from the norm population (reference population)
+data(reading)
+
+# transform the data to the wide format
+datW <- reshape2::dcast(reading[which(reading[,"type"] != "iglu"),],idstud+sex+language+country~item, value.var = "valueSum")
+
+# combine the two lowest categories to avoid categories with too few observations
+datW[,"D205143"] <- car::recode(datW[,"D205143"], "1=0; 2=1; 3=2; 4=3; 5=4")
+
+# partial credit model. We draw 15 plausible values to achieve greater precision
+# in estimating the distribution of individuals.
+def1 <- defineModel(dat=datW, items = -c(1:4), id=1, irtmodel = "PCM", software="tam", nodes = 21, n.plausible=15)
+run1 <- runModel(def1)
+
+# use ntheta = 40000 for higher precision
+res1 <- getResults(run1, ntheta = 40000, theta.model = FALSE)
+
+# estimate mean and standard deviation of the reference population from the plausible values
+# use the long format by toWideFormat = FALSE. Load the eatRep package for mean/SD computation
+library(eatRep)
+pv1  <- pvFromRes(res1, toWideFormat = FALSE)
+mSD  <- repMean(datL = pv1, ID="idstud", imp="imp", dependent="value")
+mSDR <- report2(mSD, round = FALSE)[["plain"]]; dim(mSDR)
+
+# use mean/SD to transform the item and person parameters. Since the cur scores have not yet
+# been established - as they are still being defined in the standard-setting process - we are
+# assigning arbitrary values for now. Since the sample can be considered as being drawn from
+# the reference population, no equating procedure is necessary. The function is therefore
+# simply passed through. The mean and standard deviation of the educational standards metric
+# are set to 500 and 100, respectively.
+eq   <- equat1pl(res1)
+trnsf<- transformToBista(equatingList=eq, refPop= data.frame(domain="Dim1",
+        m = mSDR[which(mSDR[,"parameter"] == "mean"),"est"],
+        sd = mSDR[which(mSDR[,"parameter"] == "sd"),"est"]),
+        cuts = list(Dim1 = list(values = c(400,600))), vera=FALSE)
 }
 
 

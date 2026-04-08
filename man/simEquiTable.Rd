@@ -85,7 +85,7 @@ data(reading)
 
 # tam: To speed up the process, the tests will be administered only for Test
 # Booklet 8. This booklet contains questions with some partial credit items.
-d   <- subset(reading, bookletID == "TH08" & taskID == "D205")
+d   <- subset(reading, bookletID == "TH08")
 dw  <- reshape2::dcast(d, uniqueID~item, value.var = "valueSum")
 defT<- defineModel(dat = dw, items = -1, id = "uniqueID",  irtmodel = "PCM",software="tam")
 runT<- runModel(defT)

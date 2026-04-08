@@ -16,14 +16,12 @@ This data set contains fictional achievement scores of 2595 students in the long
   \describe{
     \item{taskID}{task ID}
     \item{bookletID}{booklet ID}
-    \item{uniqueID}{unique student identifier}
-    \item{ID}{student identifier}
+    \item{idstud}{unique student identifier}
     \item{sex}{student's sex}
     \item{language}{student's language spoken at home}
     \item{age}{student's age in years}
     \item{country}{the country the student stems from (anonymized)}
-    \item{domain}{domain. As the data set only contains reading comprehension items and tasks, this variable is a constant wioth value 'reading'.}
-  	\item{itemType}{response format of the item}
+  	\item{format}{response format of the item}
   	\item{type}{item type: The items that were part of the pilot study are labeled 'pilot'. The link items that provide the connection to the educational standards metric are called 'link'. Items from the IGLU study are called 'iglu'.}
   	\item{taskLabel}{short description of the task}
   	\item{textType}{brief description of the stimulus text on which the test tasks were based}
