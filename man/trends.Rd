@@ -64,11 +64,11 @@ reshape2::dcast(do.call("rbind", by(data=trends, INDICES = trends[,"year"], FUN 
 reshape2::dcast(do.call("rbind", by(data=subset(trends,domain=="reading"), INDICES = subset(trends,domain=="reading")[,"year"], FUN = function (x) {data.frame ( x[1,"year", drop=FALSE], table(x[!duplicated(x[,"idstud"]),"task"]), stringsAsFactors = FALSE)})), year~Var1, value.var = "Freq")
 
 # students nested in classes?
-lme4::isNested(trends[,"idstud"], trends[,"idclass"])
+reformulas::isNested(trends[,"idstud"], trends[,"idclass"])
 # items nested in tasks?
-lme4::isNested(trends[,"item"], trends[,"task"])
+reformulas::isNested(trends[,"item"], trends[,"task"])
 # tasks nested in blocks? no, few tasks occur in more than one block
-lme4::isNested(trends[,"task"], trends[,"block"])
+reformulas::isNested(trends[,"task"], trends[,"block"])
 # tasks nested in blocks for specific years?
 by(data=trends, INDICES = trends[,"year"], FUN = function (y) {lme4::isNested(y[,"task"], y[,"block"]) })
 # blocks nested in booklets?

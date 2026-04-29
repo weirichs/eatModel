@@ -21,13 +21,15 @@ specifying the individual competence level for each possible total score of the 
 }
   \item{item}{
 Optional: Give the number or name of the item identifier column in \code{anchor}.
+Only necessary for partial credit models.
 }
   \item{cat}{
 Optional: Give the number or name of the category column in \code{anchor}. Only
 necessary for partial credit models.
 }
   \item{value}{
-Optional: Give the number or name of the parameter column in \code{anchor}.
+Optional: Give the number or name of the parameter column in \code{anchor}. Only
+necessary for partial credit models.
 }
   \item{mRef}{
 Scalar: mean of the reference population. 
@@ -48,24 +50,18 @@ has to be of one more length than "values".
 }
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
 A list of two data frames, including the complete table and the reduced table with
 the following 5 columns. 
-  \describe{
     \item{score}{Students raw score}
     \item{est}{Estimated individual WLE according to the raw score.}
     \item{bista}{Transformed WLE}
     \item{ks}{competence level}
- }
 }
 \author{
 Johannes Schult, Sebastian Weirich
 }
 \examples{
+### Example 1: equivalence table for Rasch models
 # read anchor parameter
 file <- system.file("extdata", "results.rda", package = "eatModel")
 load(file)
@@ -79,15 +75,15 @@ cuts   <- list ( values = 390+0:3*75, labels = c("I", "II", "III", "IV", "V") )
 # create the equivalence table
 ret <- simEquiTable( anchor = prm[,c("item", "est")], cutScores = cuts , mRef = 0.039, sdRef = 1.071)
 
-### equivalence table for partial credit model
+### Example 2: equivalence table for partial credit model
 # load partial credit data
 data(reading)
 
-# tam: To speed up the process, the tests will be administered only for Test
+# To speed up the process, the tests will be administered only for Test
 # Booklet 8. This booklet contains questions with some partial credit items.
 d   <- subset(reading, bookletID == "TH08")
-dw  <- reshape2::dcast(d, uniqueID~item, value.var = "valueSum")
-defT<- defineModel(dat = dw, items = -1, id = "uniqueID",  irtmodel = "PCM",software="tam")
+dw  <- reshape2::dcast(d, idstud~item, value.var = "valueSum")
+defT<- defineModel(dat = dw, items = -1, id = "idstud",  irtmodel = "PCM",software="tam")
 runT<- runModel(defT)
 resT<- getResults(runT, omitPV=TRUE, Q3 = FALSE)
 it  <- itemFromRes(resT)

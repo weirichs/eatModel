@@ -460,10 +460,6 @@ Sebastian Weirich
 # in a single data.frame
 data(trends)
 
-# first reshape the data for the first time of measurement set into wide format
-datW <- reshape2::dcast(trends[which(trends[,"year"] == 2010),],
-                        idstud+sex+ses+language~item, value.var="value")
-
 # second, create the q matrix from long format data
 qMat <- unique(trends[ ,c("item","domain")])
 qMat <- data.frame ( qMat[,"item", drop=FALSE], model.matrix(~domain-1, data = qMat))
@@ -473,22 +469,17 @@ qMat <- data.frame ( qMat[,"item", drop=FALSE], model.matrix(~domain-1, data = q
 ###                Example 1: Unidimensional Rasch Model                     ###
 ################################################################################
 
-# Example 1: define and run a unidimensional Rasch model with all variables in dataset
-# (reading and listening together) using "Conquest".
+# Example 1: define and run a unidimensional Rasch model for the 2010 cohort
+# with all variables from booklet 02 (this booklet contains  reading and listening
+# items together). For the estimation, Conquest is used.
+# Since the wide-format dataset generated here will be used in later analyses,
+# several covariates - such as gender and SES - are generated at the same time.
+# These variables are not yet used in this example.
+datW <- subset(trends, booklet == "Bo02" & year == 2010) |>
+        reshape2::dcast(idstud+language+sex+ses+country~item, value.var = "value")
 
-# using conquest under windows, mirt under linux
-sys  <- Sys.info()
-if(sys[["sysname"]] == "Linux") {
-   software <- "mirt"
-   irtmodel <- data.frame(item = unique(trends[,"item"]), irtmod = "Rasch", stringsAsFactors = FALSE)
-} else {
-   software <- "conquest" 
-   irtmodel <- "1PL"
-}
-
-# defining the model: specifying q matrix is not necessary
-mod1 <- defineModel(dat=datW, items= -c(1:4), id="idstud", analysis.name = "unidim",
-        irtmodel=irtmodel, software = software, dir = tempdir() )
+# defining the unidimensional model: specifying q matrix is not necessary
+mod1 <- defineModel(dat=datW, items= -c(1:5), id="idstud", analysis.name = "unidim", dir = tempdir())
 
 # run the model
 run1 <- runModel(mod1)
@@ -497,7 +488,7 @@ run1 <- runModel(mod1)
 res1 <- getResults(run1)
 
 # extract the item parameters from the results object
-item <- itemFromRes ( res1 ) 
+item1<- itemFromRes(res1)
 
 
 ################################################################################
@@ -506,18 +497,17 @@ item <- itemFromRes ( res1 )
 
 # nearly the same procedure as in example 1. Using 'sex' as DIF variable
 # note that 'sex' is a factor variable here. Conquest needs all explicit variables
-# to be numeric. Variables will be automatically transformed to numeric by 
+# to be numeric. Variables will be automatically transformed to numeric by
 # 'defineModels'. However, it might be the better idea to transform the variable
-# manually. 
+# manually.
 datW[,"sexNum"] <- car::recode ( datW[,"sex"] , "'male'=0; 'female'=1", as.factor = FALSE)
-                   
-# as we have defined a new variable ('sexNum') in the data, it is a good idea 
-# to explicitly specify item columns ... instead of saying 'items= -c(1:3)' which
-# means: Everything except column 1 to 3 are item columns
-if(software != "mirt") {
+
+# as we have defined a new variable ('sexNum') in the data, it is a good idea
+# to explicitly specify item columns ... instead of saying 'items= -c(1:5)' which
+# means: Everything except column 1 to 5 are item columns
 items<- grep("^T[[:digit:]]{2}", colnames(datW))
 mod1a<- defineModel(dat=datW, items= items, id="idstud", DIF.var = "sexNum",
-        irtmodel=irtmodel, software = software, analysis.name = "unidimDIF", dir = tempdir())
+        analysis.name = "unidimDIF", dir = tempdir())
 
 # run the model
 run1a<- runModel(mod1a)
@@ -536,7 +526,7 @@ res1a<- getResults(run1a)
 # Example based on 'model 6' in 'r:\Nawi\main\10_Studien\Auswertung\Alex Robitzsch R-Skripte\skalierung_conquest_mit_R_04.R'
 items<- grep("^T[[:digit:]]{2}", colnames(datW))
 mod1b<- defineModel(dat=datW, items= items, id="idstud", model.statement = "item + sexNum",
-        irtmodel=irtmodel, software = software, analysis.name = "unidimCustom", dir = tempdir())
+        analysis.name = "unidimCustom", dir = tempdir())
 
 # run the model
 run1b<- runModel(mod1b)
@@ -545,8 +535,7 @@ run1b<- runModel(mod1b)
 res1b<- getResults(run1b)
 
 # item parameter
-it <- itemFromRes(res1b)
-}
+it1b <- itemFromRes(res1b)
 
 
 ################################################################################
@@ -557,17 +546,15 @@ it <- itemFromRes(res1b)
 # regression. Use item parameter from the first model as anchor parameters
 
 # read in anchor parameters from the results object of the first example
-aPar <- itemFromRes ( res1 )
-aPar <- aPar[,c("item", "est")]
+aPar <- itemFromRes(res1)[,c("item", "est")]
 
 # defining the model: specifying q matrix now is necessary.
 # Please note that all latent regression variables have to be of class numeric.
 # If regression variables are factors, dummy variables automatically will be used.
 # (This behavior is equivalent as in lm() for example.)
 mod2a<- defineModel(dat=datW, items= grep("^T[[:digit:]]{2}", colnames(datW)),
-        id="idstud", analysis.name = "twodim",  qMatrix = qMat,irtmodel=irtmodel, 
-        HG.var = c("language","sex", "ses"), anchor = aPar, n.plausible = 20,
-        software = software, dir = tempdir())
+        id="idstud", analysis.name = "twodim", HG.var = c("language","sex", "ses"),
+        qMatrix = qMat, anchor = aPar, n.plausible = 20,dir = tempdir())
 
 # run the model
 run2a<- runModel(mod2a)
@@ -581,10 +568,10 @@ res2a<- getResults(run2a)
 ################################################################################
 
 # Example 2b: running a multidimensional Rasch model on a subset of items
-# defining the model: specifying q matrix now is necessary.
+# without anchoring. Defining the model: specifying q matrix now is necessary.
 mod2b<- defineModel(dat=datW, items= grep("^T[[:digit:]]{2}", colnames(datW)),
         id="idstud", analysis.name = "twodim2", qMatrix = qMat,
-        irtmodel=irtmodel, software = software, n.plausible = 20, dir = tempdir())
+        n.plausible = 20, dir = tempdir())
 
 # run the model
 run2b <- runModel(mod2b)
@@ -596,6 +583,7 @@ res2b<- getResults(run2b)
 eq2b <- equat1pl( results = res2b, prmNorm = aPar, difBound=.64, iterativ=TRUE)
 
 ### transformation to the 'bista' metric: needs reference population definition
+### we use some arbitrary values here
 ref  <- data.frame ( domain = c("domainreading", "domainlistening"),
         m = c(0.03890191, 0.03587727), sd= c(1.219, 0.8978912))
 cuts <- list ( domainreading = list ( values = 390+0:3*75),
@@ -608,32 +596,32 @@ tf2b <- transformToBista ( equatingList = eq2b, refPop = ref, cuts = cuts)
 ################################################################################
 
 # estimate model 2 with latent regression and anchored parameters in TAM
-# specification of an output folder (via 'dir' argument) no longer necessary 
-mod2T<- defineModel(dat=datW, items= grep("^T[[:digit:]]{2}", colnames(datW)),
+# specification of an output folder (via 'dir' argument) no longer necessary
+mod3T<- defineModel(dat=datW, items= grep("^T[[:digit:]]{2}", colnames(datW)),
         id="idstud", qMatrix = qMat, HG.var = "sex", anchor = aPar, software = "tam")
 
 # run the model
-run2T<- runModel(mod2T)
+run3T<- runModel(mod3T)
 
 # Object 'run2T' is of class 'tam.mml'
-class(run2T)
+class(run3T)
 
 # the class of 'run2T' corresponds to the class defined by the TAM package; all
 # functions of the TAM package intended for further processing (e.g. drawing
 # plausible values, plotting deviance change etc.) work, for example:
-wle  <- tam.wle(run2T)
+wle  <- tam.wle(run3T)
 
 # Finally, the model result are collected in a single data frame
-res2T<- getResults(run2T)
+res3T<- getResults(run3T)
 
-# repeat the same model with mirt 
+# repeat the same model with mirt
 items<- grep("^T[[:digit:]]{2}", colnames(datW), value=TRUE)
-irtM <- data.frame(item = items, task = substr(items,1,4), stringsAsFactors = FALSE) |> dplyr::mutate(irtmod = "Rasch") 
-mod2M<- defineModel(dat=datW, items= grep("^T[[:digit:]]{2}", colnames(datW)),id="idstud", 
+irtM <- data.frame(item = items, task = substr(items,1,4), stringsAsFactors = FALSE) |> dplyr::mutate(irtmod = "Rasch")
+mod3M<- defineModel(dat=datW, items= grep("^T[[:digit:]]{2}", colnames(datW)),id="idstud",
         irtmodel = irtM[,c("item", "irtmod")],  anchor = aPar, qMatrix = qMat, HG.var = "sex",  software = "mirt")
-run2M<- runModel(mod2M)
-res2M<- getResults(run2M)
-itM  <- itemFromRes(res2M)
+run3M<- runModel(mod3M)
+res3M<- getResults(run3M)
+itM  <- itemFromRes(res3M)
 
 
 ################################################################################
@@ -646,20 +634,25 @@ itM  <- itemFromRes(res2M)
 
 # define person grouping
 pers  <- data.frame ( idstud = datW[,"idstud"] , group1 = datW[,"sex"],
-         group2 = datW[,"language"], stringsAsFactors = FALSE )
+         group2 = datW[,"country"], stringsAsFactors = FALSE )
 
-# define 18 models, splitting according to person groups and item groups separately
+# define 24 models, splitting according to person groups and item groups separately
 # by default, multicore processing is applied
 l1    <- splitModels ( qMatrix = qMat, person.groups = pers, nCores = 1)
 
-# apply 'defineModel' for each of the 18 models in 'l1'
+# In this example, the sample sizes in the individual subgroups or models are far
+# too small. The example is therefore intended solely to illustrate how the
+# analysis can be broken down by item and respondent group.
+table(datW[,c("sex", "country")])
+
+# apply 'defineModel' for each of the 24 models in 'l1'
 modMul<- defineModel(dat = datW, items = grep("^T[[:digit:]]{2}", colnames(datW)),
          id = "idstud", check.for.linking = TRUE, splittedModels = l1, software = "tam")
 
-# run all models 
+# run all models
 runMul<- runModel(modMul)
 
-# get results of all models 
+# get results of all models
 resMul<- getResults(runMul)
 
 
@@ -668,59 +661,61 @@ resMul<- getResults(runMul)
 ################################################################################
 
 # Example 5: define und run multiple models according to different domains (item groups)
-# and further linking/equating. This example mimics the routines necessary for the 
-# 'Vergleichsarbeiten' at the Institute of Educational Progress (IQB)
+# and further linking/equating. This example mimics the routines necessary for the
+# 'Vergleichsarbeiten' (VERA) at the Institute of Educational Progress (IQB)
+# Let's assume that the 2015 cohort serves as the subsample for the 'Vergleichsarbeiten'.
+vera <- subset(trends, booklet == "Bo02" & year == 2015) |>
+        reshape2::dcast(idstud+language+sex+ses+country~item, value.var = "value")
 
 # specify two models according to the two domains 'reading' and 'listening'
 l2    <- splitModels ( qMatrix = qMat,  nCores = 1)
 
-# define 2 models
-mods  <- defineModel(dat = datW, id = "idstud", check.for.linking = TRUE,
+# define 2 models. free estimation without anchoring
+mods  <- defineModel(dat = vera, id = "idstud", check.for.linking = TRUE,
          splittedModels = l2, software = "tam")
 
-# run 2 models 
+# run 2 models
 runs  <- runModel(mods)
 
-# get the results 
+# get the results
 ress  <- getResults(runs)
 
-# only for illustration, we create arbitrary 'normed' parameters for anchoring
-prmNrm<- itemFromRes(ress)
-prmNrm<- do.call("rbind", by(data = prmNrm, INDICES = prmNrm[,"dimension"], FUN = function (d) {
-         d[sample(1:nrow(d), size = sample(16:40, 1), replace = FALSE),]}))[,c("item", "est")]
-prmNrm[,"est"] <- prmNrm[,"est"] - 0.6 + rnorm ( nrow(prmNrm), 0, 0.75)
+# norm parameters are the item parameters from example 1
+aPar  <- itemFromRes(res1)[,c("item", "est")]
 
 # anchoring without exclusion of linking DIF items (DIF items will only be identified)
-anch  <- equat1pl ( results = ress, prmNorm = prmNrm, excludeLinkingDif = FALSE, 
-         difBound = 0.6)
+# the linking error is well above the critical threshold of 0.1
+anch  <- equat1pl ( results = ress, prmNorm = aPar, excludeLinkingDif = FALSE,
+         difBound = 0.64)
 
-# anchoring with exclusion of linking DIF items
-anch2 <- equat1pl ( results = ress, prmNorm = prmNrm, excludeLinkingDif = TRUE, 
-         difBound = 0.6, iterativ = FALSE)
+# anchoring with exclusion of linking DIF items: especially for listening, the
+# linking constant changes substantially when linking DIF items are excluded
+anch2 <- equat1pl ( results = ress, prmNorm = aPar, excludeLinkingDif = TRUE,
+         difBound = 0.64, iterativ = FALSE)
 
 # anchoring with iterative exclusion of linking DIF items
-anch3 <- equat1pl ( results = ress, prmNorm = prmNrm, excludeLinkingDif = TRUE, 
-         difBound = 0.6, iterativ = TRUE)
+anch3 <- equat1pl ( results = ress, prmNorm = aPar, excludeLinkingDif = TRUE,
+         difBound = 0.64, iterativ = TRUE)
 
 # transformation to the Bista metric
-# first we arbitrarily define mean and standard deviation of the reference 
-# population according to both dimensions (defined in the Q matrix): 
+# first we arbitrarily define mean and standard deviation of the reference
+# population according to both dimensions (defined in the Q matrix):
 # reading and listening
-# Note that the the first column of the 'refPop' data frame must include the 
+# Note that the the first column of the 'refPop' data frame must include the
 # domain names. Domain names must match the names defined in the Q matrix
 refPop<- data.frame ( domain = c("domainreading", "domainlistening"),
         m = c(0.03890191, 0.03587727), sd= c(1.219, 0.8978912))
 
 # second, we specify a list with cut scores. Values must be in ascending order.
-# Labels of the competence stages are optional. If no labels are specified, 
+# Labels of the competence stages are optional. If no labels are specified,
 # the will be defaulted to 1, 2, 3 ... etc.
-# Note: if labels are specified, there must be one label more than cut scores. 
+# Note: if labels are specified, there must be one label more than cut scores.
 # (i.e. 4 cut scores need 5 labels, etc.)
 cuts  <- list ( domainreading = list ( values = 390+0:3*75),
          domainlistening = list ( values = 360+0:3*85))
 
 # transformation
-dfr   <- transformToBista ( equatingList = anch3, refPop = refPop, cuts=cuts ) 
+dfr   <- transformToBista ( equatingList = anch3, refPop = refPop, cuts=cuts )
 head(dfr$itempars)
 head(dfr$personpars)
 
@@ -730,28 +725,27 @@ head(dfr$personpars)
 ################################################################################
 
 # Example 5a: define und run multiple models according to different domains (item groups)
-# and further linking/equating. Same as example 5, but extended for the 'global' 
-# domain. 
+# and further linking/equating. Same as example 5, but extended for the 'global'
+# domain.
 
 # add the 'global' domain (reading and listening together) in the Q matrix
-qMat2 <- qMat
-qMat2[,"global"] <- 1
+qMat2 <- qMat |> dplyr::mutate(global = 1)
 
 # specify two models according to the two domains 'reading' and 'listening'
 l3    <- splitModels ( qMatrix = qMat2, nCores = 1)
 
 # define 3 models
-mods3 <- defineModel(dat = datW, id = "idstud", check.for.linking = TRUE,
+mods5 <- defineModel(dat = vera, id = "idstud", check.for.linking = TRUE,
          splittedModels = l3, software = "tam")
 
 # run 3 models
-runs3 <- runModel(mods3)
+runs5 <- runModel(mods5)
 
-# get the results 
-res3  <- getResults(runs3)
+# get the results
+res5  <- getResults(runs5)
 
 # only for illustration, we create arbitrary 'normed' parameters for anchoring.
-# Each item now has to item parameter: one is domain-specific, one is the global
+# Each item now has two item parameter: one is domain-specific, one is the global
 # item parameter. Hence, each item occurs two times in 'prmNrm'
 prmNrm<- do.call("rbind", by(data = itemFromRes(ress),
          INDICES = itemFromRes(ress)[,"dimension"], FUN = function (d) {
@@ -760,44 +754,43 @@ prmNrm<- do.call("rbind", by(data = itemFromRes(ress),
              err  <- ifelse(d[1,"dimension"] == "domainlistening", 0.75, 0.6)
              d[,"est"] <- d[,"est"] - const + rnorm ( nrow(d), 0, err)
              return(d) }))
-prmGlo<- prmNrm
-prmGlo[,"dimension"] <- "global"
+prmGlo<- prmNrm |> dplyr::mutate(dimension = "global")
 prmNrm<- rbind ( prmNrm, prmGlo)
 
-# if the item identifier in 'prmNrm' is not unique, 'equat1pl' has to know which 
+# if the item identifier in 'prmNrm' is not unique, 'equat1pl' has to know which
 # parameter in 'prmNrm' belongs to which dimension/domain. Hence, the dimension
 # is added to 'prmNrm'.
- 
-# anchoring: if 'prmNrm' has more than 2 columns, the columns of 'prmNrm' must be 
+
+# anchoring: if 'prmNrm' has more than 2 columns, the columns of 'prmNrm' must be
 # specified in 'equat1pl'
-anch3 <- equat1pl ( results = res3, prmNorm = prmNrm, item = "item", value = "est", 
-         domain = "dimension", excludeLinkingDif = FALSE, difBound = 0.6)
-         
+anch5 <- equat1pl ( results = res5, prmNorm = prmNrm, item = "item", value = "est",
+         domain = "dimension", excludeLinkingDif = FALSE, difBound = 0.64)
+
 # for illustration: consequences of linking the global domain if linking constants
 # differ between domains
-anch4 <- equat1pl ( results = res3, prmNorm = prmNrm, item = "item", value = "est",
+anch5a<- equat1pl ( results = res5, prmNorm = prmNrm, item = "item", value = "est",
          domain = "dimension", excludeLinkingDif = TRUE, iterativ = TRUE, difBound = 0.64)
 
 # transformation to the Bista metric
-# first we arbitrarily define mean and standard deviation of the reference 
-# population according to the three dimensions (defined in the Q matrix): 
+# first we arbitrarily define mean and standard deviation of the reference
+# population according to the three dimensions (defined in the Q matrix):
 # reading, listening, and global
-# Note that the the first column of the 'refPop' data frame must include the 
+# Note that the the first column of the 'refPop' data frame must include the
 # domain names. Domain names must match the names defined in the Q matrix
 refPop<- data.frame ( domain = c("domainreading", "domainlistening", "global"),
         m = c(0.03890191, 0.03587727, 0.03), sd= c(1.219, 0.8978912, 1.05))
 
 # second, we specify a list with cut scores. Values must be in ascending order.
-# Labels of the competence stages are optional. If no labels are specified, 
+# Labels of the competence stages are optional. If no labels are specified,
 # the will be defaulted to 1, 2, 3 ... etc.
-# Note: if labels are specified, there must be one label more than cut scores. 
+# Note: if labels are specified, there must be one label more than cut scores.
 # (i.e. 4 cut scores need 5 labels, etc.)
 cuts  <- list ( domainreading = list ( values = 390+0:3*75),
          domainlistening = list ( values = 360+0:3*85),
          global = list ( values = 400+0:2*100, labels = c("A1", "A2", "B1", "B2")))
 
 # transformation
-dfr   <- transformToBista ( equatingList = anch3, refPop = refPop, cuts=cuts ) 
+dfr   <- transformToBista(equatingList = anch5, refPop = refPop, cuts=cuts )
 head(dfr$itempars)
 head(dfr$personpars)
 
