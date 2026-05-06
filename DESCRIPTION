@@ -8,7 +8,8 @@ Date: 2026-03-18
 Authors@R: c(
     person("Sebastian", "Weirich", email = "sebastian.weirich@iqb.hu-berlin.de", role = c("aut", "cre")),
     person("Martin", "Hecht", role = c("aut")),
-    person("Karoline", "Sachse", role = c("aut")) )
+    person("Karoline", "Sachse", role = c("aut")),
+    person("Edna", "Grewers", role = c("ctb")) )
 Maintainer: Sebastian Weirich <sebastian.weirich@iqb.hu-berlin.de>
 Description: Framework to run IRT models within R. Provide functions to prepare and run IRT models using Conquest or TAM. The results
   can be imported and stored in a standardized manner. Several models can be estimated simultaneously using multicore processing. 
