@@ -131,27 +131,26 @@ the following 5 columns.</p>
 <span class="r-in"><span><span class="co">### Example 2: equivalence table for partial credit model</span></span></span>
 <span class="r-in"><span><span class="co"># load partial credit data</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">reading</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>data set 'reading' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># To speed up the process, the tests will be administered only for Test</span></span></span>
 <span class="r-in"><span><span class="co"># Booklet 8. This booklet contains questions with some partial credit items.</span></span></span>
 <span class="r-in"><span><span class="va">d</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">reading</span>, <span class="va">bookletID</span> <span class="op">==</span> <span class="st">"TH08"</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'reading' not found</span>
 <span class="r-in"><span><span class="va">dw</span>  <span class="op">&lt;-</span> <span class="fu">reshape2</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/reshape2/man/cast.html" class="external-link">dcast</a></span><span class="op">(</span><span class="va">d</span>, <span class="va">idstud</span><span class="op">~</span><span class="va">item</span>, value.var <span class="op">=</span> <span class="st">"valueSum"</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'd' not found</span>
 <span class="r-in"><span><span class="va">defT</span><span class="op">&lt;-</span> <span class="fu"><a href="defineModel.html">defineModel</a></span><span class="op">(</span>dat <span class="op">=</span> <span class="va">dw</span>, items <span class="op">=</span> <span class="op">-</span><span class="fl">1</span>, id <span class="op">=</span> <span class="st">"idstud"</span>,  irtmodel <span class="op">=</span> <span class="st">"PCM"</span>,software<span class="op">=</span><span class="st">"tam"</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'dw' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Items(s) 'D025033', 'D204013', 'D225113': 0, 1, 2, 3, 4     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Items(s) 'D205143':                       0, 1, 2, 3, 4, 5  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Dataset is completely linked.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Q matrix specifies 1 dimension(s).</span>
 <span class="r-in"><span><span class="va">runT</span><span class="op">&lt;-</span> <span class="fu"><a href="runModel.html">runModel</a></span><span class="op">(</span><span class="va">defT</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'defT' not found</span>
 <span class="r-in"><span><span class="va">resT</span><span class="op">&lt;-</span> <span class="fu"><a href="getResults.html">getResults</a></span><span class="op">(</span><span class="va">runT</span>, omitPV<span class="op">=</span><span class="cn">TRUE</span>, Q3 <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'runT' not found</span>
 <span class="r-in"><span><span class="va">it</span>  <span class="op">&lt;-</span> <span class="fu"><a href="itemFromRes.html">itemFromRes</a></span><span class="op">(</span><span class="va">resT</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'resT' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># create equivalence table with arbitrary cuts and reference values</span></span></span>
 <span class="r-in"><span><span class="va">ret2</span><span class="op">&lt;-</span> <span class="fu">simEquiTable</span><span class="op">(</span> anchor <span class="op">=</span> <span class="va">it</span>, item <span class="op">=</span> <span class="st">"item"</span>, cat<span class="op">=</span><span class="st">"category"</span>, value <span class="op">=</span> <span class="st">"est"</span>,</span></span>
 <span class="r-in"><span>       cutScores <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span> <span class="op">(</span> values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">400</span>, <span class="fl">600</span><span class="op">)</span><span class="op">)</span>, mRef <span class="op">=</span> <span class="fl">0.047</span>, sdRef <span class="op">=</span> <span class="fl">1.181</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in simEquiTable(anchor = it, item = "item", cat = "category", value = "est",     cutScores = list(values = c(400, 600)), mRef = 0.047, sdRef = 1.181):</span> unused arguments (item = "item", cat = "category", value = "est")</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in simEquiTable(anchor = it, item = "item", cat = "category", value = "est",     cutScores = list(values = c(400, 600)), mRef = 0.047, sdRef = 1.181):</span> object 'it' not found</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

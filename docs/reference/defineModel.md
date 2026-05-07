@@ -658,19 +658,29 @@ datW <- subset(trends, booklet == "Bo02" & year == 2010) |>
 
 # defining the unidimensional model: specifying q matrix is not necessary
 mod1 <- defineModel(dat=datW, items= -c(1:5), id="idstud", analysis.name = "unidim", dir = tempdir())
-#> Error in defineModel(dat = datW, items = -c(1:5), id = "idstud", analysis.name = "unidim",     dir = tempdir()): Assertion on 'conquest.folder' failed: Directory expected, but file in place: 'C:/Users/grewered/AppData/Local/Programs/R/R-4.4.2/library/eatModel/exec/console_Feb2007.exe'.
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Q matrix specifies 1 dimension(s).
 
 # run the model
 run1 <- runModel(mod1)
-#> Error: object 'mod1' not found
 
 # get the results
 res1 <- getResults(run1)
-#> Error: object 'run1' not found
+#> Cannot identify 'seed' from cqc file.
+#> Warning: running command '"quarto" TMPDIR=C:/Users/grewered/AppData/Local/Temp/Rtmp0GyuPo/file5a44534d2148 -V' had status 1
+#> Found TERM 1: 'item' 
+#> Found 1 dimension(s): 
+#> Found 0 regressor(s).
+#> Warning: NAs introduced by coercion
+#> Pattern 'item' found. Assume no partial credit model.
+#> Cannot identify variable identifier for additional term 'regression' in file 'unidim.shw'. Skip procedure.
+#> Found valid WLEs of 172 person(s) for 1 dimension(s).
+#> 172 persons and 1 dimensions(s) found.
+#> 5 plausible values were drawn for each person on each dimension.
 
 # extract the item parameters from the results object
 item1<- itemFromRes(res1)
-#> Error: object 'res1' not found
 
 
 ################################################################################
@@ -690,15 +700,34 @@ datW[,"sexNum"] <- car::recode ( datW[,"sex"] , "'male'=0; 'female'=1", as.facto
 items<- grep("^T[[:digit:]]{2}", colnames(datW))
 mod1a<- defineModel(dat=datW, items= items, id="idstud", DIF.var = "sexNum",
         analysis.name = "unidimDIF", dir = tempdir())
-#> Error in defineModel(dat = datW, items = items, id = "idstud", DIF.var = "sexNum",     analysis.name = "unidimDIF", dir = tempdir()): Assertion on 'conquest.folder' failed: Directory expected, but file in place: 'C:/Users/grewered/AppData/Local/Programs/R/R-4.4.2/library/eatModel/exec/console_Feb2007.exe'.
+#> '.', '-', and '_' nor upper case letters are allowed in explicit variable names and numbers in DIF variable name. Delete signs from variables names for explicit and DIF variables: 
+#> 
+#>               cols    old    new
+#>       DIF.var   39 sexNum sexnum
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Q matrix specifies 1 dimension(s).
 
 # run the model
 run1a<- runModel(mod1a)
-#> Error: object 'mod1a' not found
 
 # get the results
 res1a<- getResults(run1a)
-#> Error: object 'run1a' not found
+#> Cannot identify 'seed' from cqc file.
+#> Warning: running command '"quarto" TMPDIR=C:/Users/grewered/AppData/Local/Temp/Rtmp0GyuPo/file5a444ae2fe6 -V' had status 1
+#> Found TERM 1: 'item' 
+#> Found TERM 2: '(-)sexnum' 
+#> Found TERM 3: 'item*sexnum' 
+#> There seem to be one more column than columns names. Expect missing column name before 'ESTIMATE'. 
+#> Check outputfile for term 'item*sexnum' in file: 'C:\Users\grewered\AppData\Local\Temp\Rtmp0GyuPo/unidimDIF.shw'. 
+#> Found 1 dimension(s): 
+#> Found 0 regressor(s).
+#> Warning: NAs introduced by coercion
+#> Pattern 'item-sexnum+item*sexnum' found. Assume no partial credit model.
+#> Cannot identify variable identifier for additional term 'regression' in file 'unidimDIF.shw'. Skip procedure.
+#> Found valid WLEs of 172 person(s) for 1 dimension(s).
+#> 172 persons and 1 dimensions(s) found.
+#> 5 plausible values were drawn for each person on each dimension.
 
 
 ################################################################################
@@ -712,19 +741,35 @@ res1a<- getResults(run1a)
 items<- grep("^T[[:digit:]]{2}", colnames(datW))
 mod1b<- defineModel(dat=datW, items= items, id="idstud", model.statement = "item + sexNum",
         analysis.name = "unidimCustom", dir = tempdir())
-#> Error in defineModel(dat = datW, items = items, id = "idstud", model.statement = "item + sexNum",     analysis.name = "unidimCustom", dir = tempdir()): Assertion on 'conquest.folder' failed: Directory expected, but file in place: 'C:/Users/grewered/AppData/Local/Programs/R/R-4.4.2/library/eatModel/exec/console_Feb2007.exe'.
+#> '.', '-', and '_' nor upper case letters are allowed in explicit variable names and numbers in DIF variable name. Delete signs from variables names for explicit and DIF variables: 
+#> 
+#>                cols    old    new
+#>       add.vars   39 sexNum sexnum
+#>     Remove deleted signs from variables names for explicit variables also in the model statement. Please check afterwards for consistency!
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Q matrix specifies 1 dimension(s).
 
 # run the model
 run1b<- runModel(mod1b)
-#> Error: object 'mod1b' not found
 
 # get the results
 res1b<- getResults(run1b)
-#> Error: object 'run1b' not found
+#> Cannot identify 'seed' from cqc file.
+#> Warning: running command '"quarto" TMPDIR=C:/Users/grewered/AppData/Local/Temp/Rtmp0GyuPo/file5a44587578a5 -V' had status 1
+#> Found TERM 1: 'item' 
+#> Found TERM 2: 'sexnum' 
+#> Found 1 dimension(s): 
+#> Found 0 regressor(s).
+#> Warning: NAs introduced by coercion
+#> Pattern 'item+sexnum' found. Assume no partial credit model.
+#> Cannot identify variable identifier for additional term 'regression' in file 'unidimCustom.shw'. Skip procedure.
+#> Found valid WLEs of 172 person(s) for 1 dimension(s).
+#> 172 persons and 1 dimensions(s) found.
+#> 5 plausible values were drawn for each person on each dimension.
 
 # item parameter
 it1b <- itemFromRes(res1b)
-#> Error: object 'res1b' not found
 
 
 ################################################################################
@@ -736,7 +781,6 @@ it1b <- itemFromRes(res1b)
 
 # read in anchor parameters from the results object of the first example
 aPar <- itemFromRes(res1)[,c("item", "est")]
-#> Error: object 'res1' not found
 
 # defining the model: specifying q matrix now is necessary.
 # Please note that all latent regression variables have to be of class numeric.
@@ -745,15 +789,36 @@ aPar <- itemFromRes(res1)[,c("item", "est")]
 mod2a<- defineModel(dat=datW, items= grep("^T[[:digit:]]{2}", colnames(datW)),
         id="idstud", analysis.name = "twodim", HG.var = c("language","sex", "ses"),
         qMatrix = qMat, anchor = aPar, n.plausible = 20,dir = tempdir())
-#> Error in defineModel(dat = datW, items = grep("^T[[:digit:]]{2}", colnames(datW)),     id = "idstud", analysis.name = "twodim", HG.var = c("language",         "sex", "ses"), qMatrix = qMat, anchor = aPar, n.plausible = 20,     dir = tempdir()): Assertion on 'conquest.folder' failed: Directory expected, but file in place: 'C:/Users/grewered/AppData/Local/Programs/R/R-4.4.2/library/eatModel/exec/console_Feb2007.exe'.
+#> Following 250 item(s) missed in data frame will be removed from Q matrix: 
+#>     T07_08, T02_02, T07_01, T02_06, T07_05, T07_06, T02_07, T07_02, T07_04, T02_03, T07_09, T02_01, T02_04, T07_03, T02_05, T07_07, T07_10, T12_11, T09_12, T01_08, T13_15, T15_03, T13_04, T13_07, T13_16, T13_01, T15_02, T15_01, T15_15, T15_16, T15_09, T13_12, T13_13, T15_14, T13_08, T13_06, T15_12, T13_10, T13_17, T15_11, T13_05, T13_09, T15_10, T15_13, T03_07, T03_01, T03_08, T03_05, T03_06, T03_03, T10_08, T11_06, T11_03, T11_01, T04_02, T04_01, T04_06, T04_04, T11_04, T10_01, T11_08, T10_02, T10_09, T10_07, T11_02, T04_05, T04_03, T11_05, T10_06, T11_10, T11_09, T04_07, T15_17, T15_18, T13_18, T10_10, T04_09, T04_08, T11_0X, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T06_05, T05_03, T05_06, T05_05, T06_02, T06_04, T06_03, T05_04, T05_02, T05_01, T06_01, T08_04, T08_06, T08_03, T08_07, T08_02, T08_05, T08_01, T08_09, T08_08, T03_09, T06_1X, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Background variable(s) 'language', 'sex' of class 
+#>     'factor', 'factor' will be converted to indicator variables.
+#>     Variable 'language' was converted to 2 indicator(s) with name(s) 'languagenativeAndOther', 'languageother'.
+#>     Variable 'sex' was converted to 1 indicator(s) with name(s) 'sexmale'.
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> 33 common items found in 'anchor' list and data frame.
+#> Warning: Gaussian quadrature is only available for models without latent regressors. Use 'Bock-Aiken quadrature' for estimation.
+#> Q matrix specifies 2 dimension(s).
+#> Anchorparameter were defined. Set constraints to 'none'.
 
 # run the model
 run2a<- runModel(mod2a)
-#> Error: object 'mod2a' not found
 
 # get the results
 res2a<- getResults(run2a)
-#> Error: object 'run2a' not found
+#> Q3 is only available for unidimensional models. Estimation will be skipped.
+#> Cannot identify 'seed' from cqc file.
+#> Warning: running command '"quarto" TMPDIR=C:/Users/grewered/AppData/Local/Temp/Rtmp0GyuPo/file5a4436c03dbf -V' had status 1
+#> Found TERM 1: 'item' 
+#> 'ERROR' column in Outputfile for term 'item' in file: 'C:\Users\grewered\AppData\Local\Temp\Rtmp0GyuPo/twodim.shw' does not seem to be a numeric value. Please check!
+#> Found 2 dimension(s): Dimension 1, Dimension 2
+#> Found 4 regressor(s).
+#> Pattern 'item' found. Assume no partial credit model.
+#> Cannot identify variable identifier for additional term 'regression' in file 'twodim.shw'. Skip procedure.
+#> Found valid WLEs of 172 person(s) for 2 dimension(s).
+#> 172 persons and 2 dimensions(s) found.
+#> 20 plausible values were drawn for each person on each dimension.
 
 
 ################################################################################
@@ -765,19 +830,63 @@ res2a<- getResults(run2a)
 mod2b<- defineModel(dat=datW, items= grep("^T[[:digit:]]{2}", colnames(datW)),
         id="idstud", analysis.name = "twodim2", qMatrix = qMat,
         n.plausible = 20, dir = tempdir())
-#> Error in defineModel(dat = datW, items = grep("^T[[:digit:]]{2}", colnames(datW)),     id = "idstud", analysis.name = "twodim2", qMatrix = qMat,     n.plausible = 20, dir = tempdir()): Assertion on 'conquest.folder' failed: Directory expected, but file in place: 'C:/Users/grewered/AppData/Local/Programs/R/R-4.4.2/library/eatModel/exec/console_Feb2007.exe'.
+#> Following 250 item(s) missed in data frame will be removed from Q matrix: 
+#>     T07_08, T02_02, T07_01, T02_06, T07_05, T07_06, T02_07, T07_02, T07_04, T02_03, T07_09, T02_01, T02_04, T07_03, T02_05, T07_07, T07_10, T12_11, T09_12, T01_08, T13_15, T15_03, T13_04, T13_07, T13_16, T13_01, T15_02, T15_01, T15_15, T15_16, T15_09, T13_12, T13_13, T15_14, T13_08, T13_06, T15_12, T13_10, T13_17, T15_11, T13_05, T13_09, T15_10, T15_13, T03_07, T03_01, T03_08, T03_05, T03_06, T03_03, T10_08, T11_06, T11_03, T11_01, T04_02, T04_01, T04_06, T04_04, T11_04, T10_01, T11_08, T10_02, T10_09, T10_07, T11_02, T04_05, T04_03, T11_05, T10_06, T11_10, T11_09, T04_07, T15_17, T15_18, T13_18, T10_10, T04_09, T04_08, T11_0X, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T06_05, T05_03, T05_06, T05_05, T06_02, T06_04, T06_03, T05_04, T05_02, T05_01, T06_01, T08_04, T08_06, T08_03, T08_07, T08_02, T08_05, T08_01, T08_09, T08_08, T03_09, T06_1X, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Q matrix specifies 2 dimension(s).
 
 # run the model
 run2b <- runModel(mod2b)
-#> Error: object 'mod2b' not found
 
 # get the results
 res2b<- getResults(run2b)
-#> Error: object 'run2b' not found
+#> Q3 is only available for unidimensional models. Estimation will be skipped.
+#> Cannot identify 'seed' from cqc file.
+#> Warning: running command '"quarto" TMPDIR=C:/Users/grewered/AppData/Local/Temp/Rtmp0GyuPo/file5a445c1c111d -V' had status 1
+#> Found TERM 1: 'item' 
+#> Found 2 dimension(s): Dimension 1, Dimension 2
+#> Found 0 regressor(s).
+#> Warning: NAs introduced by coercion
+#> Warning: NAs introduced by coercion
+#> Pattern 'item' found. Assume no partial credit model.
+#> Cannot identify variable identifier for additional term 'regression' in file 'twodim2.shw'. Skip procedure.
+#> Found valid WLEs of 172 person(s) for 2 dimension(s).
+#> 172 persons and 2 dimensions(s) found.
+#> 20 plausible values were drawn for each person on each dimension.
 
 ### equating (wenn nicht verankert)
 eq2b <- equat1pl( results = res2b, prmNorm = aPar, difBound=.64, iterativ=TRUE)
-#> Error: object 'res2b' not found
+#> Found 1 model(s).
+#>    Equating is executed for each dimension in each model separately.
+#> 
+#> ====================================================================================================
+#>  
+#> Model No. 1
+#>     Model name:                twodim2
+#>     Number of dimension(s):    2
+#>     Name(s) of dimension(s):   domainlistening, domainreading
+#>     Name of current dimension: domainlistening 
+#>     Number of linking items:   16
+#>     Linking method:            Mean.Mean
+#> 
+#>   linking.constant linkerror
+#> 1            0.003     0.003
+#> 
+#> 
+#> ====================================================================================================
+#>  
+#> Model No. 1
+#>     Model name:                twodim2
+#>     Number of dimension(s):    2
+#>     Name(s) of dimension(s):   domainlistening, domainreading
+#>     Name of current dimension: domainreading 
+#>     Number of linking items:   17
+#>     Linking method:            Mean.Mean
+#> 
+#>   linking.constant linkerror
+#> 1            0.032     0.007
+#> 
 
 ### transformation to the 'bista' metric: needs reference population definition
 ### we use some arbitrary values here
@@ -786,7 +895,9 @@ ref  <- data.frame ( domain = c("domainreading", "domainlistening"),
 cuts <- list ( domainreading = list ( values = 390+0:3*75),
         domainlistening = list ( values = 360+0:3*85))
 tf2b <- transformToBista ( equatingList = eq2b, refPop = ref, cuts = cuts)
-#> Error: object 'eq2b' not found
+#> The 'refPop' data.frame does not include information about reference population mean/SD on Bista metric. Values will be defaulted to mean = 500 and SD = 100.
+#> Warning: Model 'twodim2', dimension 'domainreading': No items on trait level(s) '5'.
+#> 1 of 5 trait levels(s) of merging variable 'traitLevel' from data set 'linking error list' not included in data set 'item parameter list'.
 
 
 ################################################################################
@@ -804,38 +915,62 @@ mod3T<- defineModel(dat=datW, items= grep("^T[[:digit:]]{2}", colnames(datW)),
 #>     Variable 'sex' was converted to 1 indicator(s) with name(s) 'sexmale'.
 #> Dataset is completely linked.
 #> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
-#> Error: object 'aPar' not found
+#> 33 common items found in 'anchor' list and data frame.
+#> Q matrix specifies 2 dimension(s).
 
 # run the model
 run3T<- runModel(mod3T)
-#> Error: object 'mod3T' not found
 
 # Object 'run2T' is of class 'tam.mml'
 class(run3T)
-#> Error: object 'run3T' not found
+#> [1] "tam.mml"
 
 # the class of 'run2T' corresponds to the class defined by the TAM package; all
 # functions of the TAM package intended for further processing (e.g. drawing
 # plausible values, plotting deviance change etc.) work, for example:
 wle  <- tam.wle(run3T)
-#> Error: object 'run3T' not found
+#> Iteration in WLE/MLE estimation  1   | Maximal change  1.5692 
+#> Iteration in WLE/MLE estimation  2   | Maximal change  0.4586 
+#> Iteration in WLE/MLE estimation  3   | Maximal change  0.0415 
+#> Iteration in WLE/MLE estimation  4   | Maximal change  0.0013 
+#> Iteration in WLE/MLE estimation  5   | Maximal change  1e-04 
+#> Iteration in WLE/MLE estimation  6   | Maximal change  0 
+#> 
+#> -------
+#> WLE Reliability (Dimension1)=0.572 
+#> WLE Reliability (Dimension2)=0.632 
 
 # Finally, the model result are collected in a single data frame
 res3T<- getResults(run3T)
-#> Error: object 'run3T' not found
+#> Q3 is only available for unidimensional models. Estimation will be skipped.
+#> Getting standard errors with the tam.se function: 0.2 secs
+#> |*****|
+#> |-----|
 
 # repeat the same model with mirt
 items<- grep("^T[[:digit:]]{2}", colnames(datW), value=TRUE)
 irtM <- data.frame(item = items, task = substr(items,1,4), stringsAsFactors = FALSE) |> dplyr::mutate(irtmod = "Rasch")
 mod3M<- defineModel(dat=datW, items= grep("^T[[:digit:]]{2}", colnames(datW)),id="idstud",
         irtmodel = irtM[,c("item", "irtmod")],  anchor = aPar, qMatrix = qMat, HG.var = "sex",  software = "mirt")
-#> Error in match.arg(arg = irtmodel, choices = c("1PL", "2PL", "PCM", "PCM2",     "RSM", "GPCM", "2PL.groups", "GPCM.design", "3PL")): 'arg' must be NULL or a character vector
+#> Following 250 item(s) missed in data frame will be removed from Q matrix: 
+#>     T07_08, T02_02, T07_01, T02_06, T07_05, T07_06, T02_07, T07_02, T07_04, T02_03, T07_09, T02_01, T02_04, T07_03, T02_05, T07_07, T07_10, T12_11, T09_12, T01_08, T13_15, T15_03, T13_04, T13_07, T13_16, T13_01, T15_02, T15_01, T15_15, T15_16, T15_09, T13_12, T13_13, T15_14, T13_08, T13_06, T15_12, T13_10, T13_17, T15_11, T13_05, T13_09, T15_10, T15_13, T03_07, T03_01, T03_08, T03_05, T03_06, T03_03, T10_08, T11_06, T11_03, T11_01, T04_02, T04_01, T04_06, T04_04, T11_04, T10_01, T11_08, T10_02, T10_09, T10_07, T11_02, T04_05, T04_03, T11_05, T10_06, T11_10, T11_09, T04_07, T15_17, T15_18, T13_18, T10_10, T04_09, T04_08, T11_0X, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T06_05, T05_03, T05_06, T05_05, T06_02, T06_04, T06_03, T05_04, T05_02, T05_01, T06_01, T08_04, T08_06, T08_03, T08_07, T08_02, T08_05, T08_01, T08_09, T08_08, T03_09, T06_1X, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Background variable(s) 'sex' of class 
+#>     'factor' will be converted to indicator variables.
+#>     Variable 'sex' was converted to 1 indicator(s) with name(s) 'sexmale'.
+#> Dataset is completely linked.
+#> Specifying 'method' and 'nodes' not yet implemented for 'mirt'.
+#> 33 common items found in 'anchor' list and data frame.
+#> Q matrix specifies 2 dimension(s).
 run3M<- runModel(mod3M)
-#> Error: object 'mod3M' not found
+#> Modify skeleton ... 
+#> 
+#> 
+#> Calculating information matrix...
 res3M<- getResults(run3M)
-#> Error: object 'run3M' not found
+#> Warning: path[1]="C:\Users\grewered\AppData\Local\Temp\Rtmp0GyuPo/W77062.rds": Das System kann die angegebene Datei nicht finden
+#> Getting WLEs calling fscores(method="WLE") from getMirtWles: 3.7 secs
+#> Getting PVs calling fscores from getMirtPVs: 0.5 secs
 itM  <- itemFromRes(res3M)
-#> Error: object 'res3M' not found
 
 
 ################################################################################
@@ -874,15 +1009,1225 @@ modMul<- defineModel(dat = datW, items = grep("^T[[:digit:]]{2}", colnames(datW)
          id = "idstud", check.for.linking = TRUE, splittedModels = l1, software = "tam")
 #> 
 #> Specification of 'qMatrix' and 'person.groups' results in 24 model(s).
-#> Error in eval(cl1[[u]]): object 'datW' not found
+#> Warning: Model split preparation for model No. 1, model name
+#> domainlistening__group1.female_group2.countryC: 118 items from 134 items listed
+#> the Q matrix not found in data:
+#> ℹ 'T12_11', 'T13_15', 'T15_03', 'T13_04', 'T13_07', 'T13_16', 'T13_01',
+#>   'T15_02', 'T15_01', 'T15_15', 'T15_16', 'T15_09', 'T13_12', 'T13_13',
+#>   'T15_14', 'T13_08', 'T13_06', 'T15_12', 'T13_10', 'T13_17', 'T15_11',
+#>   'T13_05', 'T13_09', 'T15_10', 'T15_13', 'T15_17', 'T15_18', 'T13_18',
+#>   'T16_08', 'T16_09', 'T16_11', 'T16_13', 'T16_01', 'T16_04', 'T16_10',
+#>   'T16_02', 'T16_12', 'T16_06', 'T16_07', 'T19_06', 'T19_08', 'T19_05',
+#>   'T19_11', 'T19_01', 'T19_02', 'T19_30', 'T19_03', 'T19_07', 'T19_04',
+#>   'T19_09', 'T21_11', 'T18_01', 'T21_01', 'T18_05', 'T21_12', 'T18_13',
+#>   'T21_10', 'T18_11', 'T21_05', 'T21_13', 'T18_08', 'T18_07', 'T21_09',
+#>   'T18_04', 'T18_02', 'T21_02', 'T21_06', 'T18_09', 'T21_04', 'T18_12',
+#>   'T21_14', 'T21_03', 'T18_10', 'T30_06', 'T29_04', 'T29_02', 'T30_02',
+#>   'T30_03', 'T30_01', 'T29_05', 'T29_03', 'T28_08', 'T28_09', 'T28_02',
+#>   'T28_03', 'T28_04', 'T28_01', 'T28_10', 'T28_06', 'T20_05', 'T20_09',
+#>   'T20_30', 'T20_08', 'T20_12', 'T20_06', 'T20_07', 'T20_02', 'T20_13',
+#>   'T20_03', 'T20_01', 'T20_04', 'T20_11', 'T20_10', 'T32_04', 'T31_03',
+#>   'T31_01', 'T31_04', 'T32_03', 'T32_02', 'T32_01', 'T17_02', 'T17_09',
+#>   'T17_10', 'T17_04', 'T17_03', 'T17_08', 'T17_06', 'T17_01'
+#> Warning: Model split preparation for model No. 2, model name
+#> domainlistening__group1.female_group2.countryA: 118 items from 134 items listed
+#> the Q matrix not found in data:
+#> ℹ 'T12_11', 'T13_15', 'T15_03', 'T13_04', 'T13_07', 'T13_16', 'T13_01',
+#>   'T15_02', 'T15_01', 'T15_15', 'T15_16', 'T15_09', 'T13_12', 'T13_13',
+#>   'T15_14', 'T13_08', 'T13_06', 'T15_12', 'T13_10', 'T13_17', 'T15_11',
+#>   'T13_05', 'T13_09', 'T15_10', 'T15_13', 'T15_17', 'T15_18', 'T13_18',
+#>   'T16_08', 'T16_09', 'T16_11', 'T16_13', 'T16_01', 'T16_04', 'T16_10',
+#>   'T16_02', 'T16_12', 'T16_06', 'T16_07', 'T19_06', 'T19_08', 'T19_05',
+#>   'T19_11', 'T19_01', 'T19_02', 'T19_30', 'T19_03', 'T19_07', 'T19_04',
+#>   'T19_09', 'T21_11', 'T18_01', 'T21_01', 'T18_05', 'T21_12', 'T18_13',
+#>   'T21_10', 'T18_11', 'T21_05', 'T21_13', 'T18_08', 'T18_07', 'T21_09',
+#>   'T18_04', 'T18_02', 'T21_02', 'T21_06', 'T18_09', 'T21_04', 'T18_12',
+#>   'T21_14', 'T21_03', 'T18_10', 'T30_06', 'T29_04', 'T29_02', 'T30_02',
+#>   'T30_03', 'T30_01', 'T29_05', 'T29_03', 'T28_08', 'T28_09', 'T28_02',
+#>   'T28_03', 'T28_04', 'T28_01', 'T28_10', 'T28_06', 'T20_05', 'T20_09',
+#>   'T20_30', 'T20_08', 'T20_12', 'T20_06', 'T20_07', 'T20_02', 'T20_13',
+#>   'T20_03', 'T20_01', 'T20_04', 'T20_11', 'T20_10', 'T32_04', 'T31_03',
+#>   'T31_01', 'T31_04', 'T32_03', 'T32_02', 'T32_01', 'T17_02', 'T17_09',
+#>   'T17_10', 'T17_04', 'T17_03', 'T17_08', 'T17_06', 'T17_01'
+#> Warning: Model split preparation for model No. 3, model name
+#> domainlistening__group1.female_group2.countryB: 118 items from 134 items listed
+#> the Q matrix not found in data:
+#> ℹ 'T12_11', 'T13_15', 'T15_03', 'T13_04', 'T13_07', 'T13_16', 'T13_01',
+#>   'T15_02', 'T15_01', 'T15_15', 'T15_16', 'T15_09', 'T13_12', 'T13_13',
+#>   'T15_14', 'T13_08', 'T13_06', 'T15_12', 'T13_10', 'T13_17', 'T15_11',
+#>   'T13_05', 'T13_09', 'T15_10', 'T15_13', 'T15_17', 'T15_18', 'T13_18',
+#>   'T16_08', 'T16_09', 'T16_11', 'T16_13', 'T16_01', 'T16_04', 'T16_10',
+#>   'T16_02', 'T16_12', 'T16_06', 'T16_07', 'T19_06', 'T19_08', 'T19_05',
+#>   'T19_11', 'T19_01', 'T19_02', 'T19_30', 'T19_03', 'T19_07', 'T19_04',
+#>   'T19_09', 'T21_11', 'T18_01', 'T21_01', 'T18_05', 'T21_12', 'T18_13',
+#>   'T21_10', 'T18_11', 'T21_05', 'T21_13', 'T18_08', 'T18_07', 'T21_09',
+#>   'T18_04', 'T18_02', 'T21_02', 'T21_06', 'T18_09', 'T21_04', 'T18_12',
+#>   'T21_14', 'T21_03', 'T18_10', 'T30_06', 'T29_04', 'T29_02', 'T30_02',
+#>   'T30_03', 'T30_01', 'T29_05', 'T29_03', 'T28_08', 'T28_09', 'T28_02',
+#>   'T28_03', 'T28_04', 'T28_01', 'T28_10', 'T28_06', 'T20_05', 'T20_09',
+#>   'T20_30', 'T20_08', 'T20_12', 'T20_06', 'T20_07', 'T20_02', 'T20_13',
+#>   'T20_03', 'T20_01', 'T20_04', 'T20_11', 'T20_10', 'T32_04', 'T31_03',
+#>   'T31_01', 'T31_04', 'T32_03', 'T32_02', 'T32_01', 'T17_02', 'T17_09',
+#>   'T17_10', 'T17_04', 'T17_03', 'T17_08', 'T17_06', 'T17_01'
+#> Warning: Model split preparation for model No. 4, model name
+#> domainlistening__group1.female_group2.all: 118 items from 134 items listed the
+#> Q matrix not found in data:
+#> ℹ 'T12_11', 'T13_15', 'T15_03', 'T13_04', 'T13_07', 'T13_16', 'T13_01',
+#>   'T15_02', 'T15_01', 'T15_15', 'T15_16', 'T15_09', 'T13_12', 'T13_13',
+#>   'T15_14', 'T13_08', 'T13_06', 'T15_12', 'T13_10', 'T13_17', 'T15_11',
+#>   'T13_05', 'T13_09', 'T15_10', 'T15_13', 'T15_17', 'T15_18', 'T13_18',
+#>   'T16_08', 'T16_09', 'T16_11', 'T16_13', 'T16_01', 'T16_04', 'T16_10',
+#>   'T16_02', 'T16_12', 'T16_06', 'T16_07', 'T19_06', 'T19_08', 'T19_05',
+#>   'T19_11', 'T19_01', 'T19_02', 'T19_30', 'T19_03', 'T19_07', 'T19_04',
+#>   'T19_09', 'T21_11', 'T18_01', 'T21_01', 'T18_05', 'T21_12', 'T18_13',
+#>   'T21_10', 'T18_11', 'T21_05', 'T21_13', 'T18_08', 'T18_07', 'T21_09',
+#>   'T18_04', 'T18_02', 'T21_02', 'T21_06', 'T18_09', 'T21_04', 'T18_12',
+#>   'T21_14', 'T21_03', 'T18_10', 'T30_06', 'T29_04', 'T29_02', 'T30_02',
+#>   'T30_03', 'T30_01', 'T29_05', 'T29_03', 'T28_08', 'T28_09', 'T28_02',
+#>   'T28_03', 'T28_04', 'T28_01', 'T28_10', 'T28_06', 'T20_05', 'T20_09',
+#>   'T20_30', 'T20_08', 'T20_12', 'T20_06', 'T20_07', 'T20_02', 'T20_13',
+#>   'T20_03', 'T20_01', 'T20_04', 'T20_11', 'T20_10', 'T32_04', 'T31_03',
+#>   'T31_01', 'T31_04', 'T32_03', 'T32_02', 'T32_01', 'T17_02', 'T17_09',
+#>   'T17_10', 'T17_04', 'T17_03', 'T17_08', 'T17_06', 'T17_01'
+#> Warning: Model split preparation for model No. 5, model name
+#> domainlistening__group1.male_group2.countryC: 118 items from 134 items listed
+#> the Q matrix not found in data:
+#> ℹ 'T12_11', 'T13_15', 'T15_03', 'T13_04', 'T13_07', 'T13_16', 'T13_01',
+#>   'T15_02', 'T15_01', 'T15_15', 'T15_16', 'T15_09', 'T13_12', 'T13_13',
+#>   'T15_14', 'T13_08', 'T13_06', 'T15_12', 'T13_10', 'T13_17', 'T15_11',
+#>   'T13_05', 'T13_09', 'T15_10', 'T15_13', 'T15_17', 'T15_18', 'T13_18',
+#>   'T16_08', 'T16_09', 'T16_11', 'T16_13', 'T16_01', 'T16_04', 'T16_10',
+#>   'T16_02', 'T16_12', 'T16_06', 'T16_07', 'T19_06', 'T19_08', 'T19_05',
+#>   'T19_11', 'T19_01', 'T19_02', 'T19_30', 'T19_03', 'T19_07', 'T19_04',
+#>   'T19_09', 'T21_11', 'T18_01', 'T21_01', 'T18_05', 'T21_12', 'T18_13',
+#>   'T21_10', 'T18_11', 'T21_05', 'T21_13', 'T18_08', 'T18_07', 'T21_09',
+#>   'T18_04', 'T18_02', 'T21_02', 'T21_06', 'T18_09', 'T21_04', 'T18_12',
+#>   'T21_14', 'T21_03', 'T18_10', 'T30_06', 'T29_04', 'T29_02', 'T30_02',
+#>   'T30_03', 'T30_01', 'T29_05', 'T29_03', 'T28_08', 'T28_09', 'T28_02',
+#>   'T28_03', 'T28_04', 'T28_01', 'T28_10', 'T28_06', 'T20_05', 'T20_09',
+#>   'T20_30', 'T20_08', 'T20_12', 'T20_06', 'T20_07', 'T20_02', 'T20_13',
+#>   'T20_03', 'T20_01', 'T20_04', 'T20_11', 'T20_10', 'T32_04', 'T31_03',
+#>   'T31_01', 'T31_04', 'T32_03', 'T32_02', 'T32_01', 'T17_02', 'T17_09',
+#>   'T17_10', 'T17_04', 'T17_03', 'T17_08', 'T17_06', 'T17_01'
+#> Warning: Model split preparation for model No. 6, model name
+#> domainlistening__group1.male_group2.countryA: 118 items from 134 items listed
+#> the Q matrix not found in data:
+#> ℹ 'T12_11', 'T13_15', 'T15_03', 'T13_04', 'T13_07', 'T13_16', 'T13_01',
+#>   'T15_02', 'T15_01', 'T15_15', 'T15_16', 'T15_09', 'T13_12', 'T13_13',
+#>   'T15_14', 'T13_08', 'T13_06', 'T15_12', 'T13_10', 'T13_17', 'T15_11',
+#>   'T13_05', 'T13_09', 'T15_10', 'T15_13', 'T15_17', 'T15_18', 'T13_18',
+#>   'T16_08', 'T16_09', 'T16_11', 'T16_13', 'T16_01', 'T16_04', 'T16_10',
+#>   'T16_02', 'T16_12', 'T16_06', 'T16_07', 'T19_06', 'T19_08', 'T19_05',
+#>   'T19_11', 'T19_01', 'T19_02', 'T19_30', 'T19_03', 'T19_07', 'T19_04',
+#>   'T19_09', 'T21_11', 'T18_01', 'T21_01', 'T18_05', 'T21_12', 'T18_13',
+#>   'T21_10', 'T18_11', 'T21_05', 'T21_13', 'T18_08', 'T18_07', 'T21_09',
+#>   'T18_04', 'T18_02', 'T21_02', 'T21_06', 'T18_09', 'T21_04', 'T18_12',
+#>   'T21_14', 'T21_03', 'T18_10', 'T30_06', 'T29_04', 'T29_02', 'T30_02',
+#>   'T30_03', 'T30_01', 'T29_05', 'T29_03', 'T28_08', 'T28_09', 'T28_02',
+#>   'T28_03', 'T28_04', 'T28_01', 'T28_10', 'T28_06', 'T20_05', 'T20_09',
+#>   'T20_30', 'T20_08', 'T20_12', 'T20_06', 'T20_07', 'T20_02', 'T20_13',
+#>   'T20_03', 'T20_01', 'T20_04', 'T20_11', 'T20_10', 'T32_04', 'T31_03',
+#>   'T31_01', 'T31_04', 'T32_03', 'T32_02', 'T32_01', 'T17_02', 'T17_09',
+#>   'T17_10', 'T17_04', 'T17_03', 'T17_08', 'T17_06', 'T17_01'
+#> Warning: Model split preparation for model No. 7, model name
+#> domainlistening__group1.male_group2.countryB: 118 items from 134 items listed
+#> the Q matrix not found in data:
+#> ℹ 'T12_11', 'T13_15', 'T15_03', 'T13_04', 'T13_07', 'T13_16', 'T13_01',
+#>   'T15_02', 'T15_01', 'T15_15', 'T15_16', 'T15_09', 'T13_12', 'T13_13',
+#>   'T15_14', 'T13_08', 'T13_06', 'T15_12', 'T13_10', 'T13_17', 'T15_11',
+#>   'T13_05', 'T13_09', 'T15_10', 'T15_13', 'T15_17', 'T15_18', 'T13_18',
+#>   'T16_08', 'T16_09', 'T16_11', 'T16_13', 'T16_01', 'T16_04', 'T16_10',
+#>   'T16_02', 'T16_12', 'T16_06', 'T16_07', 'T19_06', 'T19_08', 'T19_05',
+#>   'T19_11', 'T19_01', 'T19_02', 'T19_30', 'T19_03', 'T19_07', 'T19_04',
+#>   'T19_09', 'T21_11', 'T18_01', 'T21_01', 'T18_05', 'T21_12', 'T18_13',
+#>   'T21_10', 'T18_11', 'T21_05', 'T21_13', 'T18_08', 'T18_07', 'T21_09',
+#>   'T18_04', 'T18_02', 'T21_02', 'T21_06', 'T18_09', 'T21_04', 'T18_12',
+#>   'T21_14', 'T21_03', 'T18_10', 'T30_06', 'T29_04', 'T29_02', 'T30_02',
+#>   'T30_03', 'T30_01', 'T29_05', 'T29_03', 'T28_08', 'T28_09', 'T28_02',
+#>   'T28_03', 'T28_04', 'T28_01', 'T28_10', 'T28_06', 'T20_05', 'T20_09',
+#>   'T20_30', 'T20_08', 'T20_12', 'T20_06', 'T20_07', 'T20_02', 'T20_13',
+#>   'T20_03', 'T20_01', 'T20_04', 'T20_11', 'T20_10', 'T32_04', 'T31_03',
+#>   'T31_01', 'T31_04', 'T32_03', 'T32_02', 'T32_01', 'T17_02', 'T17_09',
+#>   'T17_10', 'T17_04', 'T17_03', 'T17_08', 'T17_06', 'T17_01'
+#> Warning: Model split preparation for model No. 8, model name
+#> domainlistening__group1.male_group2.all: 118 items from 134 items listed the Q
+#> matrix not found in data:
+#> ℹ 'T12_11', 'T13_15', 'T15_03', 'T13_04', 'T13_07', 'T13_16', 'T13_01',
+#>   'T15_02', 'T15_01', 'T15_15', 'T15_16', 'T15_09', 'T13_12', 'T13_13',
+#>   'T15_14', 'T13_08', 'T13_06', 'T15_12', 'T13_10', 'T13_17', 'T15_11',
+#>   'T13_05', 'T13_09', 'T15_10', 'T15_13', 'T15_17', 'T15_18', 'T13_18',
+#>   'T16_08', 'T16_09', 'T16_11', 'T16_13', 'T16_01', 'T16_04', 'T16_10',
+#>   'T16_02', 'T16_12', 'T16_06', 'T16_07', 'T19_06', 'T19_08', 'T19_05',
+#>   'T19_11', 'T19_01', 'T19_02', 'T19_30', 'T19_03', 'T19_07', 'T19_04',
+#>   'T19_09', 'T21_11', 'T18_01', 'T21_01', 'T18_05', 'T21_12', 'T18_13',
+#>   'T21_10', 'T18_11', 'T21_05', 'T21_13', 'T18_08', 'T18_07', 'T21_09',
+#>   'T18_04', 'T18_02', 'T21_02', 'T21_06', 'T18_09', 'T21_04', 'T18_12',
+#>   'T21_14', 'T21_03', 'T18_10', 'T30_06', 'T29_04', 'T29_02', 'T30_02',
+#>   'T30_03', 'T30_01', 'T29_05', 'T29_03', 'T28_08', 'T28_09', 'T28_02',
+#>   'T28_03', 'T28_04', 'T28_01', 'T28_10', 'T28_06', 'T20_05', 'T20_09',
+#>   'T20_30', 'T20_08', 'T20_12', 'T20_06', 'T20_07', 'T20_02', 'T20_13',
+#>   'T20_03', 'T20_01', 'T20_04', 'T20_11', 'T20_10', 'T32_04', 'T31_03',
+#>   'T31_01', 'T31_04', 'T32_03', 'T32_02', 'T32_01', 'T17_02', 'T17_09',
+#>   'T17_10', 'T17_04', 'T17_03', 'T17_08', 'T17_06', 'T17_01'
+#> Warning: Model split preparation for model No. 9, model name
+#> domainlistening__group1.all_group2.countryC: 118 items from 134 items listed
+#> the Q matrix not found in data:
+#> ℹ 'T12_11', 'T13_15', 'T15_03', 'T13_04', 'T13_07', 'T13_16', 'T13_01',
+#>   'T15_02', 'T15_01', 'T15_15', 'T15_16', 'T15_09', 'T13_12', 'T13_13',
+#>   'T15_14', 'T13_08', 'T13_06', 'T15_12', 'T13_10', 'T13_17', 'T15_11',
+#>   'T13_05', 'T13_09', 'T15_10', 'T15_13', 'T15_17', 'T15_18', 'T13_18',
+#>   'T16_08', 'T16_09', 'T16_11', 'T16_13', 'T16_01', 'T16_04', 'T16_10',
+#>   'T16_02', 'T16_12', 'T16_06', 'T16_07', 'T19_06', 'T19_08', 'T19_05',
+#>   'T19_11', 'T19_01', 'T19_02', 'T19_30', 'T19_03', 'T19_07', 'T19_04',
+#>   'T19_09', 'T21_11', 'T18_01', 'T21_01', 'T18_05', 'T21_12', 'T18_13',
+#>   'T21_10', 'T18_11', 'T21_05', 'T21_13', 'T18_08', 'T18_07', 'T21_09',
+#>   'T18_04', 'T18_02', 'T21_02', 'T21_06', 'T18_09', 'T21_04', 'T18_12',
+#>   'T21_14', 'T21_03', 'T18_10', 'T30_06', 'T29_04', 'T29_02', 'T30_02',
+#>   'T30_03', 'T30_01', 'T29_05', 'T29_03', 'T28_08', 'T28_09', 'T28_02',
+#>   'T28_03', 'T28_04', 'T28_01', 'T28_10', 'T28_06', 'T20_05', 'T20_09',
+#>   'T20_30', 'T20_08', 'T20_12', 'T20_06', 'T20_07', 'T20_02', 'T20_13',
+#>   'T20_03', 'T20_01', 'T20_04', 'T20_11', 'T20_10', 'T32_04', 'T31_03',
+#>   'T31_01', 'T31_04', 'T32_03', 'T32_02', 'T32_01', 'T17_02', 'T17_09',
+#>   'T17_10', 'T17_04', 'T17_03', 'T17_08', 'T17_06', 'T17_01'
+#> Warning: Model split preparation for model No. 10, model name
+#> domainlistening__group1.all_group2.countryA: 118 items from 134 items listed
+#> the Q matrix not found in data:
+#> ℹ 'T12_11', 'T13_15', 'T15_03', 'T13_04', 'T13_07', 'T13_16', 'T13_01',
+#>   'T15_02', 'T15_01', 'T15_15', 'T15_16', 'T15_09', 'T13_12', 'T13_13',
+#>   'T15_14', 'T13_08', 'T13_06', 'T15_12', 'T13_10', 'T13_17', 'T15_11',
+#>   'T13_05', 'T13_09', 'T15_10', 'T15_13', 'T15_17', 'T15_18', 'T13_18',
+#>   'T16_08', 'T16_09', 'T16_11', 'T16_13', 'T16_01', 'T16_04', 'T16_10',
+#>   'T16_02', 'T16_12', 'T16_06', 'T16_07', 'T19_06', 'T19_08', 'T19_05',
+#>   'T19_11', 'T19_01', 'T19_02', 'T19_30', 'T19_03', 'T19_07', 'T19_04',
+#>   'T19_09', 'T21_11', 'T18_01', 'T21_01', 'T18_05', 'T21_12', 'T18_13',
+#>   'T21_10', 'T18_11', 'T21_05', 'T21_13', 'T18_08', 'T18_07', 'T21_09',
+#>   'T18_04', 'T18_02', 'T21_02', 'T21_06', 'T18_09', 'T21_04', 'T18_12',
+#>   'T21_14', 'T21_03', 'T18_10', 'T30_06', 'T29_04', 'T29_02', 'T30_02',
+#>   'T30_03', 'T30_01', 'T29_05', 'T29_03', 'T28_08', 'T28_09', 'T28_02',
+#>   'T28_03', 'T28_04', 'T28_01', 'T28_10', 'T28_06', 'T20_05', 'T20_09',
+#>   'T20_30', 'T20_08', 'T20_12', 'T20_06', 'T20_07', 'T20_02', 'T20_13',
+#>   'T20_03', 'T20_01', 'T20_04', 'T20_11', 'T20_10', 'T32_04', 'T31_03',
+#>   'T31_01', 'T31_04', 'T32_03', 'T32_02', 'T32_01', 'T17_02', 'T17_09',
+#>   'T17_10', 'T17_04', 'T17_03', 'T17_08', 'T17_06', 'T17_01'
+#> Warning: Model split preparation for model No. 11, model name
+#> domainlistening__group1.all_group2.countryB: 118 items from 134 items listed
+#> the Q matrix not found in data:
+#> ℹ 'T12_11', 'T13_15', 'T15_03', 'T13_04', 'T13_07', 'T13_16', 'T13_01',
+#>   'T15_02', 'T15_01', 'T15_15', 'T15_16', 'T15_09', 'T13_12', 'T13_13',
+#>   'T15_14', 'T13_08', 'T13_06', 'T15_12', 'T13_10', 'T13_17', 'T15_11',
+#>   'T13_05', 'T13_09', 'T15_10', 'T15_13', 'T15_17', 'T15_18', 'T13_18',
+#>   'T16_08', 'T16_09', 'T16_11', 'T16_13', 'T16_01', 'T16_04', 'T16_10',
+#>   'T16_02', 'T16_12', 'T16_06', 'T16_07', 'T19_06', 'T19_08', 'T19_05',
+#>   'T19_11', 'T19_01', 'T19_02', 'T19_30', 'T19_03', 'T19_07', 'T19_04',
+#>   'T19_09', 'T21_11', 'T18_01', 'T21_01', 'T18_05', 'T21_12', 'T18_13',
+#>   'T21_10', 'T18_11', 'T21_05', 'T21_13', 'T18_08', 'T18_07', 'T21_09',
+#>   'T18_04', 'T18_02', 'T21_02', 'T21_06', 'T18_09', 'T21_04', 'T18_12',
+#>   'T21_14', 'T21_03', 'T18_10', 'T30_06', 'T29_04', 'T29_02', 'T30_02',
+#>   'T30_03', 'T30_01', 'T29_05', 'T29_03', 'T28_08', 'T28_09', 'T28_02',
+#>   'T28_03', 'T28_04', 'T28_01', 'T28_10', 'T28_06', 'T20_05', 'T20_09',
+#>   'T20_30', 'T20_08', 'T20_12', 'T20_06', 'T20_07', 'T20_02', 'T20_13',
+#>   'T20_03', 'T20_01', 'T20_04', 'T20_11', 'T20_10', 'T32_04', 'T31_03',
+#>   'T31_01', 'T31_04', 'T32_03', 'T32_02', 'T32_01', 'T17_02', 'T17_09',
+#>   'T17_10', 'T17_04', 'T17_03', 'T17_08', 'T17_06', 'T17_01'
+#> Warning: Model split preparation for model No. 12, model name
+#> domainlistening__group1.all_group2.all: 118 items from 134 items listed the Q
+#> matrix not found in data:
+#> ℹ 'T12_11', 'T13_15', 'T15_03', 'T13_04', 'T13_07', 'T13_16', 'T13_01',
+#>   'T15_02', 'T15_01', 'T15_15', 'T15_16', 'T15_09', 'T13_12', 'T13_13',
+#>   'T15_14', 'T13_08', 'T13_06', 'T15_12', 'T13_10', 'T13_17', 'T15_11',
+#>   'T13_05', 'T13_09', 'T15_10', 'T15_13', 'T15_17', 'T15_18', 'T13_18',
+#>   'T16_08', 'T16_09', 'T16_11', 'T16_13', 'T16_01', 'T16_04', 'T16_10',
+#>   'T16_02', 'T16_12', 'T16_06', 'T16_07', 'T19_06', 'T19_08', 'T19_05',
+#>   'T19_11', 'T19_01', 'T19_02', 'T19_30', 'T19_03', 'T19_07', 'T19_04',
+#>   'T19_09', 'T21_11', 'T18_01', 'T21_01', 'T18_05', 'T21_12', 'T18_13',
+#>   'T21_10', 'T18_11', 'T21_05', 'T21_13', 'T18_08', 'T18_07', 'T21_09',
+#>   'T18_04', 'T18_02', 'T21_02', 'T21_06', 'T18_09', 'T21_04', 'T18_12',
+#>   'T21_14', 'T21_03', 'T18_10', 'T30_06', 'T29_04', 'T29_02', 'T30_02',
+#>   'T30_03', 'T30_01', 'T29_05', 'T29_03', 'T28_08', 'T28_09', 'T28_02',
+#>   'T28_03', 'T28_04', 'T28_01', 'T28_10', 'T28_06', 'T20_05', 'T20_09',
+#>   'T20_30', 'T20_08', 'T20_12', 'T20_06', 'T20_07', 'T20_02', 'T20_13',
+#>   'T20_03', 'T20_01', 'T20_04', 'T20_11', 'T20_10', 'T32_04', 'T31_03',
+#>   'T31_01', 'T31_04', 'T32_03', 'T32_02', 'T32_01', 'T17_02', 'T17_09',
+#>   'T17_10', 'T17_04', 'T17_03', 'T17_08', 'T17_06', 'T17_01'
+#> Warning: Model split preparation for model No. 13, model name
+#> domainreading__group1.female_group2.countryC: 132 items from 149 items listed
+#> the Q matrix not found in data:
+#> ℹ 'T07_08', 'T02_02', 'T07_01', 'T02_06', 'T07_05', 'T07_06', 'T02_07',
+#>   'T07_02', 'T07_04', 'T02_03', 'T07_09', 'T02_01', 'T02_04', 'T07_03',
+#>   'T02_05', 'T07_07', 'T07_10', 'T09_12', 'T01_08', 'T03_07', 'T03_01',
+#>   'T03_08', 'T03_05', 'T03_06', 'T03_03', 'T10_08', 'T11_06', 'T11_03',
+#>   'T11_01', 'T04_02', 'T04_01', 'T04_06', 'T04_04', 'T11_04', 'T10_01',
+#>   'T11_08', 'T10_02', 'T10_09', 'T10_07', 'T11_02', 'T04_05', 'T04_03',
+#>   'T11_05', 'T10_06', 'T11_10', 'T11_09', 'T04_07', 'T10_10', 'T04_09',
+#>   'T04_08', 'T11_0X', 'T06_05', 'T05_03', 'T05_06', 'T05_05', 'T06_02',
+#>   'T06_04', 'T06_03', 'T05_04', 'T05_02', 'T05_01', 'T06_01', 'T08_04',
+#>   'T08_06', 'T08_03', 'T08_07', 'T08_02', 'T08_05', 'T08_01', 'T08_09',
+#>   'T08_08', 'T03_09', 'T06_1X', 'T26_03', 'T26_05', 'T26_07', 'T26_09',
+#>   'T26_06', 'T26_10', 'T26_08', 'T26_02', 'T26_04', 'T27_01', 'T27_05',
+#>   'T27_07', 'T27_06', 'T27_04', 'T27_02', 'T27_03', 'T24_05', 'T24_08',
+#>   'T24_02', 'T24_10', 'T24_06', 'T24_24', 'T24_25', 'T24_09', 'T24_21',
+#>   'T24_23', 'T23_10', 'T23_13', 'T23_09', 'T23_15', 'T23_03', 'T23_04',
+#>   'T23_14', 'T23_07', 'T23_08', 'T23_02', 'T23_06', 'T23_05', 'T25_05',
+#>   'T25_22', 'T22_03', 'T25_06', 'T22_12', 'T25_09', 'T25_10', 'T25_08',
+#>   'T22_11', 'T22_02', 'T25_11', 'T25_07', 'T25_14', 'T25_12', 'T25_04',
+#>   'T22_08', 'T25_23', 'T22_10', 'T22_06', 'T25_13', 'T22_01'
+#> Warning: Model split preparation for model No. 14, model name
+#> domainreading__group1.female_group2.countryA: 132 items from 149 items listed
+#> the Q matrix not found in data:
+#> ℹ 'T07_08', 'T02_02', 'T07_01', 'T02_06', 'T07_05', 'T07_06', 'T02_07',
+#>   'T07_02', 'T07_04', 'T02_03', 'T07_09', 'T02_01', 'T02_04', 'T07_03',
+#>   'T02_05', 'T07_07', 'T07_10', 'T09_12', 'T01_08', 'T03_07', 'T03_01',
+#>   'T03_08', 'T03_05', 'T03_06', 'T03_03', 'T10_08', 'T11_06', 'T11_03',
+#>   'T11_01', 'T04_02', 'T04_01', 'T04_06', 'T04_04', 'T11_04', 'T10_01',
+#>   'T11_08', 'T10_02', 'T10_09', 'T10_07', 'T11_02', 'T04_05', 'T04_03',
+#>   'T11_05', 'T10_06', 'T11_10', 'T11_09', 'T04_07', 'T10_10', 'T04_09',
+#>   'T04_08', 'T11_0X', 'T06_05', 'T05_03', 'T05_06', 'T05_05', 'T06_02',
+#>   'T06_04', 'T06_03', 'T05_04', 'T05_02', 'T05_01', 'T06_01', 'T08_04',
+#>   'T08_06', 'T08_03', 'T08_07', 'T08_02', 'T08_05', 'T08_01', 'T08_09',
+#>   'T08_08', 'T03_09', 'T06_1X', 'T26_03', 'T26_05', 'T26_07', 'T26_09',
+#>   'T26_06', 'T26_10', 'T26_08', 'T26_02', 'T26_04', 'T27_01', 'T27_05',
+#>   'T27_07', 'T27_06', 'T27_04', 'T27_02', 'T27_03', 'T24_05', 'T24_08',
+#>   'T24_02', 'T24_10', 'T24_06', 'T24_24', 'T24_25', 'T24_09', 'T24_21',
+#>   'T24_23', 'T23_10', 'T23_13', 'T23_09', 'T23_15', 'T23_03', 'T23_04',
+#>   'T23_14', 'T23_07', 'T23_08', 'T23_02', 'T23_06', 'T23_05', 'T25_05',
+#>   'T25_22', 'T22_03', 'T25_06', 'T22_12', 'T25_09', 'T25_10', 'T25_08',
+#>   'T22_11', 'T22_02', 'T25_11', 'T25_07', 'T25_14', 'T25_12', 'T25_04',
+#>   'T22_08', 'T25_23', 'T22_10', 'T22_06', 'T25_13', 'T22_01'
+#> Warning: Model split preparation for model No. 15, model name
+#> domainreading__group1.female_group2.countryB: 132 items from 149 items listed
+#> the Q matrix not found in data:
+#> ℹ 'T07_08', 'T02_02', 'T07_01', 'T02_06', 'T07_05', 'T07_06', 'T02_07',
+#>   'T07_02', 'T07_04', 'T02_03', 'T07_09', 'T02_01', 'T02_04', 'T07_03',
+#>   'T02_05', 'T07_07', 'T07_10', 'T09_12', 'T01_08', 'T03_07', 'T03_01',
+#>   'T03_08', 'T03_05', 'T03_06', 'T03_03', 'T10_08', 'T11_06', 'T11_03',
+#>   'T11_01', 'T04_02', 'T04_01', 'T04_06', 'T04_04', 'T11_04', 'T10_01',
+#>   'T11_08', 'T10_02', 'T10_09', 'T10_07', 'T11_02', 'T04_05', 'T04_03',
+#>   'T11_05', 'T10_06', 'T11_10', 'T11_09', 'T04_07', 'T10_10', 'T04_09',
+#>   'T04_08', 'T11_0X', 'T06_05', 'T05_03', 'T05_06', 'T05_05', 'T06_02',
+#>   'T06_04', 'T06_03', 'T05_04', 'T05_02', 'T05_01', 'T06_01', 'T08_04',
+#>   'T08_06', 'T08_03', 'T08_07', 'T08_02', 'T08_05', 'T08_01', 'T08_09',
+#>   'T08_08', 'T03_09', 'T06_1X', 'T26_03', 'T26_05', 'T26_07', 'T26_09',
+#>   'T26_06', 'T26_10', 'T26_08', 'T26_02', 'T26_04', 'T27_01', 'T27_05',
+#>   'T27_07', 'T27_06', 'T27_04', 'T27_02', 'T27_03', 'T24_05', 'T24_08',
+#>   'T24_02', 'T24_10', 'T24_06', 'T24_24', 'T24_25', 'T24_09', 'T24_21',
+#>   'T24_23', 'T23_10', 'T23_13', 'T23_09', 'T23_15', 'T23_03', 'T23_04',
+#>   'T23_14', 'T23_07', 'T23_08', 'T23_02', 'T23_06', 'T23_05', 'T25_05',
+#>   'T25_22', 'T22_03', 'T25_06', 'T22_12', 'T25_09', 'T25_10', 'T25_08',
+#>   'T22_11', 'T22_02', 'T25_11', 'T25_07', 'T25_14', 'T25_12', 'T25_04',
+#>   'T22_08', 'T25_23', 'T22_10', 'T22_06', 'T25_13', 'T22_01'
+#> Warning: Model split preparation for model No. 16, model name
+#> domainreading__group1.female_group2.all: 132 items from 149 items listed the Q
+#> matrix not found in data:
+#> ℹ 'T07_08', 'T02_02', 'T07_01', 'T02_06', 'T07_05', 'T07_06', 'T02_07',
+#>   'T07_02', 'T07_04', 'T02_03', 'T07_09', 'T02_01', 'T02_04', 'T07_03',
+#>   'T02_05', 'T07_07', 'T07_10', 'T09_12', 'T01_08', 'T03_07', 'T03_01',
+#>   'T03_08', 'T03_05', 'T03_06', 'T03_03', 'T10_08', 'T11_06', 'T11_03',
+#>   'T11_01', 'T04_02', 'T04_01', 'T04_06', 'T04_04', 'T11_04', 'T10_01',
+#>   'T11_08', 'T10_02', 'T10_09', 'T10_07', 'T11_02', 'T04_05', 'T04_03',
+#>   'T11_05', 'T10_06', 'T11_10', 'T11_09', 'T04_07', 'T10_10', 'T04_09',
+#>   'T04_08', 'T11_0X', 'T06_05', 'T05_03', 'T05_06', 'T05_05', 'T06_02',
+#>   'T06_04', 'T06_03', 'T05_04', 'T05_02', 'T05_01', 'T06_01', 'T08_04',
+#>   'T08_06', 'T08_03', 'T08_07', 'T08_02', 'T08_05', 'T08_01', 'T08_09',
+#>   'T08_08', 'T03_09', 'T06_1X', 'T26_03', 'T26_05', 'T26_07', 'T26_09',
+#>   'T26_06', 'T26_10', 'T26_08', 'T26_02', 'T26_04', 'T27_01', 'T27_05',
+#>   'T27_07', 'T27_06', 'T27_04', 'T27_02', 'T27_03', 'T24_05', 'T24_08',
+#>   'T24_02', 'T24_10', 'T24_06', 'T24_24', 'T24_25', 'T24_09', 'T24_21',
+#>   'T24_23', 'T23_10', 'T23_13', 'T23_09', 'T23_15', 'T23_03', 'T23_04',
+#>   'T23_14', 'T23_07', 'T23_08', 'T23_02', 'T23_06', 'T23_05', 'T25_05',
+#>   'T25_22', 'T22_03', 'T25_06', 'T22_12', 'T25_09', 'T25_10', 'T25_08',
+#>   'T22_11', 'T22_02', 'T25_11', 'T25_07', 'T25_14', 'T25_12', 'T25_04',
+#>   'T22_08', 'T25_23', 'T22_10', 'T22_06', 'T25_13', 'T22_01'
+#> Warning: Model split preparation for model No. 17, model name
+#> domainreading__group1.male_group2.countryC: 132 items from 149 items listed the
+#> Q matrix not found in data:
+#> ℹ 'T07_08', 'T02_02', 'T07_01', 'T02_06', 'T07_05', 'T07_06', 'T02_07',
+#>   'T07_02', 'T07_04', 'T02_03', 'T07_09', 'T02_01', 'T02_04', 'T07_03',
+#>   'T02_05', 'T07_07', 'T07_10', 'T09_12', 'T01_08', 'T03_07', 'T03_01',
+#>   'T03_08', 'T03_05', 'T03_06', 'T03_03', 'T10_08', 'T11_06', 'T11_03',
+#>   'T11_01', 'T04_02', 'T04_01', 'T04_06', 'T04_04', 'T11_04', 'T10_01',
+#>   'T11_08', 'T10_02', 'T10_09', 'T10_07', 'T11_02', 'T04_05', 'T04_03',
+#>   'T11_05', 'T10_06', 'T11_10', 'T11_09', 'T04_07', 'T10_10', 'T04_09',
+#>   'T04_08', 'T11_0X', 'T06_05', 'T05_03', 'T05_06', 'T05_05', 'T06_02',
+#>   'T06_04', 'T06_03', 'T05_04', 'T05_02', 'T05_01', 'T06_01', 'T08_04',
+#>   'T08_06', 'T08_03', 'T08_07', 'T08_02', 'T08_05', 'T08_01', 'T08_09',
+#>   'T08_08', 'T03_09', 'T06_1X', 'T26_03', 'T26_05', 'T26_07', 'T26_09',
+#>   'T26_06', 'T26_10', 'T26_08', 'T26_02', 'T26_04', 'T27_01', 'T27_05',
+#>   'T27_07', 'T27_06', 'T27_04', 'T27_02', 'T27_03', 'T24_05', 'T24_08',
+#>   'T24_02', 'T24_10', 'T24_06', 'T24_24', 'T24_25', 'T24_09', 'T24_21',
+#>   'T24_23', 'T23_10', 'T23_13', 'T23_09', 'T23_15', 'T23_03', 'T23_04',
+#>   'T23_14', 'T23_07', 'T23_08', 'T23_02', 'T23_06', 'T23_05', 'T25_05',
+#>   'T25_22', 'T22_03', 'T25_06', 'T22_12', 'T25_09', 'T25_10', 'T25_08',
+#>   'T22_11', 'T22_02', 'T25_11', 'T25_07', 'T25_14', 'T25_12', 'T25_04',
+#>   'T22_08', 'T25_23', 'T22_10', 'T22_06', 'T25_13', 'T22_01'
+#> Warning: Model split preparation for model No. 18, model name
+#> domainreading__group1.male_group2.countryA: 132 items from 149 items listed the
+#> Q matrix not found in data:
+#> ℹ 'T07_08', 'T02_02', 'T07_01', 'T02_06', 'T07_05', 'T07_06', 'T02_07',
+#>   'T07_02', 'T07_04', 'T02_03', 'T07_09', 'T02_01', 'T02_04', 'T07_03',
+#>   'T02_05', 'T07_07', 'T07_10', 'T09_12', 'T01_08', 'T03_07', 'T03_01',
+#>   'T03_08', 'T03_05', 'T03_06', 'T03_03', 'T10_08', 'T11_06', 'T11_03',
+#>   'T11_01', 'T04_02', 'T04_01', 'T04_06', 'T04_04', 'T11_04', 'T10_01',
+#>   'T11_08', 'T10_02', 'T10_09', 'T10_07', 'T11_02', 'T04_05', 'T04_03',
+#>   'T11_05', 'T10_06', 'T11_10', 'T11_09', 'T04_07', 'T10_10', 'T04_09',
+#>   'T04_08', 'T11_0X', 'T06_05', 'T05_03', 'T05_06', 'T05_05', 'T06_02',
+#>   'T06_04', 'T06_03', 'T05_04', 'T05_02', 'T05_01', 'T06_01', 'T08_04',
+#>   'T08_06', 'T08_03', 'T08_07', 'T08_02', 'T08_05', 'T08_01', 'T08_09',
+#>   'T08_08', 'T03_09', 'T06_1X', 'T26_03', 'T26_05', 'T26_07', 'T26_09',
+#>   'T26_06', 'T26_10', 'T26_08', 'T26_02', 'T26_04', 'T27_01', 'T27_05',
+#>   'T27_07', 'T27_06', 'T27_04', 'T27_02', 'T27_03', 'T24_05', 'T24_08',
+#>   'T24_02', 'T24_10', 'T24_06', 'T24_24', 'T24_25', 'T24_09', 'T24_21',
+#>   'T24_23', 'T23_10', 'T23_13', 'T23_09', 'T23_15', 'T23_03', 'T23_04',
+#>   'T23_14', 'T23_07', 'T23_08', 'T23_02', 'T23_06', 'T23_05', 'T25_05',
+#>   'T25_22', 'T22_03', 'T25_06', 'T22_12', 'T25_09', 'T25_10', 'T25_08',
+#>   'T22_11', 'T22_02', 'T25_11', 'T25_07', 'T25_14', 'T25_12', 'T25_04',
+#>   'T22_08', 'T25_23', 'T22_10', 'T22_06', 'T25_13', 'T22_01'
+#> Warning: Model split preparation for model No. 19, model name
+#> domainreading__group1.male_group2.countryB: 132 items from 149 items listed the
+#> Q matrix not found in data:
+#> ℹ 'T07_08', 'T02_02', 'T07_01', 'T02_06', 'T07_05', 'T07_06', 'T02_07',
+#>   'T07_02', 'T07_04', 'T02_03', 'T07_09', 'T02_01', 'T02_04', 'T07_03',
+#>   'T02_05', 'T07_07', 'T07_10', 'T09_12', 'T01_08', 'T03_07', 'T03_01',
+#>   'T03_08', 'T03_05', 'T03_06', 'T03_03', 'T10_08', 'T11_06', 'T11_03',
+#>   'T11_01', 'T04_02', 'T04_01', 'T04_06', 'T04_04', 'T11_04', 'T10_01',
+#>   'T11_08', 'T10_02', 'T10_09', 'T10_07', 'T11_02', 'T04_05', 'T04_03',
+#>   'T11_05', 'T10_06', 'T11_10', 'T11_09', 'T04_07', 'T10_10', 'T04_09',
+#>   'T04_08', 'T11_0X', 'T06_05', 'T05_03', 'T05_06', 'T05_05', 'T06_02',
+#>   'T06_04', 'T06_03', 'T05_04', 'T05_02', 'T05_01', 'T06_01', 'T08_04',
+#>   'T08_06', 'T08_03', 'T08_07', 'T08_02', 'T08_05', 'T08_01', 'T08_09',
+#>   'T08_08', 'T03_09', 'T06_1X', 'T26_03', 'T26_05', 'T26_07', 'T26_09',
+#>   'T26_06', 'T26_10', 'T26_08', 'T26_02', 'T26_04', 'T27_01', 'T27_05',
+#>   'T27_07', 'T27_06', 'T27_04', 'T27_02', 'T27_03', 'T24_05', 'T24_08',
+#>   'T24_02', 'T24_10', 'T24_06', 'T24_24', 'T24_25', 'T24_09', 'T24_21',
+#>   'T24_23', 'T23_10', 'T23_13', 'T23_09', 'T23_15', 'T23_03', 'T23_04',
+#>   'T23_14', 'T23_07', 'T23_08', 'T23_02', 'T23_06', 'T23_05', 'T25_05',
+#>   'T25_22', 'T22_03', 'T25_06', 'T22_12', 'T25_09', 'T25_10', 'T25_08',
+#>   'T22_11', 'T22_02', 'T25_11', 'T25_07', 'T25_14', 'T25_12', 'T25_04',
+#>   'T22_08', 'T25_23', 'T22_10', 'T22_06', 'T25_13', 'T22_01'
+#> Warning: Model split preparation for model No. 20, model name
+#> domainreading__group1.male_group2.all: 132 items from 149 items listed the Q
+#> matrix not found in data:
+#> ℹ 'T07_08', 'T02_02', 'T07_01', 'T02_06', 'T07_05', 'T07_06', 'T02_07',
+#>   'T07_02', 'T07_04', 'T02_03', 'T07_09', 'T02_01', 'T02_04', 'T07_03',
+#>   'T02_05', 'T07_07', 'T07_10', 'T09_12', 'T01_08', 'T03_07', 'T03_01',
+#>   'T03_08', 'T03_05', 'T03_06', 'T03_03', 'T10_08', 'T11_06', 'T11_03',
+#>   'T11_01', 'T04_02', 'T04_01', 'T04_06', 'T04_04', 'T11_04', 'T10_01',
+#>   'T11_08', 'T10_02', 'T10_09', 'T10_07', 'T11_02', 'T04_05', 'T04_03',
+#>   'T11_05', 'T10_06', 'T11_10', 'T11_09', 'T04_07', 'T10_10', 'T04_09',
+#>   'T04_08', 'T11_0X', 'T06_05', 'T05_03', 'T05_06', 'T05_05', 'T06_02',
+#>   'T06_04', 'T06_03', 'T05_04', 'T05_02', 'T05_01', 'T06_01', 'T08_04',
+#>   'T08_06', 'T08_03', 'T08_07', 'T08_02', 'T08_05', 'T08_01', 'T08_09',
+#>   'T08_08', 'T03_09', 'T06_1X', 'T26_03', 'T26_05', 'T26_07', 'T26_09',
+#>   'T26_06', 'T26_10', 'T26_08', 'T26_02', 'T26_04', 'T27_01', 'T27_05',
+#>   'T27_07', 'T27_06', 'T27_04', 'T27_02', 'T27_03', 'T24_05', 'T24_08',
+#>   'T24_02', 'T24_10', 'T24_06', 'T24_24', 'T24_25', 'T24_09', 'T24_21',
+#>   'T24_23', 'T23_10', 'T23_13', 'T23_09', 'T23_15', 'T23_03', 'T23_04',
+#>   'T23_14', 'T23_07', 'T23_08', 'T23_02', 'T23_06', 'T23_05', 'T25_05',
+#>   'T25_22', 'T22_03', 'T25_06', 'T22_12', 'T25_09', 'T25_10', 'T25_08',
+#>   'T22_11', 'T22_02', 'T25_11', 'T25_07', 'T25_14', 'T25_12', 'T25_04',
+#>   'T22_08', 'T25_23', 'T22_10', 'T22_06', 'T25_13', 'T22_01'
+#> Warning: Model split preparation for model No. 21, model name
+#> domainreading__group1.all_group2.countryC: 132 items from 149 items listed the
+#> Q matrix not found in data:
+#> ℹ 'T07_08', 'T02_02', 'T07_01', 'T02_06', 'T07_05', 'T07_06', 'T02_07',
+#>   'T07_02', 'T07_04', 'T02_03', 'T07_09', 'T02_01', 'T02_04', 'T07_03',
+#>   'T02_05', 'T07_07', 'T07_10', 'T09_12', 'T01_08', 'T03_07', 'T03_01',
+#>   'T03_08', 'T03_05', 'T03_06', 'T03_03', 'T10_08', 'T11_06', 'T11_03',
+#>   'T11_01', 'T04_02', 'T04_01', 'T04_06', 'T04_04', 'T11_04', 'T10_01',
+#>   'T11_08', 'T10_02', 'T10_09', 'T10_07', 'T11_02', 'T04_05', 'T04_03',
+#>   'T11_05', 'T10_06', 'T11_10', 'T11_09', 'T04_07', 'T10_10', 'T04_09',
+#>   'T04_08', 'T11_0X', 'T06_05', 'T05_03', 'T05_06', 'T05_05', 'T06_02',
+#>   'T06_04', 'T06_03', 'T05_04', 'T05_02', 'T05_01', 'T06_01', 'T08_04',
+#>   'T08_06', 'T08_03', 'T08_07', 'T08_02', 'T08_05', 'T08_01', 'T08_09',
+#>   'T08_08', 'T03_09', 'T06_1X', 'T26_03', 'T26_05', 'T26_07', 'T26_09',
+#>   'T26_06', 'T26_10', 'T26_08', 'T26_02', 'T26_04', 'T27_01', 'T27_05',
+#>   'T27_07', 'T27_06', 'T27_04', 'T27_02', 'T27_03', 'T24_05', 'T24_08',
+#>   'T24_02', 'T24_10', 'T24_06', 'T24_24', 'T24_25', 'T24_09', 'T24_21',
+#>   'T24_23', 'T23_10', 'T23_13', 'T23_09', 'T23_15', 'T23_03', 'T23_04',
+#>   'T23_14', 'T23_07', 'T23_08', 'T23_02', 'T23_06', 'T23_05', 'T25_05',
+#>   'T25_22', 'T22_03', 'T25_06', 'T22_12', 'T25_09', 'T25_10', 'T25_08',
+#>   'T22_11', 'T22_02', 'T25_11', 'T25_07', 'T25_14', 'T25_12', 'T25_04',
+#>   'T22_08', 'T25_23', 'T22_10', 'T22_06', 'T25_13', 'T22_01'
+#> Warning: Model split preparation for model No. 22, model name
+#> domainreading__group1.all_group2.countryA: 132 items from 149 items listed the
+#> Q matrix not found in data:
+#> ℹ 'T07_08', 'T02_02', 'T07_01', 'T02_06', 'T07_05', 'T07_06', 'T02_07',
+#>   'T07_02', 'T07_04', 'T02_03', 'T07_09', 'T02_01', 'T02_04', 'T07_03',
+#>   'T02_05', 'T07_07', 'T07_10', 'T09_12', 'T01_08', 'T03_07', 'T03_01',
+#>   'T03_08', 'T03_05', 'T03_06', 'T03_03', 'T10_08', 'T11_06', 'T11_03',
+#>   'T11_01', 'T04_02', 'T04_01', 'T04_06', 'T04_04', 'T11_04', 'T10_01',
+#>   'T11_08', 'T10_02', 'T10_09', 'T10_07', 'T11_02', 'T04_05', 'T04_03',
+#>   'T11_05', 'T10_06', 'T11_10', 'T11_09', 'T04_07', 'T10_10', 'T04_09',
+#>   'T04_08', 'T11_0X', 'T06_05', 'T05_03', 'T05_06', 'T05_05', 'T06_02',
+#>   'T06_04', 'T06_03', 'T05_04', 'T05_02', 'T05_01', 'T06_01', 'T08_04',
+#>   'T08_06', 'T08_03', 'T08_07', 'T08_02', 'T08_05', 'T08_01', 'T08_09',
+#>   'T08_08', 'T03_09', 'T06_1X', 'T26_03', 'T26_05', 'T26_07', 'T26_09',
+#>   'T26_06', 'T26_10', 'T26_08', 'T26_02', 'T26_04', 'T27_01', 'T27_05',
+#>   'T27_07', 'T27_06', 'T27_04', 'T27_02', 'T27_03', 'T24_05', 'T24_08',
+#>   'T24_02', 'T24_10', 'T24_06', 'T24_24', 'T24_25', 'T24_09', 'T24_21',
+#>   'T24_23', 'T23_10', 'T23_13', 'T23_09', 'T23_15', 'T23_03', 'T23_04',
+#>   'T23_14', 'T23_07', 'T23_08', 'T23_02', 'T23_06', 'T23_05', 'T25_05',
+#>   'T25_22', 'T22_03', 'T25_06', 'T22_12', 'T25_09', 'T25_10', 'T25_08',
+#>   'T22_11', 'T22_02', 'T25_11', 'T25_07', 'T25_14', 'T25_12', 'T25_04',
+#>   'T22_08', 'T25_23', 'T22_10', 'T22_06', 'T25_13', 'T22_01'
+#> Warning: Model split preparation for model No. 23, model name
+#> domainreading__group1.all_group2.countryB: 132 items from 149 items listed the
+#> Q matrix not found in data:
+#> ℹ 'T07_08', 'T02_02', 'T07_01', 'T02_06', 'T07_05', 'T07_06', 'T02_07',
+#>   'T07_02', 'T07_04', 'T02_03', 'T07_09', 'T02_01', 'T02_04', 'T07_03',
+#>   'T02_05', 'T07_07', 'T07_10', 'T09_12', 'T01_08', 'T03_07', 'T03_01',
+#>   'T03_08', 'T03_05', 'T03_06', 'T03_03', 'T10_08', 'T11_06', 'T11_03',
+#>   'T11_01', 'T04_02', 'T04_01', 'T04_06', 'T04_04', 'T11_04', 'T10_01',
+#>   'T11_08', 'T10_02', 'T10_09', 'T10_07', 'T11_02', 'T04_05', 'T04_03',
+#>   'T11_05', 'T10_06', 'T11_10', 'T11_09', 'T04_07', 'T10_10', 'T04_09',
+#>   'T04_08', 'T11_0X', 'T06_05', 'T05_03', 'T05_06', 'T05_05', 'T06_02',
+#>   'T06_04', 'T06_03', 'T05_04', 'T05_02', 'T05_01', 'T06_01', 'T08_04',
+#>   'T08_06', 'T08_03', 'T08_07', 'T08_02', 'T08_05', 'T08_01', 'T08_09',
+#>   'T08_08', 'T03_09', 'T06_1X', 'T26_03', 'T26_05', 'T26_07', 'T26_09',
+#>   'T26_06', 'T26_10', 'T26_08', 'T26_02', 'T26_04', 'T27_01', 'T27_05',
+#>   'T27_07', 'T27_06', 'T27_04', 'T27_02', 'T27_03', 'T24_05', 'T24_08',
+#>   'T24_02', 'T24_10', 'T24_06', 'T24_24', 'T24_25', 'T24_09', 'T24_21',
+#>   'T24_23', 'T23_10', 'T23_13', 'T23_09', 'T23_15', 'T23_03', 'T23_04',
+#>   'T23_14', 'T23_07', 'T23_08', 'T23_02', 'T23_06', 'T23_05', 'T25_05',
+#>   'T25_22', 'T22_03', 'T25_06', 'T22_12', 'T25_09', 'T25_10', 'T25_08',
+#>   'T22_11', 'T22_02', 'T25_11', 'T25_07', 'T25_14', 'T25_12', 'T25_04',
+#>   'T22_08', 'T25_23', 'T22_10', 'T22_06', 'T25_13', 'T22_01'
+#> Warning: Model split preparation for model No. 24, model name
+#> domainreading__group1.all_group2.all: 132 items from 149 items listed the Q
+#> matrix not found in data:
+#> ℹ 'T07_08', 'T02_02', 'T07_01', 'T02_06', 'T07_05', 'T07_06', 'T02_07',
+#>   'T07_02', 'T07_04', 'T02_03', 'T07_09', 'T02_01', 'T02_04', 'T07_03',
+#>   'T02_05', 'T07_07', 'T07_10', 'T09_12', 'T01_08', 'T03_07', 'T03_01',
+#>   'T03_08', 'T03_05', 'T03_06', 'T03_03', 'T10_08', 'T11_06', 'T11_03',
+#>   'T11_01', 'T04_02', 'T04_01', 'T04_06', 'T04_04', 'T11_04', 'T10_01',
+#>   'T11_08', 'T10_02', 'T10_09', 'T10_07', 'T11_02', 'T04_05', 'T04_03',
+#>   'T11_05', 'T10_06', 'T11_10', 'T11_09', 'T04_07', 'T10_10', 'T04_09',
+#>   'T04_08', 'T11_0X', 'T06_05', 'T05_03', 'T05_06', 'T05_05', 'T06_02',
+#>   'T06_04', 'T06_03', 'T05_04', 'T05_02', 'T05_01', 'T06_01', 'T08_04',
+#>   'T08_06', 'T08_03', 'T08_07', 'T08_02', 'T08_05', 'T08_01', 'T08_09',
+#>   'T08_08', 'T03_09', 'T06_1X', 'T26_03', 'T26_05', 'T26_07', 'T26_09',
+#>   'T26_06', 'T26_10', 'T26_08', 'T26_02', 'T26_04', 'T27_01', 'T27_05',
+#>   'T27_07', 'T27_06', 'T27_04', 'T27_02', 'T27_03', 'T24_05', 'T24_08',
+#>   'T24_02', 'T24_10', 'T24_06', 'T24_24', 'T24_25', 'T24_09', 'T24_21',
+#>   'T24_23', 'T23_10', 'T23_13', 'T23_09', 'T23_15', 'T23_03', 'T23_04',
+#>   'T23_14', 'T23_07', 'T23_08', 'T23_02', 'T23_06', 'T23_05', 'T25_05',
+#>   'T25_22', 'T22_03', 'T25_06', 'T22_12', 'T25_09', 'T25_10', 'T25_08',
+#>   'T22_11', 'T22_02', 'T25_11', 'T25_07', 'T25_14', 'T25_12', 'T25_04',
+#>   'T22_08', 'T25_23', 'T22_10', 'T22_06', 'T25_13', 'T22_01'
+#> 
+#> 
+#> ========================================================================
+#> Model No. 1
+#>     Model name:           domainlistening__group1.female_group2.countryC
+#>     Number of items:      16
+#>     Number of persons:    20
+#>     Number of dimensions: 1
+#> ========================================================================
+#> 
+#> Following 118 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_11, T13_15, T15_03, T13_04, T13_07, T13_16, T13_01, T15_02, T15_01, T15_15, T15_16, T15_09, T13_12, T13_13, T15_14, T13_08, T13_06, T15_12, T13_10, T13_17, T15_11, T13_05, T13_09, T15_10, T15_13, T15_17, T15_18, T13_18, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Warning: 16 testitem(s) with less than 50 valid responses: These items are nevertheless kept in the data set: 'T12_06', 'T12_07', 'T14_03', 'T14_06', 'T12_01', 'T12_03', 'T12_08', 'T12_10', 'T14_02', 'T14_05', 'T12_02', 'T12_04', 'T14_04', 'T12_05', 'T14_01', 'T12_09'
+#> Warning: 2 testitem(s) are constants. Remove these items from the data set:  
+#>     Item 'T14_04', only value '0' occurs: 20 valid responses.
+#>     Item 'T12_05', only value '1' occurs: 20 valid responses.
+#> Remove 2 test item(s) overall.
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Following 14 items with less than 50 item responses:
+#>                   item.name cases Missing valid item.p
+#> factor.T12_06.1.1    T12_06    20       0    20   0.50
+#> factor.T12_07.1.1    T12_07    20       0    20   0.75
+#> factor.T14_03.1.1    T14_03    20       0    20   0.10
+#> factor.T14_06.1.1    T14_06    20       0    20   0.35
+#> factor.T12_01.1.1    T12_01    20       0    20   0.90
+#> factor.T12_03.1.1    T12_03    20       0    20   0.90
+#> factor.T12_08.1.1    T12_08    20       0    20   0.80
+#> factor.T12_10.1.1    T12_10    20       0    20   0.70
+#> factor.T14_02.1.1    T14_02    20       0    20   0.15
+#> factor.T14_05.1.1    T14_05    20       0    20   0.30
+#> factor.T12_02.1.1    T12_02    20       0    20   0.50
+#> factor.T12_04.1.1    T12_04    20       0    20   0.70
+#> factor.T14_01.1.1    T14_01    20       0    20   0.15
+#> factor.T12_09.1.1    T12_09    20       0    20   0.95
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> ========================================================================
+#> Model No. 2
+#>     Model name:           domainlistening__group1.female_group2.countryA
+#>     Number of items:      16
+#>     Number of persons:    42
+#>     Number of dimensions: 1
+#> ========================================================================
+#> 
+#> Following 118 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_11, T13_15, T15_03, T13_04, T13_07, T13_16, T13_01, T15_02, T15_01, T15_15, T15_16, T15_09, T13_12, T13_13, T15_14, T13_08, T13_06, T15_12, T13_10, T13_17, T15_11, T13_05, T13_09, T15_10, T15_13, T15_17, T15_18, T13_18, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Warning: 16 testitem(s) with less than 50 valid responses: These items are nevertheless kept in the data set: 'T12_06', 'T12_07', 'T14_03', 'T14_06', 'T12_01', 'T12_03', 'T12_08', 'T12_10', 'T14_02', 'T14_05', 'T12_02', 'T12_04', 'T14_04', 'T12_05', 'T14_01', 'T12_09'
+#> Warning: 1 testitem(s) are constants. Remove these items from the data set:  
+#>     Item 'T12_05', only value '1' occurs: 42 valid responses.
+#> Remove 1 test item(s) overall.
+#> 1 subject(s) do not solve any item:
+#>    P02289 (15 false), P02289 (15 false) ... 
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Following 15 items with less than 50 item responses:
+#>                   item.name cases Missing valid item.p
+#> factor.T12_06.1.1    T12_06    42       0    42 0.4762
+#> factor.T12_07.1.1    T12_07    42       0    42 0.7381
+#> factor.T14_03.1.1    T14_03    42       0    42 0.1190
+#> factor.T14_06.1.1    T14_06    42       0    42 0.3810
+#> factor.T12_01.1.1    T12_01    42       0    42 0.9762
+#> factor.T12_03.1.1    T12_03    42       0    42 0.9048
+#> factor.T12_08.1.1    T12_08    42       0    42 0.6190
+#> factor.T12_10.1.1    T12_10    42       0    42 0.7857
+#> factor.T14_02.1.1    T14_02    42       0    42 0.1667
+#> factor.T14_05.1.1    T14_05    42       0    42 0.3095
+#> factor.T12_02.1.1    T12_02    42       0    42 0.5714
+#> factor.T12_04.1.1    T12_04    42       0    42 0.7619
+#> factor.T14_04.1.1    T14_04    42       0    42 0.0476
+#> factor.T14_01.1.1    T14_01    42       0    42 0.0714
+#> factor.T12_09.1.1    T12_09    42       0    42 0.9048
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> ========================================================================
+#> Model No. 3
+#>     Model name:           domainlistening__group1.female_group2.countryB
+#>     Number of items:      16
+#>     Number of persons:    27
+#>     Number of dimensions: 1
+#> ========================================================================
+#> 
+#> Following 118 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_11, T13_15, T15_03, T13_04, T13_07, T13_16, T13_01, T15_02, T15_01, T15_15, T15_16, T15_09, T13_12, T13_13, T15_14, T13_08, T13_06, T15_12, T13_10, T13_17, T15_11, T13_05, T13_09, T15_10, T15_13, T15_17, T15_18, T13_18, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Warning: 16 testitem(s) with less than 50 valid responses: These items are nevertheless kept in the data set: 'T12_06', 'T12_07', 'T14_03', 'T14_06', 'T12_01', 'T12_03', 'T12_08', 'T12_10', 'T14_02', 'T14_05', 'T12_02', 'T12_04', 'T14_04', 'T12_05', 'T14_01', 'T12_09'
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Following 16 items with less than 50 item responses:
+#>                   item.name cases Missing valid item.p
+#> factor.T12_06.1.1    T12_06    27       0    27  0.222
+#> factor.T12_07.1.1    T12_07    27       0    27  0.852
+#> factor.T14_03.1.1    T14_03    27       0    27  0.148
+#> factor.T14_06.1.1    T14_06    27       0    27  0.444
+#> factor.T12_01.1.1    T12_01    27       0    27  0.963
+#> factor.T12_03.1.1    T12_03    27       0    27  0.815
+#> factor.T12_08.1.1    T12_08    27       0    27  0.926
+#> factor.T12_10.1.1    T12_10    27       0    27  0.852
+#> factor.T14_02.1.1    T14_02    27       0    27  0.222
+#> factor.T14_05.1.1    T14_05    27       0    27  0.296
+#> factor.T12_02.1.1    T12_02    27       0    27  0.519
+#> factor.T12_04.1.1    T12_04    27       0    27  0.815
+#> factor.T14_04.1.1    T14_04    27       0    27  0.111
+#> factor.T12_05.1.1    T12_05    27       0    27  0.963
+#> factor.T14_01.1.1    T14_01    27       0    27  0.111
+#> factor.T12_09.1.1    T12_09    27       0    27  0.926
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> ===================================================================
+#> Model No. 4
+#>     Model name:           domainlistening__group1.female_group2.all
+#>     Number of items:      16
+#>     Number of persons:    89
+#>     Number of dimensions: 1
+#> ===================================================================
+#> 
+#> Following 118 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_11, T13_15, T15_03, T13_04, T13_07, T13_16, T13_01, T15_02, T15_01, T15_15, T15_16, T15_09, T13_12, T13_13, T15_14, T13_08, T13_06, T15_12, T13_10, T13_17, T15_11, T13_05, T13_09, T15_10, T15_13, T15_17, T15_18, T13_18, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> ======================================================================
+#> Model No. 5
+#>     Model name:           domainlistening__group1.male_group2.countryC
+#>     Number of items:      16
+#>     Number of persons:    16
+#>     Number of dimensions: 1
+#> ======================================================================
+#> 
+#> Following 118 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_11, T13_15, T15_03, T13_04, T13_07, T13_16, T13_01, T15_02, T15_01, T15_15, T15_16, T15_09, T13_12, T13_13, T15_14, T13_08, T13_06, T15_12, T13_10, T13_17, T15_11, T13_05, T13_09, T15_10, T15_13, T15_17, T15_18, T13_18, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Warning: 16 testitem(s) with less than 50 valid responses: These items are nevertheless kept in the data set: 'T12_06', 'T12_07', 'T14_03', 'T14_06', 'T12_01', 'T12_03', 'T12_08', 'T12_10', 'T14_02', 'T14_05', 'T12_02', 'T12_04', 'T14_04', 'T12_05', 'T14_01', 'T12_09'
+#> Warning: 2 testitem(s) are constants. Remove these items from the data set:  
+#>     Item 'T14_04', only value '0' occurs: 16 valid responses.
+#>     Item 'T12_05', only value '1' occurs: 16 valid responses.
+#> Remove 2 test item(s) overall.
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Following 14 items with less than 50 item responses:
+#>                   item.name cases Missing valid item.p
+#> factor.T12_06.1.1    T12_06    16       0    16 0.6875
+#> factor.T12_07.1.1    T12_07    16       0    16 0.7500
+#> factor.T14_03.1.1    T14_03    16       0    16 0.0625
+#> factor.T14_06.1.1    T14_06    16       0    16 0.2500
+#> factor.T12_01.1.1    T12_01    16       0    16 0.6875
+#> factor.T12_03.1.1    T12_03    16       0    16 0.8750
+#> factor.T12_08.1.1    T12_08    16       0    16 0.4375
+#> factor.T12_10.1.1    T12_10    16       0    16 0.9375
+#> factor.T14_02.1.1    T14_02    16       0    16 0.1250
+#> factor.T14_05.1.1    T14_05    16       0    16 0.1250
+#> factor.T12_02.1.1    T12_02    16       0    16 0.6875
+#> factor.T12_04.1.1    T12_04    16       0    16 0.8750
+#> factor.T14_01.1.1    T14_01    16       0    16 0.0625
+#> factor.T12_09.1.1    T12_09    16       0    16 0.9375
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> ======================================================================
+#> Model No. 6
+#>     Model name:           domainlistening__group1.male_group2.countryA
+#>     Number of items:      16
+#>     Number of persons:    32
+#>     Number of dimensions: 1
+#> ======================================================================
+#> 
+#> Following 118 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_11, T13_15, T15_03, T13_04, T13_07, T13_16, T13_01, T15_02, T15_01, T15_15, T15_16, T15_09, T13_12, T13_13, T15_14, T13_08, T13_06, T15_12, T13_10, T13_17, T15_11, T13_05, T13_09, T15_10, T15_13, T15_17, T15_18, T13_18, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Warning: 16 testitem(s) with less than 50 valid responses: These items are nevertheless kept in the data set: 'T12_06', 'T12_07', 'T14_03', 'T14_06', 'T12_01', 'T12_03', 'T12_08', 'T12_10', 'T14_02', 'T14_05', 'T12_02', 'T12_04', 'T14_04', 'T12_05', 'T14_01', 'T12_09'
+#> Warning: 2 testitem(s) are constants. Remove these items from the data set:  
+#>     Item 'T12_03', only value '1' occurs: 32 valid responses.
+#>     Item 'T12_05', only value '1' occurs: 32 valid responses.
+#> Remove 2 test item(s) overall.
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Following 14 items with less than 50 item responses:
+#>                   item.name cases Missing valid item.p
+#> factor.T12_06.1.1    T12_06    32       0    32 0.5000
+#> factor.T12_07.1.1    T12_07    32       0    32 0.8125
+#> factor.T14_03.1.1    T14_03    32       0    32 0.0625
+#> factor.T14_06.1.1    T14_06    32       0    32 0.2188
+#> factor.T12_01.1.1    T12_01    32       0    32 0.9062
+#> factor.T12_08.1.1    T12_08    32       0    32 0.8125
+#> factor.T12_10.1.1    T12_10    32       0    32 0.8750
+#> factor.T14_02.1.1    T14_02    32       0    32 0.0312
+#> factor.T14_05.1.1    T14_05    32       0    32 0.1562
+#> factor.T12_02.1.1    T12_02    32       0    32 0.6562
+#> factor.T12_04.1.1    T12_04    32       0    32 0.8438
+#> factor.T14_04.1.1    T14_04    32       0    32 0.1250
+#> factor.T14_01.1.1    T14_01    32       0    32 0.0938
+#> factor.T12_09.1.1    T12_09    32       0    32 0.9375
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> ======================================================================
+#> Model No. 7
+#>     Model name:           domainlistening__group1.male_group2.countryB
+#>     Number of items:      16
+#>     Number of persons:    35
+#>     Number of dimensions: 1
+#> ======================================================================
+#> 
+#> Following 118 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_11, T13_15, T15_03, T13_04, T13_07, T13_16, T13_01, T15_02, T15_01, T15_15, T15_16, T15_09, T13_12, T13_13, T15_14, T13_08, T13_06, T15_12, T13_10, T13_17, T15_11, T13_05, T13_09, T15_10, T15_13, T15_17, T15_18, T13_18, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Warning: 16 testitem(s) with less than 50 valid responses: These items are nevertheless kept in the data set: 'T12_06', 'T12_07', 'T14_03', 'T14_06', 'T12_01', 'T12_03', 'T12_08', 'T12_10', 'T14_02', 'T14_05', 'T12_02', 'T12_04', 'T14_04', 'T12_05', 'T14_01', 'T12_09'
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Following 16 items with less than 50 item responses:
+#>                   item.name cases Missing valid item.p
+#> factor.T12_06.1.1    T12_06    35       0    35 0.4571
+#> factor.T12_07.1.1    T12_07    35       0    35 0.7714
+#> factor.T14_03.1.1    T14_03    35       0    35 0.1714
+#> factor.T14_06.1.1    T14_06    35       0    35 0.4286
+#> factor.T12_01.1.1    T12_01    35       0    35 0.9143
+#> factor.T12_03.1.1    T12_03    35       0    35 0.9143
+#> factor.T12_08.1.1    T12_08    35       0    35 0.8000
+#> factor.T12_10.1.1    T12_10    35       0    35 0.9143
+#> factor.T14_02.1.1    T14_02    35       0    35 0.1429
+#> factor.T14_05.1.1    T14_05    35       0    35 0.2286
+#> factor.T12_02.1.1    T12_02    35       0    35 0.5714
+#> factor.T12_04.1.1    T12_04    35       0    35 0.8857
+#> factor.T14_04.1.1    T14_04    35       0    35 0.0571
+#> factor.T12_05.1.1    T12_05    35       0    35 0.9714
+#> factor.T14_01.1.1    T14_01    35       0    35 0.1714
+#> factor.T12_09.1.1    T12_09    35       0    35 0.8857
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> =================================================================
+#> Model No. 8
+#>     Model name:           domainlistening__group1.male_group2.all
+#>     Number of items:      16
+#>     Number of persons:    83
+#>     Number of dimensions: 1
+#> =================================================================
+#> 
+#> Following 118 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_11, T13_15, T15_03, T13_04, T13_07, T13_16, T13_01, T15_02, T15_01, T15_15, T15_16, T15_09, T13_12, T13_13, T15_14, T13_08, T13_06, T15_12, T13_10, T13_17, T15_11, T13_05, T13_09, T15_10, T15_13, T15_17, T15_18, T13_18, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> =====================================================================
+#> Model No. 9
+#>     Model name:           domainlistening__group1.all_group2.countryC
+#>     Number of items:      16
+#>     Number of persons:    36
+#>     Number of dimensions: 1
+#> =====================================================================
+#> 
+#> Following 118 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_11, T13_15, T15_03, T13_04, T13_07, T13_16, T13_01, T15_02, T15_01, T15_15, T15_16, T15_09, T13_12, T13_13, T15_14, T13_08, T13_06, T15_12, T13_10, T13_17, T15_11, T13_05, T13_09, T15_10, T15_13, T15_17, T15_18, T13_18, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Warning: 16 testitem(s) with less than 50 valid responses: These items are nevertheless kept in the data set: 'T12_06', 'T12_07', 'T14_03', 'T14_06', 'T12_01', 'T12_03', 'T12_08', 'T12_10', 'T14_02', 'T14_05', 'T12_02', 'T12_04', 'T14_04', 'T12_05', 'T14_01', 'T12_09'
+#> Warning: 2 testitem(s) are constants. Remove these items from the data set:  
+#>     Item 'T14_04', only value '0' occurs: 36 valid responses.
+#>     Item 'T12_05', only value '1' occurs: 36 valid responses.
+#> Remove 2 test item(s) overall.
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Following 14 items with less than 50 item responses:
+#>                   item.name cases Missing valid item.p
+#> factor.T12_06.1.1    T12_06    36       0    36 0.5833
+#> factor.T12_07.1.1    T12_07    36       0    36 0.7500
+#> factor.T14_03.1.1    T14_03    36       0    36 0.0833
+#> factor.T14_06.1.1    T14_06    36       0    36 0.3056
+#> factor.T12_01.1.1    T12_01    36       0    36 0.8056
+#> factor.T12_03.1.1    T12_03    36       0    36 0.8889
+#> factor.T12_08.1.1    T12_08    36       0    36 0.6389
+#> factor.T12_10.1.1    T12_10    36       0    36 0.8056
+#> factor.T14_02.1.1    T14_02    36       0    36 0.1389
+#> factor.T14_05.1.1    T14_05    36       0    36 0.2222
+#> factor.T12_02.1.1    T12_02    36       0    36 0.5833
+#> factor.T12_04.1.1    T12_04    36       0    36 0.7778
+#> factor.T14_01.1.1    T14_01    36       0    36 0.1111
+#> factor.T12_09.1.1    T12_09    36       0    36 0.9444
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> =====================================================================
+#> Model No. 10
+#>     Model name:           domainlistening__group1.all_group2.countryA
+#>     Number of items:      16
+#>     Number of persons:    74
+#>     Number of dimensions: 1
+#> =====================================================================
+#> 
+#> Following 118 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_11, T13_15, T15_03, T13_04, T13_07, T13_16, T13_01, T15_02, T15_01, T15_15, T15_16, T15_09, T13_12, T13_13, T15_14, T13_08, T13_06, T15_12, T13_10, T13_17, T15_11, T13_05, T13_09, T15_10, T15_13, T15_17, T15_18, T13_18, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Warning: 1 testitem(s) are constants. Remove these items from the data set:  
+#>     Item 'T12_05', only value '1' occurs: 74 valid responses.
+#> Remove 1 test item(s) overall.
+#> 1 subject(s) do not solve any item:
+#>    P02289 (15 false), P02289 (15 false) ... 
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> =====================================================================
+#> Model No. 11
+#>     Model name:           domainlistening__group1.all_group2.countryB
+#>     Number of items:      16
+#>     Number of persons:    62
+#>     Number of dimensions: 1
+#> =====================================================================
+#> 
+#> Following 118 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_11, T13_15, T15_03, T13_04, T13_07, T13_16, T13_01, T15_02, T15_01, T15_15, T15_16, T15_09, T13_12, T13_13, T15_14, T13_08, T13_06, T15_12, T13_10, T13_17, T15_11, T13_05, T13_09, T15_10, T15_13, T15_17, T15_18, T13_18, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> ================================================================
+#> Model No. 12
+#>     Model name:           domainlistening__group1.all_group2.all
+#>     Number of items:      16
+#>     Number of persons:    172
+#>     Number of dimensions: 1
+#> ================================================================
+#> 
+#> Following 118 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_11, T13_15, T15_03, T13_04, T13_07, T13_16, T13_01, T15_02, T15_01, T15_15, T15_16, T15_09, T13_12, T13_13, T15_14, T13_08, T13_06, T15_12, T13_10, T13_17, T15_11, T13_05, T13_09, T15_10, T15_13, T15_17, T15_18, T13_18, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> ======================================================================
+#> Model No. 13
+#>     Model name:           domainreading__group1.female_group2.countryC
+#>     Number of items:      17
+#>     Number of persons:    20
+#>     Number of dimensions: 1
+#> ======================================================================
+#> 
+#> Following 132 item(s) missed in data frame will be removed from Q matrix: 
+#>     T07_08, T02_02, T07_01, T02_06, T07_05, T07_06, T02_07, T07_02, T07_04, T02_03, T07_09, T02_01, T02_04, T07_03, T02_05, T07_07, T07_10, T09_12, T01_08, T03_07, T03_01, T03_08, T03_05, T03_06, T03_03, T10_08, T11_06, T11_03, T11_01, T04_02, T04_01, T04_06, T04_04, T11_04, T10_01, T11_08, T10_02, T10_09, T10_07, T11_02, T04_05, T04_03, T11_05, T10_06, T11_10, T11_09, T04_07, T10_10, T04_09, T04_08, T11_0X, T06_05, T05_03, T05_06, T05_05, T06_02, T06_04, T06_03, T05_04, T05_02, T05_01, T06_01, T08_04, T08_06, T08_03, T08_07, T08_02, T08_05, T08_01, T08_09, T08_08, T03_09, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01
+#> Warning: 17 testitem(s) with less than 50 valid responses: These items are nevertheless kept in the data set: 'T09_03', 'T09_05', 'T01_03', 'T09_02', 'T01_06', 'T01_01', 'T09_10', 'T01_02', 'T09_06', 'T01_04', 'T09_09', 'T09_11', 'T01_05', 'T09_08', 'T09_07', 'T09_04', 'T01_07'
+#> Warning: 1 testitem(s) are constants. Remove these items from the data set:  
+#>     Item 'T01_01', only value '1' occurs: 20 valid responses.
+#> Remove 1 test item(s) overall.
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Following 16 items with less than 50 item responses:
+#>                   item.name cases Missing valid item.p
+#> factor.T09_03.1.1    T09_03    20       0    20   0.65
+#> factor.T09_05.1.1    T09_05    20       0    20   0.90
+#> factor.T01_03.1.1    T01_03    20       0    20   0.90
+#> factor.T09_02.1.1    T09_02    20       0    20   0.60
+#> factor.T01_06.1.1    T01_06    20       0    20   0.50
+#> factor.T09_10.1.1    T09_10    20       0    20   0.95
+#> factor.T01_02.1.1    T01_02    20       0    20   0.65
+#> factor.T09_06.1.1    T09_06    20       0    20   0.85
+#> factor.T01_04.1.1    T01_04    20       0    20   0.55
+#> factor.T09_09.1.1    T09_09    20       0    20   0.45
+#> factor.T09_11.1.1    T09_11    20       0    20   0.60
+#> factor.T01_05.1.1    T01_05    20       0    20   0.55
+#> factor.T09_08.1.1    T09_08    20       0    20   0.80
+#> factor.T09_07.1.1    T09_07    20       0    20   0.75
+#> factor.T09_04.1.1    T09_04    20       0    20   0.50
+#> factor.T01_07.1.1    T01_07    20       0    20   0.55
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> ======================================================================
+#> Model No. 14
+#>     Model name:           domainreading__group1.female_group2.countryA
+#>     Number of items:      17
+#>     Number of persons:    42
+#>     Number of dimensions: 1
+#> ======================================================================
+#> 
+#> Following 132 item(s) missed in data frame will be removed from Q matrix: 
+#>     T07_08, T02_02, T07_01, T02_06, T07_05, T07_06, T02_07, T07_02, T07_04, T02_03, T07_09, T02_01, T02_04, T07_03, T02_05, T07_07, T07_10, T09_12, T01_08, T03_07, T03_01, T03_08, T03_05, T03_06, T03_03, T10_08, T11_06, T11_03, T11_01, T04_02, T04_01, T04_06, T04_04, T11_04, T10_01, T11_08, T10_02, T10_09, T10_07, T11_02, T04_05, T04_03, T11_05, T10_06, T11_10, T11_09, T04_07, T10_10, T04_09, T04_08, T11_0X, T06_05, T05_03, T05_06, T05_05, T06_02, T06_04, T06_03, T05_04, T05_02, T05_01, T06_01, T08_04, T08_06, T08_03, T08_07, T08_02, T08_05, T08_01, T08_09, T08_08, T03_09, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01
+#> Warning: 17 testitem(s) with less than 50 valid responses: These items are nevertheless kept in the data set: 'T09_03', 'T09_05', 'T01_03', 'T09_02', 'T01_06', 'T01_01', 'T09_10', 'T01_02', 'T09_06', 'T01_04', 'T09_09', 'T09_11', 'T01_05', 'T09_08', 'T09_07', 'T09_04', 'T01_07'
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Following 17 items with less than 50 item responses:
+#>                   item.name cases Missing valid item.p
+#> factor.T09_03.1.1    T09_03    42       0    42  0.643
+#> factor.T09_05.1.1    T09_05    42       0    42  0.976
+#> factor.T01_03.1.1    T01_03    42       0    42  0.929
+#> factor.T09_02.1.1    T09_02    42       0    42  0.690
+#> factor.T01_06.1.1    T01_06    42       0    42  0.333
+#> factor.T01_01.1.1    T01_01    42       0    42  0.929
+#> factor.T09_10.1.1    T09_10    42       0    42  0.857
+#> factor.T01_02.1.1    T01_02    42       0    42  0.762
+#> factor.T09_06.1.1    T09_06    42       0    42  0.857
+#> factor.T01_04.1.1    T01_04    42       0    42  0.333
+#> factor.T09_09.1.1    T09_09    42       0    42  0.714
+#> factor.T09_11.1.1    T09_11    42       0    42  0.667
+#> factor.T01_05.1.1    T01_05    42       0    42  0.405
+#> factor.T09_08.1.1    T09_08    42       0    42  0.643
+#> factor.T09_07.1.1    T09_07    42       0    42  0.905
+#> factor.T09_04.1.1    T09_04    42       0    42  0.500
+#> factor.T01_07.1.1    T01_07    42       0    42  0.595
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> ======================================================================
+#> Model No. 15
+#>     Model name:           domainreading__group1.female_group2.countryB
+#>     Number of items:      17
+#>     Number of persons:    27
+#>     Number of dimensions: 1
+#> ======================================================================
+#> 
+#> Following 132 item(s) missed in data frame will be removed from Q matrix: 
+#>     T07_08, T02_02, T07_01, T02_06, T07_05, T07_06, T02_07, T07_02, T07_04, T02_03, T07_09, T02_01, T02_04, T07_03, T02_05, T07_07, T07_10, T09_12, T01_08, T03_07, T03_01, T03_08, T03_05, T03_06, T03_03, T10_08, T11_06, T11_03, T11_01, T04_02, T04_01, T04_06, T04_04, T11_04, T10_01, T11_08, T10_02, T10_09, T10_07, T11_02, T04_05, T04_03, T11_05, T10_06, T11_10, T11_09, T04_07, T10_10, T04_09, T04_08, T11_0X, T06_05, T05_03, T05_06, T05_05, T06_02, T06_04, T06_03, T05_04, T05_02, T05_01, T06_01, T08_04, T08_06, T08_03, T08_07, T08_02, T08_05, T08_01, T08_09, T08_08, T03_09, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01
+#> Warning: 17 testitem(s) with less than 50 valid responses: These items are nevertheless kept in the data set: 'T09_03', 'T09_05', 'T01_03', 'T09_02', 'T01_06', 'T01_01', 'T09_10', 'T01_02', 'T09_06', 'T01_04', 'T09_09', 'T09_11', 'T01_05', 'T09_08', 'T09_07', 'T09_04', 'T01_07'
+#> Warning: 1 testitem(s) are constants. Remove these items from the data set:  
+#>     Item 'T01_03', only value '1' occurs: 27 valid responses.
+#> Remove 1 test item(s) overall.
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Following 16 items with less than 50 item responses:
+#>                   item.name cases Missing valid item.p
+#> factor.T09_03.1.1    T09_03    27       0    27  0.630
+#> factor.T09_05.1.1    T09_05    27       0    27  0.889
+#> factor.T09_02.1.1    T09_02    27       0    27  0.630
+#> factor.T01_06.1.1    T01_06    27       0    27  0.519
+#> factor.T01_01.1.1    T01_01    27       0    27  0.889
+#> factor.T09_10.1.1    T09_10    27       0    27  0.926
+#> factor.T01_02.1.1    T01_02    27       0    27  0.926
+#> factor.T09_06.1.1    T09_06    27       0    27  0.963
+#> factor.T01_04.1.1    T01_04    27       0    27  0.444
+#> factor.T09_09.1.1    T09_09    27       0    27  0.593
+#> factor.T09_11.1.1    T09_11    27       0    27  0.667
+#> factor.T01_05.1.1    T01_05    27       0    27  0.444
+#> factor.T09_08.1.1    T09_08    27       0    27  0.704
+#> factor.T09_07.1.1    T09_07    27       0    27  0.963
+#> factor.T09_04.1.1    T09_04    27       0    27  0.407
+#> factor.T01_07.1.1    T01_07    27       0    27  0.852
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> =================================================================
+#> Model No. 16
+#>     Model name:           domainreading__group1.female_group2.all
+#>     Number of items:      17
+#>     Number of persons:    89
+#>     Number of dimensions: 1
+#> =================================================================
+#> 
+#> Following 132 item(s) missed in data frame will be removed from Q matrix: 
+#>     T07_08, T02_02, T07_01, T02_06, T07_05, T07_06, T02_07, T07_02, T07_04, T02_03, T07_09, T02_01, T02_04, T07_03, T02_05, T07_07, T07_10, T09_12, T01_08, T03_07, T03_01, T03_08, T03_05, T03_06, T03_03, T10_08, T11_06, T11_03, T11_01, T04_02, T04_01, T04_06, T04_04, T11_04, T10_01, T11_08, T10_02, T10_09, T10_07, T11_02, T04_05, T04_03, T11_05, T10_06, T11_10, T11_09, T04_07, T10_10, T04_09, T04_08, T11_0X, T06_05, T05_03, T05_06, T05_05, T06_02, T06_04, T06_03, T05_04, T05_02, T05_01, T06_01, T08_04, T08_06, T08_03, T08_07, T08_02, T08_05, T08_01, T08_09, T08_08, T03_09, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> ====================================================================
+#> Model No. 17
+#>     Model name:           domainreading__group1.male_group2.countryC
+#>     Number of items:      17
+#>     Number of persons:    16
+#>     Number of dimensions: 1
+#> ====================================================================
+#> 
+#> Following 132 item(s) missed in data frame will be removed from Q matrix: 
+#>     T07_08, T02_02, T07_01, T02_06, T07_05, T07_06, T02_07, T07_02, T07_04, T02_03, T07_09, T02_01, T02_04, T07_03, T02_05, T07_07, T07_10, T09_12, T01_08, T03_07, T03_01, T03_08, T03_05, T03_06, T03_03, T10_08, T11_06, T11_03, T11_01, T04_02, T04_01, T04_06, T04_04, T11_04, T10_01, T11_08, T10_02, T10_09, T10_07, T11_02, T04_05, T04_03, T11_05, T10_06, T11_10, T11_09, T04_07, T10_10, T04_09, T04_08, T11_0X, T06_05, T05_03, T05_06, T05_05, T06_02, T06_04, T06_03, T05_04, T05_02, T05_01, T06_01, T08_04, T08_06, T08_03, T08_07, T08_02, T08_05, T08_01, T08_09, T08_08, T03_09, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01
+#> Warning: 17 testitem(s) with less than 50 valid responses: These items are nevertheless kept in the data set: 'T09_03', 'T09_05', 'T01_03', 'T09_02', 'T01_06', 'T01_01', 'T09_10', 'T01_02', 'T09_06', 'T01_04', 'T09_09', 'T09_11', 'T01_05', 'T09_08', 'T09_07', 'T09_04', 'T01_07'
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Following 17 items with less than 50 item responses:
+#>                   item.name cases Missing valid item.p
+#> factor.T09_03.1.1    T09_03    16       0    16  0.500
+#> factor.T09_05.1.1    T09_05    16       0    16  0.875
+#> factor.T01_03.1.1    T01_03    16       0    16  0.875
+#> factor.T09_02.1.1    T09_02    16       0    16  0.812
+#> factor.T01_06.1.1    T01_06    16       0    16  0.500
+#> factor.T01_01.1.1    T01_01    16       0    16  0.938
+#> factor.T09_10.1.1    T09_10    16       0    16  0.812
+#> factor.T01_02.1.1    T01_02    16       0    16  0.500
+#> factor.T09_06.1.1    T09_06    16       0    16  0.625
+#> factor.T01_04.1.1    T01_04    16       0    16  0.375
+#> factor.T09_09.1.1    T09_09    16       0    16  0.625
+#> factor.T09_11.1.1    T09_11    16       0    16  0.500
+#> factor.T01_05.1.1    T01_05    16       0    16  0.562
+#> factor.T09_08.1.1    T09_08    16       0    16  0.625
+#> factor.T09_07.1.1    T09_07    16       0    16  0.625
+#> factor.T09_04.1.1    T09_04    16       0    16  0.438
+#> factor.T01_07.1.1    T01_07    16       0    16  0.250
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> ====================================================================
+#> Model No. 18
+#>     Model name:           domainreading__group1.male_group2.countryA
+#>     Number of items:      17
+#>     Number of persons:    32
+#>     Number of dimensions: 1
+#> ====================================================================
+#> 
+#> Following 132 item(s) missed in data frame will be removed from Q matrix: 
+#>     T07_08, T02_02, T07_01, T02_06, T07_05, T07_06, T02_07, T07_02, T07_04, T02_03, T07_09, T02_01, T02_04, T07_03, T02_05, T07_07, T07_10, T09_12, T01_08, T03_07, T03_01, T03_08, T03_05, T03_06, T03_03, T10_08, T11_06, T11_03, T11_01, T04_02, T04_01, T04_06, T04_04, T11_04, T10_01, T11_08, T10_02, T10_09, T10_07, T11_02, T04_05, T04_03, T11_05, T10_06, T11_10, T11_09, T04_07, T10_10, T04_09, T04_08, T11_0X, T06_05, T05_03, T05_06, T05_05, T06_02, T06_04, T06_03, T05_04, T05_02, T05_01, T06_01, T08_04, T08_06, T08_03, T08_07, T08_02, T08_05, T08_01, T08_09, T08_08, T03_09, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01
+#> Warning: 17 testitem(s) with less than 50 valid responses: These items are nevertheless kept in the data set: 'T09_03', 'T09_05', 'T01_03', 'T09_02', 'T01_06', 'T01_01', 'T09_10', 'T01_02', 'T09_06', 'T01_04', 'T09_09', 'T09_11', 'T01_05', 'T09_08', 'T09_07', 'T09_04', 'T01_07'
+#> 1 subject(s) solved each item: P02635 (17 correct), P02635 (17 correct) ... 
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Following 17 items with less than 50 item responses:
+#>                   item.name cases Missing valid item.p
+#> factor.T09_03.1.1    T09_03    32       0    32  0.719
+#> factor.T09_05.1.1    T09_05    32       0    32  0.875
+#> factor.T01_03.1.1    T01_03    32       0    32  0.750
+#> factor.T09_02.1.1    T09_02    32       0    32  0.688
+#> factor.T01_06.1.1    T01_06    32       0    32  0.312
+#> factor.T01_01.1.1    T01_01    32       0    32  0.875
+#> factor.T09_10.1.1    T09_10    32       0    32  0.750
+#> factor.T01_02.1.1    T01_02    32       0    32  0.750
+#> factor.T09_06.1.1    T09_06    32       0    32  0.812
+#> factor.T01_04.1.1    T01_04    32       0    32  0.375
+#> factor.T09_09.1.1    T09_09    32       0    32  0.656
+#> factor.T09_11.1.1    T09_11    32       0    32  0.438
+#> factor.T01_05.1.1    T01_05    32       0    32  0.281
+#> factor.T09_08.1.1    T09_08    32       0    32  0.688
+#> factor.T09_07.1.1    T09_07    32       0    32  0.781
+#> factor.T09_04.1.1    T09_04    32       0    32  0.562
+#> factor.T01_07.1.1    T01_07    32       0    32  0.469
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> ====================================================================
+#> Model No. 19
+#>     Model name:           domainreading__group1.male_group2.countryB
+#>     Number of items:      17
+#>     Number of persons:    35
+#>     Number of dimensions: 1
+#> ====================================================================
+#> 
+#> Following 132 item(s) missed in data frame will be removed from Q matrix: 
+#>     T07_08, T02_02, T07_01, T02_06, T07_05, T07_06, T02_07, T07_02, T07_04, T02_03, T07_09, T02_01, T02_04, T07_03, T02_05, T07_07, T07_10, T09_12, T01_08, T03_07, T03_01, T03_08, T03_05, T03_06, T03_03, T10_08, T11_06, T11_03, T11_01, T04_02, T04_01, T04_06, T04_04, T11_04, T10_01, T11_08, T10_02, T10_09, T10_07, T11_02, T04_05, T04_03, T11_05, T10_06, T11_10, T11_09, T04_07, T10_10, T04_09, T04_08, T11_0X, T06_05, T05_03, T05_06, T05_05, T06_02, T06_04, T06_03, T05_04, T05_02, T05_01, T06_01, T08_04, T08_06, T08_03, T08_07, T08_02, T08_05, T08_01, T08_09, T08_08, T03_09, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01
+#> Warning: 17 testitem(s) with less than 50 valid responses: These items are nevertheless kept in the data set: 'T09_03', 'T09_05', 'T01_03', 'T09_02', 'T01_06', 'T01_01', 'T09_10', 'T01_02', 'T09_06', 'T01_04', 'T09_09', 'T09_11', 'T01_05', 'T09_08', 'T09_07', 'T09_04', 'T01_07'
+#> 2 subject(s) solved each item: P03303 (17 correct), P03306 (17 correct), P03306 (17 correct) ... 
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Following 17 items with less than 50 item responses:
+#>                   item.name cases Missing valid item.p
+#> factor.T09_03.1.1    T09_03    35       0    35  0.714
+#> factor.T09_05.1.1    T09_05    35       0    35  0.971
+#> factor.T01_03.1.1    T01_03    35       0    35  0.914
+#> factor.T09_02.1.1    T09_02    35       0    35  0.629
+#> factor.T01_06.1.1    T01_06    35       0    35  0.457
+#> factor.T01_01.1.1    T01_01    35       0    35  0.914
+#> factor.T09_10.1.1    T09_10    35       0    35  0.971
+#> factor.T01_02.1.1    T01_02    35       0    35  0.857
+#> factor.T09_06.1.1    T09_06    35       0    35  0.857
+#> factor.T01_04.1.1    T01_04    35       0    35  0.457
+#> factor.T09_09.1.1    T09_09    35       0    35  0.571
+#> factor.T09_11.1.1    T09_11    35       0    35  0.743
+#> factor.T01_05.1.1    T01_05    35       0    35  0.514
+#> factor.T09_08.1.1    T09_08    35       0    35  0.829
+#> factor.T09_07.1.1    T09_07    35       0    35  0.857
+#> factor.T09_04.1.1    T09_04    35       0    35  0.486
+#> factor.T01_07.1.1    T01_07    35       0    35  0.686
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> ===============================================================
+#> Model No. 20
+#>     Model name:           domainreading__group1.male_group2.all
+#>     Number of items:      17
+#>     Number of persons:    83
+#>     Number of dimensions: 1
+#> ===============================================================
+#> 
+#> Following 132 item(s) missed in data frame will be removed from Q matrix: 
+#>     T07_08, T02_02, T07_01, T02_06, T07_05, T07_06, T02_07, T07_02, T07_04, T02_03, T07_09, T02_01, T02_04, T07_03, T02_05, T07_07, T07_10, T09_12, T01_08, T03_07, T03_01, T03_08, T03_05, T03_06, T03_03, T10_08, T11_06, T11_03, T11_01, T04_02, T04_01, T04_06, T04_04, T11_04, T10_01, T11_08, T10_02, T10_09, T10_07, T11_02, T04_05, T04_03, T11_05, T10_06, T11_10, T11_09, T04_07, T10_10, T04_09, T04_08, T11_0X, T06_05, T05_03, T05_06, T05_05, T06_02, T06_04, T06_03, T05_04, T05_02, T05_01, T06_01, T08_04, T08_06, T08_03, T08_07, T08_02, T08_05, T08_01, T08_09, T08_08, T03_09, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01
+#> 3 subject(s) solved each item: P02635 (17 correct), P03303 (17 correct), P03306 (17 correct) ... 
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> ===================================================================
+#> Model No. 21
+#>     Model name:           domainreading__group1.all_group2.countryC
+#>     Number of items:      17
+#>     Number of persons:    36
+#>     Number of dimensions: 1
+#> ===================================================================
+#> 
+#> Following 132 item(s) missed in data frame will be removed from Q matrix: 
+#>     T07_08, T02_02, T07_01, T02_06, T07_05, T07_06, T02_07, T07_02, T07_04, T02_03, T07_09, T02_01, T02_04, T07_03, T02_05, T07_07, T07_10, T09_12, T01_08, T03_07, T03_01, T03_08, T03_05, T03_06, T03_03, T10_08, T11_06, T11_03, T11_01, T04_02, T04_01, T04_06, T04_04, T11_04, T10_01, T11_08, T10_02, T10_09, T10_07, T11_02, T04_05, T04_03, T11_05, T10_06, T11_10, T11_09, T04_07, T10_10, T04_09, T04_08, T11_0X, T06_05, T05_03, T05_06, T05_05, T06_02, T06_04, T06_03, T05_04, T05_02, T05_01, T06_01, T08_04, T08_06, T08_03, T08_07, T08_02, T08_05, T08_01, T08_09, T08_08, T03_09, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01
+#> Warning: 17 testitem(s) with less than 50 valid responses: These items are nevertheless kept in the data set: 'T09_03', 'T09_05', 'T01_03', 'T09_02', 'T01_06', 'T01_01', 'T09_10', 'T01_02', 'T09_06', 'T01_04', 'T09_09', 'T09_11', 'T01_05', 'T09_08', 'T09_07', 'T09_04', 'T01_07'
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Following 17 items with less than 50 item responses:
+#>                   item.name cases Missing valid item.p
+#> factor.T09_03.1.1    T09_03    36       0    36  0.583
+#> factor.T09_05.1.1    T09_05    36       0    36  0.889
+#> factor.T01_03.1.1    T01_03    36       0    36  0.889
+#> factor.T09_02.1.1    T09_02    36       0    36  0.694
+#> factor.T01_06.1.1    T01_06    36       0    36  0.500
+#> factor.T01_01.1.1    T01_01    36       0    36  0.972
+#> factor.T09_10.1.1    T09_10    36       0    36  0.889
+#> factor.T01_02.1.1    T01_02    36       0    36  0.583
+#> factor.T09_06.1.1    T09_06    36       0    36  0.750
+#> factor.T01_04.1.1    T01_04    36       0    36  0.472
+#> factor.T09_09.1.1    T09_09    36       0    36  0.528
+#> factor.T09_11.1.1    T09_11    36       0    36  0.556
+#> factor.T01_05.1.1    T01_05    36       0    36  0.556
+#> factor.T09_08.1.1    T09_08    36       0    36  0.722
+#> factor.T09_07.1.1    T09_07    36       0    36  0.694
+#> factor.T09_04.1.1    T09_04    36       0    36  0.472
+#> factor.T01_07.1.1    T01_07    36       0    36  0.417
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> ===================================================================
+#> Model No. 22
+#>     Model name:           domainreading__group1.all_group2.countryA
+#>     Number of items:      17
+#>     Number of persons:    74
+#>     Number of dimensions: 1
+#> ===================================================================
+#> 
+#> Following 132 item(s) missed in data frame will be removed from Q matrix: 
+#>     T07_08, T02_02, T07_01, T02_06, T07_05, T07_06, T02_07, T07_02, T07_04, T02_03, T07_09, T02_01, T02_04, T07_03, T02_05, T07_07, T07_10, T09_12, T01_08, T03_07, T03_01, T03_08, T03_05, T03_06, T03_03, T10_08, T11_06, T11_03, T11_01, T04_02, T04_01, T04_06, T04_04, T11_04, T10_01, T11_08, T10_02, T10_09, T10_07, T11_02, T04_05, T04_03, T11_05, T10_06, T11_10, T11_09, T04_07, T10_10, T04_09, T04_08, T11_0X, T06_05, T05_03, T05_06, T05_05, T06_02, T06_04, T06_03, T05_04, T05_02, T05_01, T06_01, T08_04, T08_06, T08_03, T08_07, T08_02, T08_05, T08_01, T08_09, T08_08, T03_09, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01
+#> 1 subject(s) solved each item: P02635 (17 correct), P02635 (17 correct) ... 
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> ===================================================================
+#> Model No. 23
+#>     Model name:           domainreading__group1.all_group2.countryB
+#>     Number of items:      17
+#>     Number of persons:    62
+#>     Number of dimensions: 1
+#> ===================================================================
+#> 
+#> Following 132 item(s) missed in data frame will be removed from Q matrix: 
+#>     T07_08, T02_02, T07_01, T02_06, T07_05, T07_06, T02_07, T07_02, T07_04, T02_03, T07_09, T02_01, T02_04, T07_03, T02_05, T07_07, T07_10, T09_12, T01_08, T03_07, T03_01, T03_08, T03_05, T03_06, T03_03, T10_08, T11_06, T11_03, T11_01, T04_02, T04_01, T04_06, T04_04, T11_04, T10_01, T11_08, T10_02, T10_09, T10_07, T11_02, T04_05, T04_03, T11_05, T10_06, T11_10, T11_09, T04_07, T10_10, T04_09, T04_08, T11_0X, T06_05, T05_03, T05_06, T05_05, T06_02, T06_04, T06_03, T05_04, T05_02, T05_01, T06_01, T08_04, T08_06, T08_03, T08_07, T08_02, T08_05, T08_01, T08_09, T08_08, T03_09, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01
+#> 2 subject(s) solved each item: P03303 (17 correct), P03306 (17 correct), P03306 (17 correct) ... 
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Q matrix specifies 1 dimension(s).
+#> 
+#> 
+#> ==============================================================
+#> Model No. 24
+#>     Model name:           domainreading__group1.all_group2.all
+#>     Number of items:      17
+#>     Number of persons:    172
+#>     Number of dimensions: 1
+#> ==============================================================
+#> 
+#> Following 132 item(s) missed in data frame will be removed from Q matrix: 
+#>     T07_08, T02_02, T07_01, T02_06, T07_05, T07_06, T02_07, T07_02, T07_04, T02_03, T07_09, T02_01, T02_04, T07_03, T02_05, T07_07, T07_10, T09_12, T01_08, T03_07, T03_01, T03_08, T03_05, T03_06, T03_03, T10_08, T11_06, T11_03, T11_01, T04_02, T04_01, T04_06, T04_04, T11_04, T10_01, T11_08, T10_02, T10_09, T10_07, T11_02, T04_05, T04_03, T11_05, T10_06, T11_10, T11_09, T04_07, T10_10, T04_09, T04_08, T11_0X, T06_05, T05_03, T05_06, T05_05, T06_02, T06_04, T06_03, T05_04, T05_02, T05_01, T06_01, T08_04, T08_06, T08_03, T08_07, T08_02, T08_05, T08_01, T08_09, T08_08, T03_09, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01
+#> 3 subject(s) solved each item: P02635 (17 correct), P03303 (17 correct), P03306 (17 correct) ... 
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Q matrix specifies 1 dimension(s).
 
 # run all models
 runMul<- runModel(modMul)
-#> Error: object 'modMul' not found
 
 # get results of all models
 resMul<- getResults(runMul)
-#> Error: object 'runMul' not found
+#> |*****|
+#> |-----|
+#> |*****|
+#> |-----|
+#> |*****|
+#> |-----|
+#> |*****|
+#> |-----|
+#> |*****|
+#> |-----|
+#> |*****|
+#> |-----|
+#> |*****|
+#> |-----|
+#> |*****|
+#> |-----|
+#> |*****|
+#> |-----|
+#> |*****|
+#> |-----|
+#> |*****|
+#> |-----|
+#> |*****|
+#> |-----|
+#> |*****|
+#> |-----|
+#> |*****|
+#> |-----|
+#> |*****|
+#> |-----|
+#> |*****|
+#> |-----|
+#> |*****|
+#> |-----|
+#> |*****|
+#> |-----|
+#> |*****|
+#> |-----|
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 0.2 secs
+#> |*****|
+#> |-----|
+#> |*****|
+#> |-----|
+#> |*****|
+#> |-----|
+#> |*****|
+#> |-----|
 
 
 ################################################################################
@@ -910,6 +2255,12 @@ mods  <- defineModel(dat = vera, id = "idstud", check.for.linking = TRUE,
          splittedModels = l2, software = "tam")
 #> 
 #> Specification of 'qMatrix' and 'person.groups' results in 2 model(s).
+#> Warning: Model split preparation for model No. 1, model name domainlistening: 118 items from 134 items listed the Q matrix not found in data:
+#> ℹ 'T12_02', 'T13_15', 'T15_03', 'T13_04', 'T13_07', 'T13_16', 'T13_01', 'T15_02', 'T15_01', 'T15_15', 'T15_16', 'T15_09', 'T13_12', 'T13_13', 'T15_14', 'T13_08', 'T13_06', 'T15_12', 'T13_10', 'T13_17', 'T15_11', 'T13_05', 'T13_09', 'T15_10', 'T15_13', 'T15_17', 'T15_18', 'T13_18', 'T16_08', 'T16_09', 'T16_11', 'T16_13', 'T16_01', 'T16_04', 'T16_10', 'T16_02', 'T16_12', 'T16_06', 'T16_07', 'T19_06', 'T19_08', 'T19_05', 'T19_11', 'T19_01', 'T19_02', 'T19_30', 'T19_03', 'T19_07', 'T19_04', 'T19_09', 'T21_11', 'T18_01', 'T21_01', 'T18_05', 'T21_12', 'T18_13', 'T21_10', 'T18_11', 'T21_05', 'T21_13', 'T18_08', 'T18_07', 'T21_09', 'T18_04', 'T18_02', 'T21_02', 'T21_06', 'T18_09', 'T21_04', 'T18_12', 'T21_14', 'T21_03', 'T18_10', 'T30_06', 'T29_04', 'T29_02', 'T30_02', 'T30_03', 'T30_01', 'T29_05', 'T29_03', 'T28_08', 'T28_09', 'T28_02', 'T28_03', 'T28_04', 'T28_01', 'T28_10', 'T28_06', 'T20_05', 'T20_09', 'T20_30', 'T20_08', 'T20_12', 'T20_06', 'T20_07', 'T20_02', 'T20_13', 'T20_03',
+#>   'T20_01', 'T20_04', 'T20_11', 'T20_10', 'T32_04', 'T31_03', 'T31_01', 'T31_04', 'T32_03', 'T32_02', 'T32_01', 'T17_02', 'T17_09', 'T17_10', 'T17_04', 'T17_03', 'T17_08', 'T17_06', 'T17_01'
+#> Warning: Model split preparation for model No. 2, model name domainreading: 132 items from 149 items listed the Q matrix not found in data:
+#> ℹ 'T07_08', 'T02_02', 'T07_01', 'T02_06', 'T07_05', 'T07_06', 'T02_07', 'T07_02', 'T07_04', 'T02_03', 'T07_09', 'T02_01', 'T02_04', 'T07_03', 'T02_05', 'T07_07', 'T07_10', 'T09_11', 'T01_05', 'T03_07', 'T03_01', 'T03_08', 'T03_05', 'T03_06', 'T03_03', 'T10_08', 'T11_06', 'T11_03', 'T11_01', 'T04_02', 'T04_01', 'T04_06', 'T04_04', 'T11_04', 'T10_01', 'T11_08', 'T10_02', 'T10_09', 'T10_07', 'T11_02', 'T04_05', 'T04_03', 'T11_05', 'T10_06', 'T11_10', 'T11_09', 'T04_07', 'T10_10', 'T04_09', 'T04_08', 'T11_0X', 'T06_05', 'T05_03', 'T05_06', 'T05_05', 'T06_02', 'T06_04', 'T06_03', 'T05_04', 'T05_02', 'T05_01', 'T06_01', 'T08_04', 'T08_06', 'T08_03', 'T08_07', 'T08_02', 'T08_05', 'T08_01', 'T08_09', 'T08_08', 'T03_09', 'T06_1X', 'T26_03', 'T26_05', 'T26_07', 'T26_09', 'T26_06', 'T26_10', 'T26_08', 'T26_02', 'T26_04', 'T27_01', 'T27_05', 'T27_07', 'T27_06', 'T27_04', 'T27_02', 'T27_03', 'T24_05', 'T24_08', 'T24_02', 'T24_10', 'T24_06', 'T24_24', 'T24_25', 'T24_09', 'T24_21', 'T24_23',
+#>   'T23_10', 'T23_13', 'T23_09', 'T23_15', 'T23_03', 'T23_04', 'T23_14', 'T23_07', 'T23_08', 'T23_02', 'T23_06', 'T23_05', 'T25_05', 'T25_22', 'T22_03', 'T25_06', 'T22_12', 'T25_09', 'T25_10', 'T25_08', 'T22_11', 'T22_02', 'T25_11', 'T25_07', 'T25_14', 'T25_12', 'T25_04', 'T22_08', 'T25_23', 'T22_10', 'T22_06', 'T25_13', 'T22_01'
 #> 
 #> 
 #> =========================================
@@ -920,8 +2271,6 @@ mods  <- defineModel(dat = vera, id = "idstud", check.for.linking = TRUE,
 #>     Number of dimensions: 1
 #> =========================================
 #> 
-#> Warning! Model No. 1, model name: 'domainlistening': 118 from 134 items listed the Q matrix not found in data:
-#>     T12_02, T13_15, T15_03, T13_04, T13_07, T13_16, T13_01, T15_02, T15_01, T15_15, T15_16, T15_09, T13_12, T13_13, T15_14, T13_08, T13_06, T15_12, T13_10, T13_17, T15_11, T13_05, T13_09, T15_10, T15_13, T15_17, T15_18, T13_18, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
 #> Following 118 item(s) missed in data frame will be removed from Q matrix: 
 #>     T12_02, T13_15, T15_03, T13_04, T13_07, T13_16, T13_01, T15_02, T15_01, T15_15, T15_16, T15_09, T13_12, T13_13, T15_14, T13_08, T13_06, T15_12, T13_10, T13_17, T15_11, T13_05, T13_09, T15_10, T15_13, T15_17, T15_18, T13_18, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
 #> Dataset is completely linked.
@@ -937,8 +2286,6 @@ mods  <- defineModel(dat = vera, id = "idstud", check.for.linking = TRUE,
 #>     Number of dimensions: 1
 #> =======================================
 #> 
-#> Warning! Model No. 2, model name: 'domainreading': 132 from 149 items listed the Q matrix not found in data:
-#>     T07_08, T02_02, T07_01, T02_06, T07_05, T07_06, T02_07, T07_02, T07_04, T02_03, T07_09, T02_01, T02_04, T07_03, T02_05, T07_07, T07_10, T09_11, T01_05, T03_07, T03_01, T03_08, T03_05, T03_06, T03_03, T10_08, T11_06, T11_03, T11_01, T04_02, T04_01, T04_06, T04_04, T11_04, T10_01, T11_08, T10_02, T10_09, T10_07, T11_02, T04_05, T04_03, T11_05, T10_06, T11_10, T11_09, T04_07, T10_10, T04_09, T04_08, T11_0X, T06_05, T05_03, T05_06, T05_05, T06_02, T06_04, T06_03, T05_04, T05_02, T05_01, T06_01, T08_04, T08_06, T08_03, T08_07, T08_02, T08_05, T08_01, T08_09, T08_08, T03_09, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01
 #> Following 132 item(s) missed in data frame will be removed from Q matrix: 
 #>     T07_08, T02_02, T07_01, T02_06, T07_05, T07_06, T02_07, T07_02, T07_04, T02_03, T07_09, T02_01, T02_04, T07_03, T02_05, T07_07, T07_10, T09_11, T01_05, T03_07, T03_01, T03_08, T03_05, T03_06, T03_03, T10_08, T11_06, T11_03, T11_01, T04_02, T04_01, T04_06, T04_04, T11_04, T10_01, T11_08, T10_02, T10_09, T10_07, T11_02, T04_05, T04_03, T11_05, T10_06, T11_10, T11_09, T04_07, T10_10, T04_09, T04_08, T11_0X, T06_05, T05_03, T05_06, T05_05, T06_02, T06_04, T06_03, T05_04, T05_02, T05_01, T06_01, T08_04, T08_06, T08_03, T08_07, T08_02, T08_05, T08_01, T08_09, T08_08, T03_09, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01
 #> 1 subject(s) solved each item: P04491 (17 correct), P04491 (17 correct) ... 
@@ -958,7 +2305,6 @@ ress  <- getResults(runs)
 
 # norm parameters are the item parameters from example 1
 aPar  <- itemFromRes(res1)[,c("item", "est")]
-#> Error: object 'res1' not found
 
 # anchoring without exclusion of linking DIF items (DIF items will only be identified)
 # the linking error is well above the critical threshold of 0.1
@@ -966,7 +2312,39 @@ anch  <- equat1pl ( results = ress, prmNorm = aPar, excludeLinkingDif = FALSE,
          difBound = 0.64)
 #> Found 2 model(s).
 #>    Equating is executed for each dimension in each model separately.
-#> Error: object 'aPar' not found
+#> 
+#> ====================================================================================================
+#>  
+#> Model No. 1
+#>     Model name:                domainlistening
+#>     Number of dimension(s):    1
+#>     Name(s) of dimension(s):   domainlistening
+#>     Number of linking items:   15
+#>     Linking method:            Mean.Mean
+#> 
+#> Dimension 'domainlistening': 3 of 15 items with linking |DIF| > 0.64 identified.
+#> 
+#>     item   dif linking.constant linkerror
+#> 1 T12_10 0.689           -0.018     0.152
+#> 2 T14_02 0.654           -0.018     0.152
+#> 3 T14_04 1.564           -0.018     0.152
+#> 
+#> 
+#> ====================================================================================================
+#>  
+#> Model No. 2
+#>     Model name:                domainreading
+#>     Number of dimension(s):    1
+#>     Name(s) of dimension(s):   domainreading
+#>     Number of linking items:   15
+#>     Linking method:            Mean.Mean
+#> 
+#> Dimension 'domainreading': 2 of 15 items with linking |DIF| > 0.64 identified.
+#> 
+#>     item    dif linking.constant linkerror
+#> 1 T01_01 -1.050           -0.236     0.161
+#> 2 T01_07  1.865           -0.236     0.161
+#> 
 
 # anchoring with exclusion of linking DIF items: especially for listening, the
 # linking constant changes substantially when linking DIF items are excluded
@@ -974,14 +2352,97 @@ anch2 <- equat1pl ( results = ress, prmNorm = aPar, excludeLinkingDif = TRUE,
          difBound = 0.64, iterativ = FALSE)
 #> Found 2 model(s).
 #>    Equating is executed for each dimension in each model separately.
-#> Error: object 'aPar' not found
+#> 
+#> ====================================================================================================
+#>  
+#> Model No. 1
+#>     Model name:                domainlistening
+#>     Number of dimension(s):    1
+#>     Name(s) of dimension(s):   domainlistening
+#>     Number of linking items:   15
+#>     Linking method:            Mean.Mean
+#> 
+#> Dimension 'domainlistening': 3 of 15 items with linking |DIF| > 0.64 identified.
+#>    Exclude 3 items.
+#> 
+#> Items with DIF:
+#>     item   dif
+#> 1 T12_10 0.689
+#> 2 T14_02 0.654
+#> 3 T14_04 1.564
+#> 
+#>        method           itemExcluded linking.constant linkerror
+#> 1 nonIterativ                                  -0.018     0.152
+#> 2 nonIterativ T12_10, T14_02, T14_04            0.208     0.097
+#> 
+#> 
+#> ====================================================================================================
+#>  
+#> Model No. 2
+#>     Model name:                domainreading
+#>     Number of dimension(s):    1
+#>     Name(s) of dimension(s):   domainreading
+#>     Number of linking items:   15
+#>     Linking method:            Mean.Mean
+#> 
+#> Dimension 'domainreading': 2 of 15 items with linking |DIF| > 0.64 identified.
+#>    Exclude 2 items.
+#> 
+#> Items with DIF:
+#>     item    dif
+#> 1 T01_01 -1.050
+#> 2 T01_07  1.865
+#> 
+#>        method   itemExcluded linking.constant linkerror
+#> 1 nonIterativ                          -0.236     0.161
+#> 2 nonIterativ T01_01, T01_07           -0.173     0.073
+#> 
 
 # anchoring with iterative exclusion of linking DIF items
 anch3 <- equat1pl ( results = ress, prmNorm = aPar, excludeLinkingDif = TRUE,
          difBound = 0.64, iterativ = TRUE)
 #> Found 2 model(s).
 #>    Equating is executed for each dimension in each model separately.
-#> Error: object 'aPar' not found
+#> 
+#> ====================================================================================================
+#>  
+#> Model No. 1
+#>     Model name:                domainlistening
+#>     Number of dimension(s):    1
+#>     Name(s) of dimension(s):   domainlistening
+#>     Number of linking items:   15
+#>     Linking method:            Mean.Mean
+#> 
+#> Dimension 'domainlistening': 3 of 15 items with linking |DIF| > 0.64 identified.
+#>    Iteration 1: Exclude item 'T14_04'.
+#>    Iteration 2: Exclude item 'T12_10'.
+#>    Iteration 3: Exclude item 'T14_02'.
+#> 
+#>     method iter itemExcluded DIF.excluded linking.constant linkerror
+#> 1 iterativ    0                                     -0.018     0.152
+#> 2 iterativ    1       T14_04        1.564            0.089     0.115
+#> 3 iterativ    2       T12_10        0.754            0.145     0.109
+#> 4 iterativ    3       T14_02        0.785            0.208     0.097
+#> 
+#> 
+#> ====================================================================================================
+#>  
+#> Model No. 2
+#>     Model name:                domainreading
+#>     Number of dimension(s):    1
+#>     Name(s) of dimension(s):   domainreading
+#>     Number of linking items:   15
+#>     Linking method:            Mean.Mean
+#> 
+#> Dimension 'domainreading': 2 of 15 items with linking |DIF| > 0.64 identified.
+#>    Iteration 1: Exclude item 'T01_07'.
+#>    Iteration 2: Exclude item 'T01_01'.
+#> 
+#>     method iter itemExcluded DIF.excluded linking.constant linkerror
+#> 1 iterativ    0                                     -0.236     0.161
+#> 2 iterativ    1       T01_07        1.865           -0.103     0.098
+#> 3 iterativ    2       T01_01       -0.933           -0.173     0.073
+#> 
 
 # transformation to the Bista metric
 # first we arbitrarily define mean and standard deviation of the reference
@@ -1002,11 +2463,25 @@ cuts  <- list ( domainreading = list ( values = 390+0:3*75),
 
 # transformation
 dfr   <- transformToBista ( equatingList = anch3, refPop = refPop, cuts=cuts )
-#> Error: object 'anch3' not found
+#> The 'refPop' data.frame does not include information about reference population mean/SD on Bista metric. Values will be defaulted to mean = 500 and SD = 100.
+#> Warning: Model 'domainlistening', dimension 'domainlistening': No items on trait level(s) '3'.
+#> 1 of 5 trait levels(s) of merging variable 'traitLevel' from data set 'linking error list' not included in data set 'item parameter list'.
 head(dfr$itempars)
-#> Error: object 'dfr' not found
+#>             model   item     infit    outfit itemDiscrim Nvalid       est        se     itemP       dimension estTransf estTransf625 estTransfBista traitLevel linkingConstant linkingMethod nLinkitems linkingError linkingErrorTransfBista linkingErrorTraitLevel    refMean     refSD refTransfMean refTransfSD
+#> 1 domainlistening T12_01 1.0509717 1.1670877  0.02099527    133 -3.015202 0.3725945 0.9398496 domainlistening -2.807177    -2.296352      240.25484          1       0.2080251     Mean.Mean         12   0.09657851                10.75615             0.01300121 0.03587727 0.8978912           500         100
+#> 2 domainlistening T12_03 0.9238116 0.7812190  0.37141881    133 -2.290056 0.2836654 0.8872180 domainlistening -2.082030    -1.571205      321.01594          1       0.2080251     Mean.Mean         12   0.09657851                10.75615             0.01300121 0.03587727 0.8978912           500         100
+#> 3 domainlistening T12_04 0.9868178 0.9070694  0.23727591    133 -2.211710 0.2762515 0.8796992 domainlistening -2.003685    -1.492860      329.74142          1       0.2080251     Mean.Mean         12   0.09657851                10.75615             0.01300121 0.03587727 0.8978912           500         100
+#> 4 domainlistening T12_05 1.0010407 0.7214851  0.10028410    133 -4.485206 0.7170350 0.9849624 domainlistening -4.277181    -3.766355       76.53753          1       0.2080251     Mean.Mean         12   0.09657851                10.75615             0.01300121 0.03587727 0.8978912           500         100
+#> 5 domainlistening T12_07 0.9249073 0.8849823  0.33255757    133 -2.066257 0.2634642 0.8646617 domainlistening -1.858232    -1.347406      345.94084          1       0.2080251     Mean.Mean         12   0.09657851                10.75615             0.01300121 0.03587727 0.8978912           500         100
+#> 6 domainlistening T12_09 0.9993325 1.0068267  0.12657818    133 -3.330597 0.4249207 0.9548872 domainlistening -3.122572    -2.611746      205.12871          1       0.2080251     Mean.Mean         12   0.09657851                10.75615             0.01300121 0.03587727 0.8978912           500         100
 head(dfr$personpars)
-#> Error: object 'dfr' not found
+#>             model idstud           group imp     value valueTransfBista traitLevel       dimension linkingError linkingErrorTransfBista linkingErrorTraitLevel
+#> 1 domainlistening P04477 domainlistening pv1 0.3422343         557.2878          4 domainlistening   0.09657851                10.75615             0.02133276
+#> 2 domainlistening P04478 domainlistening pv1 0.1504903         535.9329          4 domainlistening   0.09657851                10.75615             0.02133276
+#> 3 domainlistening P08344 domainlistening pv1 0.1330703         533.9928          4 domainlistening   0.09657851                10.75615             0.02133276
+#> 4 domainlistening P07219 domainlistening pv4 0.8552438         614.4227          4 domainlistening   0.09657851                10.75615             0.02133276
+#> 5 domainlistening P07220 domainlistening pv4 0.5791797         583.6769          4 domainlistening   0.09657851                10.75615             0.02133276
+#> 6 domainlistening P04482 domainlistening pv1 0.7106633         598.3205          4 domainlistening   0.09657851                10.75615             0.02133276
 
 
 ################################################################################
@@ -1034,6 +2509,16 @@ mods5 <- defineModel(dat = vera, id = "idstud", check.for.linking = TRUE,
          splittedModels = l3, software = "tam")
 #> 
 #> Specification of 'qMatrix' and 'person.groups' results in 3 model(s).
+#> Warning: Model split preparation for model No. 1, model name domainlistening: 118 items from 134 items listed the Q matrix not found in data:
+#> ℹ 'T12_02', 'T13_15', 'T15_03', 'T13_04', 'T13_07', 'T13_16', 'T13_01', 'T15_02', 'T15_01', 'T15_15', 'T15_16', 'T15_09', 'T13_12', 'T13_13', 'T15_14', 'T13_08', 'T13_06', 'T15_12', 'T13_10', 'T13_17', 'T15_11', 'T13_05', 'T13_09', 'T15_10', 'T15_13', 'T15_17', 'T15_18', 'T13_18', 'T16_08', 'T16_09', 'T16_11', 'T16_13', 'T16_01', 'T16_04', 'T16_10', 'T16_02', 'T16_12', 'T16_06', 'T16_07', 'T19_06', 'T19_08', 'T19_05', 'T19_11', 'T19_01', 'T19_02', 'T19_30', 'T19_03', 'T19_07', 'T19_04', 'T19_09', 'T21_11', 'T18_01', 'T21_01', 'T18_05', 'T21_12', 'T18_13', 'T21_10', 'T18_11', 'T21_05', 'T21_13', 'T18_08', 'T18_07', 'T21_09', 'T18_04', 'T18_02', 'T21_02', 'T21_06', 'T18_09', 'T21_04', 'T18_12', 'T21_14', 'T21_03', 'T18_10', 'T30_06', 'T29_04', 'T29_02', 'T30_02', 'T30_03', 'T30_01', 'T29_05', 'T29_03', 'T28_08', 'T28_09', 'T28_02', 'T28_03', 'T28_04', 'T28_01', 'T28_10', 'T28_06', 'T20_05', 'T20_09', 'T20_30', 'T20_08', 'T20_12', 'T20_06', 'T20_07', 'T20_02', 'T20_13', 'T20_03',
+#>   'T20_01', 'T20_04', 'T20_11', 'T20_10', 'T32_04', 'T31_03', 'T31_01', 'T31_04', 'T32_03', 'T32_02', 'T32_01', 'T17_02', 'T17_09', 'T17_10', 'T17_04', 'T17_03', 'T17_08', 'T17_06', 'T17_01'
+#> Warning: Model split preparation for model No. 2, model name domainreading: 132 items from 149 items listed the Q matrix not found in data:
+#> ℹ 'T07_08', 'T02_02', 'T07_01', 'T02_06', 'T07_05', 'T07_06', 'T02_07', 'T07_02', 'T07_04', 'T02_03', 'T07_09', 'T02_01', 'T02_04', 'T07_03', 'T02_05', 'T07_07', 'T07_10', 'T09_11', 'T01_05', 'T03_07', 'T03_01', 'T03_08', 'T03_05', 'T03_06', 'T03_03', 'T10_08', 'T11_06', 'T11_03', 'T11_01', 'T04_02', 'T04_01', 'T04_06', 'T04_04', 'T11_04', 'T10_01', 'T11_08', 'T10_02', 'T10_09', 'T10_07', 'T11_02', 'T04_05', 'T04_03', 'T11_05', 'T10_06', 'T11_10', 'T11_09', 'T04_07', 'T10_10', 'T04_09', 'T04_08', 'T11_0X', 'T06_05', 'T05_03', 'T05_06', 'T05_05', 'T06_02', 'T06_04', 'T06_03', 'T05_04', 'T05_02', 'T05_01', 'T06_01', 'T08_04', 'T08_06', 'T08_03', 'T08_07', 'T08_02', 'T08_05', 'T08_01', 'T08_09', 'T08_08', 'T03_09', 'T06_1X', 'T26_03', 'T26_05', 'T26_07', 'T26_09', 'T26_06', 'T26_10', 'T26_08', 'T26_02', 'T26_04', 'T27_01', 'T27_05', 'T27_07', 'T27_06', 'T27_04', 'T27_02', 'T27_03', 'T24_05', 'T24_08', 'T24_02', 'T24_10', 'T24_06', 'T24_24', 'T24_25', 'T24_09', 'T24_21', 'T24_23',
+#>   'T23_10', 'T23_13', 'T23_09', 'T23_15', 'T23_03', 'T23_04', 'T23_14', 'T23_07', 'T23_08', 'T23_02', 'T23_06', 'T23_05', 'T25_05', 'T25_22', 'T22_03', 'T25_06', 'T22_12', 'T25_09', 'T25_10', 'T25_08', 'T22_11', 'T22_02', 'T25_11', 'T25_07', 'T25_14', 'T25_12', 'T25_04', 'T22_08', 'T25_23', 'T22_10', 'T22_06', 'T25_13', 'T22_01'
+#> Warning: Model split preparation for model No. 3, model name global: 250 items from 283 items listed the Q matrix not found in data:
+#> ℹ 'T12_02', 'T07_08', 'T02_02', 'T07_01', 'T02_06', 'T07_05', 'T07_06', 'T02_07', 'T07_02', 'T07_04', 'T02_03', 'T07_09', 'T02_01', 'T02_04', 'T07_03', 'T02_05', 'T07_07', 'T07_10', 'T09_11', 'T01_05', 'T13_15', 'T15_03', 'T13_04', 'T13_07', 'T13_16', 'T13_01', 'T15_02', 'T15_01', 'T15_15', 'T15_16', 'T15_09', 'T13_12', 'T13_13', 'T15_14', 'T13_08', 'T13_06', 'T15_12', 'T13_10', 'T13_17', 'T15_11', 'T13_05', 'T13_09', 'T15_10', 'T15_13', 'T03_07', 'T03_01', 'T03_08', 'T03_05', 'T03_06', 'T03_03', 'T10_08', 'T11_06', 'T11_03', 'T11_01', 'T04_02', 'T04_01', 'T04_06', 'T04_04', 'T11_04', 'T10_01', 'T11_08', 'T10_02', 'T10_09', 'T10_07', 'T11_02', 'T04_05', 'T04_03', 'T11_05', 'T10_06', 'T11_10', 'T11_09', 'T04_07', 'T15_17', 'T15_18', 'T13_18', 'T10_10', 'T04_09', 'T04_08', 'T11_0X', 'T16_08', 'T16_09', 'T16_11', 'T16_13', 'T16_01', 'T16_04', 'T16_10', 'T16_02', 'T16_12', 'T16_06', 'T16_07', 'T06_05', 'T05_03', 'T05_06', 'T05_05', 'T06_02', 'T06_04', 'T06_03', 'T05_04', 'T05_02',
+#>   'T05_01', 'T06_01', 'T08_04', 'T08_06', 'T08_03', 'T08_07', 'T08_02', 'T08_05', 'T08_01', 'T08_09', 'T08_08', 'T03_09', 'T06_1X', 'T19_06', 'T19_08', 'T19_05', 'T19_11', 'T19_01', 'T19_02', 'T19_30', 'T19_03', 'T19_07', 'T19_04', 'T19_09', 'T26_03', 'T26_05', 'T26_07', 'T26_09', 'T26_06', 'T26_10', 'T26_08', 'T26_02', 'T26_04', 'T21_11', 'T18_01', 'T21_01', 'T18_05', 'T21_12', 'T18_13', 'T21_10', 'T18_11', 'T21_05', 'T21_13', 'T18_08', 'T18_07', 'T21_09', 'T18_04', 'T18_02', 'T21_02', 'T21_06', 'T18_09', 'T21_04', 'T18_12', 'T21_14', 'T21_03', 'T18_10', 'T27_01', 'T27_05', 'T27_07', 'T27_06', 'T27_04', 'T27_02', 'T27_03', 'T30_06', 'T29_04', 'T29_02', 'T30_02', 'T30_03', 'T30_01', 'T29_05', 'T29_03', 'T24_05', 'T24_08', 'T24_02', 'T24_10', 'T24_06', 'T24_24', 'T24_25', 'T24_09', 'T24_21', 'T24_23', 'T28_08', 'T28_09', 'T28_02', 'T28_03', 'T28_04', 'T28_01', 'T28_10', 'T28_06', 'T23_10', 'T23_13', 'T23_09', 'T23_15', 'T23_03', 'T23_04', 'T23_14', 'T23_07', 'T23_08', 'T23_02',
+#>   'T23_06', 'T23_05', 'T25_05', 'T25_22', 'T22_03', 'T25_06', 'T22_12', 'T25_09', 'T25_10', 'T25_08', 'T22_11', 'T22_02', 'T25_11', 'T25_07', 'T25_14', 'T25_12', 'T25_04', 'T22_08', 'T25_23', 'T22_10', 'T22_06', 'T25_13', 'T22_01', 'T20_05', 'T20_09', 'T20_30', 'T20_08', 'T20_12', 'T20_06', 'T20_07', 'T20_02', 'T20_13', 'T20_03', 'T20_01', 'T20_04', 'T20_11', 'T20_10', 'T32_04', 'T31_03', 'T31_01', 'T31_04', 'T32_03', 'T32_02', 'T32_01', 'T17_02', 'T17_09', 'T17_10', 'T17_04', 'T17_03', 'T17_08', 'T17_06', 'T17_01'
 #> 
 #> 
 #> =========================================
@@ -1044,8 +2529,6 @@ mods5 <- defineModel(dat = vera, id = "idstud", check.for.linking = TRUE,
 #>     Number of dimensions: 1
 #> =========================================
 #> 
-#> Warning! Model No. 1, model name: 'domainlistening': 118 from 134 items listed the Q matrix not found in data:
-#>     T12_02, T13_15, T15_03, T13_04, T13_07, T13_16, T13_01, T15_02, T15_01, T15_15, T15_16, T15_09, T13_12, T13_13, T15_14, T13_08, T13_06, T15_12, T13_10, T13_17, T15_11, T13_05, T13_09, T15_10, T15_13, T15_17, T15_18, T13_18, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
 #> Following 118 item(s) missed in data frame will be removed from Q matrix: 
 #>     T12_02, T13_15, T15_03, T13_04, T13_07, T13_16, T13_01, T15_02, T15_01, T15_15, T15_16, T15_09, T13_12, T13_13, T15_14, T13_08, T13_06, T15_12, T13_10, T13_17, T15_11, T13_05, T13_09, T15_10, T15_13, T15_17, T15_18, T13_18, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
 #> Dataset is completely linked.
@@ -1061,8 +2544,6 @@ mods5 <- defineModel(dat = vera, id = "idstud", check.for.linking = TRUE,
 #>     Number of dimensions: 1
 #> =======================================
 #> 
-#> Warning! Model No. 2, model name: 'domainreading': 132 from 149 items listed the Q matrix not found in data:
-#>     T07_08, T02_02, T07_01, T02_06, T07_05, T07_06, T02_07, T07_02, T07_04, T02_03, T07_09, T02_01, T02_04, T07_03, T02_05, T07_07, T07_10, T09_11, T01_05, T03_07, T03_01, T03_08, T03_05, T03_06, T03_03, T10_08, T11_06, T11_03, T11_01, T04_02, T04_01, T04_06, T04_04, T11_04, T10_01, T11_08, T10_02, T10_09, T10_07, T11_02, T04_05, T04_03, T11_05, T10_06, T11_10, T11_09, T04_07, T10_10, T04_09, T04_08, T11_0X, T06_05, T05_03, T05_06, T05_05, T06_02, T06_04, T06_03, T05_04, T05_02, T05_01, T06_01, T08_04, T08_06, T08_03, T08_07, T08_02, T08_05, T08_01, T08_09, T08_08, T03_09, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01
 #> Following 132 item(s) missed in data frame will be removed from Q matrix: 
 #>     T07_08, T02_02, T07_01, T02_06, T07_05, T07_06, T02_07, T07_02, T07_04, T02_03, T07_09, T02_01, T02_04, T07_03, T02_05, T07_07, T07_10, T09_11, T01_05, T03_07, T03_01, T03_08, T03_05, T03_06, T03_03, T10_08, T11_06, T11_03, T11_01, T04_02, T04_01, T04_06, T04_04, T11_04, T10_01, T11_08, T10_02, T10_09, T10_07, T11_02, T04_05, T04_03, T11_05, T10_06, T11_10, T11_09, T04_07, T10_10, T04_09, T04_08, T11_0X, T06_05, T05_03, T05_06, T05_05, T06_02, T06_04, T06_03, T05_04, T05_02, T05_01, T06_01, T08_04, T08_06, T08_03, T08_07, T08_02, T08_05, T08_01, T08_09, T08_08, T03_09, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01
 #> 1 subject(s) solved each item: P04491 (17 correct), P04491 (17 correct) ... 
@@ -1079,8 +2560,6 @@ mods5 <- defineModel(dat = vera, id = "idstud", check.for.linking = TRUE,
 #>     Number of dimensions: 1
 #> ================================
 #> 
-#> Warning! Model No. 3, model name: 'global': 250 from 283 items listed the Q matrix not found in data:
-#>     T12_02, T07_08, T02_02, T07_01, T02_06, T07_05, T07_06, T02_07, T07_02, T07_04, T02_03, T07_09, T02_01, T02_04, T07_03, T02_05, T07_07, T07_10, T09_11, T01_05, T13_15, T15_03, T13_04, T13_07, T13_16, T13_01, T15_02, T15_01, T15_15, T15_16, T15_09, T13_12, T13_13, T15_14, T13_08, T13_06, T15_12, T13_10, T13_17, T15_11, T13_05, T13_09, T15_10, T15_13, T03_07, T03_01, T03_08, T03_05, T03_06, T03_03, T10_08, T11_06, T11_03, T11_01, T04_02, T04_01, T04_06, T04_04, T11_04, T10_01, T11_08, T10_02, T10_09, T10_07, T11_02, T04_05, T04_03, T11_05, T10_06, T11_10, T11_09, T04_07, T15_17, T15_18, T13_18, T10_10, T04_09, T04_08, T11_0X, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T06_05, T05_03, T05_06, T05_05, T06_02, T06_04, T06_03, T05_04, T05_02, T05_01, T06_01, T08_04, T08_06, T08_03, T08_07, T08_02, T08_05, T08_01, T08_09, T08_08, T03_09, T06_1X, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
 #> Following 250 item(s) missed in data frame will be removed from Q matrix: 
 #>     T12_02, T07_08, T02_02, T07_01, T02_06, T07_05, T07_06, T02_07, T07_02, T07_04, T02_03, T07_09, T02_01, T02_04, T07_03, T02_05, T07_07, T07_10, T09_11, T01_05, T13_15, T15_03, T13_04, T13_07, T13_16, T13_01, T15_02, T15_01, T15_15, T15_16, T15_09, T13_12, T13_13, T15_14, T13_08, T13_06, T15_12, T13_10, T13_17, T15_11, T13_05, T13_09, T15_10, T15_13, T03_07, T03_01, T03_08, T03_05, T03_06, T03_03, T10_08, T11_06, T11_03, T11_01, T04_02, T04_01, T04_06, T04_04, T11_04, T10_01, T11_08, T10_02, T10_09, T10_07, T11_02, T04_05, T04_03, T11_05, T10_06, T11_10, T11_09, T04_07, T15_17, T15_18, T13_18, T10_10, T04_09, T04_08, T11_0X, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T06_05, T05_03, T05_06, T05_05, T06_02, T06_04, T06_03, T05_04, T05_02, T05_01, T06_01, T08_04, T08_06, T08_03, T08_07, T08_02, T08_05, T08_01, T08_09, T08_08, T03_09, T06_1X, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
 #> Dataset is completely linked.
@@ -1132,10 +2611,11 @@ anch5 <- equat1pl ( results = res5, prmNorm = prmNrm, item = "item", value = "es
 #>     Number of linking items:   5
 #>     Linking method:            Mean.Mean
 #> 
-#> Dimension 'domainlistening': 1 of 5 items with linking |DIF| > 0.64 identified.
+#> Dimension 'domainlistening': 2 of 5 items with linking |DIF| > 0.64 identified.
 #> 
-#>     item   dif linking.constant linkerror
-#> 1 T14_04 1.464            -0.37     0.377
+#>     item    dif linking.constant linkerror
+#> 1 T12_01  1.214           -0.021     0.347
+#> 2 T12_06 -0.753           -0.021     0.347
 #> 
 #> 
 #> ====================================================================================================
@@ -1147,12 +2627,11 @@ anch5 <- equat1pl ( results = res5, prmNorm = prmNrm, item = "item", value = "es
 #>     Number of linking items:   6
 #>     Linking method:            Mean.Mean
 #> 
-#> Dimension 'domainreading': 3 of 6 items with linking |DIF| > 0.64 identified.
+#> Dimension 'domainreading': 2 of 6 items with linking |DIF| > 0.64 identified.
 #> 
 #>     item    dif linking.constant linkerror
-#> 1 T01_01  0.664            0.067     0.232
-#> 2 T01_02 -0.669            0.067     0.232
-#> 3 T09_05  0.751            0.067     0.232
+#> 1 T09_08  0.864           -0.704     0.332
+#> 2 T09_10 -1.551           -0.704     0.332
 #> 
 #> 
 #> ====================================================================================================
@@ -1164,13 +2643,14 @@ anch5 <- equat1pl ( results = res5, prmNorm = prmNrm, item = "item", value = "es
 #>     Number of linking items:   11
 #>     Linking method:            Mean.Mean
 #> 
-#> Dimension 'global': 4 of 11 items with linking |DIF| > 0.64 identified.
+#> Dimension 'global': 5 of 11 items with linking |DIF| > 0.64 identified.
 #> 
 #>     item    dif linking.constant linkerror
-#> 1 T01_02 -0.782           -0.157     0.209
-#> 2 T09_05  0.648           -0.157     0.209
-#> 3 T12_09  0.791           -0.157     0.209
-#> 4 T14_04  1.585           -0.157     0.209
+#> 1 T09_08  1.130           -0.408     0.257
+#> 2 T09_10 -1.276           -0.408     0.257
+#> 3 T12_01  0.734           -0.408     0.257
+#> 4 T12_06 -1.300           -0.408     0.257
+#> 5 T14_02 -1.100           -0.408     0.257
 #> 
 
 # for illustration: consequences of linking the global domain if linking constants
@@ -1189,14 +2669,12 @@ anch5a<- equat1pl ( results = res5, prmNorm = prmNrm, item = "item", value = "es
 #>     Number of linking items:   5
 #>     Linking method:            Mean.Mean
 #> 
-#> Dimension 'domainlistening': 1 of 5 items with linking |DIF| > 0.64 identified.
-#>    Iteration 1: Exclude item 'T14_04'.
-#>    Iteration 2: Exclude item 'T12_09'.
+#> Dimension 'domainlistening': 2 of 5 items with linking |DIF| > 0.64 identified.
+#>    Iteration 1: Exclude item 'T12_01'.
 #> 
 #>     method iter itemExcluded DIF.excluded linking.constant linkerror
-#> 1 iterativ    0                                     -0.370     0.377
-#> 2 iterativ    1       T14_04        1.464           -0.050     0.259
-#> 3 iterativ    2       T12_09        0.714            0.175     0.181
+#> 1 iterativ    0                                     -0.021     0.347
+#> 2 iterativ    1       T12_01        1.214            0.257     0.269
 #> 
 #> 
 #> ====================================================================================================
@@ -1208,14 +2686,12 @@ anch5a<- equat1pl ( results = res5, prmNorm = prmNrm, item = "item", value = "es
 #>     Number of linking items:   6
 #>     Linking method:            Mean.Mean
 #> 
-#> Dimension 'domainreading': 3 of 6 items with linking |DIF| > 0.64 identified.
-#>    Iteration 1: Exclude item 'T09_05'.
-#>    Iteration 2: Exclude item 'T01_01'.
+#> Dimension 'domainreading': 2 of 6 items with linking |DIF| > 0.64 identified.
+#>    Iteration 1: Exclude item 'T09_10'.
 #> 
 #>     method iter itemExcluded DIF.excluded linking.constant linkerror
-#> 1 iterativ    0                                      0.067     0.232
-#> 2 iterativ    1       T09_05        0.751            0.202     0.231
-#> 3 iterativ    2       T01_01        0.813            0.384     0.185
+#> 1 iterativ    0                                     -0.704     0.332
+#> 2 iterativ    1       T09_10       -1.551           -1.013     0.148
 #> 
 #> 
 #> ====================================================================================================
@@ -1227,18 +2703,18 @@ anch5a<- equat1pl ( results = res5, prmNorm = prmNrm, item = "item", value = "es
 #>     Number of linking items:   11
 #>     Linking method:            Mean.Mean
 #> 
-#> Dimension 'global': 4 of 11 items with linking |DIF| > 0.64 identified.
-#>    Iteration 1: Exclude item 'T14_04'.
-#>    Iteration 2: Exclude item 'T12_09'.
-#>    Iteration 3: Exclude item 'T09_05'.
-#>    Iteration 4: Exclude item 'T01_01'.
+#> Dimension 'global': 5 of 11 items with linking |DIF| > 0.64 identified.
+#>    Iteration 1: Exclude item 'T12_06'.
+#>    Iteration 2: Exclude item 'T09_10'.
+#>    Iteration 3: Exclude item 'T14_02'.
+#>    Iteration 4: Exclude item 'T09_08'.
 #> 
 #>     method iter itemExcluded DIF.excluded linking.constant linkerror
-#> 1 iterativ    0                                     -0.157     0.209
-#> 2 iterativ    1       T14_04        1.585           -0.014     0.169
-#> 3 iterativ    2       T12_09        0.847            0.072     0.162
-#> 4 iterativ    3       T09_05        0.789            0.162     0.153
-#> 5 iterativ    4       T01_01        0.821            0.267     0.128
+#> 1 iterativ    0                                     -0.408     0.257
+#> 2 iterativ    1       T12_06         -1.3           -0.532     0.248
+#> 3 iterativ    2       T09_10       -1.417           -0.682     0.222
+#> 4 iterativ    3       T14_02       -1.429           -0.847     0.168
+#> 5 iterativ    4       T09_08        0.735           -0.740     0.150
 #> 
 
 # transformation to the Bista metric
@@ -1261,67 +2737,27 @@ cuts  <- list ( domainreading = list ( values = 390+0:3*75),
 
 # transformation
 dfr   <- transformToBista(equatingList = anch5, refPop = refPop, cuts=cuts )
-#> The 'refPop' data.frame does not include information about reference population mean/SD on Bista metric. Values will be defaulted to 500/100.
+#> The 'refPop' data.frame does not include information about reference population mean/SD on Bista metric. Values will be defaulted to mean = 500 and SD = 100.
+#> Warning: Model 'domainreading', dimension 'domainreading': No items on trait level(s) '4'.
+#> 1 of 5 trait levels(s) of merging variable 'traitLevel' from data set 'linking error list' not included in data set 'item parameter list'.
 #> Found duplicated entries in 'item-ID' column. This should only occur for subject 'math' in grade 3.
 #> Cannot find 'global' entry in the 'domain' column. Cancel reshaping.
 head(dfr$itempars)
-#>             model   item       dimension Nvalid     itemP itemDiscrim       est
-#> 1 domainlistening T12_01 domainlistening    133 0.9398496  0.02099527 -3.015202
-#> 2 domainlistening T12_03 domainlistening    133 0.8872180  0.37141881 -2.290056
-#> 3 domainlistening T12_04 domainlistening    133 0.8796992  0.23727591 -2.211710
-#> 4 domainlistening T12_05 domainlistening    133 0.9849624  0.10028410 -4.485206
-#> 5 domainlistening T12_07 domainlistening    133 0.8646617  0.33255757 -2.066257
-#> 6 domainlistening T12_09 domainlistening    133 0.9548872  0.12657818 -3.330597
-#>          se     infit    outfit estTransf estTransf625 estTransfBista
-#> 1 0.3725945 1.0539760 1.2093755 -3.385366    -2.874540      175.86079
-#> 2 0.2836654 0.9163307 0.7550022 -2.660219    -2.149393      256.62189
-#> 3 0.2762515 0.9862945 0.9141946 -2.581874    -2.071048      265.34737
-#> 4 0.7170350 1.0056418 0.7545260 -4.855369    -4.344543       12.14348
-#> 5 0.2634642 0.9313443 0.8899342 -2.436420    -1.925595      281.54680
-#> 6 0.4249207 1.0059954 1.0341609 -3.700760    -3.189935      140.73466
-#>   traitLevel linkingConstant linkingMethod nLinkitems linkingError
-#> 1          1      -0.3701634     Mean.Mean          5    0.3774444
-#> 2          1      -0.3701634     Mean.Mean          5    0.3774444
-#> 3          1      -0.3701634     Mean.Mean          5    0.3774444
-#> 4          1      -0.3701634     Mean.Mean          5    0.3774444
-#> 5          1      -0.3701634     Mean.Mean          5    0.3774444
-#> 6          1      -0.3701634     Mean.Mean          5    0.3774444
-#>   linkingErrorTransfBista linkingErrorTraitLevel    refMean     refSD
-#> 1                42.03676             0.08832631 0.03587727 0.8978912
-#> 2                42.03676             0.08832631 0.03587727 0.8978912
-#> 3                42.03676             0.08832631 0.03587727 0.8978912
-#> 4                42.03676             0.08832631 0.03587727 0.8978912
-#> 5                42.03676             0.08832631 0.03587727 0.8978912
-#> 6                42.03676             0.08832631 0.03587727 0.8978912
-#>   refTransfMean refTransfSD
-#> 1           500         100
-#> 2           500         100
-#> 3           500         100
-#> 4           500         100
-#> 5           500         100
-#> 6           500         100
+#>             model   item     infit    outfit itemDiscrim Nvalid       est        se     itemP       dimension estTransf estTransf625 estTransfBista traitLevel linkingConstant linkingMethod nLinkitems linkingError linkingErrorTransfBista linkingErrorTraitLevel    refMean     refSD refTransfMean refTransfSD
+#> 1 domainlistening T12_01 1.0637019 1.2739580  0.02099527    133 -3.015202 0.3725945 0.9398496 domainlistening -3.036642    -2.525816      214.69889          1     -0.02143947     Mean.Mean          5    0.3474721                38.69869             0.05664208 0.03587727 0.8978912           500         100
+#> 2 domainlistening T12_03 0.9228294 0.7733450  0.37141881    133 -2.290056 0.2836654 0.8872180 domainlistening -2.311495    -1.800669      295.45999          1     -0.02143947     Mean.Mean          5    0.3474721                38.69869             0.05664208 0.03587727 0.8978912           500         100
+#> 3 domainlistening T12_04 0.9870469 0.9089006  0.23727591    133 -2.211710 0.2762515 0.8796992 domainlistening -2.233150    -1.722324      304.18548          1     -0.02143947     Mean.Mean          5    0.3474721                38.69869             0.05664208 0.03587727 0.8978912           500         100
+#> 4 domainlistening T12_05 1.0123554 0.7724615  0.10028410    133 -4.485206 0.7170350 0.9849624 domainlistening -4.506645    -3.995820       50.98158          1     -0.02143947     Mean.Mean          5    0.3474721                38.69869             0.05664208 0.03587727 0.8978912           500         100
+#> 5 domainlistening T12_07 0.9284443 0.9002469  0.33255757    133 -2.066257 0.2634642 0.8646617 domainlistening -2.087697    -1.576871      320.38490          1     -0.02143947     Mean.Mean          5    0.3474721                38.69869             0.05664208 0.03587727 0.8978912           500         100
+#> 6 domainlistening T12_09 1.0085971 1.0352565  0.12657818    133 -3.330597 0.4249207 0.9548872 domainlistening -3.352036    -2.841211      179.57276          1     -0.02143947     Mean.Mean          5    0.3474721                38.69869             0.05664208 0.03587727 0.8978912           500         100
 head(dfr$personpars)
-#>             model idstud           group imp      value valueTransfBista
-#> 1 domainlistening P04477 domainlistening pv1 -0.7975125         365.9578
-#> 2 domainlistening P04478 domainlistening pv1 -0.2713932         424.5528
-#> 3 domainlistening P06981 domainlistening pv5 -0.7468397         371.6013
-#> 4 domainlistening P04480 domainlistening pv1 -0.7048242         376.2807
-#> 5 domainlistening P07232 domainlistening pv3 -0.4266830         407.2578
-#> 6 domainlistening P07233 domainlistening pv3 -0.2941525         422.0180
-#>   traitLevel       dimension linkingError linkingErrorTransfBista
-#> 1          2 domainlistening    0.3774444                42.03676
-#> 2          2 domainlistening    0.3774444                42.03676
-#> 3          2 domainlistening    0.3774444                42.03676
-#> 4          2 domainlistening    0.3774444                42.03676
-#> 5          2 domainlistening    0.3774444                42.03676
-#> 6          2 domainlistening    0.3774444                42.03676
-#>   linkingErrorTraitLevel
-#> 1             0.07658122
-#> 2             0.07658122
-#> 3             0.07658122
-#> 4             0.07658122
-#> 5             0.07658122
-#> 6             0.07658122
+#>             model idstud           group imp      value valueTransfBista traitLevel       dimension linkingError linkingErrorTransfBista linkingErrorTraitLevel
+#> 1 domainlistening P04477 domainlistening pv1 -0.5515819         432.1857          2 domainlistening    0.3474721                38.69869             0.08627933
+#> 2 domainlistening P08343 domainlistening pv1 -0.7567540         409.3353          2 domainlistening    0.3474721                38.69869             0.08627933
+#> 3 domainlistening P06148 domainlistening pv1 -0.4814558         439.9958          2 domainlistening    0.3474721                38.69869             0.08627933
+#> 4 domainlistening P04480 domainlistening pv1 -0.7436083         410.7993          2 domainlistening    0.3474721                38.69869             0.08627933
+#> 5 domainlistening P08230 domainlistening pv2 -0.7042301         415.1849          2 domainlistening    0.3474721                38.69869             0.08627933
+#> 6 domainlistening P04486 domainlistening pv4 -0.4999824         437.9324          2 domainlistening    0.3474721                38.69869             0.08627933
 
 
 ################################################################################
@@ -1365,6 +2801,10 @@ defT1 <- defineModel(dat = datT1, id = "idstud", check.for.linking = TRUE,
          splittedModels = modsT1, software = "tam")
 #> 
 #> Specification of 'qMatrix' and 'person.groups' results in 2 model(s).
+#> Warning: Model split preparation for model No. 1, model name domainlistening: 83 items from 134 items listed the Q matrix not found in data:
+#> ℹ 'T12_11', 'T15_17', 'T15_18', 'T13_18', 'T19_06', 'T19_08', 'T19_05', 'T19_11', 'T19_01', 'T19_02', 'T19_30', 'T19_03', 'T19_07', 'T19_04', 'T19_09', 'T21_11', 'T18_01', 'T21_01', 'T18_05', 'T21_12', 'T18_13', 'T21_10', 'T18_11', 'T21_05', 'T21_13', 'T18_08', 'T18_07', 'T21_09', 'T18_04', 'T18_02', 'T21_02', 'T21_06', 'T18_09', 'T21_04', 'T18_12', 'T21_14', 'T21_03', 'T18_10', 'T30_06', 'T29_04', 'T29_02', 'T30_02', 'T30_03', 'T30_01', 'T29_05', 'T29_03', 'T28_08', 'T28_09', 'T28_02', 'T28_03', 'T28_04', 'T28_01', 'T28_10', 'T28_06', 'T20_05', 'T20_09', 'T20_30', 'T20_08', 'T20_12', 'T20_06', 'T20_07', 'T20_02', 'T20_13', 'T20_03', 'T20_01', 'T20_04', 'T20_11', 'T20_10', 'T32_04', 'T31_03', 'T31_01', 'T31_04', 'T32_03', 'T32_02', 'T32_01', 'T17_02', 'T17_09', 'T17_10', 'T17_04', 'T17_03', 'T17_08', 'T17_06', 'T17_01'
+#> Warning: Model split preparation for model No. 2, model name domainreading: 69 items from 149 items listed the Q matrix not found in data:
+#> ℹ 'T09_12', 'T01_08', 'T10_10', 'T04_09', 'T04_08', 'T11_0X', 'T08_09', 'T08_08', 'T03_09', 'T06_1X', 'T26_03', 'T26_05', 'T26_07', 'T26_09', 'T26_06', 'T26_10', 'T26_08', 'T26_02', 'T26_04', 'T27_01', 'T27_05', 'T27_07', 'T27_06', 'T27_04', 'T27_02', 'T27_03', 'T24_05', 'T24_08', 'T24_02', 'T24_10', 'T24_06', 'T24_24', 'T24_25', 'T24_09', 'T24_21', 'T24_23', 'T23_10', 'T23_13', 'T23_09', 'T23_15', 'T23_03', 'T23_04', 'T23_14', 'T23_07', 'T23_08', 'T23_02', 'T23_06', 'T23_05', 'T25_05', 'T25_22', 'T22_03', 'T25_06', 'T22_12', 'T25_09', 'T25_10', 'T25_08', 'T22_11', 'T22_02', 'T25_11', 'T25_07', 'T25_14', 'T25_12', 'T25_04', 'T22_08', 'T25_23', 'T22_10', 'T22_06', 'T25_13', 'T22_01'
 #> 
 #> 
 #> =========================================
@@ -1375,8 +2815,6 @@ defT1 <- defineModel(dat = datT1, id = "idstud", check.for.linking = TRUE,
 #>     Number of dimensions: 1
 #> =========================================
 #> 
-#> Warning! Model No. 1, model name: 'domainlistening': 83 from 134 items listed the Q matrix not found in data:
-#>     T12_11, T15_17, T15_18, T13_18, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
 #> Following 83 item(s) missed in data frame will be removed from Q matrix: 
 #>     T12_11, T15_17, T15_18, T13_18, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
 #> 76 subject(s) do not solve any item:
@@ -1395,8 +2833,6 @@ defT1 <- defineModel(dat = datT1, id = "idstud", check.for.linking = TRUE,
 #>     Number of dimensions: 1
 #> =======================================
 #> 
-#> Warning! Model No. 2, model name: 'domainreading': 69 from 149 items listed the Q matrix not found in data:
-#>     T09_12, T01_08, T10_10, T04_09, T04_08, T11_0X, T08_09, T08_08, T03_09, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01
 #> Following 69 item(s) missed in data frame will be removed from Q matrix: 
 #>     T09_12, T01_08, T10_10, T04_09, T04_08, T11_0X, T08_09, T08_08, T03_09, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01
 #> 17 subject(s) do not solve any item:
@@ -1411,10 +2847,14 @@ runT1 <- runModel(defT1)
 
 # get the results of the two unidimensional models
 resT1 <- getResults(runT1, omitWle = TRUE, Q3 = FALSE)
+#> Getting standard errors with the tam.se function: 0.2 secs
 #> |*****|
 #> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 2 secs
+#> Getting standard errors with the tam.se function: 0.6 secs
 #> |*****|
 #> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 1.7 secs
 
 # extract item parameters from the 'results' object
 # t1 is the reference measurement occasion, i.e. no linking/equating is necessary
@@ -1437,7 +2877,7 @@ cuts  <- list ( domainreading = list ( values = 390+0:3*75),
 tfRef <- transformToBista ( equatingList = eqRef, cuts=cuts, vera=FALSE,
          weights = datT1[,c("idstud", "wgt")] )
 #> 'refPop' was not defined. Treat current sample as drawn from the reference population.
-#> The 'refPop' data.frame does not include information about reference population mean/SD on Bista metric. Values will be defaulted to 500/100.
+#> The 'refPop' data.frame does not include information about reference population mean/SD on Bista metric. Values will be defaulted to mean = 500 and SD = 100.
 
 # Second step: drawing plausible values separately for each country.
 # A two-dimensional (reading/listening) model is specified separately for each
@@ -1481,31 +2921,152 @@ defT1P<- defineModel(dat = datT1, items = itemT1[,"item"], id = "idstud",
          HG.var = c("sex", "ses_scaled", "language"),  software = "tam")
 #> 
 #> Specification of 'qMatrix' and 'person.groups' results in 3 model(s).
-#> Error in eval(cl1[[u]]): object 'itemT1' not found
+#> 
+#> 
+#> ==========================================
+#> Model No. 1
+#>     Model name:           country.countryC
+#>     Number of items:      131
+#>     Number of persons:    1569
+#>     Number of dimensions: 2
+#> ==========================================
+#> 
+#> Following 152 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_11, T09_12, T01_08, T15_17, T15_18, T13_18, T10_10, T04_09, T04_08, T11_0X, T08_09, T08_08, T03_09, T06_1X, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Background variable(s) 'sex', 'language' of class 
+#>     'factor', 'factor' will be converted to indicator variables.
+#>     Variable 'sex' was converted to 1 indicator(s) with name(s) 'sexmale'.
+#>     Variable 'language' was converted to 2 indicator(s) with name(s) 'languagenativeAndOther', 'languageother'.
+#> 5 subject(s) solved each item: P00106 (17 correct), P00939 (17 correct), P00393 (20 correct) ... 
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> 131 common items found in 'anchor' list and data frame.
+#> Q matrix specifies 2 dimension(s).
+#> 
+#> 
+#> ==========================================
+#> Model No. 2
+#>     Model name:           country.countryA
+#>     Number of items:      131
+#>     Number of persons:    1598
+#>     Number of dimensions: 2
+#> ==========================================
+#> 
+#> Following 152 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_11, T09_12, T01_08, T15_17, T15_18, T13_18, T10_10, T04_09, T04_08, T11_0X, T08_09, T08_08, T03_09, T06_1X, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Background variable(s) 'sex', 'language' of class 
+#>     'factor', 'factor' will be converted to indicator variables.
+#>     Variable 'sex' was converted to 1 indicator(s) with name(s) 'sexmale'.
+#>     Variable 'language' was converted to 2 indicator(s) with name(s) 'languagenativeAndOther', 'languageother'.
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> 131 common items found in 'anchor' list and data frame.
+#> Q matrix specifies 2 dimension(s).
+#> 
+#> 
+#> ==========================================
+#> Model No. 3
+#>     Model name:           country.countryB
+#>     Number of items:      131
+#>     Number of persons:    1309
+#>     Number of dimensions: 2
+#> ==========================================
+#> 
+#> Following 152 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_11, T09_12, T01_08, T15_17, T15_18, T13_18, T10_10, T04_09, T04_08, T11_0X, T08_09, T08_08, T03_09, T06_1X, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Background variable(s) 'sex', 'language' of class 
+#>     'factor', 'factor' will be converted to indicator variables.
+#>     Variable 'sex' was converted to 1 indicator(s) with name(s) 'sexmale'.
+#>     Variable 'language' was converted to 2 indicator(s) with name(s) 'languagenativeAndOther', 'languageother'.
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> 131 common items found in 'anchor' list and data frame.
+#> Q matrix specifies 2 dimension(s).
 
 # run the 3 models (estimation needs approx. 20 seconds)
 runT1P<- runModel(defT1P)
-#> Error: object 'defT1P' not found
 
 # get the results (to save time, item fit estimation is skipped)
 resT1P<- getResults(runT1P, omitWle = TRUE, Q3 = FALSE)
-#> Error: object 'runT1P' not found
+#> Getting standard errors with the tam.se function: 6.6 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 1.9 secs
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 0.8 secs
+#> Getting standard errors with the tam.se function: 7.5 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 1.9 secs
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 1 secs
+#> Getting standard errors with the tam.se function: 6.2 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 1.6 secs
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 0.8 secs
 
 # latent regression coefficients for the three countries and two dimensions
 regcoefFromRes(resT1P, digits = 3)
-#> Error: object 'resT1P' not found
+#> $`model: 'country.countryA', group: 'domainlistening'`
+#>                parameter    est    se     p sig
+#> 1            (Intercept) -0.011 0.021 0.577    
+#> 2 languagenativeAndOther -0.353 0.039 0.000 ***
+#> 3          languageother -0.608 0.195 0.002  **
+#> 4             ses_scaled  0.377 0.020 0.000 ***
+#> 5                sexmale -0.009 0.029 0.755    
+#> 
+#> $`model: 'country.countryB', group: 'domainlistening'`
+#>                parameter    est    se     p sig
+#> 1            (Intercept)  0.075 0.024 0.002  **
+#> 2 languagenativeAndOther -0.343 0.095 0.000 ***
+#> 3          languageother -0.285 0.271 0.292    
+#> 4             ses_scaled  0.275 0.026 0.000 ***
+#> 5                sexmale  0.079 0.034 0.021   *
+#> 
+#> $`model: 'country.countryC', group: 'domainlistening'`
+#>                parameter    est    se     p sig
+#> 1            (Intercept)  0.133 0.023 0.000 ***
+#> 2 languagenativeAndOther -0.381 0.053 0.000 ***
+#> 3          languageother -0.007 0.281 0.982    
+#> 4             ses_scaled  0.298 0.024 0.000 ***
+#> 5                sexmale -0.008 0.033 0.811    
+#> 
+#> $`model: 'country.countryA', group: 'domainreading'`
+#>                parameter    est    se     p sig
+#> 1            (Intercept) -0.033 0.023 0.147    
+#> 2 languagenativeAndOther -0.308 0.043 0.000 ***
+#> 3          languageother -0.451 0.214 0.035   *
+#> 4             ses_scaled  0.400 0.022 0.000 ***
+#> 5                sexmale -0.233 0.032 0.000 ***
+#> 
+#> $`model: 'country.countryB', group: 'domainreading'`
+#>                parameter    est    se     p sig
+#> 1            (Intercept)  0.412 0.027 0.000 ***
+#> 2 languagenativeAndOther -0.147 0.106 0.165    
+#> 3          languageother -0.467 0.296 0.115    
+#> 4             ses_scaled  0.288 0.029 0.000 ***
+#> 5                sexmale -0.194 0.038 0.000 ***
+#> 
+#> $`model: 'country.countryC', group: 'domainreading'`
+#>                parameter    est    se     p sig
+#> 1            (Intercept)  0.167 0.026 0.000 ***
+#> 2 languagenativeAndOther -0.298 0.059 0.000 ***
+#> 3          languageother -0.505 0.310 0.103    
+#> 4             ses_scaled  0.384 0.027 0.000 ***
+#> 5                sexmale -0.233 0.037 0.000 ***
+#> 
 
 # equating is not necessary, as the models run with fixed item parameters
 # However, to prepare for the transformation on the 'bista' metric, run
 # 'equat1pl' with empty arguments
 ankT1P<- equat1pl ( results = resT1P)
-#> Error: object 'resT1P' not found
+#> Found 3 model(s).
+#>    Equating is executed for each dimension in each model separately.
+#> No norm parameter defined ('prmNorm' is missing). Treat current sample as drawn from the reference population.
 
 # transformation to the 'bista' metric
 # Note: if the sample was drawn from the reference population, mean and SD
 # were just computed and captured in 'tfRef'.
 dfrT1P<- transformToBista ( equatingList = ankT1P, refPop = tfRef[["refPop"]][,-2], cuts=cuts, vera=FALSE )
-#> Error: object 'ankT1P' not found
 
 
 ################################################################################
@@ -1532,6 +3093,10 @@ defT2 <- defineModel(dat = datT2, id = "idstud", check.for.linking = TRUE,
          splittedModels = modsT2, software = "tam")
 #> 
 #> Specification of 'qMatrix' and 'person.groups' results in 2 model(s).
+#> Warning: Model split preparation for model No. 1, model name domainlistening: 38 items from 134 items listed the Q matrix not found in data:
+#> ℹ 'T12_02', 'T13_16', 'T15_12', 'T15_11', 'T16_08', 'T16_09', 'T16_11', 'T16_13', 'T16_01', 'T16_04', 'T16_10', 'T16_02', 'T16_12', 'T16_06', 'T16_07', 'T30_06', 'T29_04', 'T29_02', 'T30_02', 'T30_03', 'T30_01', 'T29_05', 'T29_03', 'T28_08', 'T28_09', 'T28_02', 'T28_03', 'T28_04', 'T28_01', 'T28_10', 'T28_06', 'T32_04', 'T31_03', 'T31_01', 'T31_04', 'T32_03', 'T32_02', 'T32_01'
+#> Warning: Model split preparation for model No. 2, model name domainreading: 30 items from 149 items listed the Q matrix not found in data:
+#> ℹ 'T09_11', 'T01_05', 'T03_07', 'T10_08', 'T11_03', 'T04_01', 'T11_04', 'T04_07', 'T11_0X', 'T06_04', 'T06_03', 'T08_04', 'T08_05', 'T06_1X', 'T26_03', 'T26_05', 'T26_07', 'T26_09', 'T26_06', 'T26_10', 'T26_08', 'T26_02', 'T26_04', 'T27_01', 'T27_05', 'T27_07', 'T27_06', 'T27_04', 'T27_02', 'T27_03'
 #> 
 #> 
 #> =========================================
@@ -1542,8 +3107,6 @@ defT2 <- defineModel(dat = datT2, id = "idstud", check.for.linking = TRUE,
 #>     Number of dimensions: 1
 #> =========================================
 #> 
-#> Warning! Model No. 1, model name: 'domainlistening': 38 from 134 items listed the Q matrix not found in data:
-#>     T12_02, T13_16, T15_12, T15_11, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01
 #> Following 38 item(s) missed in data frame will be removed from Q matrix: 
 #>     T12_02, T13_16, T15_12, T15_11, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01
 #> Found 105 cases with missings on all items.
@@ -1566,8 +3129,6 @@ defT2 <- defineModel(dat = datT2, id = "idstud", check.for.linking = TRUE,
 #>     Number of dimensions: 1
 #> =======================================
 #> 
-#> Warning! Model No. 2, model name: 'domainreading': 30 from 149 items listed the Q matrix not found in data:
-#>     T09_11, T01_05, T03_07, T10_08, T11_03, T04_01, T11_04, T04_07, T11_0X, T06_04, T06_03, T08_04, T08_05, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03
 #> Following 30 item(s) missed in data frame will be removed from Q matrix: 
 #>     T09_11, T01_05, T03_07, T10_08, T11_03, T04_01, T11_04, T04_07, T11_0X, T06_04, T06_03, T08_04, T08_05, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03
 #> 56 subject(s) do not solve any item:
@@ -1584,10 +3145,20 @@ runT2 <- runModel(defT2)
 
 # get the results
 resT2 <- getResults(runT2)
+#> Getting standard errors with the tam.se function: 0.5 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.2 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.7 secs
 #> |*****|
 #> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 2.1 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.7 secs
+#> Getting standard errors with the tam.se function: 0.6 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.4 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.9 secs
 #> |*****|
 #> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 1.8 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1.1 secs
 
 # collect item parameters
 itemT2<- itemFromRes(resT2)
@@ -1654,12 +3225,17 @@ L.t1t2<- equat1pl ( results = resT2, prmNorm = itemT1[,c("item", "est")],
 ref   <- tfRef[["refPop"]][,-2]
 T.t1t2<- transformToBista ( equatingList = L.t1t2, refPop=ref, cuts = cuts,
          vera=FALSE, years = c(2010,2015))
-#> Error in transformToBista(equatingList = L.t1t2, refPop = ref, cuts = cuts,     vera = FALSE, years = c(2010, 2015)): Invalid 'refPop'.
 
 # The object 'T.t1t2' now contains transformed person and item parameters with
 # original and transformed linking errors. See for example person parameter:
 head(T.t1t2$personpars)
-#> Error: object 'T.t1t2' not found
+#>             model idstud           group imp      value valueTransfBista traitLevel       dimension linkingError linkingErrorTransfBista linkingErrorTraitLevel
+#> 1 domainlistening P04477 domainlistening pv1 -0.4012165         419.4673          2 domainlistening   0.04212599                5.051172            0.008021298
+#> 2 domainlistening P05518 domainlistening pv3 -0.5277345         404.2970          2 domainlistening   0.04212599                5.051172            0.008021298
+#> 3 domainlistening P08882 domainlistening pv3 -0.7615555         376.2604          2 domainlistening   0.04212599                5.051172            0.008021298
+#> 4 domainlistening P04480 domainlistening pv1 -0.8421356         366.5983          2 domainlistening   0.04212599                5.051172            0.008021298
+#> 5 domainlistening P05521 domainlistening pv3 -0.3734883         422.7921          2 domainlistening   0.04212599                5.051172            0.008021298
+#> 6 domainlistening P07850 domainlistening pv1 -0.8421356         366.5983          2 domainlistening   0.04212599                5.051172            0.008021298
 
 # Fourth step: drawing plausible values for 't2'. We use the transformed item
 # parameters (captured in 'T.t1t2') for anchoring
@@ -1687,26 +3263,117 @@ defT2P<- defineModel(dat = datT2, items = itemT2[,"item"], id = "idstud",
          HG.var = c("sex", "ses_scaled", "language"), software = "tam")
 #> 
 #> Specification of 'qMatrix' and 'person.groups' results in 3 model(s).
-#> Error in eval(cl1[[u]]): object 'itemT2' not found
+#> 
+#> 
+#> ==========================================
+#> Model No. 1
+#>     Model name:           country.countryC
+#>     Number of items:      215
+#>     Number of persons:    1777
+#>     Number of dimensions: 2
+#> ==========================================
+#> 
+#> Following 68 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_02, T09_11, T01_05, T13_16, T15_12, T15_11, T03_07, T10_08, T11_03, T04_01, T11_04, T04_07, T11_0X, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T06_04, T06_03, T08_04, T08_05, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01
+#> Background variable(s) 'sex', 'language' of class 
+#>     'factor', 'factor' will be converted to indicator variables.
+#>     Variable 'sex' was converted to 1 indicator(s) with name(s) 'sexmale'.
+#>     Variable 'language' was converted to 2 indicator(s) with name(s) 'languagenativeAndOther', 'languageother'.
+#> 3 subject(s) do not solve any item:
+#>    P05705 (18 false), P05714 (18 false), P05853 (19 false) ... 
+#> 1 subject(s) solved each item: P05805 (20 correct), P05805 (20 correct) ... 
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> 215 common items found in 'anchor' list and data frame.
+#> Q matrix specifies 2 dimension(s).
+#> 
+#> 
+#> ==========================================
+#> Model No. 2
+#>     Model name:           country.countryA
+#>     Number of items:      215
+#>     Number of persons:    1502
+#>     Number of dimensions: 2
+#> ==========================================
+#> 
+#> Following 68 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_02, T09_11, T01_05, T13_16, T15_12, T15_11, T03_07, T10_08, T11_03, T04_01, T11_04, T04_07, T11_0X, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T06_04, T06_03, T08_04, T08_05, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01
+#> Warning: 1 testitem(s) are constants. Remove these items from the data set:  
+#>     Item 'T19_11', only value '0' occurs: 139 valid responses.
+#> Background variable(s) 'sex', 'language' of class 
+#>     'factor', 'factor' will be converted to indicator variables.
+#>     Variable 'sex' was converted to 1 indicator(s) with name(s) 'sexmale'.
+#>     Variable 'language' was converted to 2 indicator(s) with name(s) 'languagenativeAndOther', 'languageother'.
+#> Remove 1 test item(s) overall.
+#> 1 subject(s) solved each item: P07096 (17 correct), P07096 (17 correct) ... 
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> 214 common items found in 'anchor' list and data frame.
+#> 1 of 215 item(s) of merging variable 'item' from data set 'anchor list' not included in data set 'item response data'.
+#> Q matrix specifies 2 dimension(s).
+#> 
+#> 
+#> ==========================================
+#> Model No. 3
+#>     Model name:           country.countryB
+#>     Number of items:      215
+#>     Number of persons:    1237
+#>     Number of dimensions: 2
+#> ==========================================
+#> 
+#> Following 68 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_02, T09_11, T01_05, T13_16, T15_12, T15_11, T03_07, T10_08, T11_03, T04_01, T11_04, T04_07, T11_0X, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T06_04, T06_03, T08_04, T08_05, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01
+#> Warning: 1 testitem(s) are constants. Remove these items from the data set:  
+#>     Item 'T02_07', only value '0' occurs: 147 valid responses.
+#> Background variable(s) 'sex', 'language' of class 
+#>     'factor', 'factor' will be converted to indicator variables.
+#>     Variable 'sex' was converted to 1 indicator(s) with name(s) 'sexmale'.
+#>     Variable 'language' was converted to 2 indicator(s) with name(s) 'languagenativeAndOther', 'languageother'.
+#> Remove 1 test item(s) overall.
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> 214 common items found in 'anchor' list and data frame.
+#> 1 of 215 item(s) of merging variable 'item' from data set 'anchor list' not included in data set 'item response data'.
+#> Q matrix specifies 2 dimension(s).
 
 # run the 3 models (estimation takes approx. 29 seconds)
 runT2P<- runModel(defT2P)
-#> Error: object 'defT2P' not found
 
 # get the results
 resT2P<- getResults(runT2P)
-#> Error: object 'runT2P' not found
+#> Q3 is only available for unidimensional models. Estimation will be skipped.
+#> Getting standard errors with the tam.se function: 12.6 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 3.4 secs
+#> Getting WLEs calling tam.wle from getTamWles: 1.5 secs
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 1.1 secs
+#> Q3 is only available for unidimensional models. Estimation will be skipped.
+#> Getting standard errors with the tam.se function: 11.1 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 2.6 secs
+#> Getting WLEs calling tam.wle from getTamWles: 1.1 secs
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 0.9 secs
+#> Q3 is only available for unidimensional models. Estimation will be skipped.
+#> Getting standard errors with the tam.se function: 9.7 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 2.2 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.7 secs
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 0.7 secs
 
 # equating is not necessary, as the models run with fixed item parameters
 # However, to prepare for the transformation on the 'bista' metric, run
 # 'equat1pl' with empty arguments
 ankT2P<- equat1pl ( results = resT2P)
-#> Error: object 'resT2P' not found
+#> Found 3 model(s).
+#>    Equating is executed for each dimension in each model separately.
+#> No norm parameter defined ('prmNorm' is missing). Treat current sample as drawn from the reference population.
 
 # transformation to the 'bista' metric, using the previously defined cut scores
 # and the reference population mean and sd from 't1'
 dfrT2P<- transformToBista ( equatingList = ankT2P, refPop=ref, cuts=cuts, vera=FALSE)
-#> Error: object 'ankT2P' not found
 
 
 ################################################################################
@@ -1733,6 +3400,10 @@ defT3 <- defineModel(dat = datT3, id = "idstud", check.for.linking = TRUE,
          splittedModels = modsT3, software = "tam")
 #> 
 #> Specification of 'qMatrix' and 'person.groups' results in 2 model(s).
+#> Warning: Model split preparation for model No. 1, model name domainlistening: 15 items from 134 items listed the Q matrix not found in data:
+#> ℹ 'T12_02', 'T13_16', 'T15_12', 'T15_11', 'T16_08', 'T16_09', 'T16_11', 'T16_13', 'T16_01', 'T16_04', 'T16_10', 'T16_02', 'T16_12', 'T16_06', 'T16_07'
+#> Warning: Model split preparation for model No. 2, model name domainreading: 12 items from 149 items listed the Q matrix not found in data:
+#> ℹ 'T09_11', 'T01_05', 'T03_07', 'T10_08', 'T11_03', 'T04_01', 'T11_04', 'T04_07', 'T06_04', 'T06_03', 'T08_04', 'T08_05'
 #> 
 #> 
 #> =========================================
@@ -1743,8 +3414,6 @@ defT3 <- defineModel(dat = datT3, id = "idstud", check.for.linking = TRUE,
 #>     Number of dimensions: 1
 #> =========================================
 #> 
-#> Warning! Model No. 1, model name: 'domainlistening': 15 from 134 items listed the Q matrix not found in data:
-#>     T12_02, T13_16, T15_12, T15_11, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07
 #> Following 15 item(s) missed in data frame will be removed from Q matrix: 
 #>     T12_02, T13_16, T15_12, T15_11, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07
 #> Found 212 cases with missings on all items.
@@ -1765,8 +3434,6 @@ defT3 <- defineModel(dat = datT3, id = "idstud", check.for.linking = TRUE,
 #>     Number of dimensions: 1
 #> =======================================
 #> 
-#> Warning! Model No. 2, model name: 'domainreading': 12 from 149 items listed the Q matrix not found in data:
-#>     T09_11, T01_05, T03_07, T10_08, T11_03, T04_01, T11_04, T04_07, T06_04, T06_03, T08_04, T08_05
 #> Following 12 item(s) missed in data frame will be removed from Q matrix: 
 #>     T09_11, T01_05, T03_07, T10_08, T11_03, T04_01, T11_04, T04_07, T06_04, T06_03, T08_04, T08_05
 #> Found 59 cases with missings on all items.
@@ -1783,10 +3450,20 @@ runT3 <- runModel(defT3)
 
 # get the results
 resT3 <- getResults(runT3)
+#> Getting standard errors with the tam.se function: 0.6 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.5 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.7 secs
 #> |*****|
 #> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 2.1 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1.1 secs
+#> Getting standard errors with the tam.se function: 0.7 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.4 secs
+#> Getting WLEs calling tam.wle from getTamWles: 1.7 secs
 #> |*****|
 #> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 1.8 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1.6 secs
 
 # collect item parameters
 itemT3<- itemFromRes(resT3)
@@ -1799,7 +3476,64 @@ L.t2t3<- equat1pl ( results = resT3, prmNorm = T.t1t2[["itempars"]][,c("item", "
          excludeLinkingDif = TRUE, difBound = 0.64, iterativ = TRUE)
 #> Found 2 model(s).
 #>    Equating is executed for each dimension in each model separately.
-#> Error: object 'T.t1t2' not found
+#> 
+#> ====================================================================================================
+#>  
+#> Model No. 1
+#>     Model name:                domainlistening
+#>     Number of dimension(s):    1
+#>     Name(s) of dimension(s):   domainlistening
+#>     Number of linking items:   96
+#>     Linking method:            Mean.Mean
+#> 
+#> Dimension 'domainlistening': 6 of 96 items with linking |DIF| > 0.64 identified.
+#>    Iteration 1: Exclude item 'T19_11'.
+#>    Iteration 2: Exclude item 'T14_04'.
+#>    Iteration 3: Exclude item 'T20_30'.
+#>    Iteration 4: Exclude item 'T15_18'.
+#>    Iteration 5: Exclude item 'T20_03'.
+#>    Iteration 6: Exclude item 'T12_05'.
+#>    Iteration 7: Exclude item 'T20_04'.
+#> 
+#>     method iter itemExcluded DIF.excluded linking.constant linkerror
+#> 1 iterativ    0                                     -0.302     0.052
+#> 2 iterativ    1       T19_11       -2.536           -0.328     0.046
+#> 3 iterativ    2       T14_04       -2.531           -0.355     0.037
+#> 4 iterativ    3       T20_30       -1.749           -0.374     0.033
+#> 5 iterativ    4       T15_18       -1.436           -0.389     0.029
+#> 6 iterativ    5       T20_03       -0.704           -0.397     0.028
+#> 7 iterativ    6       T12_05        0.678           -0.390     0.028
+#> 8 iterativ    7       T20_04       -0.655           -0.397     0.027
+#> 
+#> 
+#> ====================================================================================================
+#>  
+#> Model No. 2
+#>     Model name:                domainreading
+#>     Number of dimension(s):    1
+#>     Name(s) of dimension(s):   domainreading
+#>     Number of linking items:   119
+#>     Linking method:            Mean.Mean
+#> 
+#> Dimension 'domainreading': 7 of 119 items with linking |DIF| > 0.64 identified.
+#>    Iteration 1: Exclude item 'T02_07'.
+#>    Iteration 2: Exclude item 'T05_01'.
+#>    Iteration 3: Exclude item 'T23_14'.
+#>    Iteration 4: Exclude item 'T04_08'.
+#>    Iteration 5: Exclude item 'T03_03'.
+#>    Iteration 6: Exclude item 'T10_10'.
+#>    Iteration 7: Exclude item 'T02_04'.
+#> 
+#>     method iter itemExcluded DIF.excluded linking.constant linkerror
+#> 1 iterativ    0                                     -0.227     0.040
+#> 2 iterativ    1       T02_07       -3.381           -0.255     0.029
+#> 3 iterativ    2       T05_01        1.045           -0.246     0.028
+#> 4 iterativ    3       T23_14        0.992           -0.238     0.026
+#> 5 iterativ    4       T04_08       -0.915           -0.246     0.025
+#> 6 iterativ    5       T03_03        0.687           -0.240     0.025
+#> 7 iterativ    6       T10_10        -0.68           -0.246     0.024
+#> 8 iterativ    7       T02_04       -0.654           -0.251     0.024
+#> 
 
 # linking constant is negative: students performance at T3 is worse than T1
 # Third step: transform item parameters of 't3' to the common metric of 't1' and 't2'
@@ -1807,7 +3541,6 @@ L.t2t3<- equat1pl ( results = resT3, prmNorm = T.t1t2[["itempars"]][,c("item", "
 ref   <- tfRef[["refPop"]][,-2]
 T.t2t3<- transformToBista ( equatingList = L.t2t3, refPop=ref, cuts = cuts,
          vera=FALSE, years = c(2015,2020))
-#> Error: object 'L.t2t3' not found
 
 # Fourth step: drawing plausible values for 't3'. We use the transformed item
 # parameters (captured in 'T.t2t3') for anchoring
@@ -1835,26 +3568,113 @@ defT3P<- defineModel(dat = datT3, items = itemT3[,"item"], id = "idstud",
          HG.var = c("sex", "ses_scaled", "language"), software = "tam")
 #> 
 #> Specification of 'qMatrix' and 'person.groups' results in 3 model(s).
-#> Error in eval(cl1[[u]]): object 'itemT3' not found
+#> 
+#> 
+#> ==========================================
+#> Model No. 1
+#>     Model name:           country.countryC
+#>     Number of items:      256
+#>     Number of persons:    1924
+#>     Number of dimensions: 2
+#> ==========================================
+#> 
+#> Following 27 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_02, T09_11, T01_05, T13_16, T15_12, T15_11, T03_07, T10_08, T11_03, T04_01, T11_04, T04_07, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T06_04, T06_03, T08_04, T08_05
+#> Background variable(s) 'sex', 'language' of class 
+#>     'factor', 'factor' will be converted to indicator variables.
+#>     Variable 'sex' was converted to 1 indicator(s) with name(s) 'sexmale'.
+#>     Variable 'language' was converted to 2 indicator(s) with name(s) 'languagenativeAndOther', 'languageother'.
+#> 10 subject(s) do not solve any item:
+#>    P10086 (6 false), P09365 (21 false), P09127 (33 false) ... 
+#> 4 subject(s) solved each item: P10097 (6 correct), P10105 (6 correct), P10712 (6 correct) ... 
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> 256 common items found in 'anchor' list and data frame.
+#> Q matrix specifies 2 dimension(s).
+#> 
+#> 
+#> ==========================================
+#> Model No. 2
+#>     Model name:           country.countryA
+#>     Number of items:      256
+#>     Number of persons:    1363
+#>     Number of dimensions: 2
+#> ==========================================
+#> 
+#> Following 27 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_02, T09_11, T01_05, T13_16, T15_12, T15_11, T03_07, T10_08, T11_03, T04_01, T11_04, T04_07, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T06_04, T06_03, T08_04, T08_05
+#> Background variable(s) 'sex', 'language' of class 
+#>     'factor', 'factor' will be converted to indicator variables.
+#>     Variable 'sex' was converted to 1 indicator(s) with name(s) 'sexmale'.
+#>     Variable 'language' was converted to 2 indicator(s) with name(s) 'languagenativeAndOther', 'languageother'.
+#> 7 subject(s) do not solve any item:
+#>    P11450 (8 false), P11264 (12 false), P11035 (20 false) ... 
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> 256 common items found in 'anchor' list and data frame.
+#> Q matrix specifies 2 dimension(s).
+#> 
+#> 
+#> ==========================================
+#> Model No. 3
+#>     Model name:           country.countryB
+#>     Number of items:      256
+#>     Number of persons:    1245
+#>     Number of dimensions: 2
+#> ==========================================
+#> 
+#> Following 27 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_02, T09_11, T01_05, T13_16, T15_12, T15_11, T03_07, T10_08, T11_03, T04_01, T11_04, T04_07, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T06_04, T06_03, T08_04, T08_05
+#> Background variable(s) 'sex', 'language' of class 
+#>     'factor', 'factor' will be converted to indicator variables.
+#>     Variable 'sex' was converted to 1 indicator(s) with name(s) 'sexmale'.
+#>     Variable 'language' was converted to 2 indicator(s) with name(s) 'languagenativeAndOther', 'languageother'.
+#> 2 subject(s) do not solve any item:
+#>    P12905 (13 false), P13484 (19 false), P13484 (19 false) ... 
+#> 1 subject(s) solved each item: P13133 (17 correct), P13133 (17 correct) ... 
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> 256 common items found in 'anchor' list and data frame.
+#> Q matrix specifies 2 dimension(s).
 
 # run the 3 models (estimation takes approx. 20 seconds)
 runT3P<- runModel(defT3P)
-#> Error: object 'defT3P' not found
 
 # get the results
 resT3P<- getResults(runT3P)
-#> Error: object 'runT3P' not found
+#> Q3 is only available for unidimensional models. Estimation will be skipped.
+#> Getting standard errors with the tam.se function: 16.7 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 4 secs
+#> Getting WLEs calling tam.wle from getTamWles: 1.5 secs
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 1.2 secs
+#> Q3 is only available for unidimensional models. Estimation will be skipped.
+#> Getting standard errors with the tam.se function: 14 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 3 secs
+#> Getting WLEs calling tam.wle from getTamWles: 1.4 secs
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 0.9 secs
+#> Q3 is only available for unidimensional models. Estimation will be skipped.
+#> Getting standard errors with the tam.se function: 13.5 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 2.6 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.8 secs
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 0.9 secs
 
 # equating is not necessary, as the models run with fixed item parameters
 # However, to prepare for the transformation on the 'bista' metric, run
 # 'equat1pl' with empty arguments
 ankT3P<- equat1pl ( results = resT3P)
-#> Error: object 'resT3P' not found
+#> Found 3 model(s).
+#>    Equating is executed for each dimension in each model separately.
+#> No norm parameter defined ('prmNorm' is missing). Treat current sample as drawn from the reference population.
 
 # transformation to the 'bista' metric, using the previously defined cut scores
 # and the reference population mean and sd from 't1'
 dfrT3P<- transformToBista ( equatingList = ankT3P, refPop=ref, cuts=cuts, vera=FALSE)
-#> Error: object 'ankT3P' not found
 
 
 ################################################################################
@@ -1871,41 +3691,35 @@ dfrT3P<- transformToBista ( equatingList = ankT3P, refPop=ref, cuts=cuts, vera=F
 persT1<- data.frame ( year = 2010,
          dfrT1P[["personpars"]][,c("idstud", "dimension", "imp", "value", "valueTransfBista", "traitLevel")],
          stringsAsFactors = FALSE)
-#> Error: object 'dfrT1P' not found
 
 # plausibles values of measurement occasion 2 ('t2'): add the year to the data.frame
 persT2<- data.frame ( year = 2015,
          dfrT2P[["personpars"]][,c("idstud", "dimension", "imp", "value", "valueTransfBista", "traitLevel")],
          stringsAsFactors = FALSE)
-#> Error: object 'dfrT2P' not found
 
 # plausibles values of measurement occasion 3 ('t3'): add the year to the data.frame
 persT3<- data.frame ( year = 2020,
          dfrT3P[["personpars"]][,c("idstud", "dimension", "imp", "value", "valueTransfBista", "traitLevel")],
          stringsAsFactors = FALSE)
-#> Error: object 'dfrT3P' not found
 
 # bind together in a common data.frame
 pers  <- rbind(persT1, persT2, persT3)
-#> Error: object 'persT1' not found
 
 # merge background variables to plausible values data
 # first we have to create the 'domain' column in plausible values data
 pers[,"domain"] <- car::recode(pers[,"dimension"], "'domainlistening'='listening'; 'domainreading'='reading'")
-#> Error in `[.data.frame`(pers, , "dimension"): undefined columns selected
 pers[,"dimension"] <- NULL
 pers  <- eatTools::mergeAttr(unique(trends[,c("year", "idclass", "idstud", "wgt", "jkzone", "jkrep", "domain", "country", "language", "ses", "sex")]),
          pers, by = c("year", "idstud", "domain"), all = FALSE, setAttr=FALSE)
-#> Error in `[.data.frame`(y, , by.y, drop = FALSE): undefined columns selected
+#> Merging levels are not unique in data set 'y'.
+#> 376 of 27048 unit(s) of merging variable combination 'year'+'idstud'+'domain' from data set 'y' not included in data set 'x'.
 
 # collect original linking errors
 # t1 vs. t2: linking errors were computed in example 6a.
 let1t2<- T.t1t2[["linkingErrors"]]
-#> Error: object 'T.t1t2' not found
 
 # t2 vs. t3: linking errors were computed in example 6b.
 let2t3<- T.t2t3[["linkingErrors"]]
-#> Error: object 'T.t2t3' not found
 
 # t1 vs. t3: linking errors were not yet computed: link t3 to t1 to create linking error template
 L.t1t3<- equat1pl ( results = resT3, prmNorm = itemT1[,c("item", "est")],
@@ -1961,25 +3775,33 @@ L.t1t3<- equat1pl ( results = resT3, prmNorm = itemT1[,c("item", "est")],
          
 # indirect linking ('chained' linking)
 chain <- multiEquatError (eq.1_2=L.t1t2, eq.2_3=L.t2t3, eq.1_3=L.t1t3)
-#> Error in multiEquatError(eq.1_2 = L.t1t2, eq.2_3 = L.t2t3, eq.1_3 = L.t1t3): unused arguments (eq.1_2 = L.t1t2, eq.2_3 = L.t2t3, eq.1_3 = L.t1t3)
+#> 
+#> Dimension 'domainlistening': Direct linking error of the three combinations of measurements: 
+#>         mzp1 mzp2 N.Items    SD   Var linkerror chained mzp_1.vs.3 mzp_1.vs.2.vs.3
+#>       1    1    2      34 0.246 0.060     0.042      NA         NA              NA
+#>       2    1    3      33 0.256 0.065     0.045    0.05     -0.396          -0.647
+#>       3    2    3      89 0.253 0.064     0.027      NA         NA              NA
+#> 
+#> Dimension 'domainreading': Direct linking error of the three combinations of measurements: 
+#>         mzp1 mzp2 N.Items    SD   Var linkerror chained mzp_1.vs.3 mzp_1.vs.2.vs.3
+#>       1    1    2      64 0.234 0.055     0.029      NA         NA              NA
+#>       2    1    3      63 0.295 0.087     0.037   0.038     -0.325           -0.38
+#>       3    2    3     112 0.253 0.064     0.024      NA         NA              NA
 
 # replace direct linking errors with indirect linking errors
 L.t1t3<- replaceLinkingError (equatingList =L.t1t3, multiEquatError_output=chain)
-#> Error: object 'chain' not found
+#> Dimension 'domainlistening': Replace old linking error 0.0445 with 0.0499
+#> Dimension 'domainreading': Replace old linking error 0.0372 with 0.0378
 
 # transform linking errors
 ref   <- tfRef[["refPop"]][,-2]
 tle   <- transformToBista ( equatingList = L.t1t3, refPop=ref, cuts = cuts,
          vera=FALSE, years = c(2010,2020))
-#> Error in transformToBista(equatingList = L.t1t3, refPop = ref, cuts = cuts,     vera = FALSE, years = c(2010, 2020)): Invalid 'refPop'.
 let1t3<- tle[["linkingErrors"]]
-#> Error: object 'tle' not found
 
 # bind all linking errors in a common data.frame
 lErr  <- rbind(let1t2, let2t3, let1t3)
-#> Error: object 'let1t2' not found
 lErr[,"domain"] <- car::recode(lErr[,"domain"], "'domainlistening'='listening'; 'domainreading'='reading'")
-#> Error: object 'lErr' not found
 
 
 ################################################################################
@@ -2020,9 +3842,83 @@ means <- by(data = pers, INDICES = pers[,"domain"], FUN = function ( dim ) {
               engine="BIFIEsurvey")
          r <- report(m, add = list(domain = dim[1,"domain"]))
          return(r)})
-#> Error in `[.data.frame`(pers, , "domain"): undefined columns selected
+#> 
+#> Trend group: '2010'
+#> 1 analyse(s) overall according to: 'group.splits = 1'.
+#> Assume unnested structure with 5 imputations.
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.995833333333333, cdata = FALSE)
+#> MI data with 5 datasets || 240 replication weights with fayfac=0.996  || 4476 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'country'. 
+#> 
+#> 
+#> Trend group: '2015'
+#> 1 analyse(s) overall according to: 'group.splits = 1'.
+#> Assume unnested structure with 5 imputations.
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.995967741935484, cdata = FALSE)
+#> MI data with 5 datasets || 248 replication weights with fayfac=0.996  || 4411 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'country'. 
+#> 
+#> 
+#> Trend group: '2020'
+#> 1 analyse(s) overall according to: 'group.splits = 1'.
+#> Assume unnested structure with 5 imputations.
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.995951417004049, cdata = FALSE)
+#> MI data with 5 datasets || 247 replication weights with fayfac=0.996  || 4320 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'country'. 
+#> 
+#> Warning: `report()` was deprecated in eatRep 0.15.0.
+#> ℹ For the original behavior of report() please use eatRep version 0.14.7: 'https://cran.r-project.org/src/contrib/Archive/eatRep/'
+#> Warning: No linking errors for parameters 'NcasesValid', 'Ncases', 'sd'. Linking errors for these parameters will be defaulted to 0.
+#> Warning: Found 3 missing linking errors for dependent variable 'valueTransfBista' and parameter(s) 'sd'. Assume linking error of 0 for these cases.
+#> Warning: Found 3 missing linking errors for dependent variable 'valueTransfBista' and parameter(s) 'sd'. Assume linking error of 0 for these cases.
+#> Warning: Found 3 missing linking errors for dependent variable 'valueTransfBista' and parameter(s) 'sd'. Assume linking error of 0 for these cases.
+#> 
+#> Trend group: '2010'
+#> 1 analyse(s) overall according to: 'group.splits = 1'.
+#> Assume unnested structure with 5 imputations.
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.995833333333333, cdata = FALSE)
+#> MI data with 5 datasets || 240 replication weights with fayfac=0.996  || 4476 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'country'. 
+#> 
+#> 
+#> Trend group: '2015'
+#> 1 analyse(s) overall according to: 'group.splits = 1'.
+#> Assume unnested structure with 5 imputations.
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.996062992125984, cdata = FALSE)
+#> MI data with 5 datasets || 254 replication weights with fayfac=0.996  || 4516 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'country'. 
+#> 
+#> 
+#> Trend group: '2020'
+#> 1 analyse(s) overall according to: 'group.splits = 1'.
+#> Assume unnested structure with 5 imputations.
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.99609375, cdata = FALSE)
+#> MI data with 5 datasets || 256 replication weights with fayfac=0.996  || 4473 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'country'. 
+#> 
+#> Warning: No linking errors for parameters 'NcasesValid', 'Ncases', 'sd'. Linking errors for these parameters will be defaulted to 0.
+#> Warning: Found 3 missing linking errors for dependent variable 'valueTransfBista' and parameter(s) 'sd'. Assume linking error of 0 for these cases.
+#> Warning: Found 3 missing linking errors for dependent variable 'valueTransfBista' and parameter(s) 'sd'. Assume linking error of 0 for these cases.
+#> Warning: Found 3 missing linking errors for dependent variable 'valueTransfBista' and parameter(s) 'sd'. Assume linking error of 0 for these cases.
 means <- do.call("rbind", means)
-#> Error: object 'means' not found
          
 # additionally: differ the sex-specific means in each country from the sex-specific means
 # in the whole population? Are the differences (male vs. female) in each country different
@@ -2036,9 +3932,285 @@ means2<- by(data = pers, INDICES = pers[,"domain"], FUN = function ( dim ) {
               engine="BIFIEsurvey")
          r <- report(m, add = list(domain = dim[1,"domain"]))
          return(r)})
-#> Error in `[.data.frame`(pers, , "domain"): undefined columns selected
+#> 
+#> Trend group: '2010'
+#> 3 analyse(s) overall according to: 'group.splits = 0 1'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.995833333333333, cdata = FALSE)
+#> MI data with 5 datasets || 240 replication weights with fayfac=0.996  || 4476 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'dummyGroup'. 
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.995833333333333, cdata = FALSE)
+#> MI data with 5 datasets || 240 replication weights with fayfac=0.996  || 4476 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'country'. 
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.995833333333333, cdata = FALSE)
+#> MI data with 5 datasets || 240 replication weights with fayfac=0.996  || 4476 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'sex'. 
+#> 
+#> 
+#> Trend group: '2015'
+#> 3 analyse(s) overall according to: 'group.splits = 0 1'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.995967741935484, cdata = FALSE)
+#> MI data with 5 datasets || 248 replication weights with fayfac=0.996  || 4411 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'dummyGroup'. 
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.995967741935484, cdata = FALSE)
+#> MI data with 5 datasets || 248 replication weights with fayfac=0.996  || 4411 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'country'. 
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.995967741935484, cdata = FALSE)
+#> MI data with 5 datasets || 248 replication weights with fayfac=0.996  || 4411 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'sex'. 
+#> 
+#> 
+#> Trend group: '2020'
+#> 3 analyse(s) overall according to: 'group.splits = 0 1'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.995951417004049, cdata = FALSE)
+#> MI data with 5 datasets || 247 replication weights with fayfac=0.996  || 4320 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'dummyGroup'. 
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.995951417004049, cdata = FALSE)
+#> MI data with 5 datasets || 247 replication weights with fayfac=0.996  || 4320 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'country'. 
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.995951417004049, cdata = FALSE)
+#> MI data with 5 datasets || 247 replication weights with fayfac=0.996  || 4320 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'sex'. 
+#> 
+#> Compute cross level differences using 'wec' method. Assume heteroscedastic variances.
+#>    'wec' method: Assume equally weighted cases.
+#> Warning: Group variable 'country' must be of class 'factor' for 'wec'. Change class of 'country' from 'character' to 'factor'.
+#> 
+#> Trend group: '2010'
+#> 1 analyse(s) overall according to: 'group.splits = 0'.
+#> Assume unnested structure with 5 imputations.
+#> Create 240 replicate weights according to JK1 procedure.
+#> 
+#> 
+#> Trend group: '2015'
+#> 1 analyse(s) overall according to: 'group.splits = 0'.
+#> Assume unnested structure with 5 imputations.
+#> Create 248 replicate weights according to JK1 procedure.
+#> 
+#> 
+#> Trend group: '2020'
+#> 1 analyse(s) overall according to: 'group.splits = 0'.
+#> Assume unnested structure with 5 imputations.
+#> Create 247 replicate weights according to JK1 procedure.
+#> 
+#> Note: No linking error was defined. Linking error will be defaulted to '0'.
+#>    'wec' method: Assume equally weighted cases.
+#> 
+#> Trend group: '2010'
+#> 1 analyse(s) overall according to: 'group.splits = 0'.
+#> Assume unnested structure with 5 imputations.
+#> Create 240 replicate weights according to JK1 procedure.
+#> 
+#> 
+#> Trend group: '2015'
+#> 1 analyse(s) overall according to: 'group.splits = 0'.
+#> Assume unnested structure with 5 imputations.
+#> Create 248 replicate weights according to JK1 procedure.
+#> 
+#> 
+#> Trend group: '2020'
+#> 1 analyse(s) overall according to: 'group.splits = 0'.
+#> Assume unnested structure with 5 imputations.
+#> Create 247 replicate weights according to JK1 procedure.
+#> 
+#> Note: No linking error was defined. Linking error will be defaulted to '0'.
+#> Error in combinat::combn(unique(d[, "hierarchy.level"]), 2, simplify = FALSE) : 
+#>   n < m
+#> Error in combinat::combn(unique(d[, "hierarchy.level"]), 2, simplify = FALSE) : 
+#>   n < m
+#> Error in combinat::combn(unique(d[, "hierarchy.level"]), 2, simplify = FALSE) : 
+#>   n < m
+#> Warning: No linking errors for parameters 'NcasesValid', 'Ncases', 'sd'. Linking errors for these parameters will be defaulted to 0.
+#> Warning: Found 11 missing linking errors for dependent variable 'valueTransfBista' and parameter(s) 'sd'. Assume linking error of 0 for these cases.
+#> Warning: Found 11 missing linking errors for dependent variable 'valueTransfBista' and parameter(s) 'sd'. Assume linking error of 0 for these cases.
+#> Warning: Found 11 missing linking errors for dependent variable 'valueTransfBista' and parameter(s) 'sd'. Assume linking error of 0 for these cases.
+#> 
+#> Trend group: '2010'
+#> 3 analyse(s) overall according to: 'group.splits = 0 1'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.995833333333333, cdata = FALSE)
+#> MI data with 5 datasets || 240 replication weights with fayfac=0.996  || 4476 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'dummyGroup'. 
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.995833333333333, cdata = FALSE)
+#> MI data with 5 datasets || 240 replication weights with fayfac=0.996  || 4476 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'country'. 
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.995833333333333, cdata = FALSE)
+#> MI data with 5 datasets || 240 replication weights with fayfac=0.996  || 4476 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'sex'. 
+#> 
+#> 
+#> Trend group: '2015'
+#> 3 analyse(s) overall according to: 'group.splits = 0 1'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.996062992125984, cdata = FALSE)
+#> MI data with 5 datasets || 254 replication weights with fayfac=0.996  || 4516 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'dummyGroup'. 
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.996062992125984, cdata = FALSE)
+#> MI data with 5 datasets || 254 replication weights with fayfac=0.996  || 4516 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'country'. 
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.996062992125984, cdata = FALSE)
+#> MI data with 5 datasets || 254 replication weights with fayfac=0.996  || 4516 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'sex'. 
+#> 
+#> 
+#> Trend group: '2020'
+#> 3 analyse(s) overall according to: 'group.splits = 0 1'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.99609375, cdata = FALSE)
+#> MI data with 5 datasets || 256 replication weights with fayfac=0.996  || 4473 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'dummyGroup'. 
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.99609375, cdata = FALSE)
+#> MI data with 5 datasets || 256 replication weights with fayfac=0.996  || 4473 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'country'. 
+#> 
+#> `BIFIEsurvey::BIFIE.data.jack`(data = "datL", wgt = "wgtOne", 
+#>     jktype = "JK_GROUP", jkzone = "idclass", jkrep = NULL, jkfac = NULL, 
+#>     fayfac = 0.99609375, cdata = FALSE)
+#> MI data with 5 datasets || 256 replication weights with fayfac=0.996  || 4473 cases and 9 variables 
+#> 'BIFIE.univar' for 'call = mean'. dependent = 'valueTransfBista'. group(s) = 'sex'. 
+#> 
+#> Compute cross level differences using 'wec' method. Assume heteroscedastic variances.
+#>    'wec' method: Assume equally weighted cases.
+#> Warning: Group variable 'country' must be of class 'factor' for 'wec'. Change class of 'country' from 'character' to 'factor'.
+#> 
+#> Trend group: '2010'
+#> 1 analyse(s) overall according to: 'group.splits = 0'.
+#> Assume unnested structure with 5 imputations.
+#> Create 240 replicate weights according to JK1 procedure.
+#> 
+#> 
+#> Trend group: '2015'
+#> 1 analyse(s) overall according to: 'group.splits = 0'.
+#> Assume unnested structure with 5 imputations.
+#> Create 254 replicate weights according to JK1 procedure.
+#> 
+#> 
+#> Trend group: '2020'
+#> 1 analyse(s) overall according to: 'group.splits = 0'.
+#> Assume unnested structure with 5 imputations.
+#> Create 256 replicate weights according to JK1 procedure.
+#> 
+#> Note: No linking error was defined. Linking error will be defaulted to '0'.
+#>    'wec' method: Assume equally weighted cases.
+#> 
+#> Trend group: '2010'
+#> 1 analyse(s) overall according to: 'group.splits = 0'.
+#> Assume unnested structure with 5 imputations.
+#> Create 240 replicate weights according to JK1 procedure.
+#> 
+#> 
+#> Trend group: '2015'
+#> 1 analyse(s) overall according to: 'group.splits = 0'.
+#> Assume unnested structure with 5 imputations.
+#> Create 254 replicate weights according to JK1 procedure.
+#> 
+#> 
+#> Trend group: '2020'
+#> 1 analyse(s) overall according to: 'group.splits = 0'.
+#> Assume unnested structure with 5 imputations.
+#> Create 256 replicate weights according to JK1 procedure.
+#> 
+#> Note: No linking error was defined. Linking error will be defaulted to '0'.
+#> Error in combinat::combn(unique(d[, "hierarchy.level"]), 2, simplify = FALSE) : 
+#>   n < m
+#> Error in combinat::combn(unique(d[, "hierarchy.level"]), 2, simplify = FALSE) : 
+#>   n < m
+#> Error in combinat::combn(unique(d[, "hierarchy.level"]), 2, simplify = FALSE) : 
+#>   n < m
+#> Warning: No linking errors for parameters 'NcasesValid', 'Ncases', 'sd'. Linking errors for these parameters will be defaulted to 0.
+#> Warning: Found 11 missing linking errors for dependent variable 'valueTransfBista' and parameter(s) 'sd'. Assume linking error of 0 for these cases.
+#> Warning: Found 11 missing linking errors for dependent variable 'valueTransfBista' and parameter(s) 'sd'. Assume linking error of 0 for these cases.
+#> Warning: Found 11 missing linking errors for dependent variable 'valueTransfBista' and parameter(s) 'sd'. Assume linking error of 0 for these cases.
 means2<- do.call("rbind", means2)
-#> Error: object 'means2' not found
 
 
 ################################################################################
@@ -2056,9 +4228,45 @@ freqs <- by(data = pers, INDICES = pers[,"domain"], FUN = function ( dim ) {
               trend = "year", linkErr = lErr[which(lErr[,"domain"] == dim[1,"domain"]),])
          r <- report(m, add = list(domain = dim[1,"domain"]))
          return(r)})
-#> Error in `[.data.frame`(pers, , "domain"): undefined columns selected
+#> 
+#> Trend group: '2010'
+#> 1 analyse(s) overall according to: 'group.splits = 1'.
+#> Assume unnested structure with 5 imputations.
+#> Create 240 replicate weights according to JK1 procedure.
+#> 
+#> 
+#> Trend group: '2015'
+#> 1 analyse(s) overall according to: 'group.splits = 1'.
+#> Assume unnested structure with 5 imputations.
+#> Create 248 replicate weights according to JK1 procedure.
+#> 
+#> 
+#> Trend group: '2020'
+#> 1 analyse(s) overall according to: 'group.splits = 1'.
+#> Assume unnested structure with 5 imputations.
+#> Create 247 replicate weights according to JK1 procedure.
+#> 
+#> Warning: No linking errors for parameters 'Ncases'. Linking errors for these parameters will be defaulted to 0.
+#> 
+#> Trend group: '2010'
+#> 1 analyse(s) overall according to: 'group.splits = 1'.
+#> Assume unnested structure with 5 imputations.
+#> Create 240 replicate weights according to JK1 procedure.
+#> 
+#> 
+#> Trend group: '2015'
+#> 1 analyse(s) overall according to: 'group.splits = 1'.
+#> Assume unnested structure with 5 imputations.
+#> Create 254 replicate weights according to JK1 procedure.
+#> 
+#> 
+#> Trend group: '2020'
+#> 1 analyse(s) overall according to: 'group.splits = 1'.
+#> Assume unnested structure with 5 imputations.
+#> Create 256 replicate weights according to JK1 procedure.
+#> 
+#> Warning: No linking errors for parameters 'Ncases'. Linking errors for these parameters will be defaulted to 0.
 freqs <- do.call("rbind", freqs)
-#> Error: object 'freqs' not found
 
 # additionally: sex differences in each country, using 'group.differences.by' argument
 # Note: for frequency tables group differences may result in a chi square test or in
@@ -2071,9 +4279,46 @@ freqs1<- by(data = pers, INDICES = pers[,"domain"], FUN = function ( dim ) {
               linkErr = lErr[which(lErr[,"domain"] == dim[1,"domain"]),])
          r <- report(m, add = list(domain = dim[1,"domain"]))
          return(r)})
-#> Error in `[.data.frame`(pers, , "domain"): undefined columns selected
+#> 
+#> Trend group: '2010'
+#> 1 analyse(s) overall according to: 'group.splits = 2'.
+#> Assume unnested structure with 5 imputations.
+#> Create 240 replicate weights according to JK1 procedure.
+#> 
+#> 
+#> Trend group: '2015'
+#> 1 analyse(s) overall according to: 'group.splits = 2'.
+#> Assume unnested structure with 5 imputations.
+#> Create 248 replicate weights according to JK1 procedure.
+#> 
+#> 
+#> Trend group: '2020'
+#> 1 analyse(s) overall according to: 'group.splits = 2'.
+#> Assume unnested structure with 5 imputations.
+#> Create 247 replicate weights according to JK1 procedure.
+#> 
+#> Warning: No linking errors for parameters 'chiSquareTest', 'Ncases'. Linking errors for these parameters will be defaulted to 0.
+#> Chi sqare test results cannot be transferred to old report() structure and will be ignored. Please use report2() instead.
+#> Trend group: '2010'
+#> 1 analyse(s) overall according to: 'group.splits = 2'.
+#> Assume unnested structure with 5 imputations.
+#> Create 240 replicate weights according to JK1 procedure.
+#> 
+#> 
+#> Trend group: '2015'
+#> 1 analyse(s) overall according to: 'group.splits = 2'.
+#> Assume unnested structure with 5 imputations.
+#> Create 254 replicate weights according to JK1 procedure.
+#> 
+#> 
+#> Trend group: '2020'
+#> 1 analyse(s) overall according to: 'group.splits = 2'.
+#> Assume unnested structure with 5 imputations.
+#> Create 256 replicate weights according to JK1 procedure.
+#> 
+#> Warning: No linking errors for parameters 'chiSquareTest', 'Ncases'. Linking errors for these parameters will be defaulted to 0.
+#> Chi sqare test results cannot be transferred to old report() structure and will be ignored. Please use report2() instead.
 freqs1<- do.call("rbind", freqs1)
-#> Error: object 'freqs1' not found
 
 # differences for each competence level (chiSquare = FALSE)
 # (for faster computation, we omit jackknife procedure)
@@ -2085,9 +4330,515 @@ freqs2<- by(data = pers, INDICES = pers[,"domain"], FUN = function ( dim ) {
               group.splits = 0:2, cross.differences = TRUE)
          r <- report(m, add = list(domain = dim[1,"domain"]))
          return(r)})
-#> Error in `[.data.frame`(pers, , "domain"): undefined columns selected
+#> To date, only method 'old' is applicable for cross level differences in frequency tables.
+#> 
+#> Trend group: '2010'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2015'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2020'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2010'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2015'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2020'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2010'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2015'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2020'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2010'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2015'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2020'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2010'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2015'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2020'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryA'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryB'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryC'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryA_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryA_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryB_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryB_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryC_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryC_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryA' and 'countryA_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryA' and 'countryA_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryB' and 'countryB_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryB' and 'countryB_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryC' and 'countryC_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryC' and 'countryC_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'female' and 'countryA_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'female' and 'countryB_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'female' and 'countryC_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'male' and 'countryA_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'male' and 'countryB_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'male' and 'countryC_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryA'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryB'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryC'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryA_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryA_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryB_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryB_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryC_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryC_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryA' and 'countryA_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryA' and 'countryA_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryB' and 'countryB_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryB' and 'countryB_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryC' and 'countryC_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryC' and 'countryC_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'female' and 'countryA_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'female' and 'countryB_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'female' and 'countryC_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'male' and 'countryA_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'male' and 'countryB_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'male' and 'countryC_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryA'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryB'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryC'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryA_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryA_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryB_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryB_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryC_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryC_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryA' and 'countryA_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryA' and 'countryA_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryB' and 'countryB_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryB' and 'countryB_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryC' and 'countryC_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryC' and 'countryC_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'female' and 'countryA_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'female' and 'countryB_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'female' and 'countryC_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'male' and 'countryA_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'male' and 'countryB_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'male' and 'countryC_male'.
+#> Warning: No linking errors for parameters 'Ncases', 'NcasesValid'. Linking errors for these parameters will be defaulted to 0.
+#> Warning: Found 35 missing linking errors for dependent variable 'traitLevel' and parameter(s) 'NcasesValid'. Assume linking error of 0 for these cases.
+#> Warning: Found 35 missing linking errors for dependent variable 'traitLevel' and parameter(s) 'NcasesValid'. Assume linking error of 0 for these cases.
+#> Warning: Found 35 missing linking errors for dependent variable 'traitLevel' and parameter(s) 'NcasesValid'. Assume linking error of 0 for these cases.
+#> To date, only method 'old' is applicable for cross level differences in frequency tables.
+#> 
+#> Trend group: '2010'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2015'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2020'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2010'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2015'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2020'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2010'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2015'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2020'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2010'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2015'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2020'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2010'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2015'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> 
+#> Trend group: '2020'
+#> 4 analyse(s) overall according to: 'group.splits = 0 1 2'.
+#>  
+#>  analysis.number hierarchy.level groups.divided.by group.differences.by
+#>                1               0                                   <NA>
+#>                2               1           country                 <NA>
+#>                3               1               sex                  sex
+#>                4               2     country + sex                  sex
+#> 
+#> Assume unnested structure with 5 imputations.
+#> 
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryA'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryB'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryC'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryA_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryA_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryB_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryB_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryC_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryC_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryA' and 'countryA_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryA' and 'countryA_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryB' and 'countryB_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryB' and 'countryB_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryC' and 'countryC_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryC' and 'countryC_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'female' and 'countryA_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'female' and 'countryB_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'female' and 'countryC_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'male' and 'countryA_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'male' and 'countryB_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'male' and 'countryC_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryA'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryB'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryC'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryA_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryA_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryB_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryB_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryC_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryC_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryA' and 'countryA_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryA' and 'countryA_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryB' and 'countryB_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryB' and 'countryB_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryC' and 'countryC_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryC' and 'countryC_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'female' and 'countryA_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'female' and 'countryB_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'female' and 'countryC_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'male' and 'countryA_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'male' and 'countryB_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'male' and 'countryC_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryA'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryB'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryC'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryA_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryA_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryB_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryB_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryC_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'wholeGroup' and 'countryC_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryA' and 'countryA_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryA' and 'countryA_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryB' and 'countryB_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryB' and 'countryB_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryC' and 'countryC_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'countryC' and 'countryC_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'female' and 'countryA_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'female' and 'countryB_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'female' and 'countryC_female'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'male' and 'countryA_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'male' and 'countryB_male'.
+#> Warning: No standard error for parameter 'NcasesValid'. Cannot compute standard errors and p value for cross-level difference between 'male' and 'countryC_male'.
+#> Warning: No linking errors for parameters 'Ncases', 'NcasesValid'. Linking errors for these parameters will be defaulted to 0.
+#> Warning: Found 35 missing linking errors for dependent variable 'traitLevel' and parameter(s) 'NcasesValid'. Assume linking error of 0 for these cases.
+#> Warning: Found 35 missing linking errors for dependent variable 'traitLevel' and parameter(s) 'NcasesValid'. Assume linking error of 0 for these cases.
+#> Warning: Found 35 missing linking errors for dependent variable 'traitLevel' and parameter(s) 'NcasesValid'. Assume linking error of 0 for these cases.
 freqs2<- do.call("rbind", freqs2)
-#> Error: object 'freqs2' not found
 
 
 ################################################################################
@@ -2124,17 +4875,70 @@ defT1 <- defineModel(dat = datT1, id = "idstud", check.for.linking = TRUE,
          software = "tam")
 #> 
 #> Specification of 'qMatrix' and 'person.groups' results in 2 model(s).
-#> Error in eval(cl1[[u]]): object 'slopes' not found
+#> Warning: Model split preparation for model No. 1, model name domainlistening: 83 items from 134 items listed the Q matrix not found in data:
+#> ℹ 'T12_11', 'T15_17', 'T15_18', 'T13_18', 'T19_06', 'T19_08', 'T19_05', 'T19_11', 'T19_01', 'T19_02', 'T19_30', 'T19_03', 'T19_07', 'T19_04', 'T19_09', 'T21_11', 'T18_01', 'T21_01', 'T18_05', 'T21_12', 'T18_13', 'T21_10', 'T18_11', 'T21_05', 'T21_13', 'T18_08', 'T18_07', 'T21_09', 'T18_04', 'T18_02', 'T21_02', 'T21_06', 'T18_09', 'T21_04', 'T18_12', 'T21_14', 'T21_03', 'T18_10', 'T30_06', 'T29_04', 'T29_02', 'T30_02', 'T30_03', 'T30_01', 'T29_05', 'T29_03', 'T28_08', 'T28_09', 'T28_02', 'T28_03', 'T28_04', 'T28_01', 'T28_10', 'T28_06', 'T20_05', 'T20_09', 'T20_30', 'T20_08', 'T20_12', 'T20_06', 'T20_07', 'T20_02', 'T20_13', 'T20_03', 'T20_01', 'T20_04', 'T20_11', 'T20_10', 'T32_04', 'T31_03', 'T31_01', 'T31_04', 'T32_03', 'T32_02', 'T32_01', 'T17_02', 'T17_09', 'T17_10', 'T17_04', 'T17_03', 'T17_08', 'T17_06', 'T17_01'
+#> Warning: Model split preparation for model No. 2, model name domainreading: 69 items from 149 items listed the Q matrix not found in data:
+#> ℹ 'T09_12', 'T01_08', 'T10_10', 'T04_09', 'T04_08', 'T11_0X', 'T08_09', 'T08_08', 'T03_09', 'T06_1X', 'T26_03', 'T26_05', 'T26_07', 'T26_09', 'T26_06', 'T26_10', 'T26_08', 'T26_02', 'T26_04', 'T27_01', 'T27_05', 'T27_07', 'T27_06', 'T27_04', 'T27_02', 'T27_03', 'T24_05', 'T24_08', 'T24_02', 'T24_10', 'T24_06', 'T24_24', 'T24_25', 'T24_09', 'T24_21', 'T24_23', 'T23_10', 'T23_13', 'T23_09', 'T23_15', 'T23_03', 'T23_04', 'T23_14', 'T23_07', 'T23_08', 'T23_02', 'T23_06', 'T23_05', 'T25_05', 'T25_22', 'T22_03', 'T25_06', 'T22_12', 'T25_09', 'T25_10', 'T25_08', 'T22_11', 'T22_02', 'T25_11', 'T25_07', 'T25_14', 'T25_12', 'T25_04', 'T22_08', 'T25_23', 'T22_10', 'T22_06', 'T25_13', 'T22_01'
+#> 
+#> 
+#> =========================================
+#> Model No. 1
+#>     Model name:           domainlistening
+#>     Number of items:      51
+#>     Number of persons:    4476
+#>     Number of dimensions: 1
+#> =========================================
+#> 
+#> Following 83 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_11, T15_17, T15_18, T13_18, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> 76 subject(s) do not solve any item:
+#>    P00009 (6 false), P00864 (6 false), P02759 (21 false) ... 
+#> 55 subject(s) solved each item: P00099 (10 correct), P00404 (10 correct), P02659 (11 correct) ... 
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Q matrix specifies 1 dimension(s).
+#> Following 232 Items in design matrix for item groups with common slopes ('est.slopegroups') which are not in dataset:
+#>    T07_08, T02_02, T07_01, T02_06, T07_05, T07_06, T02_07, T07_02, T07_04, T02_03, T07_09, T02_01, T02_04, T07_03, T02_05, T07_07, T07_10, T09_03, T09_05, T01_03, T09_02, T01_06, T01_01, T09_10, T01_02, T09_06, T01_04, T09_09, T09_11, T01_05, T09_08, T09_07, T09_04, T01_07, T12_11, T09_12, T01_08, T03_07, T03_01, T03_08, T03_05, T03_06, T03_03, T10_08, T11_06, T11_03, T11_01, T04_02, T04_01, T04_06, T04_04, T11_04, T10_01, T11_08, T10_02, T10_09, T10_07, T11_02, T04_05, T04_03, T11_05, T10_06, T11_10, T11_09, T04_07, T15_17, T15_18, T13_18, T10_10, T04_09, T04_08, T11_0X, T06_05, T05_03, T05_06, T05_05, T06_02, T06_04, T06_03, T05_04, T05_02, T05_01, T06_01, T08_04, T08_06, T08_03, T08_07, T08_02, T08_05, T08_01, T08_09, T08_08, T03_09, T06_1X, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Remove these item(s) from design matrix.
+#> 
+#> 
+#> =======================================
+#> Model No. 2
+#>     Model name:           domainreading
+#>     Number of items:      80
+#>     Number of persons:    4476
+#>     Number of dimensions: 1
+#> =======================================
+#> 
+#> Following 69 item(s) missed in data frame will be removed from Q matrix: 
+#>     T09_12, T01_08, T10_10, T04_09, T04_08, T11_0X, T08_09, T08_08, T03_09, T06_1X, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01
+#> 17 subject(s) do not solve any item:
+#>    P00173 (6 false), P01137 (7 false), P02863 (23 false) ... 
+#> 97 subject(s) solved each item: P00078 (6 correct), P00389 (10 correct), P03338 (27 correct) ... 
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Q matrix specifies 1 dimension(s).
+#> Following 203 Items in design matrix for item groups with common slopes ('est.slopegroups') which are not in dataset:
+#>    T12_06, T12_07, T14_03, T14_06, T12_01, T12_03, T12_08, T12_10, T14_02, T14_05, T12_02, T12_04, T14_04, T12_05, T14_01, T12_09, T12_11, T09_12, T01_08, T13_15, T15_03, T13_04, T13_07, T13_16, T13_01, T15_02, T15_01, T15_15, T15_16, T15_09, T13_12, T13_13, T15_14, T13_08, T13_06, T15_12, T13_10, T13_17, T15_11, T13_05, T13_09, T15_10, T15_13, T15_17, T15_18, T13_18, T10_10, T04_09, T04_08, T11_0X, T16_08, T16_09, T16_11, T16_13, T16_01, T16_04, T16_10, T16_02, T16_12, T16_06, T16_07, T08_09, T08_08, T03_09, T06_1X, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Remove these item(s) from design matrix.
 
 # run 2 models
 runT1 <- runModel(defT1)
 
 # get the results
 resT1 <- getResults(runT1)
+#> Getting standard errors with the tam.se function: 0.2 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.3 secs
 #> |*****|
 #> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 1.9 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.2 secs
+#> Getting standard errors with the tam.se function: 0.5 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.4 secs
 #> |*****|
 #> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 1.8 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.5 secs
 
 # extract item parameters from the 'results' object
 itemT1<- itemFromRes(resT1)
@@ -2161,15 +4965,96 @@ defT1P<- defineModel(dat = datT1, items = itemT1[,"item"], id = "idstud", irtmod
          check.for.linking = TRUE, splittedModels = modT1P, qMatrix = qMat,
          anchor = itemT1[,c("item", "est")], fixSlopeMat = itemT1[,c("item", "estSlope")],
          HG.var = c("ses", "sex", "language"), software = "tam")
-#> Error in `[.data.frame`(itemT1, , c("item", "estSlope")): undefined columns selected
+#> 
+#> Specification of 'qMatrix' and 'person.groups' results in 3 model(s).
+#> 
+#> 
+#> ==========================================
+#> Model No. 1
+#>     Model name:           country.countryC
+#>     Number of items:      131
+#>     Number of persons:    1569
+#>     Number of dimensions: 2
+#> ==========================================
+#> 
+#> Following 152 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_11, T09_12, T01_08, T15_17, T15_18, T13_18, T10_10, T04_09, T04_08, T11_0X, T08_09, T08_08, T03_09, T06_1X, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Background variable(s) 'sex', 'language' of class 
+#>     'factor', 'factor' will be converted to indicator variables.
+#>     Variable 'sex' was converted to 1 indicator(s) with name(s) 'sexmale'.
+#>     Variable 'language' was converted to 2 indicator(s) with name(s) 'languagenativeAndOther', 'languageother'.
+#> 5 subject(s) solved each item: P00106 (17 correct), P00939 (17 correct), P00393 (20 correct) ... 
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> 131 common items found in 'anchor' list and data frame.
+#> Q matrix specifies 2 dimension(s).
+#> Warning: To date, fixing slopes only works for dichotomous unidimensional or between-item multidimensional models.
+#> 
+#> 
+#> ==========================================
+#> Model No. 2
+#>     Model name:           country.countryA
+#>     Number of items:      131
+#>     Number of persons:    1598
+#>     Number of dimensions: 2
+#> ==========================================
+#> 
+#> Following 152 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_11, T09_12, T01_08, T15_17, T15_18, T13_18, T10_10, T04_09, T04_08, T11_0X, T08_09, T08_08, T03_09, T06_1X, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Background variable(s) 'sex', 'language' of class 
+#>     'factor', 'factor' will be converted to indicator variables.
+#>     Variable 'sex' was converted to 1 indicator(s) with name(s) 'sexmale'.
+#>     Variable 'language' was converted to 2 indicator(s) with name(s) 'languagenativeAndOther', 'languageother'.
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> 131 common items found in 'anchor' list and data frame.
+#> Q matrix specifies 2 dimension(s).
+#> Warning: To date, fixing slopes only works for dichotomous unidimensional or between-item multidimensional models.
+#> 
+#> 
+#> ==========================================
+#> Model No. 3
+#>     Model name:           country.countryB
+#>     Number of items:      131
+#>     Number of persons:    1309
+#>     Number of dimensions: 2
+#> ==========================================
+#> 
+#> Following 152 item(s) missed in data frame will be removed from Q matrix: 
+#>     T12_11, T09_12, T01_08, T15_17, T15_18, T13_18, T10_10, T04_09, T04_08, T11_0X, T08_09, T08_08, T03_09, T06_1X, T19_06, T19_08, T19_05, T19_11, T19_01, T19_02, T19_30, T19_03, T19_07, T19_04, T19_09, T26_03, T26_05, T26_07, T26_09, T26_06, T26_10, T26_08, T26_02, T26_04, T21_11, T18_01, T21_01, T18_05, T21_12, T18_13, T21_10, T18_11, T21_05, T21_13, T18_08, T18_07, T21_09, T18_04, T18_02, T21_02, T21_06, T18_09, T21_04, T18_12, T21_14, T21_03, T18_10, T27_01, T27_05, T27_07, T27_06, T27_04, T27_02, T27_03, T30_06, T29_04, T29_02, T30_02, T30_03, T30_01, T29_05, T29_03, T24_05, T24_08, T24_02, T24_10, T24_06, T24_24, T24_25, T24_09, T24_21, T24_23, T28_08, T28_09, T28_02, T28_03, T28_04, T28_01, T28_10, T28_06, T23_10, T23_13, T23_09, T23_15, T23_03, T23_04, T23_14, T23_07, T23_08, T23_02, T23_06, T23_05, T25_05, T25_22, T22_03, T25_06, T22_12, T25_09, T25_10, T25_08, T22_11, T22_02, T25_11, T25_07, T25_14, T25_12, T25_04, T22_08, T25_23, T22_10, T22_06, T25_13, T22_01, T20_05, T20_09, T20_30, T20_08, T20_12, T20_06, T20_07, T20_02, T20_13, T20_03, T20_01, T20_04, T20_11, T20_10, T32_04, T31_03, T31_01, T31_04, T32_03, T32_02, T32_01, T17_02, T17_09, T17_10, T17_04, T17_03, T17_08, T17_06, T17_01
+#> Background variable(s) 'sex', 'language' of class 
+#>     'factor', 'factor' will be converted to indicator variables.
+#>     Variable 'sex' was converted to 1 indicator(s) with name(s) 'sexmale'.
+#>     Variable 'language' was converted to 2 indicator(s) with name(s) 'languagenativeAndOther', 'languageother'.
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> 131 common items found in 'anchor' list and data frame.
+#> Q matrix specifies 2 dimension(s).
+#> Warning: To date, fixing slopes only works for dichotomous unidimensional or between-item multidimensional models.
 
 # run the 3 models
 runT1P<- runModel(defT1P)
-#> Error: object 'defT1P' not found
 
 # get the results
 resT1P<- getResults(runT1P, Q3 = FALSE)
-#> Error: object 'runT1P' not found
+#> Getting standard errors with the tam.se function: 18 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 1.7 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.4 secs
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 0.8 secs
+#> Getting standard errors with the tam.se function: 21.3 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 1.7 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.4 secs
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 1.1 secs
+#> Getting standard errors with the tam.se function: 17.9 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 1.5 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.4 secs
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 0.8 secs
 
 
 ################################################################################
@@ -2178,50 +5063,101 @@ resT1P<- getResults(runT1P, Q3 = FALSE)
 
 # load partial credit long format data
 data(reading)
-#> Warning: data set 'reading' not found
 
 # transform into wide format
 datW <- reshape2::dcast(reading[which(reading[,"type"] != "iglu"),],idstud+sex+language+country~item, value.var = "valueSum")
-#> Error: object 'reading' not found
 
 # only some items are partial credit, which ones?
 pc.it<- reading[which(reading[,"valueSum"] > 1),"item"] |> unique()
-#> Error: object 'reading' not found
 
 # give values of partial credit items
 # few observation of 1-category for item D223143 ... may cause convergence trouble
 lapply(datW[,pc.it], FUN = table)
-#> Error: object 'pc.it' not found
+#> $D204013
+#> 
+#>   0   1   2   3   4 
+#>  24  42 101 263 324 
+#> 
+#> $D205143
+#> 
+#>   0   1   2   3   4   5 
+#>   7   4  31  53 171 466 
+#> 
+#> $D201113
+#> 
+#>   0   1   2   3   4 
+#>  15 113 141 170 104 
+#> 
+#> $D225113
+#> 
+#>   0   1   2   3   4 
+#>  35  75 153 207  78 
+#> 
+#> $D224053
+#> 
+#>   0   1   2   3   4 
+#>  15  25  94 172 225 
+#> 
+#> $D025033
+#> 
+#>   0   1   2   3   4 
+#>  13  39  74 178 233 
+#> 
+#> $D223143
+#> 
+#>   0   1   2   3   4   5 
+#>  23   6  41 100 106 254 
+#> 
 
 # combine the two lowest categories to avoid categories with too few observations
 datW[,"D205143"] <- car::recode(datW[,"D205143"], "1=0; 2=1; 3=2; 4=3; 5=4")
-#> Error in `[.data.frame`(datW, , "D205143"): undefined columns selected
 
 # partial credit model ... we consider the female subgroup to be the reference population
 # (norm population) that defines the scale and reference item parameters
 dFema<- datW[which(datW[,"sex"] == "female"),]                                  ### data for females
 lapply(dFema[,pc.it], FUN = table)                                              ### very few observations for some categories ... may cause convergence trouble
-#> Error: object 'pc.it' not found
+#> $D204013
+#> 
+#>   0   1   2   3   4 
+#>   6  15  42 127 165 
+#> 
+#> $D205143
+#> 
+#>   0   1   2   3   4 
+#>   3  17  20  97 253 
+#> 
+#> $D201113
+#> 
+#>  0  1  2  3  4 
+#>  4 62 66 85 56 
+#> 
+#> $D225113
+#> 
+#>   0   1   2   3   4 
+#>  14  43  90 107  43 
+#> 
+#> $D224053
+#> 
+#>   0   1   2   3   4 
+#>   4   7  34  90 119 
+#> 
+#> $D025033
+#> 
+#>   0   1   2   3   4 
+#>   3  19  39 100 120 
+#> 
+#> $D223143
+#> 
+#>   0   1   2   3   4   5 
+#>  12   2  21  56  68 159 
+#> 
 def1 <- defineModel(dat=dFema, items = -c(1:4), id=1, irtmodel = "PCM", software="tam", nodes = 21)
-#> Warning: Found 89 non-numeric values in 1 of 35 items:
-#> ℹ Items: 'country'
-#> ℹ Non-numeric values: 'countryC', 'countryA', 'countryB'
-#> Warning: Found unexpected class type(s) in item response columns:
-#> ℹ 1 item columns of class 'character': 'country'
-#> ℹ All item columns will be transformed to be 'numeric'. Recommend to edit your
-#>   data manually prior to analysis
-#> Warning: There was 1 warning in `mutate()`.
-#> ℹ In argument: `country = (function (x, maintain.factor.scores = TRUE,
-#>   force.string = TRUE, ...`.
-#> Caused by warning:
-#> ! Variable has been coerced to numeric, NAs have been induced.
-#> Warning: 1 testitem without any values:
-#> ℹ Remove these items from the data set: 'country'
-#> Warning: 1 testitem with less than 50 valid responses.
-#> ℹ These items are nevertheless kept in the data set: 'country'
-#> Warning: 1 testitem is constants. Remove these items from the data set:
-#> ℹ Item 'sexNum', only value '1' occurs: 89 valid responses.
-#> Remove 2 test item(s) overall.
+#> 7 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.
+#>    Items(s) 'D025033', 'D201113', 'D204013', 'D205143', 'D224053', 'D225113': 0, 1, 2, 3, 4     
+#>    Items(s) 'D223143':                                                        0, 1, 2, 3, 4, 5  
+#> 2 subject(s) do not solve any item:
+#>    P1296 (24 false), P1299 (24 false), P1299 (24 false) ... 
+#> 12 subject(s) solved each item: P0081 (12 correct), P0869 (13 correct), P1047 (29 correct) ... 
 #> Dataset is completely linked.
 #> Q matrix specifies 1 dimension(s).
 run1 <- runModel(def1)
@@ -2229,106 +5165,157 @@ run1 <- runModel(def1)
 # plot polytomous item "D205143": category 3 isn't necessary
 ind1 <- grep("D205143", run1$item$item)                                         ### where is item "D205143"
 foo1 <- capture.output(plot(run1, items = ind1, type="items", export=FALSE, low=-6, high=6))
-#> Error in plot.tam.mml(run1, items = ind1, type = "items", export = FALSE,     low = -6, high = 6): object 'theta0' not found
+
 res1 <- getResults(run1)
+#> Getting standard errors with the tam.se function: 0.4 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.3 secs
 #> |*****|
 #> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 0.8 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.3 secs
 it1  <- itemFromRes(res1)
 
 # males are focus group: initial free estimation of item parameters
 def2 <- defineModel(dat=datW[which(datW[,"sex"] == "male"),], items = -c(1:4), id=1, irtmodel = "PCM",software="tam")
-#> Warning: Found 83 non-numeric values in 1 of 35 items:
-#> ℹ Items: 'country'
-#> ℹ Non-numeric values: 'countryC', 'countryA', 'countryB'
-#> Warning: Found unexpected class type(s) in item response columns:
-#> ℹ 1 item columns of class 'character': 'country'
-#> ℹ All item columns will be transformed to be 'numeric'. Recommend to edit your
-#>   data manually prior to analysis
-#> Warning: There was 1 warning in `mutate()`.
-#> ℹ In argument: `country = (function (x, maintain.factor.scores = TRUE,
-#>   force.string = TRUE, ...`.
-#> Caused by warning:
-#> ! Variable has been coerced to numeric, NAs have been induced.
-#> Warning: 1 testitem without any values:
-#> ℹ Remove these items from the data set: 'country'
-#> Warning: 1 testitem with less than 50 valid responses.
-#> ℹ These items are nevertheless kept in the data set: 'country'
-#> Warning: 1 testitem is constants. Remove these items from the data set:
-#> ℹ Item 'sexNum', only value '0' occurs: 83 valid responses.
-#> Remove 2 test item(s) overall.
+#> 7 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.
+#>    Items(s) 'D025033', 'D201113', 'D204013', 'D205143', 'D224053', 'D225113': 0, 1, 2, 3, 4     
+#>    Items(s) 'D223143':                                                        0, 1, 2, 3, 4, 5  
+#> 4 subject(s) do not solve any item:
+#>    P0007 (12 false), P0107 (12 false), P0837 (13 false) ... 
+#> 8 subject(s) solved each item: P0968 (11 correct), P0839 (13 correct), P1233 (24 correct) ... 
 #> Dataset is completely linked.
 #> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
 #> Q matrix specifies 1 dimension(s).
 run2 <- runModel(def2)
 res2 <- getResults(run2)
+#> Getting standard errors with the tam.se function: 0.3 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.3 secs
 #> |*****|
 #> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 0.7 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.3 secs
 it2  <- itemFromRes(res2)
 
 # link males to females ... males perform worse
 # 10 items with linking dif identified 
 eq   <- equat1pl(results = res2, prmNorm = it1, item = "item", cat="category", value = "est", difBound=.64, iterativ = TRUE)
-#> Error in equat1pl(results = res2, prmNorm = it1, item = "item", cat = "category",     value = "est", difBound = 0.64, iterativ = TRUE): unused argument (cat = "category")
+#> Found 1 model(s).
+#>    Equating is executed for each dimension in each model separately.
+#> 
+#> ====================================================================================================
+#>  
+#> Model No. 1
+#>     Model name:                not_specified
+#>     Number of dimension(s):    1
+#>     Name(s) of dimension(s):   Dim1
+#>     Number of linking items:   128
+#>     Linking method:            Mean.Mean
+#> 
+#> Dimension 'Dim1': 10 of 128 items with linking |DIF| > 0.64 identified.
+#>    Iteration 1: Exclude item 'D205143_Cat1'.
+#>    Iteration 2: Exclude item 'D223143_Cat1'.
+#>    Iteration 3: Exclude item 'D204043_Cat1'.
+#>    Iteration 4: Exclude item 'D025033_Cat1'.
+#>    Iteration 5: Exclude item 'D201113_Cat1'.
+#>    Iteration 6: Exclude item 'D034053_Cat1'.
+#>    Iteration 7: Exclude item 'D224023_Cat1'.
+#>    Iteration 8: Exclude item 'D205143_Cat3'.
+#>    Iteration 9: Exclude item 'D221093_Cat1'.
+#>    Iteration 10: Exclude item 'D204033_Cat1'.
+#>    Iteration 11: Exclude item 'D224053_Cat3'.
+#> 
+#>      method iter itemExcluded DIF.excluded linking.constant linkerror
+#> 1  iterativ    0                                     -0.221     0.034
+#> 2  iterativ    1 D205143_Cat1        1.231           -0.211     0.033
+#> 3  iterativ    2 D223143_Cat1       -1.055           -0.220     0.032
+#> 4  iterativ    3 D204043_Cat1            1           -0.212     0.031
+#> 5  iterativ    4 D025033_Cat1        0.996           -0.204     0.030
+#> 6  iterativ    5 D201113_Cat1        0.898           -0.197     0.030
+#> 7  iterativ    6 D034053_Cat1        0.849           -0.190     0.029
+#> 8  iterativ    7 D224023_Cat1        0.807           -0.183     0.028
+#> 9  iterativ    8 D205143_Cat3        0.795           -0.177     0.028
+#> 10 iterativ    9 D221093_Cat1       -0.696           -0.183     0.028
+#> 11 iterativ   10 D204033_Cat1       -0.668           -0.188     0.027
+#> 12 iterativ   11 D224053_Cat3        0.658           -0.183     0.027
+#> 
 
 # re-calibrate males with anchoring: use the DIF-cleaned set of anchor parameters for calibrating males on the reference scale
 # variant 1: use the original item parameters for females and exclude linking dif items (it1_cleaned)
 weg  <- eq[["items"]][["not_specified"]][["Dim1"]][["info"]][-1,"itemExcluded"]
-#> Error: object 'eq' not found
 weg  <- eatTools::whereAre(weg, paste(it1[,"item"], it1[,"category"], sep="_"))
-#> Error: object 'weg' not found
+#> Found 11 elements.
 it1C <- it1[-weg,]
-#> Error: object 'weg' not found
 def3A<- defineModel(dat=datW[which(datW[,"sex"] == "male"),], items = -c(1:4), id=1, irtmodel = "PCM",
         anchor = it1C, itemCol = "item", valueCol = "est", catCol = "category", software="tam")
-#> Error in defineModel(dat = datW[which(datW[, "sex"] == "male"), ], items = -c(1:4),     id = 1, irtmodel = "PCM", anchor = it1C, itemCol = "item",     valueCol = "est", catCol = "category", software = "tam"): unused argument (catCol = "category")
+#> 7 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.
+#>    Items(s) 'D025033', 'D201113', 'D204013', 'D205143', 'D224053', 'D225113': 0, 1, 2, 3, 4     
+#>    Items(s) 'D223143':                                                        0, 1, 2, 3, 4, 5  
+#> 4 subject(s) do not solve any item:
+#>    P0007 (12 false), P0107 (12 false), P0837 (13 false) ... 
+#> 8 subject(s) solved each item: P0968 (11 correct), P0839 (13 correct), P1233 (24 correct) ... 
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> 101 common items found in 'anchor' list and data frame.
+#> 5 of 106 item(s) of merging variable 'item' from data set 'item response data' not included in data set 'anchor list'.
+#> Merging levels are not unique in data set 'anchor list'.
+#> Q matrix specifies 1 dimension(s).
 run3A<- runModel(def3A)
-#> Error: object 'def3A' not found
 res3A<- getResults(run3A)
-#> Error: object 'run3A' not found
+#> Getting standard errors with the tam.se function: 0.3 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.3 secs
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 0.7 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.3 secs
 it3A <- itemFromRes(res3A)                                                      ### all items except the ones with linking dif with equal item parameters? check 
-#> Error: object 'res3A' not found
 comp <- merge(it1[,c("item", "category", "est")], it3A[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"))
-#> Error in `[.data.frame`(it1, , c("item", "category", "est")): undefined columns selected
 equal<- na.omit(comp[,c("est_ref", "offset")])
-#> Error: object 'comp' not found
 stopifnot(all(equal[,1] == equal[,2]))                                          ### all item parameters without linking dif should be equal
-#> Error: object 'equal' not found
 lDif <- subset(comp, !is.na(est_foc))                                           ### all items with specific focus parameter must be included in linking DIF exclusion list 
-#> Error: object 'comp' not found
 stopifnot(all(paste(lDif[,"item"], lDif[,"category"], sep="_") %in% eq$items[["not_specified"]][["Dim1"]][["info"]][,"itemExcluded"]))
-#> Error: object 'lDif' not found
 
 # variant 2: use the item parameters for males (linking dif items excluded), transformed to the metric of females
 def3B<- defineModel(dat=datW[which(datW[,"sex"] == "male"),], items = -c(1:4), id=1, irtmodel = "PCM",
         anchor = eq[["items"]][["not_specified"]][["Dim1"]][["cleanedLinkItemPars"]],
         itemCol = "item", valueCol = "est", catCol = "category", software="tam")
-#> Error in defineModel(dat = datW[which(datW[, "sex"] == "male"), ], items = -c(1:4),     id = 1, irtmodel = "PCM", anchor = eq[["items"]][["not_specified"]][["Dim1"]][["cleanedLinkItemPars"]],     itemCol = "item", valueCol = "est", catCol = "category",     software = "tam"): unused argument (catCol = "category")
+#> 7 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.
+#>    Items(s) 'D025033', 'D201113', 'D204013', 'D205143', 'D224053', 'D225113': 0, 1, 2, 3, 4     
+#>    Items(s) 'D223143':                                                        0, 1, 2, 3, 4, 5  
+#> 4 subject(s) do not solve any item:
+#>    P0007 (12 false), P0107 (12 false), P0837 (13 false) ... 
+#> 8 subject(s) solved each item: P0968 (11 correct), P0839 (13 correct), P1233 (24 correct) ... 
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> 101 common items found in 'anchor' list and data frame.
+#> 5 of 106 item(s) of merging variable 'item' from data set 'item response data' not included in data set 'anchor list'.
+#> Merging levels are not unique in data set 'anchor list'.
+#> Q matrix specifies 1 dimension(s).
 run3B<- runModel(def3B)
-#> Error: object 'def3B' not found
 res3B<- getResults(run3B)
-#> Error: object 'run3B' not found
+#> Getting standard errors with the tam.se function: 0.3 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.5 secs
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 0.7 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.3 secs
 it3B <- itemFromRes(res3B)                                                      ### all items except the ones with linking dif with equal item parameters? check 
-#> Error: object 'res3B' not found
 link <- eq[["items"]][["not_specified"]][["Dim1"]][["cleanedLinkItemPars"]][,c("item", "category", "est")]
-#> Error: object 'eq' not found
 comp <- merge(link, it3B[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"))
-#> Error: object 'link' not found
 equal<- na.omit(comp[,c("est_ref", "offset")])
-#> Error: object 'comp' not found
 stopifnot(all(equal[,1] == equal[,2]))                                          ### all item parameters without linking dif should be equal
-#> Error: object 'equal' not found
 lDif <- subset(comp, !is.na(est_foc))                                           ### all items with specific focus paraeter must be included in linking DIF exclusion list 
-#> Error: object 'comp' not found
 stopifnot(all(paste(lDif[,"item"], lDif[,"category"], sep="_") %in% eq$items[["not_specified"]][["Dim1"]][["info"]][,"itemExcluded"]))
-#> Error: object 'lDif' not found
 
 # transform to Bista metric
 eq4  <- equat1pl(results = res3B)                                               ### reference population mean and SD
-#> Error: object 'res3B' not found
+#> Found 1 model(s).
+#>    Equating is executed for each dimension in each model separately.
+#> No norm parameter defined ('prmNorm' is missing). Treat current sample as drawn from the reference population.
 refP <- data.frame(domain = "Dim1", m = 0.0389, sd = 1.07108, stringsAsFactors = FALSE)
 cuts <- list ( Dim1 = list(values = 390+0:3*75))
 tf4  <- transformToBista(equatingList=eq4, refPop=refP, cuts=cuts, vera = FALSE)
-#> Error: object 'eq4' not found
+#> The 'refPop' data.frame does not include information about reference population mean/SD on Bista metric. Values will be defaulted to mean = 500 and SD = 100.
+#> Warning: Skip check whether all competence levels are occupied (due to bayesian plausible values imputation).
 
 
 ################################################################################
@@ -2337,117 +5324,299 @@ tf4  <- transformToBista(equatingList=eq4, refPop=refP, cuts=cuts, vera = FALSE)
 
 # load partial credit long format data
 data(reading)
-#> Warning: data set 'reading' not found
 
 # transform into wide format
 datW <- reshape2::dcast(reading[which(reading[,"type"] != "iglu"),],idstud+sex+language+country~item, value.var = "valueSum")
-#> Error: object 'reading' not found
 
 # only some items are partial credit, which ones?
 pc.it<- reading[which(reading[,"valueSum"] > 1),"item"] |> unique()
-#> Error: object 'reading' not found
 
 # give values of partial credit items
 # few observation of 1-category for item D223143 ... may cause convergence trouble
 lapply(datW[,pc.it], FUN = table)
-#> Error: object 'pc.it' not found
+#> $D204013
+#> 
+#>   0   1   2   3   4 
+#>  24  42 101 263 324 
+#> 
+#> $D205143
+#> 
+#>   0   1   2   3   4   5 
+#>   7   4  31  53 171 466 
+#> 
+#> $D201113
+#> 
+#>   0   1   2   3   4 
+#>  15 113 141 170 104 
+#> 
+#> $D225113
+#> 
+#>   0   1   2   3   4 
+#>  35  75 153 207  78 
+#> 
+#> $D224053
+#> 
+#>   0   1   2   3   4 
+#>  15  25  94 172 225 
+#> 
+#> $D025033
+#> 
+#>   0   1   2   3   4 
+#>  13  39  74 178 233 
+#> 
+#> $D223143
+#> 
+#>   0   1   2   3   4   5 
+#>  23   6  41 100 106 254 
+#> 
 
 # combine the two lowest categories to avoid categories with too few observations
 datW[,"D205143"] <- car::recode(datW[,"D205143"], "1=0; 2=1; 3=2; 4=3; 5=4")
-#> Error in `[.data.frame`(datW, , "D205143"): undefined columns selected
 
 # partial credit model ... we consider the female subgroup to be the reference population
 # (norm population) that defines the scale and reference item parameters
 dFema<- datW[which(datW[,"sex"] == "female"),]                                  ### data for females
 lapply(dFema[,pc.it], FUN = table)                                              ### very few observations for some categories ... may cause convergence trouble
-#> Error: object 'pc.it' not found
+#> $D204013
+#> 
+#>   0   1   2   3   4 
+#>   6  15  42 127 165 
+#> 
+#> $D205143
+#> 
+#>   0   1   2   3   4 
+#>   3  17  20  97 253 
+#> 
+#> $D201113
+#> 
+#>  0  1  2  3  4 
+#>  4 62 66 85 56 
+#> 
+#> $D225113
+#> 
+#>   0   1   2   3   4 
+#>  14  43  90 107  43 
+#> 
+#> $D224053
+#> 
+#>   0   1   2   3   4 
+#>   4   7  34  90 119 
+#> 
+#> $D025033
+#> 
+#>   0   1   2   3   4 
+#>   3  19  39 100 120 
+#> 
+#> $D223143
+#> 
+#>   0   1   2   3   4   5 
+#>  12   2  21  56  68 159 
+#> 
 def1 <- defineModel(dat=dFema, items = -c(1:4), id=1, model.statement = "item+item*step", nodes = 21, analysis.name = "pcm_conquest_females", dir=tempdir())
-#> Error in defineModel(dat = dFema, items = -c(1:4), id = 1, model.statement = "item+item*step",     nodes = 21, analysis.name = "pcm_conquest_females", dir = tempdir()): Assertion on 'conquest.folder' failed: Directory expected, but file in place: 'C:/Users/grewered/AppData/Local/Programs/R/R-4.4.2/library/eatModel/exec/console_Feb2007.exe'.
+#> Model statement 'item+item*step': Variable(s) 'step' from 'model.statement' not found in data.
+#> 7 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.
+#>    Items(s) 'D025033', 'D201113', 'D204013', 'D205143', 'D224053', 'D225113': 0, 1, 2, 3, 4     
+#>    Items(s) 'D223143':                                                        0, 1, 2, 3, 4, 5  
+#> 2 subject(s) do not solve any item:
+#>    P1296 (24 false), P1299 (24 false), P1299 (24 false) ... 
+#> 12 subject(s) solved each item: P0081 (12 correct), P0869 (13 correct), P1047 (29 correct) ... 
+#> Dataset is completely linked.
+#> Q matrix specifies 1 dimension(s).
 run1 <- runModel(def1)
 res1 <- getResults(run1)
-#> |*****|
-#> |-----|
+#> Cannot identify 'seed' from cqc file.
+#> Warning: running command '"quarto" TMPDIR=C:/Users/grewered/AppData/Local/Temp/Rtmp0GyuPo/file5a4424ae4323 -V' had status 1
+#> Found TERM 1: 'item' 
+#> Found TERM 2: 'item*step' 
+#> 'ESTIMATE' column in Outputfile for term 'item*step' in file: 'C:\Users\grewered\AppData\Local\Temp\Rtmp0GyuPo/pcm_conquest_females.shw' does not seem to be a numeric value. Please check!
+#> 'ERROR' column in Outputfile for term 'item*step' in file: 'C:\Users\grewered\AppData\Local\Temp\Rtmp0GyuPo/pcm_conquest_females.shw' does not seem to be a numeric value. Please check!
+#> Found 1 dimension(s): 
+#> Found 0 regressor(s).
+#> Warning: NAs introduced by coercion
+#> Pattern 'item+item*step' found. Assume partial credit model.
+#> Cannot identify variable identifier for additional term 'regression' in file 'pcm_conquest_females.shw'. Skip procedure.
+#> Found valid WLEs of 1097 person(s) for 1 dimension(s).
+#> 1097 persons and 1 dimensions(s) found.
+#> 5 plausible values were drawn for each person on each dimension.
+#> Warning: NAs introduced by coercion
 it1  <- itemFromRes(res1)
 
 # males are focus group: initial free estimation of item parameters
 def2 <- defineModel(dat=datW[which(datW[,"sex"] == "male"),], items = -c(1:4), id=1, model.statement = "item+item*step", nodes = 21, analysis.name = "pcm_conquest_males", dir=tempdir())
-#> Error in defineModel(dat = datW[which(datW[, "sex"] == "male"), ], items = -c(1:4),     id = 1, model.statement = "item+item*step", nodes = 21, analysis.name = "pcm_conquest_males",     dir = tempdir()): Assertion on 'conquest.folder' failed: Directory expected, but file in place: 'C:/Users/grewered/AppData/Local/Programs/R/R-4.4.2/library/eatModel/exec/console_Feb2007.exe'.
+#> Model statement 'item+item*step': Variable(s) 'step' from 'model.statement' not found in data.
+#> 7 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.
+#>    Items(s) 'D025033', 'D201113', 'D204013', 'D205143', 'D224053', 'D225113': 0, 1, 2, 3, 4     
+#>    Items(s) 'D223143':                                                        0, 1, 2, 3, 4, 5  
+#> 4 subject(s) do not solve any item:
+#>    P0007 (12 false), P0107 (12 false), P0837 (13 false) ... 
+#> 8 subject(s) solved each item: P0968 (11 correct), P0839 (13 correct), P1233 (24 correct) ... 
+#> Dataset is completely linked.
+#> Q matrix specifies 1 dimension(s).
 run2 <- runModel(def2)
 res2 <- getResults(run2)
-#> |*****|
-#> |-----|
+#> Cannot identify 'seed' from cqc file.
+#> Warning: running command '"quarto" TMPDIR=C:/Users/grewered/AppData/Local/Temp/Rtmp0GyuPo/file5a44c3d704f -V' had status 1
+#> Found TERM 1: 'item' 
+#> Found TERM 2: 'item*step' 
+#> 'ESTIMATE' column in Outputfile for term 'item*step' in file: 'C:\Users\grewered\AppData\Local\Temp\Rtmp0GyuPo/pcm_conquest_males.shw' does not seem to be a numeric value. Please check!
+#> 'ERROR' column in Outputfile for term 'item*step' in file: 'C:\Users\grewered\AppData\Local\Temp\Rtmp0GyuPo/pcm_conquest_males.shw' does not seem to be a numeric value. Please check!
+#> Found 1 dimension(s): 
+#> Found 0 regressor(s).
+#> Warning: NAs introduced by coercion
+#> Pattern 'item+item*step' found. Assume partial credit model.
+#> Cannot identify variable identifier for additional term 'regression' in file 'pcm_conquest_males.shw'. Skip procedure.
+#> Found valid WLEs of 1108 person(s) for 1 dimension(s).
+#> 1108 persons and 1 dimensions(s) found.
+#> 5 plausible values were drawn for each person on each dimension.
+#> Warning: NAs introduced by coercion
 it2  <- itemFromRes(res2)
 
 # link males to females ... males perform worse
 # 11 items with linking dif identified
 eq   <- equat1pl(results = res2, prmNorm = it1, item = "item", cat="category", value = "est", difBound=.64, iterativ = TRUE)
-#> Error in equat1pl(results = res2, prmNorm = it1, item = "item", cat = "category",     value = "est", difBound = 0.64, iterativ = TRUE): unused argument (cat = "category")
+#> Found 1 model(s).
+#>    Equating is executed for each dimension in each model separately.
+#> 
+#> ====================================================================================================
+#>  
+#> Model No. 1
+#>     Model name:                pcm_conquest_males
+#>     Number of dimension(s):    1
+#>     Name(s) of dimension(s):   Dim1
+#>     Number of linking items:   128
+#>     Linking method:            Mean.Mean
+#> 
+#> Dimension 'Dim1': 11 of 128 items with linking |DIF| > 0.64 identified.
+#>    Iteration 1: Exclude item 'D205143_Cat1'.
+#>    Iteration 2: Exclude item 'D223143_Cat1'.
+#>    Iteration 3: Exclude item 'D204043_Cat1'.
+#>    Iteration 4: Exclude item 'D025033_Cat1'.
+#>    Iteration 5: Exclude item 'D201113_Cat1'.
+#>    Iteration 6: Exclude item 'D034053_Cat1'.
+#>    Iteration 7: Exclude item 'D224023_Cat1'.
+#>    Iteration 8: Exclude item 'D205143_Cat3'.
+#>    Iteration 9: Exclude item 'D221093_Cat1'.
+#>    Iteration 10: Exclude item 'D224053_Cat3'.
+#>    Iteration 11: Exclude item 'D204033_Cat1'.
+#> 
+#>      method iter itemExcluded DIF.excluded linking.constant linkerror
+#> 1  iterativ    0                                     -0.220     0.034
+#> 2  iterativ    1 D205143_Cat1        1.228           -0.211     0.033
+#> 3  iterativ    2 D223143_Cat1       -1.054           -0.219     0.032
+#> 4  iterativ    3 D204043_Cat1            1           -0.211     0.031
+#> 5  iterativ    4 D025033_Cat1         0.99           -0.203     0.030
+#> 6  iterativ    5 D201113_Cat1        0.889           -0.196     0.030
+#> 7  iterativ    6 D034053_Cat1        0.855           -0.189     0.029
+#> 8  iterativ    7 D224023_Cat1        0.814           -0.182     0.028
+#> 9  iterativ    8 D205143_Cat3        0.791           -0.176     0.028
+#> 10 iterativ    9 D221093_Cat1       -0.694           -0.182     0.028
+#> 11 iterativ   10 D224053_Cat3        0.671           -0.176     0.027
+#> 12 iterativ   11 D204033_Cat1       -0.663           -0.182     0.027
+#> 
 
 # re-calibrate males with anchoring: use the DIF-cleaned set of anchor parameters for calibrating males on the reference scale
 # variant 1: use the original item parameters for females and exclude linking dif items (it1_cleaned)
 # please note that to date in Conquest only dichotomous items can be used for anchoring
 weg  <- eq[["items"]][["pcm_conquest_males"]][["Dim1"]][["info"]][-1,"itemExcluded"]
-#> Error: object 'eq' not found
 weg  <- eatTools::whereAre(weg, paste(it1[,"item"], it1[,"category"], sep="_"))
-#> Error: object 'weg' not found
+#> Found 11 elements.
 it1C <- it1[-weg,]
-#> Error: object 'weg' not found
 pcmIt<- unique(subset(it1C, category == "Cat2")[,"item"])                       ### additionally exclude pcm items
-#> Error: object 'it1C' not found
 it1C <- it1C[-eatTools::whereAre(pcmIt, it1C[,"item"]),]
-#> Error: object 'it1C' not found
+#> Found 23 elements.
 def3A<- defineModel(dat=datW[which(datW[,"sex"] == "male"),], items = -c(1:4), id=1,
         model.statement = "item+item*step", nodes = 21, analysis.name = "pcm_conquest_males_anchored1", dir=tempdir(),
         anchor = it1C[,c("item", "est")])
-#> Error in defineModel(dat = datW[which(datW[, "sex"] == "male"), ], items = -c(1:4),     id = 1, model.statement = "item+item*step", nodes = 21, analysis.name = "pcm_conquest_males_anchored1",     dir = tempdir(), anchor = it1C[, c("item", "est")]): Assertion on 'conquest.folder' failed: Directory expected, but file in place: 'C:/Users/grewered/AppData/Local/Programs/R/R-4.4.2/library/eatModel/exec/console_Feb2007.exe'.
+#> Model statement 'item+item*step': Variable(s) 'step' from 'model.statement' not found in data.
+#> 7 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.
+#>    Items(s) 'D025033', 'D201113', 'D204013', 'D205143', 'D224053', 'D225113': 0, 1, 2, 3, 4     
+#>    Items(s) 'D223143':                                                        0, 1, 2, 3, 4, 5  
+#> 4 subject(s) do not solve any item:
+#>    P0007 (12 false), P0107 (12 false), P0837 (13 false) ... 
+#> 8 subject(s) solved each item: P0968 (11 correct), P0839 (13 correct), P1233 (24 correct) ... 
+#> Dataset is completely linked.
+#> 94 common items found in 'anchor' list and data frame.
+#> 12 of 106 item(s) of merging variable 'item' from data set 'item response data' not included in data set 'anchor list'.
+#> Q matrix specifies 1 dimension(s).
+#> Anchorparameter were defined. Set constraints to 'none'.
 run3A<- runModel(def3A)
-#> Error: object 'def3A' not found
 res3A<- getResults(run3A)
-#> Error: object 'run3A' not found
+#> Cannot identify 'seed' from cqc file.
+#> Warning: running command '"quarto" TMPDIR=C:/Users/grewered/AppData/Local/Temp/Rtmp0GyuPo/file5a4451f7744a -V' had status 1
+#> Found TERM 1: 'item' 
+#> 'ERROR' column in Outputfile for term 'item' in file: 'C:\Users\grewered\AppData\Local\Temp\Rtmp0GyuPo/pcm_conquest_males_anchored1.shw' does not seem to be a numeric value. Please check!
+#> Found TERM 2: 'item*step' 
+#> 'ESTIMATE' column in Outputfile for term 'item*step' in file: 'C:\Users\grewered\AppData\Local\Temp\Rtmp0GyuPo/pcm_conquest_males_anchored1.shw' does not seem to be a numeric value. Please check!
+#> 'ERROR' column in Outputfile for term 'item*step' in file: 'C:\Users\grewered\AppData\Local\Temp\Rtmp0GyuPo/pcm_conquest_males_anchored1.shw' does not seem to be a numeric value. Please check!
+#> Found 1 dimension(s): 
+#> Found 0 regressor(s).
+#> Pattern 'item+item*step' found. Assume partial credit model.
+#> Cannot identify variable identifier for additional term 'regression' in file 'pcm_conquest_males_anchored1.shw'. Skip procedure.
+#> Found valid WLEs of 1108 person(s) for 1 dimension(s).
+#> 1108 persons and 1 dimensions(s) found.
+#> 5 plausible values were drawn for each person on each dimension.
+#> Warning: NAs introduced by coercion
 it3A <- itemFromRes(res3A)                                                      ### all dichotomous items except the ones with linking dif with equal item parameters? check
-#> Error: object 'res3A' not found
 comp <- merge(it1[,c("item", "category", "est")], it3A[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"))
-#> Error in `[.data.frame`(it1, , c("item", "category", "est")): undefined columns selected
 equal<- na.omit(comp[,c("est_ref", "offset")])
-#> Error: object 'comp' not found
 stopifnot(all(equal[,1] == equal[,2]))                                          ### all item parameters without linking dif should be equal
-#> Error: object 'equal' not found
 ### TO DO: all items with specific focus parameter must be included in linking DIF exclusion list or must be pcm items
 
 # variant 2: use the item parameters for males (linking dif items excluded), transformed to the metric of females
 ank3B<- eq[["items"]][["pcm_conquest_males"]][["Dim1"]][["cleanedLinkItemPars"]]
-#> Error: object 'eq' not found
 pcmIt<- unique(subset(ank3B, category == "Cat2")[,"item"])                      ### additionally exclude pcm items
-#> Error: object 'ank3B' not found
 ank3B<- ank3B[-eatTools::whereAre(pcmIt, ank3B[,"item"]),]
-#> Error: object 'ank3B' not found
+#> Found 23 elements.
 def3B<- defineModel(dat=datW[which(datW[,"sex"] == "male"),], items = -c(1:4), id=1,
         model.statement = "item+item*step", analysis.name = "pcm_conquest_males_anchored2",
         dir=tempdir(), anchor = ank3B[,c("item", "est")])
-#> Error in defineModel(dat = datW[which(datW[, "sex"] == "male"), ], items = -c(1:4),     id = 1, model.statement = "item+item*step", analysis.name = "pcm_conquest_males_anchored2",     dir = tempdir(), anchor = ank3B[, c("item", "est")]): Assertion on 'conquest.folder' failed: Directory expected, but file in place: 'C:/Users/grewered/AppData/Local/Programs/R/R-4.4.2/library/eatModel/exec/console_Feb2007.exe'.
+#> Model statement 'item+item*step': Variable(s) 'step' from 'model.statement' not found in data.
+#> 7 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.
+#>    Items(s) 'D025033', 'D201113', 'D204013', 'D205143', 'D224053', 'D225113': 0, 1, 2, 3, 4     
+#>    Items(s) 'D223143':                                                        0, 1, 2, 3, 4, 5  
+#> 4 subject(s) do not solve any item:
+#>    P0007 (12 false), P0107 (12 false), P0837 (13 false) ... 
+#> 8 subject(s) solved each item: P0968 (11 correct), P0839 (13 correct), P1233 (24 correct) ... 
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> 94 common items found in 'anchor' list and data frame.
+#> 12 of 106 item(s) of merging variable 'item' from data set 'item response data' not included in data set 'anchor list'.
+#> Q matrix specifies 1 dimension(s).
+#> Anchorparameter were defined. Set constraints to 'none'.
 run3B<- runModel(def3B)
-#> Error: object 'def3B' not found
 res3B<- getResults(run3B)
-#> Error: object 'run3B' not found
+#> Cannot identify 'seed' from cqc file.
+#> Warning: running command '"quarto" TMPDIR=C:/Users/grewered/AppData/Local/Temp/Rtmp0GyuPo/file5a44e797d47 -V' had status 1
+#> Found TERM 1: 'item' 
+#> 'ERROR' column in Outputfile for term 'item' in file: 'C:\Users\grewered\AppData\Local\Temp\Rtmp0GyuPo/pcm_conquest_males_anchored2.shw' does not seem to be a numeric value. Please check!
+#> Found TERM 2: 'item*step' 
+#> 'ESTIMATE' column in Outputfile for term 'item*step' in file: 'C:\Users\grewered\AppData\Local\Temp\Rtmp0GyuPo/pcm_conquest_males_anchored2.shw' does not seem to be a numeric value. Please check!
+#> 'ERROR' column in Outputfile for term 'item*step' in file: 'C:\Users\grewered\AppData\Local\Temp\Rtmp0GyuPo/pcm_conquest_males_anchored2.shw' does not seem to be a numeric value. Please check!
+#> Found 1 dimension(s): 
+#> Found 0 regressor(s).
+#> Pattern 'item+item*step' found. Assume partial credit model.
+#> Cannot identify variable identifier for additional term 'regression' in file 'pcm_conquest_males_anchored2.shw'. Skip procedure.
+#> Found valid WLEs of 1108 person(s) for 1 dimension(s).
+#> 1108 persons and 1 dimensions(s) found.
+#> 5 plausible values were drawn for each person on each dimension.
+#> Warning: NAs introduced by coercion
 it3B <- itemFromRes(res3B)                                                      ### all items except the ones with linking dif with equal item parameters? check
-#> Error: object 'res3B' not found
 link <- eq[["items"]][["pcm_conquest_males"]][["Dim1"]][["cleanedLinkItemPars"]][,c("item", "category", "est")]
-#> Error: object 'eq' not found
 comp <- merge(link, it3B[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"))
-#> Error: object 'link' not found
 equal<- na.omit(comp[,c("est_ref", "offset")])
-#> Error: object 'comp' not found
 stopifnot(all(equal[,1] == equal[,2]))                                          ### all item parameters without linking dif should be equal
-#> Error: object 'equal' not found
 ### TO DO: all items with specific focus parameter must be included in linking DIF exclusion list or must be pcm items
 
 # transform to Bista metric
 eq4  <- equat1pl(results = res3B)                                               ### reference population mean and SD
-#> Error: object 'res3B' not found
+#> Found 1 model(s).
+#>    Equating is executed for each dimension in each model separately.
+#> No norm parameter defined ('prmNorm' is missing). Treat current sample as drawn from the reference population.
 refP <- data.frame(domain = "Dim1", m = 0.0389, sd = 1.07108, stringsAsFactors = FALSE)
 cuts <- list ( Dim1 = list(values = 390+0:3*75))
 tf4  <- transformToBista(equatingList=eq4, refPop=refP, cuts=cuts, vera = FALSE)
-#> Error: object 'eq4' not found
+#> The 'refPop' data.frame does not include information about reference population mean/SD on Bista metric. Values will be defaulted to mean = 500 and SD = 100.
+#> Warning: Skip check whether all competence levels are occupied (due to bayesian plausible values imputation).
 
 
 ################################################################################
@@ -2456,15 +5625,12 @@ tf4  <- transformToBista(equatingList=eq4, refPop=refP, cuts=cuts, vera = FALSE)
 
 # load partial credit long format data
 data(reading)
-#> Warning: data set 'reading' not found
 
 # transform into wide format
 datW <- reshape2::dcast(reading[which(reading[,"type"] != "iglu"),],idstud+sex+language+country~item, value.var = "valueSum")
-#> Error: object 'reading' not found
 
 # combine the two lowest categories to avoid categories with too few observations
 datW[,"D205143"] <- car::recode(datW[,"D205143"], "1=0; 2=1; 3=2; 4=3; 5=4")
-#> Error in `[.data.frame`(datW, , "D205143"): undefined columns selected
 
 # restricted generalized partial credit model ... we consider the female subgroup to be the reference population
 # we assume that task D223 and D224 are created for students with special educational need and therefore have
@@ -2475,84 +5641,170 @@ items<- data.frame(item = items, task = substr(items,1,4), slopeGrp = as.numeric
 items[,"dim"] <- car::recode(substr(items[,"item"], 1,2),"'D0'='norm'; 'D2'='pilot'")
 items<- data.frame ( items, model.matrix(~dim-1, data = items), stringsAsFactors = FALSE)
 def1T<- defineModel(dat=dFema, items = items[,"item"], id=1, irtmodel = "GPCM.groups", software="tam", fixSlopeMat = na.omit(items[,c("item", "slope")]), est.slopegroups = items[,c("item", "slopeGrp")], nodes = 21, fac.oldxsi =0.6, increment.factor=1.05)
-#> Error in match.arg(arg = irtmodel, choices = c("1PL", "2PL", "PCM", "PCM2",     "RSM", "GPCM", "2PL.groups", "GPCM.design", "3PL")): 'arg' should be one of "1PL", "2PL", "PCM", "PCM2", "RSM", "GPCM", "2PL.groups", "GPCM.design", "3PL"
+#> 7 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.
+#>    Items(s) 'D025033', 'D201113', 'D204013', 'D205143', 'D224053', 'D225113': 0, 1, 2, 3, 4     
+#>    Items(s) 'D223143':                                                        0, 1, 2, 3, 4, 5  
+#> 2 subject(s) do not solve any item:
+#>    P1296 (24 false), P1299 (24 false), P1299 (24 false) ... 
+#> 12 subject(s) solved each item: P0081 (12 correct), P0869 (13 correct), P1047 (29 correct) ... 
+#> Dataset is completely linked.
+#> Q matrix specifies 1 dimension(s).
+#> Warning: To date, fixing slopes only works for dichotomous unidimensional or between-item multidimensional models.
+#> Following 22 items in dataset without fixed slopes in 'fixSlopeMat'. Slope(s) will be estimated freely.
+#>    D223013, D223023, D223033, D223043, D223063, D223073, D223083, D223103, D223113, D223123, D223133, D223143, D224013, D224023, D224033, D224043, D224053, D224063, D224083, D224093, D224103, D224113
 run1T<- runModel(def1T)
-#> Error: object 'def1T' not found
 res1T<- getResults(run1T)
-#> Error: object 'run1T' not found
+#> Getting standard errors with the tam.se function: 0.4 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.3 secs
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 0.8 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.3 secs
 it1T <- itemFromRes(res1T)
-#> Error: object 'res1T' not found
 
 # males are focus group: initial free estimation of item parameters
 def2T<- defineModel(dat=datW[which(datW[,"sex"] == "male"),], items = -c(1:4), id=1, irtmodel = "GPCM.groups",software="tam", fixSlopeMat = na.omit(items[,c("item", "slope")]), est.slopegroups = items[,c("item", "slopeGrp")], nodes = 21)
-#> Error in match.arg(arg = irtmodel, choices = c("1PL", "2PL", "PCM", "PCM2",     "RSM", "GPCM", "2PL.groups", "GPCM.design", "3PL")): 'arg' should be one of "1PL", "2PL", "PCM", "PCM2", "RSM", "GPCM", "2PL.groups", "GPCM.design", "3PL"
+#> 7 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.
+#>    Items(s) 'D025033', 'D201113', 'D204013', 'D205143', 'D224053', 'D225113': 0, 1, 2, 3, 4     
+#>    Items(s) 'D223143':                                                        0, 1, 2, 3, 4, 5  
+#> 4 subject(s) do not solve any item:
+#>    P0007 (12 false), P0107 (12 false), P0837 (13 false) ... 
+#> 8 subject(s) solved each item: P0968 (11 correct), P0839 (13 correct), P1233 (24 correct) ... 
+#> Dataset is completely linked.
+#> Q matrix specifies 1 dimension(s).
+#> Warning: To date, fixing slopes only works for dichotomous unidimensional or between-item multidimensional models.
+#> Following 22 items in dataset without fixed slopes in 'fixSlopeMat'. Slope(s) will be estimated freely.
+#>    D223013, D223023, D223033, D223043, D223063, D223073, D223083, D223103, D223113, D223123, D223133, D223143, D224013, D224023, D224033, D224043, D224053, D224063, D224083, D224093, D224103, D224113
 run2T<- runModel(def2T)
-#> Error: object 'def2T' not found
 res2T<- getResults(run2T)
-#> Error: object 'run2T' not found
+#> Getting standard errors with the tam.se function: 0.4 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.3 secs
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 0.8 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.3 secs
 it2T <- itemFromRes(res2T)
-#> Error: object 'res2T' not found
 unique(round(it1T[,"estSlope"],3)); unique(round(it2T[,"estSlope"],3))          ### average discrimination (reg vs. spf) differs for males, but not for females
-#> Error: object 'it1T' not found
+#> [1] 1.000 1.001
+#> [1] 1.000 0.858
 
 # use only slope=1 items for 1pl linking
 eq   <- equat1pl(results = res2T, prmNorm = it1T[which(it1T[,"estSlope"] ==1),], item = "item", cat="category", value = "est", difBound=.64, iterativ = TRUE)
-#> Error in equat1pl(results = res2T, prmNorm = it1T[which(it1T[, "estSlope"] ==     1), ], item = "item", cat = "category", value = "est", difBound = 0.64,     iterativ = TRUE): unused argument (cat = "category")
+#> Found 1 model(s).
+#>    Equating is executed for each dimension in each model separately.
+#> 
+#> ====================================================================================================
+#>  
+#> Model No. 1
+#>     Model name:                not_specified
+#>     Number of dimension(s):    1
+#>     Name(s) of dimension(s):   Dim1
+#>     Number of linking items:   99
+#>     Linking method:            Mean.Mean
+#> 
+#> Dimension 'Dim1': 8 of 99 items with linking |DIF| > 0.64 identified.
+#>    Iteration 1: Exclude item 'D205143_Cat1'.
+#>    Iteration 2: Exclude item 'D025033_Cat1'.
+#>    Iteration 3: Exclude item 'D204043_Cat1'.
+#>    Iteration 4: Exclude item 'D201113_Cat1'.
+#>    Iteration 5: Exclude item 'D034053_Cat1'.
+#>    Iteration 6: Exclude item 'D221093_Cat1'.
+#>    Iteration 7: Exclude item 'D205143_Cat3'.
+#>    Iteration 8: Exclude item 'D204033_Cat1'.
+#> 
+#>     method iter itemExcluded DIF.excluded linking.constant linkerror
+#> 1 iterativ    0                                     -0.239     0.039
+#> 2 iterativ    1 D205143_Cat1          1.3           -0.226     0.037
+#> 3 iterativ    2 D025033_Cat1         1.05           -0.215     0.036
+#> 4 iterativ    3 D204043_Cat1         1.01           -0.205     0.034
+#> 5 iterativ    4 D201113_Cat1        0.874           -0.196     0.033
+#> 6 iterativ    5 D034053_Cat1        0.851           -0.187     0.033
+#> 7 iterativ    6 D221093_Cat1       -0.687           -0.194     0.032
+#> 8 iterativ    7 D205143_Cat3        0.676           -0.187     0.032
+#> 9 iterativ    8 D204033_Cat1       -0.666           -0.194     0.031
+#> 
 
 # variant 1
 # use the DIF-cleaned set of original anchor parameters for calibrating males on the reference scale
 weg  <- eq[["items"]][["not_specified"]][["Dim1"]][["info"]][-1,"itemExcluded"]
-#> Error: object 'eq' not found
 weg  <- eatTools::whereAre(weg, paste(it1T[,"item"], it1T[,"category"], sep="_"))
-#> Error: object 'weg' not found
+#> Found 8 elements.
 it1C <- subset(it1T[-weg,], estSlope == 1)
-#> Error: object 'it1T' not found
 def3T<- defineModel(eatTools::na_omit_selection(dat=datW[which(datW[,"sex"] == "male"),],"language"), 
         items = -c(1:4), id=1, irtmodel = "GPCM.groups", anchor = it1C, HG.var = c("language", "country"), 
         itemCol = "item", valueCol = "est", catCol = "category", fixSlopeMat = na.omit(items[,c("item", "slope")]),
         qMatrix = items[,c("item", "dimnorm", "dimpilot")], est.slopegroups = items[,c("item", "slopeGrp")], nodes = 21, software="tam")
-#> Error in defineModel(eatTools::na_omit_selection(dat = datW[which(datW[,     "sex"] == "male"), ], "language"), items = -c(1:4), id = 1,     irtmodel = "GPCM.groups", anchor = it1C, HG.var = c("language",         "country"), itemCol = "item", valueCol = "est", catCol = "category",     fixSlopeMat = na.omit(items[, c("item", "slope")]), qMatrix = items[,         c("item", "dimnorm", "dimpilot")], est.slopegroups = items[,         c("item", "slopeGrp")], nodes = 21, software = "tam"): unused argument (catCol = "category")
+#> 7 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.
+#>    Items(s) 'D025033', 'D201113', 'D204013', 'D205143', 'D224053', 'D225113': 0, 1, 2, 3, 4     
+#>    Items(s) 'D223143':                                                        0, 1, 2, 3, 4, 5  
+#> Background variable(s) 'language', 'country' of class 
+#>     'factor', 'factor' will be converted to indicator variables.
+#>     Variable 'language' was converted to 2 indicator(s) with name(s) 'languagenativeAndOther', 'languageother'.
+#>     Variable 'country' was converted to 8 indicator(s) with name(s) 'countryCaladan', 'countryDisneyland', 'countryGreenland', 'countryMordor', 'countryRomulus', 'countryTatooine', 'countrytheShire', 'countryVulcan'.
+#> 4 subject(s) do not solve any item:
+#>    P0007 (12 false), P0107 (12 false), P0837 (13 false) ... 
+#> 8 subject(s) solved each item: P0968 (11 correct), P0839 (13 correct), P1233 (24 correct) ... 
+#> Dataset is completely linked.
+#> 80 common items found in 'anchor' list and data frame.
+#> 26 of 106 item(s) of merging variable 'item' from data set 'item response data' not included in data set 'anchor list'.
+#> Merging levels are not unique in data set 'anchor list'.
+#> Q matrix specifies 2 dimension(s).
+#> Warning: To date, fixing slopes only works for dichotomous unidimensional or between-item multidimensional models.
+#> Following 22 items in dataset without fixed slopes in 'fixSlopeMat'. Slope(s) will be estimated freely.
+#>    D223013, D223023, D223033, D223043, D223063, D223073, D223083, D223103, D223113, D223123, D223133, D223143, D224013, D224023, D224033, D224043, D224053, D224063, D224083, D224093, D224103, D224113
 run3T<- runModel(def3T)
-#> Error: object 'def3T' not found
+#> Error: 'timeFormat' is not an exported object from 'namespace:eatTools'
 res3T<- getResults(run3T)
-#> Error: object 'run3T' not found
+#> Q3 is only available for unidimensional models. Estimation will be skipped.
+#> Getting standard errors with the tam.se function: 0.2 secs
+#> |*****|
+#> |-----|
 it3T <- itemFromRes(res3T)                                                      ### all items except the ones with linking dif with equal item parameters? check 
-#> Error: object 'res3T' not found
 comp <- merge(subset(it1T[,c("item", "category", "est", "estSlope")],estSlope == 1), it3T[,c("item", "category", "est", "offset")], by=c("item", "category"), all=TRUE, suffixes = c("_ref", "_foc"))
-#> Error: object 'it1T' not found
+#> Error in `[.data.frame`(it3T, , c("item", "category", "est", "offset")): undefined columns selected
 equal<- na.omit(comp[,c("est_ref", "offset")])
-#> Error: object 'comp' not found
 stopifnot(all(equal[,1] == equal[,2]))                                          ### all item parameters without linking dif should be equal
-#> Error: object 'equal' not found
 lDif <- subset(comp, !is.na(est_foc))
-#> Error: object 'comp' not found
 stopifnot(all(paste(subset(lDif, !is.na(est_ref))[,"item"], subset(lDif, !is.na(est_ref))[,"category"], sep="_") %in% eq$items[["not_specified"]][["Dim1"]][["info"]][,"itemExcluded"]))
-#> Error: object 'lDif' not found
+#> Error: all(paste(subset(lDif, !is.na(est_ref))[, "item"], subset(lDif,  .... is not TRUE
 
 # variant 2: use the 1pl item parameters for males (linking dif items excluded), transformed to the metric of females
 def4T<- defineModel(eatTools::na_omit_selection(dat=datW[which(datW[,"sex"] == "male"),],"language"), 
         items = -c(1:4), id=1, irtmodel = "GPCM.groups",  anchor = eq[["items"]][["not_specified"]][["Dim1"]][["cleanedLinkItemPars"]],
         HG.var = c("language", "country"), itemCol = "item", valueCol = "est", catCol = "category", fixSlopeMat = na.omit(items[,c("item", "slope")]),
         qMatrix = items[,c("item", "dimnorm", "dimpilot")], est.slopegroups = items[,c("item", "slopeGrp")], nodes = 21, software="tam")
-#> Error in defineModel(eatTools::na_omit_selection(dat = datW[which(datW[,     "sex"] == "male"), ], "language"), items = -c(1:4), id = 1,     irtmodel = "GPCM.groups", anchor = eq[["items"]][["not_specified"]][["Dim1"]][["cleanedLinkItemPars"]],     HG.var = c("language", "country"), itemCol = "item", valueCol = "est",     catCol = "category", fixSlopeMat = na.omit(items[, c("item",         "slope")]), qMatrix = items[, c("item", "dimnorm", "dimpilot")],     est.slopegroups = items[, c("item", "slopeGrp")], nodes = 21,     software = "tam"): unused argument (catCol = "category")
+#> 7 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.
+#>    Items(s) 'D025033', 'D201113', 'D204013', 'D205143', 'D224053', 'D225113': 0, 1, 2, 3, 4     
+#>    Items(s) 'D223143':                                                        0, 1, 2, 3, 4, 5  
+#> Background variable(s) 'language', 'country' of class 
+#>     'factor', 'factor' will be converted to indicator variables.
+#>     Variable 'language' was converted to 2 indicator(s) with name(s) 'languagenativeAndOther', 'languageother'.
+#>     Variable 'country' was converted to 8 indicator(s) with name(s) 'countryCaladan', 'countryDisneyland', 'countryGreenland', 'countryMordor', 'countryRomulus', 'countryTatooine', 'countrytheShire', 'countryVulcan'.
+#> 4 subject(s) do not solve any item:
+#>    P0007 (12 false), P0107 (12 false), P0837 (13 false) ... 
+#> 8 subject(s) solved each item: P0968 (11 correct), P0839 (13 correct), P1233 (24 correct) ... 
+#> Dataset is completely linked.
+#> 80 common items found in 'anchor' list and data frame.
+#> 26 of 106 item(s) of merging variable 'item' from data set 'item response data' not included in data set 'anchor list'.
+#> Merging levels are not unique in data set 'anchor list'.
+#> Q matrix specifies 2 dimension(s).
+#> Warning: To date, fixing slopes only works for dichotomous unidimensional or between-item multidimensional models.
+#> Following 22 items in dataset without fixed slopes in 'fixSlopeMat'. Slope(s) will be estimated freely.
+#>    D223013, D223023, D223033, D223043, D223063, D223073, D223083, D223103, D223113, D223123, D223133, D223143, D224013, D224023, D224033, D224043, D224053, D224063, D224083, D224093, D224103, D224113
 run4T<- runModel(def4T)
-#> Error: object 'def4T' not found
+#> Error: 'timeFormat' is not an exported object from 'namespace:eatTools'
 res4T<- getResults(run4T)
 #> Error: object 'run4T' not found
 it4T <- itemFromRes(res4T)                                                      ### all items except the ones with linking dif with equal item parameters? check 
 #> Error: object 'res4T' not found
 link <- eq[["items"]][["not_specified"]][["Dim1"]][["cleanedLinkItemPars"]][,c("item", "category", "est")]
-#> Error: object 'eq' not found
 comp <- merge(link, it4T[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"), all=TRUE)
-#> Error: object 'link' not found
+#> Error: object 'it4T' not found
 equal<- na.omit(comp[,c("est_ref", "offset")])
-#> Error: object 'comp' not found
 stopifnot(all(equal[,1] == equal[,2]))                                          ### all item parameters without linking dif should be equal
-#> Error: object 'equal' not found
 lDif <- subset(comp, !is.na(est_foc))                                           ### all items with specific focus paraeter must be included in linking DIF exclusion list 
-#> Error: object 'comp' not found
 stopifnot(all(paste(subset(lDif, !is.na(est_ref))[,"item"], subset(lDif, !is.na(est_ref))[,"category"], sep="_") %in% eq$items[["not_specified"]][["Dim1"]][["info"]][,"itemExcluded"]))
-#> Error: object 'lDif' not found
+#> Error: all(paste(subset(lDif, !is.na(est_ref))[, "item"], subset(lDif,  .... is not TRUE
 
 # transform to Bista metric
 eq4  <- equat1pl(results = res4T)                                               ### reference population mean and SD
@@ -2560,7 +5812,7 @@ eq4  <- equat1pl(results = res4T)                                               
 refP <- data.frame(domain = c("dimnorm", "dimpilot"), m = 0.0389, sd = 1.07108, stringsAsFactors = FALSE)
 cuts <- list ( dimnorm = list(values = 390+0:3*75), dimpilot = list(values = 390+0:3*75))
 tf4  <- transformToBista(equatingList=eq4, refPop=refP, cuts=cuts, vera = FALSE)
-#> Error: object 'eq4' not found
+#> Error in generateOrCheckRefPop(equatingList = equatingList, refPop = refPop,     mods = mods, dims = dims, isRunM = isRunM, id = id, weights = weights,     defaultM = defaultM, defaultSD = defaultSD): Following 1 dimension(s) not included in 'refPop': 'Dim1'.
 
 
 ################################################################################
@@ -2581,19 +5833,15 @@ if(!"Hmisc" %in% .packages()) {library(Hmisc)}
 
 # load partial credit long format data
 data(reading)
-#> Warning: data set 'reading' not found
 
 # transform into wide format
 datW <- reshape2::dcast(reading[which(reading[,"type"] != "iglu"),],idstud+sex+language+country~item, value.var = "valueSum")
-#> Error: object 'reading' not found
 
 # only some items are partial credit, which ones?
 pc.it<- reading[which(reading[,"valueSum"] > 1),"item"] |> unique()
-#> Error: object 'reading' not found
 
 # combine the two lowest categories to avoid categories with too few observations
 datW[,"D205143"] <- car::recode(datW[,"D205143"], "1=0; 2=1; 3=2; 4=3; 5=4")
-#> Error in `[.data.frame`(datW, , "D205143"): undefined columns selected
 
 # restricted generalized partial credit model ... we consider the female subgroup to be the reference population
 # we assume that task D223 and D224 are created for students with special educational need and therefore have
@@ -2604,17 +5852,13 @@ items<- data.frame(item = items, task = substr(items,1,4), slopeGrp = as.numeric
 
 # add model information to 'item'
 items[intersect(intersect(which(items[,"slopeGrp"] == 0), which(items[,"task"] %nin% c("D223", "D224"))), which(items[,"item"] %nin% pc.it)),"irtmod"] <- "Rasch"
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'x' in selecting a method for function 'which': object 'pc.it' not found
 items[intersect(intersect(which(items[,"slopeGrp"] == 1), which(items[,"task"] %in% c("D223", "D224"))), which(items[,"item"] %nin% pc.it)),"irtmod"] <- "2PL"
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'x' in selecting a method for function 'which': object 'pc.it' not found
 
 # this is partial credit which is specified in 'mirt' with 'Rasch' statement as the slope equals 1 like in dichotomous Rasch models
 items[intersect(intersect(which(items[,"slopeGrp"] == 0), which(items[,"task"] %nin% c("D223", "D224"))), which(items[,"item"] %in% pc.it)),"irtmod"] <- "Rasch"
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'x' in selecting a method for function 'which': object 'pc.it' not found
 
 # generalized partial credit for unidimensional models
 items[intersect(which(items[,"slopeGrp"] == 1), which(items[,"item"] %in% pc.it)),"irtmod"] <- "gpcm"
-#> Error in h(simpleError(msg, call)): error in evaluating the argument 'x' in selecting a method for function 'which': object 'pc.it' not found
 
 # define arbitrary dimensions
 items[,"dim"] <- car::recode(substr(items[,"item"], 1,2),"'D0'='norm'; 'D2'='pilot'")
@@ -2623,84 +5867,149 @@ items<- data.frame ( items, model.matrix(~dim-1, data = items), stringsAsFactors
 # procedure similar to conquest/tam
 def1 <- defineModel(dat=eatTools::na_omit_selection(dFema,varsToOmitIfNA="language"), items = items[,"item"], 
         id=1,irtmodel = items[,c("item", "irtmod")], software="mirt")
-#> Error in match.arg(arg = irtmodel, choices = c("1PL", "2PL", "PCM", "PCM2",     "RSM", "GPCM", "2PL.groups", "GPCM.design", "3PL")): 'arg' must be NULL or a character vector
+#> 7 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.
+#>    Items(s) 'D025033', 'D201113', 'D204013', 'D205143', 'D224053', 'D225113': 0, 1, 2, 3, 4     
+#>    Items(s) 'D223143':                                                        0, 1, 2, 3, 4, 5  
+#> 12 subject(s) solved each item: P0081 (12 correct), P0869 (13 correct), P1047 (29 correct) ... 
+#> Dataset is completely linked.
+#> Specifying 'method' and 'nodes' not yet implemented for 'mirt'.
+#> Q matrix specifies 1 dimension(s).
 skel1<- runModel(def1, onlySkeleton = TRUE)                                     ### check the model "skeleton"
-#> Error in runModel(def1, onlySkeleton = TRUE): unused argument (onlySkeleton = TRUE)
 run1 <- runModel(def1)                                                          ### run the model finally 
+#> Modify skeleton ... 
+#> 
+#> 
+#> Calculating information matrix...
 res1 <- getResults(run1)
-#> |*****|
-#> |-----|
+#> Getting WLEs calling fscores(method="WLE") from getMirtWles: 6.8 secs
 it1  <- itemFromRes(res1)
 
 # males are focus group: initial free estimation of item parameters
 def2 <- defineModel(dat=eatTools::na_omit_selection(datW[which(datW[,"sex"] == "male"),],varsToOmitIfNA="language"), 
         items = -c(1:4), id=1, irtmodel = items[,c("item", "irtmod")],software="mirt")
-#> Error in match.arg(arg = irtmodel, choices = c("1PL", "2PL", "PCM", "PCM2",     "RSM", "GPCM", "2PL.groups", "GPCM.design", "3PL")): 'arg' must be NULL or a character vector
+#> 7 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.
+#>    Items(s) 'D025033', 'D201113', 'D204013', 'D205143', 'D224053', 'D225113': 0, 1, 2, 3, 4     
+#>    Items(s) 'D223143':                                                        0, 1, 2, 3, 4, 5  
+#> 4 subject(s) do not solve any item:
+#>    P0007 (12 false), P0107 (12 false), P0837 (13 false) ... 
+#> 8 subject(s) solved each item: P0968 (11 correct), P0839 (13 correct), P1233 (24 correct) ... 
+#> Dataset is completely linked.
+#> Specifying 'method' and 'nodes' not yet implemented for 'mirt'.
+#> Q matrix specifies 1 dimension(s).
 run2 <- runModel(def2)
+#> Modify skeleton ... 
+#> 
+#> 
+#> Calculating information matrix...
 res2 <- getResults(run2)
-#> |*****|
-#> |-----|
+#> Getting WLEs calling fscores(method="WLE") from getMirtWles: 6.7 secs
 it2  <- itemFromRes(res2)
 
 # link males to females, using only 1pl items ... males perform worse. 10 items with linking dif identified 
 eq   <- equat1pl(results = res2, prmNorm = subset(it1,estSlope ==1), item = "item", cat="category", value = "est", difBound=.64, iterativ = TRUE)
-#> Error in equat1pl(results = res2, prmNorm = subset(it1, estSlope == 1),     item = "item", cat = "category", value = "est", difBound = 0.64,     iterativ = TRUE): unused argument (cat = "category")
+#> Found 1 model(s).
+#>    Equating is executed for each dimension in each model separately.
+#> 
+#> ====================================================================================================
+#>  
+#> Model No. 1
+#>     Model name:                not_specified
+#>     Number of dimension(s):    1
+#>     Name(s) of dimension(s):   Dim1
+#>     Number of linking items:   84
+#>     Linking method:            Mean.Mean
+#> 
+#> Dimension 'Dim1': 6 of 84 items with linking |DIF| > 0.64 identified.
+#>    Iteration 1: Exclude item 'D205143_Cat1'.
+#>    Iteration 2: Exclude item 'D034053_Cat1'.
+#>    Iteration 3: Exclude item 'D204043_Cat1'.
+#>    Iteration 4: Exclude item 'D025033_Cat1'.
+#>    Iteration 5: Exclude item 'D204033_Cat1'.
+#>    Iteration 6: Exclude item 'D221093_Cat1'.
+#> 
+#>     method iter itemExcluded DIF.excluded linking.constant linkerror
+#> 1 iterativ    0                                     -0.263     0.044
+#> 2 iterativ    1 D205143_Cat1        1.841           -0.241     0.039
+#> 3 iterativ    2 D034053_Cat1        0.907           -0.230     0.037
+#> 4 iterativ    3 D204043_Cat1        0.916           -0.219     0.036
+#> 5 iterativ    4 D025033_Cat1        0.776           -0.209     0.035
+#> 6 iterativ    5 D204033_Cat1        -0.68           -0.218     0.035
+#> 7 iterativ    6 D221093_Cat1       -0.687           -0.227     0.034
+#> 
 
 # re-calibrate males with anchoring: use the DIF-cleaned set of anchor parameters for calibrating males on the reference scale
 # variant 1: use the original (1pl) item parameters for females and exclude linking dif items (it1_cleaned)
 weg  <- eq[["items"]][["not_specified"]][["Dim1"]][["info"]][-1,"itemExcluded"]
-#> Error: object 'eq' not found
 weg  <- eatTools::whereAre(weg, paste(it1[,"item"], it1[,"category"], sep="_"))
-#> Error: object 'weg' not found
+#> Found 6 elements.
 it1C <- subset(it1[-weg,], estSlope == 1)
-#> Error: object 'weg' not found
 def3A<- defineModel(dat=eatTools::na_omit_selection(datW[which(datW[,"sex"] == "male"),],varsToOmitIfNA="language"), items = -c(1:4), id=1,  irtmodel = items[,c("item", "irtmod")],
         anchor = it1C, itemCol = "item", valueCol = "est", catCol = "category", software="mirt")
-#> Error in defineModel(dat = eatTools::na_omit_selection(datW[which(datW[,     "sex"] == "male"), ], varsToOmitIfNA = "language"), items = -c(1:4),     id = 1, irtmodel = items[, c("item", "irtmod")], anchor = it1C,     itemCol = "item", valueCol = "est", catCol = "category",     software = "mirt"): unused argument (catCol = "category")
+#> 7 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.
+#>    Items(s) 'D025033', 'D201113', 'D204013', 'D205143', 'D224053', 'D225113': 0, 1, 2, 3, 4     
+#>    Items(s) 'D223143':                                                        0, 1, 2, 3, 4, 5  
+#> 4 subject(s) do not solve any item:
+#>    P0007 (12 false), P0107 (12 false), P0837 (13 false) ... 
+#> 8 subject(s) solved each item: P0968 (11 correct), P0839 (13 correct), P1233 (24 correct) ... 
+#> Dataset is completely linked.
+#> Specifying 'method' and 'nodes' not yet implemented for 'mirt'.
+#> 78 common items found in 'anchor' list and data frame.
+#> 28 of 106 item(s) of merging variable 'item' from data set 'item response data' not included in data set 'anchor list'.
+#> Q matrix specifies 1 dimension(s).
 run3A<- runModel(def3A)
-#> Error: object 'def3A' not found
+#> Modify skeleton ... 
+#> 
+#> 
+#> Calculating information matrix...
 res3A<- getResults(run3A)
-#> Error: object 'run3A' not found
+#> Getting WLEs calling fscores(method="WLE") from getMirtWles: 6.5 secs
 it3A <- itemFromRes(res3A)                                                      ### all items except the ones with linking dif with equal item parameters? check 
-#> Error: object 'res3A' not found
 comp <- merge(subset(it1, estSlope==1)[,c("item", "category", "est")], subset(it3A, !is.na(offset))[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"))
-#> Error in eval(e, x, parent.frame()): object 'estSlope' not found
 stopifnot(all(round(comp[,"est_ref"],5) == round(comp[,"offset"],5)))           ### all item parameters without linking dif should be equal
-#> Error: object 'comp' not found
 # all items with specific focus parameter must be included in linking DIF exclusion list 
 stopifnot(all((paste(comp[,"item"], comp[,"category"],sep="_") %in% eq$items[["not_specified"]][["Dim1"]][["info"]][-1,"itemExcluded"]) == FALSE))
-#> Error: object 'comp' not found
 
 # variant 2: use the item parameters for males (linking dif items excluded), transformed to the metric of females
 def3B<- defineModel(dat=eatTools::na_omit_selection(datW[which(datW[,"sex"] == "male"),],varsToOmitIfNA="language"), items = -c(1:4), id=1,  irtmodel = items[,c("item", "irtmod")],
         anchor = eq[["items"]][["not_specified"]][["Dim1"]][["cleanedLinkItemPars"]],
         itemCol = "item", valueCol = "est", catCol = "category", software="mirt")
-#> Error in defineModel(dat = eatTools::na_omit_selection(datW[which(datW[,     "sex"] == "male"), ], varsToOmitIfNA = "language"), items = -c(1:4),     id = 1, irtmodel = items[, c("item", "irtmod")], anchor = eq[["items"]][["not_specified"]][["Dim1"]][["cleanedLinkItemPars"]],     itemCol = "item", valueCol = "est", catCol = "category",     software = "mirt"): unused argument (catCol = "category")
+#> 7 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.
+#>    Items(s) 'D025033', 'D201113', 'D204013', 'D205143', 'D224053', 'D225113': 0, 1, 2, 3, 4     
+#>    Items(s) 'D223143':                                                        0, 1, 2, 3, 4, 5  
+#> 4 subject(s) do not solve any item:
+#>    P0007 (12 false), P0107 (12 false), P0837 (13 false) ... 
+#> 8 subject(s) solved each item: P0968 (11 correct), P0839 (13 correct), P1233 (24 correct) ... 
+#> Dataset is completely linked.
+#> Specifying 'method' and 'nodes' not yet implemented for 'mirt'.
+#> 78 common items found in 'anchor' list and data frame.
+#> 28 of 106 item(s) of merging variable 'item' from data set 'item response data' not included in data set 'anchor list'.
+#> Q matrix specifies 1 dimension(s).
 run3B<- runModel(def3B)
-#> Error: object 'def3B' not found
+#> Modify skeleton ... 
+#> 
+#> 
+#> Calculating information matrix...
 res3B<- getResults(run3B)
-#> Error: object 'run3B' not found
+#> Getting WLEs calling fscores(method="WLE") from getMirtWles: 6.5 secs
 it3B <- itemFromRes(res3B)                                                      ### all items except the ones with linking dif with equal item parameters? check 
-#> Error: object 'res3B' not found
 link <- eq[["items"]][["not_specified"]][["Dim1"]][["cleanedLinkItemPars"]][,c("item", "category", "est", "estSlope")]
-#> Error: object 'eq' not found
 stopifnot(all(link[,"estSlope"] == 1))
-#> Error: object 'link' not found
 comp <- merge(link, it3B[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"))
-#> Error: object 'link' not found
 stopifnot(all(round(comp[,"est_ref"],5) == round(comp[,"offset"],5)))           ### all item parameters without linking dif should be equal
-#> Error: object 'comp' not found
 # all items with specific focus parameter must be included in linking DIF exclusion list 
 stopifnot(all((paste(comp[,"item"], comp[,"category"],sep="_") %in% eq$items[["not_specified"]][["Dim1"]][["info"]][-1,"itemExcluded"]) == FALSE))
-#> Error: object 'comp' not found
 
 # transform to Bista metric
 eq4  <- equat1pl(results = res3B)                                               ### reference population mean and SD
-#> Error: object 'res3B' not found
+#> Found 1 model(s).
+#>    Equating is executed for each dimension in each model separately.
+#> No norm parameter defined ('prmNorm' is missing). Treat current sample as drawn from the reference population.
 refP <- data.frame(domain = "Dim1", m = 0.0389, sd = 1.07108, stringsAsFactors = FALSE)
 cuts <- list ( Dim1 = list(values = 390+0:3*75))
 tf4  <- transformToBista(equatingList=eq4, refPop=refP, cuts=cuts, vera = FALSE)
-#> Error: object 'eq4' not found
+#> Warning: Cannot identify student identifier variable (possibly because 'resultsObj' was created by an older version of 'eatModel'). student id variable will be defaulted to 'idstud'.
+#> The 'refPop' data.frame does not include information about reference population mean/SD on Bista metric. Values will be defaulted to mean = 500 and SD = 100.
+#> Warning: Skip check whether all competence levels are occupied (due to bayesian plausible values imputation).
 
 
 ################################################################################
@@ -2709,33 +6018,353 @@ tf4  <- transformToBista(equatingList=eq4, refPop=refP, cuts=cuts, vera = FALSE)
 
 # load partial credit long format data
 data(reading)
-#> Warning: data set 'reading' not found
 
 # create a small wide format exemplary data set, only booklet 08
 dw  <- reshape2::dcast(subset(reading, bookletID == "TH08"), idstud+sex~item, value.var = "valueSum") |>
        dplyr::mutate(sex = car::recode(sex, "'male'=0; 'female'=1", as.factor=FALSE)) |>
        eatTools::na_omit_selection("sex")
-#> Error: object 'reading' not found
 
 # define the model: the specification resembles exemple 9 in tam.mml help page 
 defT<- defineModel(dat = dw, items = -c(1:2), DIF.var="sex", id = "idstud",  irtmodel = "PCM",software="tam")
-#> Error: object 'dw' not found
+#> 4 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.
+#>    Items(s) 'D025033', 'D204013', 'D225113': 0, 1, 2, 3, 4     
+#>    Items(s) 'D205143':                       0, 1, 2, 3, 4, 5  
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Q matrix specifies 1 dimension(s).
 runT<- runModel(defT)
-#> Error: object 'defT' not found
 resT<- getResults(runT)
-#> Error: object 'runT' not found
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Warning: NaNs produced
+#> Getting standard errors with the tam.se function: 1.3 secs
+#> Error in car::recode(dat[, "var1"], recSt): 
+#>   in recode term:  'D225123:step3' = 'D:step_2251233'
+#>   message: Error in parse(text = range[[1]][1]) : 
+#>   <text>:1:2: unexpected INCOMPLETE_STRING
+#> 1:  'D225123
+#>      ^
 
 # the same model in conquest (recommended)
 defC<- defineModel(dat = dw, items = -c(1:2), model.statement = "item+item*step - sex + item*sex", DIF.var="sex", id = "idstud", analysis.name = "dif_pcm", dir=tempdir())
-#> Error: object 'dw' not found
+#> Model statement 'item+item*step - sex + item*sex': Variable(s) 'step' from 'model.statement' not found in data.
+#> 4 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.
+#>    Items(s) 'D025033', 'D204013', 'D225113': 0, 1, 2, 3, 4     
+#>    Items(s) 'D205143':                       0, 1, 2, 3, 4, 5  
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Caution! DIF variable was specified. Expected model statement is: 'item - sex + item*sex'.
+#> However, 'item+item*step - sex + item*sex' will used as 'model statement' to accomplish your will.
+#> Q matrix specifies 1 dimension(s).
 runC<- runModel(defC, wait=FALSE)
-#> Error: object 'defC' not found
 resC<- getResults(runC)
-#> Error: object 'runC' not found
+#> Warning: Model seems not to have converged. Cannot find log file 'C:\Users\grewered\AppData\Local\Temp\Rtmp0GyuPo/dif_pcm.log'.
+#> Cannot identify 'seed' from cqc file.
+#> Error in eatTools::halveString(dev, "\\."): Assertion on 'string' failed: Must be of type 'character', not 'NULL'.
 it  <- itemFromRes(resC)
 #> Error: object 'resC' not found
 shw <- get.shw(file.path(tempdir(), "dif_pcm.shw"), dif.term = "item*sex")
-#> Error in get.shw(file.path(tempdir(), "dif_pcm.shw"), dif.term = "item*sex"): Assertion on 'file' failed: File does not exist: 'C:\Users\grewered\AppData\Local\Temp\RtmpoLrBif/dif_pcm.shw'.
+#> Warning: cannot open file 'C:\Users\grewered\AppData\Local\Temp\Rtmp0GyuPo/dif_pcm.shw': No such file or directory
+#> Error in file(file, "r"): cannot open the connection
 
 
 ################################################################################
@@ -2749,44 +6378,35 @@ shw <- get.shw(file.path(tempdir(), "dif_pcm.shw"), dif.term = "item*sex")
 # an incomplete block design is representative of a domain covered by the new standards.
 # We assume thta the sample was drawn from the norm population (reference population)
 data(reading)
-#> Warning: data set 'reading' not found
 
 # transform the data to the wide format
 datW <- reshape2::dcast(reading[which(reading[,"type"] != "iglu"),],idstud+sex+language+country~item, value.var = "valueSum")
-#> Error: object 'reading' not found
 
 # combine the two lowest categories to avoid categories with too few observations
 datW[,"D205143"] <- car::recode(datW[,"D205143"], "1=0; 2=1; 3=2; 4=3; 5=4")
-#> Error in `[.data.frame`(datW, , "D205143"): undefined columns selected
 
 # partial credit model. We draw 15 plausible values to achieve greater precision
 # in estimating the distribution of individuals.
 def1 <- defineModel(dat=datW, items = -c(1:4), id=1, irtmodel = "PCM", software="tam", nodes = 21, n.plausible=15)
-#> Warning: Found 172 non-numeric values in 1 of 35 items:
-#> ℹ Items: 'country'
-#> ℹ Non-numeric values: 'countryC', 'countryA', 'countryB'
-#> Warning: Found unexpected class type(s) in item response columns:
-#> ℹ 1 item columns of class 'character': 'country'
-#> ℹ All item columns will be transformed to be 'numeric'. Recommend to edit your
-#>   data manually prior to analysis
-#> Warning: There was 1 warning in `mutate()`.
-#> ℹ In argument: `country = (function (x, maintain.factor.scores = TRUE,
-#>   force.string = TRUE, ...`.
-#> Caused by warning:
-#> ! Variable has been coerced to numeric, NAs have been induced.
-#> Warning: 1 testitem without any values:
-#> ℹ Remove these items from the data set: 'country'
-#> Warning: 1 testitem with less than 50 valid responses.
-#> ℹ These items are nevertheless kept in the data set: 'country'
-#> Remove 1 test item(s) overall.
+#> 7 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.
+#>    Items(s) 'D025033', 'D201113', 'D204013', 'D205143', 'D224053', 'D225113': 0, 1, 2, 3, 4     
+#>    Items(s) 'D223143':                                                        0, 1, 2, 3, 4, 5  
+#> 13 subject(s) do not solve any item:
+#>    P0007 (12 false), P0837 (13 false), P1569 (49 false) ... 
+#> 20 subject(s) solved each item: P0968 (11 correct), P0843 (13 correct), P1047 (29 correct) ... 
 #> Dataset is completely linked.
 #> Q matrix specifies 1 dimension(s).
 run1 <- runModel(def1)
 
 # use ntheta = 40000 for higher precision
 res1 <- getResults(run1, ntheta = 40000, theta.model = FALSE)
+#> Getting standard errors with the tam.se function: 0.6 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.2 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.6 secs
 #> |***************|
 #> |---------------|
+#> Getting PVs calling tam.pv from getTamPVs: 37 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.5 secs
 
 # estimate mean and standard deviation of the reference population from the plausible values
 # use the long format by toWideFormat = FALSE. Load the eatRep package for mean/SD computation
@@ -2813,6 +6433,6 @@ trnsf<- transformToBista(equatingList=eq, refPop= data.frame(domain="Dim1",
         m = mSDR[which(mSDR[,"parameter"] == "mean"),"est"],
         sd = mSDR[which(mSDR[,"parameter"] == "sd"),"est"]),
         cuts = list(Dim1 = list(values = c(400,600))), vera=FALSE)
-#> The 'refPop' data.frame does not include information about reference population mean/SD on Bista metric. Values will be defaulted to 500/100.
-#> mutmasslicher fehler.
+#> The 'refPop' data.frame does not include information about reference population mean/SD on Bista metric. Values will be defaulted to mean = 500 and SD = 100.
+#> Warning: Skip check whether all competence levels are occupied (due to bayesian plausible values imputation).
 ```

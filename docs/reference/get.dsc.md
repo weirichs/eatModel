@@ -47,12 +47,10 @@ Software.* Camberwell, Victoria: ACER Press.
 ``` r
 file <- system.file("extdata", "twodim_pvl.dsc", package = "eatModel")
 dscPV<- get.dsc(file)
-#> Found 1 group(s) and 2 dimension(s) in
-#> 'C:/Users/grewered/AppData/Local/Programs/R/R-4.4.2/library/eatModel/extdata/twodim_pvl.dsc'
+#> Found 1 group(s) and 2 dimension(s) in 'C:/Users/grewered/AppData/Local/Temp/Rtmp4CCI6y/temp_libpath3d80217db35/eatModel/extdata/twodim_pvl.dsc'
 #> ℹ All Students
 file <- system.file("extdata", "twodim_wle.dsc", package = "eatModel")
 dscWL<- get.dsc(file)
-#> Found 1 group(s) and 2 dimension(s) in
-#> 'C:/Users/grewered/AppData/Local/Programs/R/R-4.4.2/library/eatModel/extdata/twodim_wle.dsc'
+#> Found 1 group(s) and 2 dimension(s) in 'C:/Users/grewered/AppData/Local/Temp/Rtmp4CCI6y/temp_libpath3d80217db35/eatModel/extdata/twodim_wle.dsc'
 #> ℹ All Students
 ```

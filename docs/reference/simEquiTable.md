@@ -110,25 +110,24 @@ ret <- simEquiTable( anchor = prm[,c("item", "est")], cutScores = cuts , mRef = 
 ### Example 2: equivalence table for partial credit model
 # load partial credit data
 data(reading)
-#> Warning: data set 'reading' not found
 
 # To speed up the process, the tests will be administered only for Test
 # Booklet 8. This booklet contains questions with some partial credit items.
 d   <- subset(reading, bookletID == "TH08")
-#> Error: object 'reading' not found
 dw  <- reshape2::dcast(d, idstud~item, value.var = "valueSum")
-#> Error: object 'd' not found
 defT<- defineModel(dat = dw, items = -1, id = "idstud",  irtmodel = "PCM",software="tam")
-#> Error: object 'dw' not found
+#> 4 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.
+#>    Items(s) 'D025033', 'D204013', 'D225113': 0, 1, 2, 3, 4     
+#>    Items(s) 'D205143':                       0, 1, 2, 3, 4, 5  
+#> Dataset is completely linked.
+#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
+#> Q matrix specifies 1 dimension(s).
 runT<- runModel(defT)
-#> Error: object 'defT' not found
 resT<- getResults(runT, omitPV=TRUE, Q3 = FALSE)
-#> Error: object 'runT' not found
 it  <- itemFromRes(resT)
-#> Error: object 'resT' not found
 
 # create equivalence table with arbitrary cuts and reference values
 ret2<- simEquiTable( anchor = it, item = "item", cat="category", value = "est",
        cutScores = list ( values = c(400, 600)), mRef = 0.047, sdRef = 1.181)
-#> Error in simEquiTable(anchor = it, item = "item", cat = "category", value = "est",     cutScores = list(values = c(400, 600)), mRef = 0.047, sdRef = 1.181): unused arguments (item = "item", cat = "category", value = "est")
+#> Error in simEquiTable(anchor = it, item = "item", cat = "category", value = "est",     cutScores = list(values = c(400, 600)), mRef = 0.047, sdRef = 1.181): object 'it' not found
 ```
