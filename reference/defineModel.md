@@ -14,7 +14,7 @@ with the argument returned by `defineModel`.
 ``` r
 defineModel (dat, items, id, splittedModels = NULL,
    irtmodel = c("1PL", "2PL", "PCM", "PCM2", "RSM", "GPCM", "GPCM.groups", "2PL.groups", "GPCM.design", "3PL"),
-   qMatrix=NULL, DIF.var=NULL, HG.var=NULL, group.var=NULL, weight.var=NULL, anchor = NULL, 
+   qMatrix=NULL, DIF.var=NULL, DIF.free = NULL, HG.var=NULL, group.var=NULL, weight.var=NULL, anchor = NULL, 
    domainCol=NULL, itemCol=NULL, valueCol=NULL, catCol = NULL, check.for.linking = TRUE, minNperItem = 50, removeMinNperItem = FALSE,
    boundary = 6, remove.boundary = FALSE, remove.no.answers = TRUE, remove.no.answersHG = TRUE, 
    remove.missing.items = TRUE, remove.constant.items = TRUE, remove.failures = FALSE, 
@@ -90,6 +90,16 @@ defineModel (dat, items, id, splittedModels = NULL,
 
   Name or column number of one grouping variable for which differential
   item functioning analysis is to be done.
+
+- DIF.free:
+
+  Only relevant if differential item functioning (DIF) is estimated in
+  the partial credit context with `software = "tam"`. In this
+  parameterization, a reference item must be selected that, by
+  definition, has no DIF so that the model is identifiable. If no item
+  is selected, the last item in alphabetical order is chosen as the
+  reference item. This single item is specified using the `DIF.free`
+  argument. See example 11 for further details.
 
 - HG.var:
 
@@ -2588,11 +2598,12 @@ resT1 <- getResults(runT1, omitWle = TRUE, Q3 = FALSE)
 #> Getting standard errors with the tam.se function: 0.4 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 1.5 secs
-#> Getting standard errors with the tam.se function: 0.8 secs
+#> Getting PVs calling tam.pv from getTamPVs: 1.9 secs
+#> Getting standard errors with the tam.se function: 0.6 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.2 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 1.1 secs
+#> Getting PVs calling tam.pv from getTamPVs: 1 secs
 
 # extract item parameters from the 'results' object
 # t1 is the reference measurement occasion, i.e. no linking/equating is necessary
@@ -2726,22 +2737,21 @@ runT1P<- runModel(defT1P)
 
 # get the results (to save time, item fit estimation is skipped)
 resT1P<- getResults(runT1P, omitWle = TRUE, Q3 = FALSE)
-#> Getting standard errors with the tam.se function: 12.6 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 2.9 secs
+#> Getting standard errors with the tam.se function: 15.1 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 4.3 secs
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 0.8 secs
+#> Getting standard errors with the tam.se function: 16.8 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 4.3 secs
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 0.6 secs
+#> Getting standard errors with the tam.se function: 14.1 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 3.4 secs
 #> |*****|
 #> |-----|
 #> Getting PVs calling tam.pv from getTamPVs: 0.5 secs
-#> Getting standard errors with the tam.se function: 15.3 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 3 secs
-#> |*****|
-#> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 0.5 secs
-#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.3 secs
-#> Getting standard errors with the tam.se function: 12.3 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 2.2 secs
-#> |*****|
-#> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 0.4 secs
 
 # latent regression coefficients for the three countries and two dimensions
 regcoefFromRes(resT1P, digits = 3)
@@ -2884,20 +2894,20 @@ runT2 <- runModel(defT2)
 
 # get the results
 resT2 <- getResults(runT2)
-#> Getting standard errors with the tam.se function: 1.1 secs
+#> Getting standard errors with the tam.se function: 1.3 secs
 #> Getting infit parameters calling tam.fit from getTamInfit: 0.4 secs
-#> Getting WLEs calling tam.wle from getTamWles: 1.6 secs
+#> Getting WLEs calling tam.wle from getTamWles: 1 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 1.6 secs
-#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 2.7 secs
-#> Getting standard errors with the tam.se function: 1.4 secs
+#> Getting PVs calling tam.pv from getTamPVs: 1.7 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 3.1 secs
+#> Getting standard errors with the tam.se function: 1.8 secs
 #> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs
-#> Getting WLEs calling tam.wle from getTamWles: 1.2 secs
+#> Getting WLEs calling tam.wle from getTamWles: 1.3 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 1.1 secs
-#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 4.3 secs
+#> Getting PVs calling tam.pv from getTamPVs: 0.9 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 5.2 secs
 
 # collect item parameters
 itemT2<- itemFromRes(resT2)
@@ -3081,26 +3091,26 @@ runT2P<- runModel(defT2P)
 # get the results
 resT2P<- getResults(runT2P)
 #> Q3 is only available for unidimensional models. Estimation will be skipped.
-#> Getting standard errors with the tam.se function: 22.6 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 4.1 secs
-#> Getting WLEs calling tam.wle from getTamWles: 1.8 secs
+#> Getting standard errors with the tam.se function: 26.5 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 7.2 secs
+#> Getting WLEs calling tam.wle from getTamWles: 1.7 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 0.5 secs
+#> Getting PVs calling tam.pv from getTamPVs: 0.9 secs
 #> Q3 is only available for unidimensional models. Estimation will be skipped.
-#> Getting standard errors with the tam.se function: 19.4 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 3.1 secs
-#> Getting WLEs calling tam.wle from getTamWles: 1.1 secs
+#> Getting standard errors with the tam.se function: 22.7 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 6.1 secs
+#> Getting WLEs calling tam.wle from getTamWles: 1.3 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 0.4 secs
+#> Getting PVs calling tam.pv from getTamPVs: 0.8 secs
 #> Q3 is only available for unidimensional models. Estimation will be skipped.
-#> Getting standard errors with the tam.se function: 16.3 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 2.9 secs
-#> Getting WLEs calling tam.wle from getTamWles: 0.6 secs
+#> Getting standard errors with the tam.se function: 19.9 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 5.1 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.7 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 0.3 secs
+#> Getting PVs calling tam.pv from getTamPVs: 0.7 secs
 
 # equating is not necessary, as the models run with fixed item parameters
 # However, to prepare for the transformation on the 'bista' metric, run
@@ -3189,20 +3199,20 @@ runT3 <- runModel(defT3)
 
 # get the results
 resT3 <- getResults(runT3)
-#> Getting standard errors with the tam.se function: 1.4 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 0.4 secs
-#> Getting WLEs calling tam.wle from getTamWles: 0.9 secs
+#> Getting standard errors with the tam.se function: 1.8 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.5 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.8 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 0.8 secs
-#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 4.4 secs
-#> Getting standard errors with the tam.se function: 1.7 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 0.4 secs
-#> Getting WLEs calling tam.wle from getTamWles: 1.4 secs
+#> Getting PVs calling tam.pv from getTamPVs: 1.3 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 4.7 secs
+#> Getting standard errors with the tam.se function: 2.3 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.8 secs
+#> Getting WLEs calling tam.wle from getTamWles: 2 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 0.8 secs
-#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 5.6 secs
+#> Getting PVs calling tam.pv from getTamPVs: 1.2 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 6.4 secs
 
 # collect item parameters
 itemT3<- itemFromRes(resT3)
@@ -3383,25 +3393,25 @@ runT3P<- runModel(defT3P)
 resT3P<- getResults(runT3P)
 #> Q3 is only available for unidimensional models. Estimation will be skipped.
 #> Getting standard errors with the tam.se function: 1.2 mins
-#> Getting infit parameters calling tam.fit from getTamInfit: 5.3 secs
-#> Getting WLEs calling tam.wle from getTamWles: 1.8 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 9.2 secs
+#> Getting WLEs calling tam.wle from getTamWles: 1.9 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 1.1 secs
+#> Getting PVs calling tam.pv from getTamPVs: 1.2 secs
 #> Q3 is only available for unidimensional models. Estimation will be skipped.
-#> Getting standard errors with the tam.se function: 54.1 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 3.6 secs
-#> Getting WLEs calling tam.wle from getTamWles: 1.4 secs
+#> Getting standard errors with the tam.se function: 57.8 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 6.3 secs
+#> Getting WLEs calling tam.wle from getTamWles: 1.6 secs
 #> |*****|
 #> |-----|
 #> Getting PVs calling tam.pv from getTamPVs: 0.9 secs
 #> Q3 is only available for unidimensional models. Estimation will be skipped.
-#> Getting standard errors with the tam.se function: 53.1 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 3.3 secs
-#> Getting WLEs calling tam.wle from getTamWles: 0.6 secs
+#> Getting standard errors with the tam.se function: 56 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 5.9 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.7 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 0.8 secs
+#> Getting PVs calling tam.pv from getTamPVs: 0.9 secs
 
 # equating is not necessary, as the models run with fixed item parameters
 # However, to prepare for the transformation on the 'bista' metric, run
@@ -4651,18 +4661,19 @@ runT1 <- runModel(defT1)
 
 # get the results
 resT1 <- getResults(runT1)
-#> Getting standard errors with the tam.se function: 0.3 secs
-#> Getting WLEs calling tam.wle from getTamWles: 0.4 secs
+#> Getting standard errors with the tam.se function: 0.4 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.5 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 0.9 secs
-#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.8 secs
-#> Getting standard errors with the tam.se function: 0.6 secs
+#> Getting PVs calling tam.pv from getTamPVs: 1.1 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.9 secs
+#> Getting standard errors with the tam.se function: 0.7 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.2 secs
 #> Getting WLEs calling tam.wle from getTamWles: 0.9 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 0.9 secs
-#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1.9 secs
+#> Getting PVs calling tam.pv from getTamPVs: 1.1 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 2.2 secs
 
 # extract item parameters from the 'results' object
 itemT1<- itemFromRes(resT1)
@@ -4761,24 +4772,24 @@ runT1P<- runModel(defT1P)
 
 # get the results
 resT1P<- getResults(runT1P, Q3 = FALSE)
-#> Getting standard errors with the tam.se function: 33.7 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 2 secs
-#> Getting WLEs calling tam.wle from getTamWles: 0.8 secs
+#> Getting standard errors with the tam.se function: 39.2 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 3.8 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.7 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 0.4 secs
-#> Getting standard errors with the tam.se function: 39.4 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 2.5 secs
-#> Getting WLEs calling tam.wle from getTamWles: 0.5 secs
+#> Getting PVs calling tam.pv from getTamPVs: 0.8 secs
+#> Getting standard errors with the tam.se function: 46.3 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 3.8 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.7 secs
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 0.6 secs
+#> Getting standard errors with the tam.se function: 38.4 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 3.2 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.6 secs
 #> |*****|
 #> |-----|
 #> Getting PVs calling tam.pv from getTamPVs: 0.5 secs
-#> Getting standard errors with the tam.se function: 33.2 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 2 secs
-#> Getting WLEs calling tam.wle from getTamWles: 0.4 secs
-#> |*****|
-#> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 0.4 secs
 
 
 ################################################################################
@@ -4891,13 +4902,13 @@ ind1 <- grep("D205143", run1$item$item)                                         
 foo1 <- capture.output(plot(run1, items = ind1, type="items", export=FALSE, low=-6, high=6))
 
 res1 <- getResults(run1)
-#> Getting standard errors with the tam.se function: 0.7 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 0.2 secs
-#> Getting WLEs calling tam.wle from getTamWles: 0.3 secs
+#> Getting standard errors with the tam.se function: 1 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.4 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 0.3 secs
-#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.9 secs
+#> Getting PVs calling tam.pv from getTamPVs: 0.4 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1 secs
 it1  <- itemFromRes(res1)
 
 # males are focus group: initial free estimation of item parameters
@@ -4913,13 +4924,13 @@ def2 <- defineModel(dat=datW[which(datW[,"sex"] == "male"),], items = -c(1:4), i
 #> Q matrix specifies 1 dimension(s).
 run2 <- runModel(def2)
 res2 <- getResults(run2)
-#> Getting standard errors with the tam.se function: 0.7 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 0.2 secs
+#> Getting standard errors with the tam.se function: 0.9 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs
 #> Getting WLEs calling tam.wle from getTamWles: 0.3 secs
 #> |*****|
 #> |-----|
 #> Getting PVs calling tam.pv from getTamPVs: 0.3 secs
-#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.9 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1.3 secs
 it2  <- itemFromRes(res2)
 
 # link males to females ... males perform worse
@@ -4987,13 +4998,13 @@ def3A<- defineModel(dat=datW[which(datW[,"sex"] == "male"),], items = -c(1:4), i
 #> Q matrix specifies 1 dimension(s).
 run3A<- runModel(def3A)
 res3A<- getResults(run3A)
-#> Getting standard errors with the tam.se function: 0.7 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 0.2 secs
+#> Getting standard errors with the tam.se function: 0.9 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs
 #> Getting WLEs calling tam.wle from getTamWles: 0.3 secs
 #> |*****|
 #> |-----|
 #> Getting PVs calling tam.pv from getTamPVs: 0.3 secs
-#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.9 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1 secs
 it3A <- itemFromRes(res3A)                                                      ### all items except the ones with linking dif with equal item parameters? check 
 comp <- merge(it1[,c("item", "category", "est")], it3A[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"))
 equal<- na.omit(comp[,c("est_ref", "offset")])
@@ -5018,13 +5029,15 @@ def3B<- defineModel(dat=datW[which(datW[,"sex"] == "male"),], items = -c(1:4), i
 #> Merging levels are not unique in data set 'anchor list'.
 #> Q matrix specifies 1 dimension(s).
 run3B<- runModel(def3B)
+#> Generate skeleton for partial credit anchoring: 0.2 secs
 res3B<- getResults(run3B)
-#> Getting standard errors with the tam.se function: 0.7 secs
-#> Getting WLEs calling tam.wle from getTamWles: 0.3 secs
+#> Getting standard errors with the tam.se function: 0.9 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.4 secs
 #> |*****|
 #> |-----|
 #> Getting PVs calling tam.pv from getTamPVs: 0.3 secs
-#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.9 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1 secs
 it3B <- itemFromRes(res3B)                                                      ### all items except the ones with linking dif with equal item parameters? check 
 link <- eq[["items"]][["not_specified"]][["Dim1"]][["cleanedLinkItemPars"]][,c("item", "category", "est")]
 comp <- merge(link, it3B[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"))
@@ -5144,13 +5157,13 @@ def1 <- defineModel(dat=dFema, items = -c(1:4), id=1, model.statement = "item+it
 #> Error in file.choose(): file choice cancelled
 run1 <- runModel(def1)
 res1 <- getResults(run1)
-#> Getting standard errors with the tam.se function: 0.7 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 0.2 secs
-#> Getting WLEs calling tam.wle from getTamWles: 0.6 secs
+#> Getting standard errors with the tam.se function: 1 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.4 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 0.3 secs
-#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.9 secs
+#> Getting PVs calling tam.pv from getTamPVs: 0.4 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1 secs
 it1  <- itemFromRes(res1)
 
 # males are focus group: initial free estimation of item parameters
@@ -5159,13 +5172,13 @@ def2 <- defineModel(dat=datW[which(datW[,"sex"] == "male"),], items = -c(1:4), i
 #> Error in file.choose(): file choice cancelled
 run2 <- runModel(def2)
 res2 <- getResults(run2)
-#> Getting standard errors with the tam.se function: 0.7 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 0.2 secs
-#> Getting WLEs calling tam.wle from getTamWles: 0.3 secs
+#> Getting standard errors with the tam.se function: 0.9 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.4 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 0.3 secs
-#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.9 secs
+#> Getting PVs calling tam.pv from getTamPVs: 0.4 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1 secs
 it2  <- itemFromRes(res2)
 
 # link males to females ... males perform worse
@@ -5228,13 +5241,15 @@ def3A<- defineModel(dat=datW[which(datW[,"sex"] == "male"),], items = -c(1:4), i
 #> Cannot find conquest 2007 executable file. Please choose manually.
 #> Error in file.choose(): file choice cancelled
 run3A<- runModel(def3A)
+#> Generate skeleton for partial credit anchoring: 0.2 secs
 res3A<- getResults(run3A)
-#> Getting standard errors with the tam.se function: 0.7 secs
-#> Getting WLEs calling tam.wle from getTamWles: 0.3 secs
+#> Getting standard errors with the tam.se function: 0.9 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.4 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 0.3 secs
-#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.9 secs
+#> Getting PVs calling tam.pv from getTamPVs: 0.4 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1 secs
 it3A <- itemFromRes(res3A)                                                      ### all dichotomous items except the ones with linking dif with equal item parameters? check
 comp <- merge(it1[,c("item", "category", "est")], it3A[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"))
 equal<- na.omit(comp[,c("est_ref", "offset")])
@@ -5253,13 +5268,15 @@ def3B<- defineModel(dat=datW[which(datW[,"sex"] == "male"),], items = -c(1:4), i
 #> Cannot find conquest 2007 executable file. Please choose manually.
 #> Error in file.choose(): file choice cancelled
 run3B<- runModel(def3B)
+#> Generate skeleton for partial credit anchoring: 0.2 secs
 res3B<- getResults(run3B)
-#> Getting standard errors with the tam.se function: 0.7 secs
-#> Getting WLEs calling tam.wle from getTamWles: 0.3 secs
+#> Getting standard errors with the tam.se function: 0.9 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.4 secs
 #> |*****|
 #> |-----|
 #> Getting PVs calling tam.pv from getTamPVs: 0.3 secs
-#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.9 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1.3 secs
 it3B <- itemFromRes(res3B)                                                      ### all items except the ones with linking dif with equal item parameters? check
 link <- eq[["items"]][["pcm_conquest_males"]][["Dim1"]][["cleanedLinkItemPars"]][,c("item", "category", "est")]
 comp <- merge(link, it3B[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"))
@@ -5315,13 +5332,13 @@ def1T<- defineModel(dat=dFema, items = items[,"item"], id=1, irtmodel = "GPCM.gr
 #>    D223013, D223023, D223033, D223043, D223063, D223073, D223083, D223103, D223113, D223123, D223133, D223143, D224013, D224023, D224033, D224043, D224053, D224063, D224083, D224093, D224103, D224113
 run1T<- runModel(def1T)
 res1T<- getResults(run1T)
-#> Getting standard errors with the tam.se function: 1 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 0.2 secs
-#> Getting WLEs calling tam.wle from getTamWles: 0.3 secs
+#> Getting standard errors with the tam.se function: 0.9 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.4 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 0.3 secs
-#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.9 secs
+#> Getting PVs calling tam.pv from getTamPVs: 0.4 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1 secs
 it1T <- itemFromRes(res1T)
 
 # males are focus group: initial free estimation of item parameters
@@ -5339,13 +5356,13 @@ def2T<- defineModel(dat=datW[which(datW[,"sex"] == "male"),], items = -c(1:4), i
 #>    D223013, D223023, D223033, D223043, D223063, D223073, D223083, D223103, D223113, D223123, D223133, D223143, D224013, D224023, D224033, D224043, D224053, D224063, D224083, D224093, D224103, D224113
 run2T<- runModel(def2T)
 res2T<- getResults(run2T)
-#> Getting standard errors with the tam.se function: 0.7 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 0.2 secs
-#> Getting WLEs calling tam.wle from getTamWles: 0.3 secs
+#> Getting standard errors with the tam.se function: 0.9 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.4 secs
 #> |*****|
 #> |-----|
 #> Getting PVs calling tam.pv from getTamPVs: 0.3 secs
-#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.9 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1.1 secs
 it2T <- itemFromRes(res2T)
 unique(round(it1T[,"estSlope"],3)); unique(round(it2T[,"estSlope"],3))          ### average discrimination (reg vs. spf) differs for males, but not for females
 #> [1] 1.000 1.001
@@ -5416,18 +5433,21 @@ def3T<- defineModel(eatTools::na_omit_selection(dat=datW[which(datW[,"sex"] == "
 #> Following 22 items in dataset without fixed slopes in 'fixSlopeMat'. Slope(s) will be estimated freely.
 #>    D223013, D223023, D223033, D223043, D223063, D223073, D223083, D223103, D223113, D223123, D223133, D223143, D224013, D224023, D224033, D224043, D224053, D224063, D224083, D224093, D224103, D224113
 run3T<- runModel(def3T)
-#> Error: 'timeFormat' is not an exported object from 'namespace:eatTools'
+#> Generate skeleton for partial credit anchoring: 4.6 secs
 res3T<- getResults(run3T)
-#> Error: object 'run3T' not found
+#> Q3 is only available for unidimensional models. Estimation will be skipped.
+#> Getting standard errors with the tam.se function: 14.3 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 2.8 secs
+#> Getting WLEs calling tam.wle from getTamWles: 1.1 secs
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 0.4 secs
 it3T <- itemFromRes(res3T)                                                      ### all items except the ones with linking dif with equal item parameters? check 
-#> Error: object 'res3T' not found
 comp <- merge(subset(it1T[,c("item", "category", "est", "estSlope")],estSlope == 1), it3T[,c("item", "category", "est", "offset")], by=c("item", "category"), all=TRUE, suffixes = c("_ref", "_foc"))
-#> Error: object 'it3T' not found
 equal<- na.omit(comp[,c("est_ref", "offset")])
 stopifnot(all(equal[,1] == equal[,2]))                                          ### all item parameters without linking dif should be equal
 lDif <- subset(comp, !is.na(est_foc))
 stopifnot(all(paste(subset(lDif, !is.na(est_ref))[,"item"], subset(lDif, !is.na(est_ref))[,"category"], sep="_") %in% eq$items[["not_specified"]][["Dim1"]][["info"]][,"itemExcluded"]))
-#> Error: all(paste(subset(lDif, !is.na(est_ref))[, "item"], subset(lDif,  .... is not TRUE
 
 # variant 2: use the 1pl item parameters for males (linking dif items excluded), transformed to the metric of females
 def4T<- defineModel(eatTools::na_omit_selection(dat=datW[which(datW[,"sex"] == "male"),],"language"), 
@@ -5453,27 +5473,34 @@ def4T<- defineModel(eatTools::na_omit_selection(dat=datW[which(datW[,"sex"] == "
 #> Following 22 items in dataset without fixed slopes in 'fixSlopeMat'. Slope(s) will be estimated freely.
 #>    D223013, D223023, D223033, D223043, D223063, D223073, D223083, D223103, D223113, D223123, D223133, D223143, D224013, D224023, D224033, D224043, D224053, D224063, D224083, D224093, D224103, D224113
 run4T<- runModel(def4T)
-#> Error: 'timeFormat' is not an exported object from 'namespace:eatTools'
+#> Generate skeleton for partial credit anchoring: 4.9 secs
 res4T<- getResults(run4T)
-#> Error: object 'run4T' not found
+#> Q3 is only available for unidimensional models. Estimation will be skipped.
+#> Getting standard errors with the tam.se function: 14.1 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 3.1 secs
+#> Getting WLEs calling tam.wle from getTamWles: 1.1 secs
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 0.4 secs
 it4T <- itemFromRes(res4T)                                                      ### all items except the ones with linking dif with equal item parameters? check 
-#> Error: object 'res4T' not found
 link <- eq[["items"]][["not_specified"]][["Dim1"]][["cleanedLinkItemPars"]][,c("item", "category", "est")]
 comp <- merge(link, it4T[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"), all=TRUE)
-#> Error: object 'it4T' not found
 equal<- na.omit(comp[,c("est_ref", "offset")])
 stopifnot(all(equal[,1] == equal[,2]))                                          ### all item parameters without linking dif should be equal
 lDif <- subset(comp, !is.na(est_foc))                                           ### all items with specific focus paraeter must be included in linking DIF exclusion list 
 stopifnot(all(paste(subset(lDif, !is.na(est_ref))[,"item"], subset(lDif, !is.na(est_ref))[,"category"], sep="_") %in% eq$items[["not_specified"]][["Dim1"]][["info"]][,"itemExcluded"]))
-#> Error: all(paste(subset(lDif, !is.na(est_ref))[, "item"], subset(lDif,  .... is not TRUE
 
 # transform to Bista metric
 eq4  <- equat1pl(results = res4T)                                               ### reference population mean and SD
-#> Error: object 'res4T' not found
+#> Found 1 model(s).
+#>    Equating is executed for each dimension in each model separately.
+#> No norm parameter defined ('prmNorm' is missing). Treat current sample as drawn from the reference population.
 refP <- data.frame(domain = c("dimnorm", "dimpilot"), m = 0.0389, sd = 1.07108, stringsAsFactors = FALSE)
 cuts <- list ( dimnorm = list(values = 390+0:3*75), dimpilot = list(values = 390+0:3*75))
 tf4  <- transformToBista(equatingList=eq4, refPop=refP, cuts=cuts, vera = FALSE)
-#> Error in generateOrCheckRefPop(equatingList = equatingList, refPop = refPop,     mods = mods, dims = dims, isRunM = isRunM, id = id, weights = weights,     defaultM = defaultM, defaultSD = defaultSD): Following 1 dimension(s) not included in 'refPop': 'Dim1'.
+#> The 'refPop' data.frame does not include information about reference population mean/SD on Bista metric. Values will be defaulted to mean = 500 and SD = 100.
+#> Warning: Skip check whether all competence levels are occupied (due to bayesian plausible values imputation).
+#> Warning: Skip check whether all competence levels are occupied (due to bayesian plausible values imputation).
 
 
 ################################################################################
@@ -5541,8 +5568,8 @@ run1 <- runModel(def1)                                                          
 #> 
 #> Calculating information matrix...
 res1 <- getResults(run1)
-#> Getting WLEs calling fscores(method="WLE") from getMirtWles: 11.4 secs
-#> Getting PVs calling fscores from getMirtPVs: 0.2 secs
+#> Getting WLEs calling fscores(method="WLE") from getMirtWles: 15.9 secs
+#> Getting PVs calling fscores from getMirtPVs: 0.3 secs
 it1  <- itemFromRes(res1)
 
 # males are focus group: initial free estimation of item parameters
@@ -5563,7 +5590,8 @@ run2 <- runModel(def2)
 #> 
 #> Calculating information matrix...
 res2 <- getResults(run2)
-#> Getting WLEs calling fscores(method="WLE") from getMirtWles: 10.5 secs
+#> Getting WLEs calling fscores(method="WLE") from getMirtWles: 14.9 secs
+#> Getting PVs calling fscores from getMirtPVs: 0.3 secs
 it2  <- itemFromRes(res2)
 
 # link males to females, using only 1pl items ... males perform worse. 10 items with linking dif identified 
@@ -5590,7 +5618,7 @@ eq   <- equat1pl(results = res2, prmNorm = subset(it1,estSlope ==1), item = "ite
 #> 
 #>     method iter itemExcluded DIF.excluded linking.constant linkerror
 #> 1 iterativ    0                                     -0.263     0.044
-#> 2 iterativ    1 D205143_Cat1        1.841           -0.241     0.039
+#> 2 iterativ    1 D205143_Cat1        1.842           -0.241     0.039
 #> 3 iterativ    2 D034053_Cat1        0.907           -0.230     0.037
 #> 4 iterativ    3 D204043_Cat1        0.916           -0.219     0.036
 #> 5 iterativ    4 D025033_Cat1        0.776           -0.209     0.035
@@ -5623,7 +5651,10 @@ run3A<- runModel(def3A)
 #> 
 #> Calculating information matrix...
 res3A<- getResults(run3A)
-#> Getting WLEs calling fscores(method="WLE") from getMirtWles: 10.6 secs
+#> Warning: The following factor score estimates failed to converge successfully:
+#>     443
+#> Getting WLEs calling fscores(method="WLE") from getMirtWles: 14.8 secs
+#> Getting PVs calling fscores from getMirtPVs: 0.3 secs
 it3A <- itemFromRes(res3A)                                                      ### all items except the ones with linking dif with equal item parameters? check 
 comp <- merge(subset(it1, estSlope==1)[,c("item", "category", "est")], subset(it3A, !is.na(offset))[,c("item", "category", "est", "offset")], by=c("item", "category"), suffixes = c("_ref", "_foc"))
 stopifnot(all(round(comp[,"est_ref"],5) == round(comp[,"offset"],5)))           ### all item parameters without linking dif should be equal
@@ -5651,7 +5682,10 @@ run3B<- runModel(def3B)
 #> 
 #> Calculating information matrix...
 res3B<- getResults(run3B)
-#> Getting WLEs calling fscores(method="WLE") from getMirtWles: 10.8 secs
+#> Warning: The following factor score estimates failed to converge successfully:
+#>     443
+#> Getting WLEs calling fscores(method="WLE") from getMirtWles: 14.9 secs
+#> Getting PVs calling fscores from getMirtPVs: 0.3 secs
 it3B <- itemFromRes(res3B)                                                      ### all items except the ones with linking dif with equal item parameters? check 
 link <- eq[["items"]][["not_specified"]][["Dim1"]][["cleanedLinkItemPars"]][,c("item", "category", "est", "estSlope")]
 stopifnot(all(link[,"estSlope"] == 1))
@@ -5686,7 +5720,11 @@ dw  <- reshape2::dcast(subset(reading, bookletID == "TH08"), idstud+sex~item, va
        eatTools::na_omit_selection("sex")
 
 # define the model: the specification resembles exemple 9 in tam.mml help page 
-defT<- defineModel(dat = dw, items = -c(1:2), DIF.var="sex", id = "idstud",  irtmodel = "PCM",software="tam")
+# Note: In this parameterization, a reference item must be selected that, by definition, has no DIF so that the
+# model is identifiable. If no item is selected, the last item in alphabetical order is chosen as the reference item. 
+# In addition, the convergence criteria must be adjusted so that the model converges. 
+defT<- defineModel(dat = dw, items = -c(1:2), DIF.var="sex", DIF.free = "D204063", id = "idstud",  irtmodel = "PCM",
+       fac.oldxsi = 0.4, increment.factor=1.05, software="tam")
 #> 4 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.
 #>    Items(s) 'D025033', 'D204013', 'D225113': 0, 1, 2, 3, 4     
 #>    Items(s) 'D205143':                       0, 1, 2, 3, 4, 5  
@@ -5997,26 +6035,24 @@ resT<- getResults(runT)
 #> Warning: NaNs produced
 #> Warning: NaNs produced
 #> Warning: NaNs produced
-#> Getting standard errors with the tam.se function: 2.7 secs
-#> Error in car::recode(dat[, "var1"], recSt): 
-#>   in recode term:  'D225123:step3' = 'D:step_2251233'
-#>   message: Error in parse(text = range[[1]][1]) : 
-#>   <text>:1:2: unexpected INCOMPLETE_STRING
-#> 1:  'D225123
-#>      ^
+#> Getting standard errors with the tam.se function: 3.7 secs
+#> Warning: Expected 3 pieces. Missing pieces filled with `NA` in 215 rows [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, ...].
+#> Error in the computation of infit values with tam.fit. This should only occur for DIF estimation in partial credit models. Infit estimation is skipped.
+#> |*****|
+#> |-----|
 
 # the same model in conquest (recommended)
 defC<- defineModel(dat = dw, items = -c(1:2), model.statement = "item+item*step - sex + item*sex", DIF.var="sex", id = "idstud", analysis.name = "dif_pcm", dir=tempdir())
 #> Cannot find conquest 2007 executable file. Please choose manually.
 #> Error in file.choose(): file choice cancelled
-runC<- runModel(defC, wait=FALSE)
+runC<- runModel(defC, wait=TRUE)
 #> Error: object 'defC' not found
 resC<- getResults(runC)
 #> Error: object 'runC' not found
 it  <- itemFromRes(resC)
 #> Error: object 'resC' not found
 shw <- get.shw(file.path(tempdir(), "dif_pcm.shw"), dif.term = "item*sex")
-#> Warning: cannot open file '/tmp/RtmpByQecb/dif_pcm.shw': No such file or directory
+#> Warning: cannot open file '/tmp/RtmpUEhuv7/dif_pcm.shw': No such file or directory
 #> Error in file(file, "r"): cannot open the connection
 
 
@@ -6053,13 +6089,13 @@ run1 <- runModel(def1)
 
 # use ntheta = 40000 for higher precision
 res1 <- getResults(run1, ntheta = 40000, theta.model = FALSE)
-#> Getting standard errors with the tam.se function: 1.1 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs
-#> Getting WLEs calling tam.wle from getTamWles: 0.6 secs
+#> Getting standard errors with the tam.se function: 1.4 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.4 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.9 secs
 #> |***************|
 #> |---------------|
-#> Getting PVs calling tam.pv from getTamPVs: 19.1 secs
-#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1.8 secs
+#> Getting PVs calling tam.pv from getTamPVs: 20.7 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 2 secs
 
 # estimate mean and standard deviation of the reference population from the plausible values
 # use the long format by toWideFormat = FALSE. Load the eatRep package for mean/SD computation

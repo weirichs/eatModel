@@ -193,9 +193,7 @@ reformulas::isNested(trends[,"item"], trends[,"task"])
 reformulas::isNested(trends[,"task"], trends[,"block"])
 #> [1] FALSE
 # tasks nested in blocks for specific years?
-by(data=trends, INDICES = trends[,"year"], FUN = function (y) {lme4::isNested(y[,"task"], y[,"block"]) })
-#> Warning: the ‘isNested’ function has moved to the reformulas package. Please update your imports, or ask an upstream package maintainer to do so.
-#> This warning is displayed once per session.
+by(data=trends, INDICES = trends[,"year"], FUN = function (y) {reformulas::isNested(y[,"task"], y[,"block"]) })
 #> trends[, "year"]: 2010
 #> [1] TRUE
 #> ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ 
@@ -205,6 +203,6 @@ by(data=trends, INDICES = trends[,"year"], FUN = function (y) {lme4::isNested(y[
 #> trends[, "year"]: 2020
 #> [1] FALSE
 # blocks nested in booklets?
-lme4::isNested(trends[,"block"], trends[,"booklet"])
+reformulas::isNested(trends[,"block"], trends[,"booklet"])
 #> [1] FALSE
 ```
