@@ -1,5 +1,5 @@
 defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL", "2PL", "PCM", "PCM2", "RSM", "GPCM", "GPCM.groups", "2PL.groups", "GPCM.design", "3PL"),
-               qMatrix=NULL, DIF.var=NULL, HG.var=NULL, group.var=NULL, weight.var=NULL, anchor = NULL, domainCol=NULL, itemCol=NULL, valueCol=NULL,catCol = NULL, check.for.linking = TRUE,
+               qMatrix=NULL, DIF.var=NULL, DIF.free = NULL, HG.var=NULL, group.var=NULL, weight.var=NULL, anchor = NULL, domainCol=NULL, itemCol=NULL, valueCol=NULL,catCol = NULL, check.for.linking = TRUE,
                minNperItem = 50, removeMinNperItem = FALSE, boundary = 6, remove.boundary = FALSE, remove.no.answers = TRUE, remove.no.answersHG = TRUE, remove.missing.items = TRUE, remove.constant.items = TRUE,
                remove.failures = FALSE, remove.vars.DIF.missing = TRUE, remove.vars.DIF.constant = TRUE, verbose=TRUE, software = c("conquest","tam", "mirt"), dir = NULL,
                analysis.name, schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE, pvMethod = c("regular", "bayesian"), fitTamMmlForBayesian = TRUE, n.plausible=5, seed = NULL, conquest.folder=NULL,
@@ -7,7 +7,6 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                n.iterations=2000,nodes=NULL, p.nodes=2000, f.nodes=2000,converge=0.001,deviancechange=0.0001, equivalence.table=c("wle","mle","NULL"), use.letters=FALSE,
                allowAllScoresEverywhere = TRUE, guessMat = NULL, est.slopegroups = NULL, fixSlopeMat = NULL, slopeMatDomainCol=NULL, slopeMatItemCol=NULL, slopeMatValueCol=NULL,
                progress = NULL, Msteps = NULL, increment.factor=1 , fac.oldxsi=0, export = list(logfile = TRUE, systemfile = FALSE, history = TRUE, covariance = TRUE, reg_coefficients = TRUE, designmatrix = FALSE) )   {
-       options(warn=1)
        argL <- mget(ls())                                                       ### Argumentenliste erzeugen
      ### soll der Aufruf fuer mehrere Modelle stattfinden? dann ist splittedModels NICHT null.
      ### Sektion 'multiple models handling': jedes Modell einzeln von 'defineModel' aufbereiten lassen
@@ -50,7 +49,6 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
      ### kein model split
          resAll <- defineModelSingle(a=argL)
        }
-       options(warn=0)
        return(resAll) }
 
 defineModelSingle <- function (a) {
@@ -70,9 +68,9 @@ defineModelSingle <- function (a) {
           if(is.null(Msteps) ) {                                                ### den Default fuer Msteps so setzen wie in TAM
              if ( irtmodel == "3PL" ) { Msteps <- 10 } else { Msteps <- 4 }
           }
-       } else {                                                                 ### in mirt muss das argument ein data.frame sein 
+       } else {                                                                 ### in mirt muss das argument ein data.frame sein
           checkmate::assert_data_frame(irtmodel, any.missing = FALSE, ncols = 2)
-       }  
+       }
        method   <- match.arg(method, choices = eval(formals(defineModel)[["method"]]))
        pvMethod <- match.arg(pvMethod, choices = eval(formals(defineModel)[["pvMethod"]]))
        if(software == "conquest") {
@@ -100,8 +98,14 @@ defineModelSingle <- function (a) {
        }  else  {
           vars <- NULL
        }
-       allVars     <- list(ID = id, variablen=items, DIF.var=DIF.var, HG.var=HG.var, group.var=group.var, weight.var=weight.var, schooltype.var = schooltype.var, add.vars = vars)
+       allVars     <- list(ID = id, variablen=items, DIF.var=DIF.var, DIF.free=DIF.free, HG.var=HG.var, group.var=group.var, weight.var=weight.var, schooltype.var = schooltype.var, add.vars = vars)
        all.Names   <- lapply(allVars, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = dat, variable=ii)})
+     ### wenn DIF estimation im partial credit context in TAM, muss ein Item referenz sein (kein dif per default)
+     ### dieses Item muss in alphabetischer Sortierung am Ende stehen
+       if(software == "tam" && !is.null(all.Names[["DIF.free"]]) && grepl("PCM", irtmodel)) {
+          all.Names[["variablen"]] <- eatTools::recodeLookup(all.Names[["variablen"]], data.frame(old = DIF.free, new = paste0("ZZ",DIF.free)))
+          colnames(dat)            <- eatTools::recodeLookup(colnames(dat), data.frame(old = DIF.free, new = paste0("ZZ",DIF.free)))
+       }
      ### wenn software = conquest, duerfen variablennamen nicht mehr als 11 Zeichen haben! das heisst, falls doch, werden die items hier umbenannt
        renam       <- NULL                                                      ### initialisieren
        if(software == "conquest") {
@@ -129,7 +133,8 @@ defineModelSingle <- function (a) {
      ### pruefen, ob es Personen gibt, die weniger als <boundary> items gesehen haben (muss VOR den Konsistenzpruefungen geschehen)
        dat <- checkBoundary(dat=dat, allNam=all.Names, boundary=boundary, remove.boundary=remove.boundary)
      ### Sektion 'explizite Variablennamen ggf. aendern' ###
-       subsNam <- .substituteSigns(dat=dat, variable=unlist(all.Names[-c(1:2)]), all.Names = all.Names)
+       exclude <- which(names(all.Names) == "DIF.free")
+       subsNam <- .substituteSigns(dat=dat, variable=unlist(all.Names[-unique(c(1,2, exclude))]), all.Names = all.Names)
        if(software == "conquest" || !is.null(all.Names[["DIF.var"]])) {
           if(!all(subsNam$old == subsNam$new)) {                                ### Conquest erlaubt keine gross geschriebenen und expliziten Variablennamen, die ein "." oder "_" enthalten
              sn     <- subsNam[which( subsNam$old != subsNam$new),]
@@ -261,7 +266,9 @@ defineModelSingle <- function (a) {
           }
      ### Sektion 'Rueckgabeobjekt bauen', hier fuer Conquest                    ### setze Optionen wieder in Ausgangszustand
           options(scipen = unlist(original.options)); flush.console()           ### Achtung: setze Konsolenpfade in Hochkommas, da andernfalls keine Leerzeichen in den Ordner- bzw. Dateinamen erlaubt sind!
-          ret <- list ( software = software, input = paste("\"", file.path(dir, paste(analysis.name,"cqc",sep=".")), "\"", sep=""), conquest.folder = paste("\"", conquest.folder, "\"", sep=""), dir=dir, analysis.name=analysis.name, model.name = analysis.name, qMatrix=qMatrix, all.Names=cbc[["allNam"]], deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]], perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], daten=daten, method=met[["method"]], nodes=met[["nodes"]], p.nodes=p.nodes, f.nodes=f.nodes, renam=renam)
+          sysInfo  <- Sys.info()
+          if(sysInfo[["sysname"]] == "Linux") {suff <- ""; setwd("/")} else {suff <- "\""}
+          ret <- list ( software = software, input = paste(suff, file.path(dir, paste(analysis.name,"cqc",sep=".")), suff, sep=""), conquest.folder = paste(suff, conquest.folder, suff, sep=""), dir=dir, analysis.name=analysis.name, model.name = analysis.name, qMatrix=qMatrix, all.Names=cbc[["allNam"]], deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]], perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], daten=daten, method=met[["method"]], nodes=met[["nodes"]], p.nodes=p.nodes, f.nodes=f.nodes, renam=renam)
           class(ret) <-  c("defineConquest", "list")
        }
      ### Sektion 'Rueckgabeobjekt fuer tam'
@@ -291,4 +298,3 @@ defineModelSingle <- function (a) {
           class(ret) <-  c("defineMirt", "list")
        }
        return(ret)}
-

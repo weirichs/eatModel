@@ -70,9 +70,9 @@ reformulas::isNested(trends[,"item"], trends[,"task"])
 # tasks nested in blocks? no, few tasks occur in more than one block
 reformulas::isNested(trends[,"task"], trends[,"block"])
 # tasks nested in blocks for specific years?
-by(data=trends, INDICES = trends[,"year"], FUN = function (y) {lme4::isNested(y[,"task"], y[,"block"]) })
+by(data=trends, INDICES = trends[,"year"], FUN = function (y) {reformulas::isNested(y[,"task"], y[,"block"]) })
 # blocks nested in booklets?
-lme4::isNested(trends[,"block"], trends[,"booklet"])
+reformulas::isNested(trends[,"block"], trends[,"booklet"])
 }
 
 

@@ -9,7 +9,7 @@ call \code{\link{runModel}} with the argument returned by \code{defineModel}.}
 \usage{
 defineModel (dat, items, id, splittedModels = NULL,
    irtmodel = c("1PL", "2PL", "PCM", "PCM2", "RSM", "GPCM", "GPCM.groups", "2PL.groups", "GPCM.design", "3PL"),
-   qMatrix=NULL, DIF.var=NULL, HG.var=NULL, group.var=NULL, weight.var=NULL, anchor = NULL, 
+   qMatrix=NULL, DIF.var=NULL, DIF.free = NULL, HG.var=NULL, group.var=NULL, weight.var=NULL, anchor = NULL, 
    domainCol=NULL, itemCol=NULL, valueCol=NULL, catCol = NULL, check.for.linking = TRUE, minNperItem = 50, removeMinNperItem = FALSE,
    boundary = 6, remove.boundary = FALSE, remove.no.answers = TRUE, remove.no.answersHG = TRUE, 
    remove.missing.items = TRUE, remove.constant.items = TRUE, remove.failures = FALSE, 
@@ -65,6 +65,13 @@ unidimensional structure is assumed.
   \item{DIF.var}{
 Name or column number of one grouping variable for which differential item
 functioning analysis is to be done.
+}
+  \item{DIF.free}{
+Only relevant if differential item functioning (DIF) is estimated in the partial credit context 
+with \code{software = "tam"}. In this parameterization, a reference item must be selected that, 
+by definition, has no DIF so that the model is identifiable. If no item is selected, the last 
+item in alphabetical order is chosen as the reference item. This single item is specified using 
+the \code{DIF.free} argument. See example 11 for further details.
 }
   \item{HG.var}{
 Optional: Names or column numbers of one or more context variables (e.g., sex, school).
@@ -1601,13 +1608,17 @@ dw  <- reshape2::dcast(subset(reading, bookletID == "TH08"), idstud+sex~item, va
        eatTools::na_omit_selection("sex")
 
 # define the model: the specification resembles exemple 9 in tam.mml help page 
-defT<- defineModel(dat = dw, items = -c(1:2), DIF.var="sex", id = "idstud",  irtmodel = "PCM",software="tam")
+# Note: In this parameterization, a reference item must be selected that, by definition, has no DIF so that the
+# model is identifiable. If no item is selected, the last item in alphabetical order is chosen as the reference item. 
+# In addition, the convergence criteria must be adjusted so that the model converges. 
+defT<- defineModel(dat = dw, items = -c(1:2), DIF.var="sex", DIF.free = "D204063", id = "idstud",  irtmodel = "PCM",
+       fac.oldxsi = 0.4, increment.factor=1.05, software="tam")
 runT<- runModel(defT)
 resT<- getResults(runT)
 
 # the same model in conquest (recommended)
 defC<- defineModel(dat = dw, items = -c(1:2), model.statement = "item+item*step - sex + item*sex", DIF.var="sex", id = "idstud", analysis.name = "dif_pcm", dir=tempdir())
-runC<- runModel(defC, wait=FALSE)
+runC<- runModel(defC, wait=TRUE)
 resC<- getResults(runC)
 it  <- itemFromRes(resC)
 shw <- get.shw(file.path(tempdir(), "dif_pcm.shw"), dif.term = "item*sex")

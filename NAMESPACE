@@ -1,6 +1,7 @@
 importFrom("stats", as.formula, cor, cov2cor, dnorm, model.matrix, na.omit, qnorm, quantile, rnorm, cov, var, pnorm)
 importFrom("utils", capture.output, flush.console, memory.limit, write.csv2, write.table)
 import(TAM)
+import(mirt)
 import(parallel)
 importFrom("Hmisc",`%nin%`)
 export(splitModels)

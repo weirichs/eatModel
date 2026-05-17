@@ -198,28 +198,29 @@ prepAnchorTAM <- function (dfm, skeleton = NULL) {                              
 
 ### ----------------------------------------------------------------------------
 
+### Hilfsfunktion fuer defineModel
 personWithoutValidValues <- function (dat, allNam, remove.no.answers){
-  if(inherits(try(datL  <- reshape2::melt(data = dat, id.vars = unique(unlist(allNam[-match("variablen", names(allNam))])), measure.vars = allNam[["variablen"]], na.rm=TRUE)  ),"try-error"))  {
-    cat("W A R N I N G ! ! !   Error in melting for unknown reasons. Try workaround.\n"); flush.console()
-    allHG <- setdiff(unique(unlist(allNam[-match("variablen", names(allNam))])), allNam[["ID"]] )
-    stopifnot(length(allHG)>0)
-    datL  <- reshape2::melt(data = dat, id.vars = allNam[["ID"]], measure.vars = allNam[["variablen"]], na.rm=TRUE)
-    datL  <- merge(datL, dat[,unique(unlist(allNam[-match("variablen", names(allNam))]))], by = allNam[["ID"]], all=TRUE)
-  }
-  wegNV <- setdiff(dat[,allNam[["ID"]]], unique(datL[,allNam[["ID"]]]))
-  perNA <- NULL
-  if(length(wegNV)>0)   {
-    cat(paste("Found ",length(wegNV)," cases with missings on all items.\n",sep=""))
-    perNA<- dat[match(wegNV,dat[,allNam[["ID"]]] ), allNam[["ID"]]]
-    if( remove.no.answers == TRUE)  {
-      cat("Cases with missings on all items will be deleted.\n")
-      dat  <- dat[-match(wegNV,dat[,allNam[["ID"]]] ) ,]
-    }
-    if( remove.no.answers == FALSE) {
-      cat("Cases with missings on all items will be kept.\n")
-    }
-  }
-  return(list(dat=dat, perNA=perNA, datL=datL))}
+          if(inherits(try(datL  <- reshape2::melt(data = dat, id.vars = unique(unlist(allNam[-na.omit(match(c("variablen","DIF.free"), names(allNam)))])), measure.vars = allNam[["variablen"]], na.rm=TRUE)  ),"try-error"))  {
+             cat("W A R N I N G ! ! !   Error in melting for unknown reasons. Try workaround.\n"); flush.console()
+             allHG <- setdiff(unique(unlist(allNam[-match("variablen", names(allNam))])), allNam[["ID"]] )
+             stopifnot(length(allHG)>0)                                         ### dies ist ein Workaround, wenn "melt" fehltschlaegt (Fehler nicht reproduzierbar)
+             datL  <- reshape2::melt(data = dat, id.vars = allNam[["ID"]], measure.vars = allNam[["variablen"]], na.rm=TRUE)
+             datL  <- merge(datL, dat[,unique(unlist(allNam[-match("variablen", names(allNam))]))], by = allNam[["ID"]], all=TRUE)
+          }
+          wegNV <- setdiff(dat[,allNam[["ID"]]], unique(datL[,allNam[["ID"]]]))
+          perNA <- NULL
+          if(length(wegNV)>0)   {                                               ### identifiziere Faelle mit ausschliesslich missings
+             cat(paste("Found ",length(wegNV)," cases with missings on all items.\n",sep=""))
+             perNA<- dat[match(wegNV,dat[,allNam[["ID"]]] ), allNam[["ID"]]]
+             if( remove.no.answers == TRUE)  {
+                 cat("Cases with missings on all items will be deleted.\n")
+                 dat  <- dat[-match(wegNV,dat[,allNam[["ID"]]] ) ,]
+             }
+             if( remove.no.answers == FALSE) {
+                 cat("Cases with missings on all items will be kept.\n")
+             }
+          }
+          return(list(dat=dat, perNA=perNA, datL=datL))}
 
 ### ----------------------------------------------------------------------------
 

@@ -87,17 +87,44 @@ pvFromRes <- function(resultsObj, toWideFormat = TRUE, idVarName = NULL, verbose
     return(sel)
   }  }
 
+### fuer pcm model mit dif und in tam gerechnet
+itemFromResPcmDifTam <- function(sel, pval, adb, sdb) {
+   ind1 <- intersect(which(sel[,"par"] == "est"), grep("Cat", sel[,"var2"]))
+   sel[ind1,"var2"] <- paste0("Cat", as.numeric(eatTools::removeNonNumeric(sel[ind1,"var2"]))+1)
+   qmat <- unique(subset(sel, par == "Nvalid")[,"var1", drop=FALSE])
+   rows <- findItemRows(qMatrix=qmat, dat=sel, colQ = "var1", colDF = "var1")
+   sel  <- data.frame(sel, eatTools::halveString(sel[,"var1"], "_", first=TRUE, colnames = c("item", "dif")), stringsAsFactors = FALSE)
+   sel[which(is.na(sel[,"var2"] )),"var2"] <- "Cat1"
+   selW <- tidyr::pivot_wider(sel[rows,-eatTools::whereAre(c("var1", "source", "type", "indicator.group", "group", "model"), colnames(sel), verbose=FALSE)],  id_cols = c("item", "var2"), names_from = c("dif", "par", "derived.par"), values_from ="value") |> eatTools::makeDataFrame(verbose=FALSE)
+   colnames(selW) <- car::recode(colnames(selW), "'var2'='category'; 'NA_est_NA'='est'; 'X_DIF_sex_0_est_NA'='estDif'; 'NA_est_se'='se'; 'X_DIF_sex_0_est_se'='seDif'; 'NA_itemP_NA'='itemP'; 'NA_Nvalid_NA'='Nvalid'; 'NA_itemDiscrim_NA'='itemDiscrim'")
+   selW[,"absDif"]<- 2*abs(selW[,"estDif"])
+   selW[,paste("CI__", pval ,"__lb",sep="")] <- selW[,"absDif"] - 2*abs(qnorm(0.5*(1-pval))) * selW[,"seDif"]
+   selW[,paste("CI__", pval ,"__ub",sep="")] <- selW[,"absDif"] + 2*abs(qnorm(0.5*(1-pval))) * selW[,"seDif"]
+   selW<- lord1980(dat=selW, absDifCol="absDif", seDifCol="seDif", lbCol=paste("CI__",pval,"__lb",sep=""), ubCol=paste("CI__",pval,"__ub",sep=""), adb=adb, sdb=sdb)
+   return(selW)}
+
 ### called by getRestuls(), equat1pl(), transformToBista() and prepareAndCheckEatModelObject()
 ### Funktion wird so oft ausgefuehrt, wie es Modelle gibt
 itemFromRes <- function ( resultsObj) {
      ### hier muss "rbind.fill" genommen werden, denn 1pl und 2pl Modelle unterscheiden sich in den Spalten (bei 2pl gibt es zusaetzliche Diskriminationsspalten)
           res <- do.call(plyr::rbind.fill, by ( data = resultsObj, INDICES = resultsObj[,"model"], FUN = function ( mod ) {
                  sel  <- mod[intersect( which(mod[,"par"] %in% c("est", "estSlope", "Nvalid", "itemP", "ptBis", "itemDiscrim", "offset")),which(mod[,"indicator.group"] == "items")),]
-                 if (nrow(sel)==0) {
+                 if(nrow(sel)==0) {
                      return(NULL)
+                 }
+                 isDif<- intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "DIF.var"))
+                 if(length(isDif)>0) {                                          ### dier hier erzeugten werte braucht man immer, wenn es dif gibt (dichotom und partial credit)
+                     pval<- intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")), which(mod[,"derived.par"] == "p.value"))
+                     stopifnot (length(pval) == 1)
+                     pval<- mod[pval, "value"]                                  ### untere Zeile: adb = 'abs.dif.bound'; sdb = 'sig.dif.bound'
+                     adb <- mod[intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")), which(mod[,"derived.par"] == "abs.dif.bound")),"value"]
+                     sdb <- mod[intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")), which(mod[,"derived.par"] == "sig.dif.bound")),"value"]
+                 }
+     ### ist es partial credit mit dif in tam? dann spezielle Auslesefunktion benutzen
+                 if(length(isDif)>0 && length(grep("Cat2", sel[,"var2"])) > 0 && unique(sel[,"source"]) == "tam")  {
+                     sel <- itemFromResPcmDifTam(sel, pval=pval, adb=adb, sdb=sdb)
                  }  else  {
-     ### gibt es DIF? wenn ja, wird das separat ausgelesen nd drangemergt
-                     isDif<- intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "DIF.var"))
+     ### gibt es DIF? wenn ja, wird das separat ausgelesen und drangemergt
                      if(length(isDif) > 0) {                                    ### untere Zeile: alle Variablen auslesen (quasi ein Hilfsobjekt)
                         vars     <- mod[intersect(which(mod[,"type"] == "tech"),which(mod[,"par"] == "variablen")),"derived.par"]
                         itemList <- do.call("rbind", lapply ( vars, FUN = function ( v ) {
@@ -120,32 +147,9 @@ itemFromRes <- function ( resultsObj) {
                                     res[unlist(mat),"item"]  <- vars
                                     colnames(res) <- car::recode ( colnames(res) , "'est_infit'='infitDif'; 'est_se'='seDif'; 'est_NA'='estDif'")
                                     res[,"absDif"]<- abs ( res[,"estDif"]  * 2 )
-                                    pval <- intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")), which(mod[,"derived.par"] == "p.value"))
-                                    stopifnot (length(pval) == 1)
-                                    pval <- mod[pval, "value"]               ### untere Zeile: adb = 'abs.dif.bound'; sdb = 'sig.dif.bound'
-                                    adb  <- mod[intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")), which(mod[,"derived.par"] == "abs.dif.bound")),"value"]
-                                    sdb  <- mod[intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")), which(mod[,"derived.par"] == "sig.dif.bound")),"value"]
                                     res[,paste("CI__", pval ,"__lb",sep="")] <- res[,"absDif"] - 2*abs(qnorm(0.5*(1-pval))) * res[,"seDif"]
                                     res[,paste("CI__", pval ,"__ub",sep="")] <- res[,"absDif"] + 2*abs(qnorm(0.5*(1-pval))) * res[,"seDif"]
-                                    res  <- data.frame ( res, do.call("rbind", apply(res[,c("absDif", "seDif", paste("CI__",pval,"__lb",sep=""), paste("CI__",pval,"__ub",sep=""))], MARGIN = 1, FUN = function ( d ) {
-                                                        check <- all ( !is.na(d) )
-                                                        if(check == TRUE) {
-                                                           crit1 <- d[["absDif"]] > adb
-                                                           crit2 <- !all ( sort ( c ( d[[paste("CI__",pval,"__lb",sep="")]], sdb , d[[paste("CI__",pval,"__ub",sep="")]]), index.return = TRUE)$ix == 1:3 )
-                                                           if ( crit1 == TRUE & crit2 == TRUE) { res <- 1 }  else { res <- 0}
-     ### Implementiere Formel nach Lord (1980) und ETS-Klassifikation von DIF; siehe Funktion equating.rasch aus 'eatRest'
-                                                           ets   <- "A"
-                                                           ets1  <- d[["absDif"]] > 0.43
-                                                           ets2  <- !all ( sort ( c ( d[[paste("CI__",pval,"__lb",sep="")]], 0 , d[[paste("CI__",pval,"__ub",sep="")]]), index.return = TRUE)$ix == 1:3 )
-                                                           if ( ets1 == TRUE & ets2 == TRUE) { ets <- "B" }
-                                                           etsC1 <- d[["absDif"]] > 0.64
-                                                           etsC2 <- !all ( sort ( c ( d[[paste("CI__",pval,"__lb",sep="")]], 0.43 , d[[paste("CI__",pval,"__ub",sep="")]]), index.return = TRUE)$ix == 1:3 )
-                                                           if ( etsC1 == TRUE & etsC2 == TRUE) { ets <- "C" }
-                                                           res   <- data.frame(difIndex = res, ETS = ets )
-                                                        }  else  {
-                                                           res   <- data.frame(difIndex = NA, ETS = NA )
-                                                        }
-                                                        return(res)}) ) )
+                                    res  <- lord1980(dat=res, absDifCol="absDif", seDifCol="seDif", lbCol=paste("CI__",pval,"__lb",sep=""), ubCol=paste("CI__",pval,"__ub",sep=""), adb=adb, sdb=sdb)
                                     return(res)}))
                      }
                      sel  <- do.call(plyr::rbind.fill, by(sel, INDICES = sel[,"group"], FUN = function ( gr ) {
@@ -164,7 +168,7 @@ itemFromRes <- function ( resultsObj) {
                  }
           }))
      ### simplify and reshape ... die alte Funktion endete hier
-          if(length(grep("^Cat2", colnames(res)))>0) {                          ### das soll nur fuer partial credit stattfinden
+          if(length(grep("^Cat2", colnames(res)))>0) {                          ### das soll nur fuer partial credit stattfinden, aber nicht fuer pcm + dif + tam
               cols <- grep("^Cat", colnames(res), value=TRUE, ignore.case=TRUE)
               resL <- reshape2::melt(res, measure.vars = cols, na.rm=TRUE) |> tidyr::separate(col = "variable", into = c("category", "parameter", "crit")) |> suppressWarnings()
               ind  <- which(resL[,"crit"] == "thurstone")
@@ -173,7 +177,6 @@ itemFromRes <- function ( resultsObj) {
               colnames(res) <- eatTools::crop(eatTools::crop(colnames(res), "NA"), "_")
           }
           return (res )}
-
 
 adaptOutputForNonPCM <- function(res){
        newNam <- eatTools::crop(eatTools::removePattern(colnames(res), "Cat1"), char="_") |> car::recode(recodes = "'offset'='estOffset'")
@@ -288,3 +291,27 @@ eapRelFromRes <- function(resultsObj){
                     c("model", "group", "value")]
   colnames(ret) <- car::recode(colnames(ret), "'value'='rel'; 'group'='domain'")
   return(ret)}
+
+# reichert den data.frame mit spalten fuer dif indices an
+# lbCol = lower bound column; ubCol = upper bound column; adb = 'abs.dif.bound'; sdb = 'sig.dif.bound'
+lord1980 <- function(dat, absDifCol, seDifCol, lbCol, ubCol, adb, sdb) {
+       ret  <- data.frame ( dat, do.call("rbind", apply(dat[,c(absDifCol, seDifCol, lbCol, ubCol)], MARGIN = 1, FUN = function ( d ) {
+               check <- all(!is.na(d))
+               if(check == TRUE) {
+                  crit1 <- d[[absDifCol]] > adb
+                  crit2 <- !all ( sort ( c ( d[[lbCol]], sdb , d[[ubCol]]), index.return = TRUE)$ix == 1:3 )
+                  if ( crit1 == TRUE & crit2 == TRUE) { res <- 1 }  else { res <- 0}
+     ### Implementiere Formel nach Lord (1980) und ETS-Klassifikation von DIF; siehe Funktion equating.rasch aus 'eatRest'
+                  ets   <- "A"
+                  ets1  <- d[[absDifCol]] > 0.43
+                  ets2  <- !all ( sort ( c ( d[[lbCol]], 0 , d[[ubCol]]), index.return = TRUE)$ix == 1:3 )
+                  if ( ets1 == TRUE & ets2 == TRUE) { ets <- "B" }
+                  etsC1 <- d[[absDifCol]] > 0.64
+                  etsC2 <- !all ( sort ( c ( d[[lbCol]], 0.43 , d[[ubCol]]), index.return = TRUE)$ix == 1:3 )
+                  if ( etsC1 == TRUE & etsC2 == TRUE) { ets <- "C" }
+                  res   <- data.frame(difIndex = res, ETS = ets )
+               } else {
+                  res   <- data.frame(difIndex = NA, ETS = NA )
+               }
+               return(res)})))
+       return(ret)}

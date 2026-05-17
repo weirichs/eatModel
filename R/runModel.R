@@ -104,7 +104,7 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
                                   control[["maxiter"]] <- 50
                                   skelet <- tam.mml(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], constraint = defineModelObj[["constraint"]], pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], irtmodel = defineModelObj[["irtmodel"]], pweights = wgt, control = control, group=group)
                                   diffe  <- Sys.time() - beg
-                                  if(as.numeric(diffe) > 0.2) {message(paste0("Generate skeleton for partial credit anchoring: ", eatTools::timeFormat(diffe)))}
+                                  if(as.numeric(diffe) > 0.2) {message(paste0("Generate skeleton for partial credit anchoring: ", timeFormat(diffe)))}
                                   anchor <- prepAnchorTAM(dfm = defineModelObj, skeleton = skelet[["xsi.fixed.estimated"]])
                                }
                                mod  <- tam.mml(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], constraint = defineModelObj[["constraint"]], pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = defineModelObj[["irtmodel"]], pweights = wgt, control = defineModelObj[["control"]], group=group)

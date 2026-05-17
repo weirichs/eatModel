@@ -30,9 +30,12 @@ getTamResults <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV, nplau
          ret    <- rbind(ret, getTam2plDiscrim(runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles, regr = regr, omitRegr=omitRegr))
     ### Infit auslesen
          beg    <- Sys.time()
-         ret    <- rbind(ret, getTamInfit(runModelObj=runModelObj, qL=qL, qMatrix = qMatrix, leseAlles = leseAlles, omitFit = omitFit, seed=seed))
-         diffe <- Sys.time() - beg
-         if(as.numeric(diffe) > 0.2) {message(paste0("Getting infit parameters calling tam.fit from getTamInfit: ", timeFormat(diffe)))}
+         if(inherits(try(ret    <- rbind(ret, getTamInfit(runModelObj=runModelObj, qL=qL, qMatrix = qMatrix, leseAlles = leseAlles, omitFit = omitFit, seed=seed)), silent=TRUE ),"try-error"))  {
+            message("Error in the computation of infit values with tam.fit. This should only occur for DIF estimation in partial credit models. Infit estimation is skipped.")
+         } else {
+            diffe <- Sys.time() - beg
+            if(as.numeric(diffe) > 0.2) {message(paste0("Getting infit parameters calling tam.fit from getTamInfit: ", timeFormat(diffe)))}
+         }
     ### Populationsparameter auslesen
          ret    <- rbind(ret, getTamPopPar(runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles))
     ### Regressionsparameter auslesen
@@ -67,13 +70,38 @@ getTamResults <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV, nplau
          if(as.numeric(diffe) > 0.2) {message(paste0("Getting Q3 statistic calling tam.modelfit from getTamQ3: ", timeFormat(diffe)))}
          return(ret)}
 
-
 ### ----------------------------------------------------------------------------
 
-### Teilfunktionen fuer 'getTamResults()' zum Auslesen der Itemparameter (Schwierigkeiten, p-Werte) auslesen
-### DIF + partial credit funktioniert noch nicht
-getTamItempars    <- function(runModelObj, qL, qMatrix, leseAlles) {
-         if(leseAlles == FALSE) {return(NULL)}                                  ### wenn kein DIF: konventionell mergen
+### funktion fuer die kombination aus DIF und partial credit
+getTamItemparsDIF_PC <- function(runModelObj, qL, qMatrix) {
+         dat <- data.frame ( isItem=FALSE, item = rownames(runModelObj[["xsi"]]), runModelObj[["xsi"]], stringsAsFactors = FALSE)
+         ind <- findItemRows(qMatrix, dat, colQ = "item", colDF = "item", index2 = "step")
+         dat[ind,"isItem"] <- TRUE
+         for(i in ind) {
+             i4 <- gregexpr(pattern = ":", text = dat[i,"item"])[[1]]
+             if(i4 == -1) {
+                dat[i,"item"] <- paste0(dat[i,"item"], ":step0")
+             } else {
+                dat[i,"item"] <- paste0(substr(dat[i,"item"],1,i4), "step0:", substring(dat[i,"item"],i4+1))
+             }
+         }
+         dat <- tidyr::separate(data = dat, col = "item", sep = ":", into = c("var1", "var2", "add")) |> subset(xsi != 99)
+         i5  <- which(!is.na(dat[,"add"]))
+         stopifnot(length(i5)>0)
+         dat[i5,"var1"] <- paste0(dat[i5,"var1"], "_X_",eatTools::removeNumeric(dat[i5,"add"]), "_", eatTools::removeNonNumeric(dat[i5,"add"]))
+         datL<- dat |> dplyr::select(-tidyselect::any_of(c("add", "item"))) |> reshape2::melt(id.vars = c("var1", "var2", "isItem"), measure.vars = c("xsi", "se.xsi"), variable.name = "derived.par") |> dplyr::mutate(par = "est", source="tam", type="fixed", indicator.group="items", group=NA, model = attr(runModelObj, "defineModelObj")[["analysis.name"]]) |>  dplyr::mutate_at(.vars = "derived.par", .funs = car::recode, recodes = "'xsi'=NA; 'se.xsi'='se'")
+         i6  <- grep("step", datL[,"var2"])
+         datL[i6,"var2"] <- paste0("Cat", as.numeric(eatTools::removeNonNumeric(datL[i6,"var2"])))
+    ### jetzt das zzzzz wieder entfernen
+         datL[,"var1"] <- gsub(paste0("ZZ", attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.free"]]), attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.free"]], datL[,"var1"])
+    ### DIF modelle sollten immer nur eindimensional sein
+         stopifnot(length(unique(qL[,"dimensionName"])) ==1)
+         datL[which(datL[,"isItem"] == TRUE),"group"] <- unique(qL[,"dimensionName"])
+         datL[,"isItem"] <- NULL
+         ret <- list(shw1 = datL, shw2 = NULL, shw3 = NULL)                     ### das nur, damit es konsistent zu den anderen Rueckgaben ist und ge-rbinded werden kann
+         return(ret)}
+
+getTamItempars_conv <- function(runModelObj, qL, qMatrix) {
          if(is.null(attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.var"]])) {
     ### partial credit auslesen
               ttLong<- NULL                                                     ### initialisieren
@@ -101,7 +129,7 @@ getTamItempars    <- function(runModelObj, qL, qMatrix, leseAlles) {
          } else {
             shw3 <- NULL
          }                                                                      ### wenn DIF: items umbenennen
-         if ( !is.null(attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.var"]])) {          
+         if ( !is.null(attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.var"]])) {
                shw1 <- renameDifParameters (dat=shw1, qmatLong = qL[,-match("value", colnames(qL))])
                shw2 <- renameDifParameters (dat=shw2, qmatLong = qL[,-match("value", colnames(qL))])
          }
@@ -112,6 +140,18 @@ getTamItempars    <- function(runModelObj, qL, qMatrix, leseAlles) {
                shw2  <- shw2[-which(shw2[,"value"] == 0 ),] }                   ### entferne Zeilen aus shw2, die in der "value"-Spalte NA haben, danach: p-Werte einfuegen
          }
          return(list ( shw1=shw1, shw2=shw2, shw3=shw3))}
+
+### Teilfunktionen fuer 'getTamResults()' zum Auslesen der Itemparameter (Schwierigkeiten, p-Werte) auslesen
+### DIF + partial credit funktioniert noch nicht
+getTamItempars    <- function(runModelObj, qL, qMatrix, leseAlles) {
+         if(leseAlles == FALSE) {return(NULL)}                                  ### wenn kein DIF: konventionell mergen
+         if(!is.null(attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.var"]]) && attr(runModelObj, "defineModelObj")[["irtmodel"]] %in% c("PCM", "PCM2", "GPCM", "GPCM.groups") ) {
+    ### hierfuer braucht es wahrscheinlich eine komplett neue Funktion
+            ret <- getTamItemparsDIF_PC(runModelObj=runModelObj, qL=qL, qMatrix=qMatrix)
+         } else {
+            ret <- getTamItempars_conv(runModelObj=runModelObj, qL=qL, qMatrix=qMatrix)
+         }
+         return(ret)}
 
 ### called by getTamItempars() and getTamInfit ---------------------------------
 
@@ -142,10 +182,13 @@ renameDifParameters <- function(dat, qmatLong) {
 
 ### ----------------------------------------------------------------------------
 
-getTamDescriptives    <- function(runModelObj, qL, qMatrix, leseAlles, software) {
+getTamDescriptives <- function(runModelObj, qL, qMatrix, leseAlles, software) {
          if(leseAlles == FALSE || is.null ( attr(runModelObj, "defineModelObj")[["deskRes"]] )) {return(NULL)}
          deskR<- merge(attr(runModelObj, "defineModelObj")[["deskRes"]], qL[,-match("value", colnames(qL))],  by.x = "item.name", by.y = colnames(qMatrix)[1], all = TRUE)
          var2 <- compatibility1(dat=deskR, name="category")
+         if(!is.null(attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.free"]])) {
+            deskR[,"item.name"] <- eatTools::recodeLookup(deskR[,"item.name"], data.frame(alt = paste0("ZZ", attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.free"]]), neu = attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.free"]]))
+         }
          shw3 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = software, var1 = as.character(deskR[,"item.name"]), var2 = var2 , type = "fixed", indicator.group = "items", group = deskR[,"dimensionName"], par = "itemP",  derived.par = NA, value = deskR[,"item.p"], stringsAsFactors = FALSE)
          shw4 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = software, var1 = as.character(deskR[,"item.name"]), var2 = var2, type = "fixed", indicator.group = "items", group = deskR[,"dimensionName"], par = "Nvalid",  derived.par = NA, value = deskR[,"valid"], stringsAsFactors = FALSE)
     ### Achtung! wenn in dem 'deskRes'-Objekt noch mehr p-Werte (schulformspezifische p-Werte drinstehen, werden die jetzt auch in die Ergebnisstruktur eingetragen)
@@ -159,11 +202,12 @@ getTamDescriptives    <- function(runModelObj, qL, qMatrix, leseAlles, software)
          } }
 
 ### ----------------------------------------------------------------------------
-
-
-getTamDiscrim    <- function(runModelObj, qL, qMatrix, leseAlles, software) {
+getTamDiscrim <- function(runModelObj, qL, qMatrix, leseAlles, software) {
          if(leseAlles == FALSE || is.null ( attr(runModelObj, "defineModelObj")[["discrim"]] )) {return(NULL)}
          discR<- merge( attr(runModelObj, "defineModelObj")[["discrim"]] , qL[,-match("value", colnames(qL))],  by.x = "item.name", by.y = colnames(qMatrix)[1], all = TRUE)
+         if(!is.null(attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.free"]])) {
+            discR[,"item.name"] <- eatTools::recodeLookup(discR[,"item.name"], data.frame(alt = paste0("ZZ", attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.free"]]), neu = attr(runModelObj, "defineModelObj")[["all.Names"]][["DIF.free"]]))
+         }
          shw5 <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = software, var1 = discR[,"item.name"], var2 = NA , type = "fixed", indicator.group = "items", group = discR[,"dimensionName"], par = "itemDiscrim",  derived.par = NA, value = discR[,"item.diskrim"], stringsAsFactors = FALSE)
          return(shw5)}
 
@@ -365,3 +409,18 @@ getTamQ3 <- function(runModelObj, leseAlles, shw1, Q3, q3MinObs, q3MinType){
       res  <- NULL
     }
   return(res)}
+
+### Hilfsfunktion, die Zeilen findet, wo ein Item Teil des Parameternamens ist
+findItemRows <- function(qMatrix, dataFrame, colQ, colDF, index2 = NULL) {
+         ind <- unlist(lapply(qMatrix[,colQ], FUN = function(item) {
+                i1 <- which(grepl(item, dataFrame[,colDF]))
+                if(!is.null(index2)) {
+                   i2 <- setdiff(1:nrow(dataFrame), which(grepl(index2, dataFrame[,colDF])))
+                   i3 <- intersect(i1, i2)
+                   stopifnot(length(i3) <= 2)
+                } else {
+                   i3 <- i1
+                }
+                return(i3)}))
+         stopifnot(length(ind) == length(unique(ind)))
+         return(ind)}

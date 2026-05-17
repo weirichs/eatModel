@@ -1,16 +1,14 @@
 ## usually called after defineModel()
 
-getResults <- function(runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c("pv", "wle", "eap"),
-                       q3MinObs = 0, q3MinType = c("singleObs", "marginalSum"),
-                       omitFit = FALSE, omitRegr = FALSE, omitWle = FALSE, omitPV = FALSE,
-                       abs.dif.bound = 0.6, sig.dif.bound = 0.3, p.value = 0.9,
-                       nplausible = NULL, ntheta = 2000, normal.approx = FALSE,
-                       samp.regr = FALSE, theta.model=FALSE, np.adj=8, group = NULL,
-                       beta_groups = TRUE, level = .95, n.iter = 1000, n.burnin = 500,
-                       adj_MH = .5, adj_change_MH = .05, refresh_MH = 50,
-                       accrate_bound_MH = c(.45, .55),	sample_integers=FALSE,
-                       theta_init=NULL, print_iter = 20, verbose = TRUE, calc_ic=TRUE,
-                       omitUntil=1, seed=NA) {
+getResults <- function ( runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c("pv", "wle", "eap"),
+                         q3MinObs = 0, q3MinType = c("singleObs", "marginalSum"), omitFit = FALSE,
+                         omitRegr = FALSE, omitWle = FALSE, omitPV = FALSE, abs.dif.bound = 0.6,
+                         sig.dif.bound = 0.3, p.value = 0.9, nplausible = NULL, ntheta = 2000,
+                         normal.approx = FALSE, samp.regr = FALSE, theta.model=FALSE, np.adj=8,
+                         group = NULL, beta_groups = TRUE, level = .95, n.iter = 1000, n.burnin = 500,
+                         adj_MH = .5, adj_change_MH = .05, refresh_MH = 50, accrate_bound_MH = c(.45, .55),
+                         sample_integers=FALSE, theta_init=NULL, print_iter = 20, verbose = TRUE,
+                         calc_ic=TRUE, omitUntil=1, seed=NA) {
 
 ### checks ---------------------------------------------------------------------
   checkmate::assert_numeric(q3MinObs, lower = 0, len=1)
@@ -117,6 +115,7 @@ getResults <- function(runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c("p
                if(!is.null(res) && isFALSE(attr(runModelObj, "software") == "mirt") ) {
                     stopifnot ( length(unique(res[,"model"])) == 1)             ### (das was frueher ueber Attribute gemacht wurde, aber das ist zu krass schlimm beschissen scheiss untransparent, das muss weg!!)
      ### Rueckgabeobjekt mit technischen Parametern 'anreichern', first: 'all.Names' ... auch hier muss die Itemnamenrueckbenennung im falle von conquest mit mehr als 11 Zeichen im Variablennamen stattfinden
+     ### und die rueckbenennung von zzzz im Falle von partial credit + dif mit TAM ... herrjemineh
                     if(inherits(runModelObj, "runMultiple")) {
                        renam <- do.call("rbind", lapply(runModelObj, FUN = function(y) {y[["renam"]]}))
                     } else {
@@ -125,9 +124,12 @@ getResults <- function(runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c("p
                     alln<- do.call("rbind", lapply(names(allN), FUN = function ( x ) {
                            if(length(allN[[x]]) > 0) {
                               if(x == "variablen" && !is.null(renam)) {
-                                 dp <- recodeLookup(allN[[x]], renam[,c("new", "old")])
+                                 dp <- eatTools::recodeLookup(allN[[x]], renam[,c("new", "old")])
                               } else {
                                  dp <- allN[[x]]
+                              }
+                              if(x == "variablen" && !is.null(allN[["DIF.free"]])) {
+                                 dp <- eatTools::recodeLookup(dp, data.frame(old = paste0("ZZ", allN[["DIF.free"]]), new = allN[["DIF.free"]]))
                               }
                               res <- data.frame ( type = "tech", par = x, derived.par = dp)
                            } else {
@@ -206,3 +208,4 @@ getResults <- function(runModelObj, overwrite = FALSE, Q3 = TRUE, q3theta = c("p
                attr(res, "runModelAttributes") <- attributes(runModelObj)
                return(res)
                }}
+
