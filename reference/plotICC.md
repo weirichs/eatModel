@@ -87,13 +87,12 @@ run1 <- runModel(mod1)
 
 # get the results
 res1 <- getResults(run1)
-#> Getting standard errors with the tam.se function: 0.6 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 0.2 secs
-#> Getting WLEs calling tam.wle from getTamWles: 0.7 secs
+#> Getting standard errors with the tam.se function: 0.5 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.5 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 1.3 secs
-#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 2.2 secs
+#> Getting PVs calling tam.pv from getTamPVs: 0.8 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1.9 secs
 
 # plot for one item 
 plotICC  ( resultsObj = res1, defineModelObj = mod1, items = "T04_04")
