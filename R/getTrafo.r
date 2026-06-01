@@ -1,4 +1,4 @@
-getTrafo <- function(dataBase = system.file("extdata", "trafo.rda", package = "eatModel"), mode=c("paper","pc"), grade=c("primary", "secondary"), subject = c("math", "deu", "eng", "frz", "bio", "che", "phy"),
+getTrafo <- function(dataBase = "I:/Methoden/10_sonstige Materialien/trafo.rda", mode=c("paper","pc"), grade=c("primary", "secondary"), subject = c("math", "deu", "eng", "frz", "bio", "che", "phy"),
             domain = c("all", "GL", "ZO", "RF", "MS", "GM", "DHW", "ZA", "ME", "FZ", "DZ", "lesen", "hoeren", "ortho", "sg", "CE", "CF", "PE", "PF", "BE", "BF"),
             study = c("bt", "vera")) {
     if(inherits(dataBase, "character")) {load(dataBase)} else {trafo <- dataBase}
