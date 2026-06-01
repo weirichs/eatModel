@@ -30,7 +30,7 @@ if(sysInfo[["sysname"]] != "Linux") {
 # only on the basis of approximate equality.
 itT <- itemFromRes(resT)
 itM <- itemFromRes(resM)
-merge1 <- mergeAttr(itT[,c("item", "category", "est", "thurstone")], itM[,c("item", "category", "est", "thurstone")], by=c("item", "category"), setAttr=FALSE, all=TRUE, xName="tam", yName = "mirt", suffixes = c("_tam", "_mirt"))
+merge1 <- eatTools::mergeAttr(itT[,c("item", "category", "est", "thurstone")], itM[,c("item", "category", "est", "thurstone")], by=c("item", "category"), setAttr=FALSE, all=TRUE, xName="tam", yName = "mirt", suffixes = c("_tam", "_mirt"))
 merge1[,"diff_est"] <- merge1[,"est_tam"] - merge1[,"est_mirt"]
 merge1[,"diff_thurs"] <- merge1[,"thurstone_tam"] - merge1[,"thurstone_mirt"]
 ind <- which(abs(merge1[,"diff_est"]) < 0.01)
@@ -43,7 +43,7 @@ test_that("tf1", {
 # tam vs. conquest
 if(sysInfo[["sysname"]] != "Linux") {
   itC <- itemFromRes(resC)
-  merge2 <- mergeAttr(itT[,c("item", "category", "est", "thurstone")], itC[,c("item", "category", "est", "thurstone")], by=c("item", "category"), setAttr=FALSE, all=TRUE, xName="tam", yName = "conquest", suffixes = c("_tam", "_conquest"))
+  merge2 <- eatTools::mergeAttr(itT[,c("item", "category", "est", "thurstone")], itC[,c("item", "category", "est", "thurstone")], by=c("item", "category"), setAttr=FALSE, all=TRUE, xName="tam", yName = "conquest", suffixes = c("_tam", "_conquest"))
   merge2[,"diff_est"] <- merge2[,"est_tam"] - merge2[,"est_conquest"]
   merge2[,"diff_thurs"] <- merge2[,"thurstone_tam"] - merge2[,"thurstone_conquest"]
 
