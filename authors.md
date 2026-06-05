@@ -17,12 +17,12 @@ Source:
 
 Weirich S, Hecht M, Sachse K (2026). *eatModel: Educational Assessment
 Tools for IRT Modeling using Conquest or TAM*. R package version
-0.10.17, <https://github.com/weirichs/eatModel>.
+0.10.18, <https://github.com/weirichs/eatModel>.
 
     @Manual{,
       title = {eatModel: Educational Assessment Tools for IRT Modeling using Conquest or TAM},
       author = {Sebastian Weirich and Martin Hecht and Karoline Sachse},
       year = {2026},
-      note = {R package version 0.10.17},
+      note = {R package version 0.10.18},
       url = {https://github.com/weirichs/eatModel},
     }

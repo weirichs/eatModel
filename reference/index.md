@@ -65,6 +65,9 @@
   : Collect all results from Conquest, TAM, or mirt analyses into a
   common data frame
 
+- [`getTrafo()`](https://weirichs.github.io/eatModel/reference/getTrafo.md)
+  : Contains the transformation rules from the IQB studies
+
 - [`itemFromRes()`](https://weirichs.github.io/eatModel/reference/itemFromRes.md)
   : Collect all item results from the object returned by getResults()
 
