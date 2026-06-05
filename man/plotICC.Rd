@@ -1,16 +1,20 @@
 \name{plotICC}
 \alias{plotICC}
 \title{Plots item characteristic curves.}
-\description{Function provides item characteristic plots for each item. To date, 
-only dichotomous 1pl and 2pl models are supported.}
-\usage{plotICC  ( resultsObj, defineModelObj, items = NULL, personPar = c("WLE", "EAP", "PV"),
-       personsPerGroup = 30, pdfFolder = NULL, smooth = 7 )}
+\description{Function provides item characteristic plots for each item.}
+\usage{plotICC  ( resultsObj, defineModelObj, runModelObj = NULL, items = NULL,
+       personPar = c("WLE", "EAP", "PV"), personsPerGroup = 30, pdfFolder = NULL,
+       smooth = 7 )}
 \arguments{
   \item{resultsObj}{
 The object returned by \code{getResults}.
 }
   \item{defineModelObj}{
 The object returned by \code{defineModel}.
+}
+  \item{runModelObj}{
+Optional: The object returned by \code{runModel}. Only necessary if ICCs for
+polytomous items should be plotted. Note: To date, this works ony for TAM.
 }
   \item{items}{
 Optional: A vector of items for which the ICC should be plotted. If NULL, ICCs of all items
@@ -41,9 +45,6 @@ behavior of the S3 plot method of \code{TAM}, use the value 7.
 }
 \author{
 Sebastian Weirich
-}
-\note{
-This function is beta! Use with care...
 }
 \examples{
 data(trends)

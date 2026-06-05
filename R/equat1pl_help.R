@@ -36,9 +36,6 @@ checkItemParLists <- function (prmNorm, item, domain, testlet, value, dims = NUL
            if(!is.null(allF[["domain"]]) && !is.null(dims)) {
                mis <- setdiff ( dims,  names(table(prmNorm[, allF[["domain"]] ])) )
                if(length(mis) > 0) {stop( paste ( "Domain '",mis,"' is missing in 'prmNorm'.\n",sep="")) }
-               uni <- by(data = prmNorm, INDICES = prmNorm[, allF[["domain"]] ], FUN = function ( g ) {
-                      if(!length(g[,allF[["item"]]]) == length(unique(g[,allF[["item"]]]))) { stop(paste ( "Item identifiers are not unique in 'prmNorm' for domain '",g[1,allF[["domain"]]],"'.\n",sep=""))}
-                      }, simplify = FALSE)                                      ### check: items unique within domains?
            }
            allF[["prmNorm"]] <- prmNorm
            return(allF)}

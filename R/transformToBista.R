@@ -116,7 +116,7 @@ transformToBista <- function(equatingList, refPop, cuts, weights = NULL,
                             if (isRunM) {
                                 pv  <- pvFromRes(resMD, toWideFormat = FALSE, idVarName=idVarName, verbose=FALSE)
                                 equ <- equatingList[["items"]][[mod]][[dimname]][["eq"]][["B.est"]][[ equatingList[["items"]][[mod]][[dimname]][["method"]] ]]
-                                if(isPCM) {stopifnot(equ==0)}
+                                if(isPCM) {if(equ != 0) {stop("For partial credit models, the equating constant must be zero, i.e. you have to calibrate the focus population with anchored parameters before calling equat1pl().")}}
     ### Hotfix fuer bayesianisch
                                 if (!exists("mat")) { mat <- refPop[match(dimname,  refPop[,"domain"]),] }
                                 pv[,"valueTransfBista"] <- (pv[,"value"] + equ - mat[,3]) / mat[,4] * mat[,6] + mat[,5]
