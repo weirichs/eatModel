@@ -303,8 +303,8 @@ generateOrCheckQmatrix <- function(a, qMatrix, all.Names) {
 
 prepareDatasets <- function(namen.all.hg, dat, software, allNam, use.letters) {
        if(length(namen.all.hg)>0) {all.hg.char <- sapply(namen.all.hg, FUN=function(ii) {max(nchar(as.character(na.omit(dat[,ii]))))})} else {all.hg.char <- NULL}
-       if(software == "conquest" )   {                                          ### untere Zeile: wieviele character muss ich fuer jedes Item reservieren?
-          var.char  <- sapply(dat[,allNam[["variablen"]], drop = FALSE], FUN=function(ii) {max(nchar(as.character(na.omit(ii))))})
+       var.char <- sapply(dat[,allNam[["variablen"]], drop = FALSE], FUN=function(ii) {max(nchar(as.character(na.omit(ii))))})
+       if(software == "conquest" )   {                                          ### obere Zeile: wieviele character muss ich fuer jedes Item reservieren?
           no.number <- setdiff(1:length(var.char), grep("[[:digit:]]",var.char))
           if(length(no.number)>0) {var.char[no.number] <- 1}                    ### -Inf steht dort, wo nur missings sind, hier soll die Characterbreite auf 1 gesetzt sein
           if(use.letters == TRUE)   {                                           ### sollen Buchstaben statt Ziffern benutzt werden? Dann erfolgt hier Recodierung.
@@ -317,3 +317,4 @@ prepareDatasets <- function(namen.all.hg, dat, software, allNam, use.letters) {
           }
        }
        return(list(dat=dat, var.char = var.char, all.hg.char=all.hg.char))}
+

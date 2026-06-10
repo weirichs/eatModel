@@ -75,7 +75,7 @@ getTamResults <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV, nplau
 ### funktion fuer die kombination aus DIF und partial credit
 getTamItemparsDIF_PC <- function(runModelObj, qL, qMatrix) {
          dat <- data.frame ( isItem=FALSE, item = rownames(runModelObj[["xsi"]]), runModelObj[["xsi"]], stringsAsFactors = FALSE)
-         ind <- findItemRows(qMatrix, dat, colQ = "item", colDF = "item", index2 = "step")
+         ind <- findItemRows(qMatrix, dataFrame=dat, colQ = "item", colDF = "item", index2 = "step")
          dat[ind,"isItem"] <- TRUE
          for(i in ind) {
              i4 <- gregexpr(pattern = ":", text = dat[i,"item"])[[1]]

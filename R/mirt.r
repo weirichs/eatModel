@@ -10,9 +10,9 @@ plotDevianceMirt <- function ( mirt.obj, omitUntil = 1, adaptWindow = TRUE) {
            sysInfo  <- Sys.info()
            if(isTRUE(adaptWindow)) {
               if(sysInfo[["sysname"]] == "Linux") {
-                  x11(width = 800/72, height = 600/72)
+                  grDevices::x11(width = 800/72, height = 600/72)
               } else  {
-                  windows(width = 800/72, height = 600/72)
+                  grDevices::windows(width = 800/72, height = 600/72)
               }
            }
            dev <- (-1) * diff( (-2) * mirt.obj@Internals$collectLL )

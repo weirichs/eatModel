@@ -92,7 +92,7 @@ itemFromResPcmDifTam <- function(sel, pval, adb, sdb) {
    ind1 <- intersect(which(sel[,"par"] == "est"), grep("Cat", sel[,"var2"]))
    sel[ind1,"var2"] <- paste0("Cat", as.numeric(eatTools::removeNonNumeric(sel[ind1,"var2"]))+1)
    qmat <- unique(subset(sel, par == "Nvalid")[,"var1", drop=FALSE])
-   rows <- findItemRows(qMatrix=qmat, dat=sel, colQ = "var1", colDF = "var1")
+   rows <- findItemRows(qMatrix=qmat, dataFrame=sel, colQ = "var1", colDF = "var1")
    sel  <- data.frame(sel, eatTools::halveString(sel[,"var1"], "_", first=TRUE, colnames = c("item", "dif")), stringsAsFactors = FALSE)
    sel[which(is.na(sel[,"var2"] )),"var2"] <- "Cat1"
    selW <- tidyr::pivot_wider(sel[rows,-eatTools::whereAre(c("var1", "source", "type", "indicator.group", "group", "model"), colnames(sel), verbose=FALSE)],  id_cols = c("item", "var2"), names_from = c("dif", "par", "derived.par"), values_from ="value") |> eatTools::makeDataFrame(verbose=FALSE)
