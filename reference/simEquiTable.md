@@ -121,13 +121,16 @@ defT<- defineModel(dat = dw, items = -1, id = "idstud",  irtmodel = "PCM",softwa
 #>    Items(s) 'D205143':                       0, 1, 2, 3, 4, 5  
 #> Dataset is completely linked.
 #> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
-#> Q matrix specifies 1 dimension(s).
+#> Error in prepareDatasets(namen.all.hg = cbc[["namen.all.hg"]], dat = cpsc[["dat"]],     software = software, allNam = cbc[["allNam"]], use.letters = use.letters): object 'var.char' not found
 runT<- runModel(defT)
+#> Error: object 'defT' not found
 resT<- getResults(runT, omitPV=TRUE, Q3 = FALSE)
+#> Error: object 'runT' not found
 it  <- itemFromRes(resT)
+#> Error: object 'resT' not found
 
 # create equivalence table with arbitrary cuts and reference values
 ret2<- simEquiTable( anchor = it, item = "item", cat="category", value = "est",
        cutScores = list ( values = c(400, 600)), mRef = 0.047, sdRef = 1.181)
-#> Error in simEquiTable(anchor = it, item = "item", cat = "category", value = "est",     cutScores = list(values = c(400, 600)), mRef = 0.047, sdRef = 1.181): object 'it' not found
+#> Error: object 'it' not found
 ```

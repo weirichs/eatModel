@@ -52,22 +52,7 @@ datW <- reshape2::dcast(trends[which(trends[,"year"] == 2010),],
 chk1 <- checkContextVars(datW[,"language"], "language", type="DIF",
                          itemdata = datW[,-c(1:4)])
 #> Warning: Following 14 items are constants in DIF variable 'language', group other:
-#>    T01_01, T05_04, T07_04, T07_07, T07_08, T07_10, T09_04, T09_05, T09_06, T10_08, T12_05, T13_06, T15_10, T16_04
-#> Warning: row names were found from a short variable and have been discarded
+#> Error in checkContextVars(datW[, "language"], "language", type = "DIF",     itemdata = datW[, -c(1:4)]): argument "renam" is missing, with no default
 chk1$info
-#>     varname varlevel nCases     type   vars value nValue
-#> 1  language    other     41 constant T01_01     1      9
-#> 2  language    other     41 constant T05_04     1      8
-#> 3  language    other     41 constant T07_04     0      5
-#> 4  language    other     41 constant T07_07     0      5
-#> 5  language    other     41 constant T07_08     1      5
-#> 6  language    other     41 constant T07_10     0      5
-#> 7  language    other     41 constant T09_04     0      5
-#> 8  language    other     41 constant T09_05     1      5
-#> 9  language    other     41 constant T09_06     1      5
-#> 10 language    other     41 constant T10_08     0      9
-#> 11 language    other     41 constant T12_05     1     14
-#> 12 language    other     41 constant T13_06     0     13
-#> 13 language    other     41 constant T15_10     0     17
-#> 14 language    other     41 constant T16_04     1      9
+#> Error: object 'chk1' not found
 ```

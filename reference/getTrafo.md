@@ -9,7 +9,7 @@ subject, competency areas, and mode the values are to be requested.
 ## Usage
 
 ``` r
-getTrafo(dataBase = "I:/Methoden/10_sonstige Materialien/trafo.rda",
+getTrafo(dataBase = system.file("extdata", "trafo.rda", package = "eatModel"),
          mode=c("paper","pc"), grade=c("primary", "secondary"),
          subject = c("math", "deu", "eng", "frz", "bio", "che", "phy"),
          domain = c("all", "GL", "ZO", "RF", "MS", "GM", "DHW", "ZA", "ME",

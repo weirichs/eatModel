@@ -59,7 +59,7 @@ def1 <- defineModel(datW, items = -c(1:4), id="idstud", qMatrix = qMat, software
 #> 5 subject(s) solved each item: P00106 (17 correct), P00939 (17 correct), P00393 (20 correct) ... 
 #> Dataset is completely linked.
 #> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
-#> Q matrix specifies 2 dimension(s).
+#> Error in prepareDatasets(namen.all.hg = cbc[["namen.all.hg"]], dat = cpsc[["dat"]],     software = software, allNam = cbc[["allNam"]], use.letters = use.letters): object 'var.char' not found
 
 # model 2 (misspecified)
 def2 <- defineModel(datW, items = -c(1:6), id="idstud", qMatrix = qMat[-c(20,35,40),],
@@ -76,20 +76,9 @@ def2 <- defineModel(datW, items = -c(1:6), id="idstud", qMatrix = qMat[-c(20,35,
 #>    P04281 (11 false), P04290 (11 false), P00782 (12 false) ... 
 #> 5 subject(s) solved each item: P00106 (15 correct), P00939 (15 correct), P00393 (18 correct) ... 
 #> Dataset is completely linked.
-#> Q matrix specifies 2 dimension(s).
+#> Error in prepareDatasets(namen.all.hg = cbc[["namen.all.hg"]], dat = cpsc[["dat"]],     software = software, allNam = cbc[["allNam"]], use.letters = use.letters): object 'var.char' not found
 
 # compare both outputs
 compareDefineModelObjects (def1, def2)
-#> Additional common variables (beyond the 'by'-variables) found: 'value'. Add suffixes '.x', '.y' to these variables in the result data.frame.
-#> 2 of 130 unit(s) of merging variable 'item' from data set 'target' not included in data set 'reference'.
-#> 5 of 133 unit(s) of merging variable 'item' from data set 'reference' not included in data set 'target'.
-#> 8952 of 165773 unit(s) of merging variable combination 'ID'+'item' from data set 'target' not included in data set 'reference'.
-#> 4356 of 161177 unit(s) of merging variable combination 'ID'+'item' from data set 'reference' not included in data set 'target'.
-#> Mismatch for entry 'variablen' of 'all.Names' object: 'Lengths (131, 126) differ (string compare on first 126)'. '126 string mismatches'
-#> Mismatch for entry 'HG.var' of 'all.Names' object: 'Lengths (2, 4) differ (string compare on first 2)'. '2 string mismatches'
-#> Additional common variables (beyond the 'by'-variables) found: 'value'. Add suffixes '.x', '.y' to these variables in the result data.frame.
-#> 5 of 131 unit(s) of merging variable 'item' from data set 'reference Q matrix' not included in data set 'target Q matrix'.
-#> 10 of 262 unit(s) of merging variable combination 'item'+'dim' from data set 'reference Q matrix' not included in data set 'target Q matrix'.
-#> Q matrix mismatch: ''is.NA' value mismatch: 10 in current 0 in target
-#> Control mismatch for object 'nodes': 'Numeric: lengths (20, 30) differ'
+#> Error: object 'def1' not found
 ```

@@ -146,8 +146,8 @@ linking procedures for more than two times of measurement.
 |----------|------------|
 | Package: | eatModel   |
 | Type:    | Package    |
-| Version: | 0.10.18    |
-| Date:    | 2026-06-04 |
+| Version: | 0.10.19    |
+| Date:    | 2026-06-10 |
 | License: | GPL(\>=2)  |
 
 ## Author
