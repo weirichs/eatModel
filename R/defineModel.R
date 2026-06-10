@@ -68,9 +68,9 @@ defineModelSingle <- function (a) {
           if(is.null(Msteps) ) {                                                ### den Default fuer Msteps so setzen wie in TAM
              if ( irtmodel == "3PL" ) { Msteps <- 10 } else { Msteps <- 4 }
           }
-       } else {                                                                 ### in mirt muss das argument ein data.frame sein
+       } else {                                                                 ### in mirt muss das argument ein data.frame sein 
           checkmate::assert_data_frame(irtmodel, any.missing = FALSE, ncols = 2)
-       }
+       }  
        method   <- match.arg(method, choices = eval(formals(defineModel)[["method"]]))
        pvMethod <- match.arg(pvMethod, choices = eval(formals(defineModel)[["pvMethod"]]))
        if(software == "conquest") {
@@ -107,78 +107,26 @@ defineModelSingle <- function (a) {
           colnames(dat)            <- eatTools::recodeLookup(colnames(dat), data.frame(old = DIF.free, new = paste0("ZZ",DIF.free)))
        }
      ### wenn software = conquest, duerfen variablennamen nicht mehr als 11 Zeichen haben! das heisst, falls doch, werden die items hier umbenannt
-       renam       <- NULL                                                      ### initialisieren
-       if(software == "conquest") {
-          if(max(nchar(all.Names[["variablen"]]))>10) {
-             neu   <- paste0("a", as.numeric(as.factor(all.Names[["variablen"]])))
-             i     <- 1
-             while(length(intersect(neu, colnames(dat))) > 0) {
-                i  <- i+1;
-                neu<- paste0(letters[i], as.numeric(as.factor(all.Names[["variablen"]])))
-             }
-             renam <- data.frame(old = all.Names[["variablen"]], new = neu, stringsAsFactors = FALSE)
-             all.Names[["variablen"]] <- eatTools::recodeLookup(all.Names[["variablen"]], renam)
-             colnames(dat) <- eatTools::recodeLookup(colnames(dat), renam)
-          }
-       } else {
-          if(!is.null(all.Names[["group.var"]])) {
-             message("Specifying group.vars is only allowed for software = 'conquest'. 'group.vars' will be ignored.")
-             all.Names[["group.var"]] <- NULL
-          }
-       }
+       obs <- renameVariables(a=a, qMatrix=qMatrix, software=software, all.Names=all.Names, dat=dat) 
      ### ID-Variable pruefen und ggf. aendern
-       dat <- checkID_consistency(dat=dat, allNam=all.Names, software=software)
+       dat <- checkID_consistency(dat=obs[["dat"]], allNam=obs[["all.Names"]], software=software)
      ### Verzeichnis ('dir') pruefen oder erzeugen
        dir <- checkDir(dir=dir, software=software)
      ### pruefen, ob es Personen gibt, die weniger als <boundary> items gesehen haben (muss VOR den Konsistenzpruefungen geschehen)
-       dat <- checkBoundary(dat=dat, allNam=all.Names, boundary=boundary, remove.boundary=remove.boundary)
+       dat <- checkBoundary(dat=dat, allNam=obs[["all.Names"]], boundary=boundary, remove.boundary=remove.boundary)
      ### Sektion 'explizite Variablennamen ggf. aendern' ###
-       exclude <- which(names(all.Names) == "DIF.free")
-       subsNam <- .substituteSigns(dat=dat, variable=unlist(all.Names[-unique(c(1,2, exclude))]), all.Names = all.Names)
-       if(software == "conquest" || !is.null(all.Names[["DIF.var"]])) {
-          if(!all(subsNam$old == subsNam$new)) {                                ### Conquest erlaubt keine gross geschriebenen und expliziten Variablennamen, die ein "." oder "_" enthalten
-             sn     <- subsNam[which( subsNam$old != subsNam$new),]
-             if(nrow(sn) > 4) {toadd <- " (truncated)"} else {toadd <- ""}
-             message("'.', '-', and '_' nor upper case letters are allowed in explicit variable names and numbers in DIF variable name. Delete signs from variables names for explicit and DIF variables",toadd,": \n\n", eatTools::print_and_capture (head(sn, n=4), spaces = 5), "\n")
-             colnames(dat) <- eatTools::recodeLookup(colnames(dat), sn[,c("old", "new")])
-             all.Names     <- lapply(all.Names, FUN = function ( y ) {eatTools::recodeLookup(y, sn[,c("old", "new")]) })
-             if(model.statement != "item") {
-                cat("    Remove deleted signs from variables names for explicit variables also in the model statement. Please check afterwards for consistency!\n")
-                for ( uu in 1:nrow(sn))  {model.statement <- gsub(sn[uu,"old"], sn[uu,"new"], model.statement)}
-             }
-          }
-          if("item" %in% unlist(all.Names[-c(1:2)])) { stop("Conquest does not allow labelling explicit variable(s) with 'Item' or 'item'.\n") }
-       }                                                                        ### untere Zeilen: Dif-Variablen und Testitems duerfen sich nicht ueberschneiden
-       if(length(intersect(all.Names$DIF.var, all.Names$variablen))>0)    {stop("Test items and DIF variable have to be mutually exclusive.\n")}
-       if(length(intersect(all.Names$weight.var, all.Names$variablen))>0) {stop("Test items and weighting variable have to be mutually exclusive.\n")}
-       if(length(intersect(all.Names$HG.var, all.Names$variablen))>0)     {stop("Test items and HG variable have to be mutually exclusive.\n")}
-       if(length(intersect(all.Names$group.var, all.Names$variablen))>0)  {stop("Test items and group variable have to be mutually exclusive.\n")}
+       obs2<- renameVariables2(all.Names = obs[["all.Names"]], dat=dat, software=software)
      ### Sektion 'Q matrix ggf. erstellen und auf Konsistenz zu sich selbst und zu den Daten pruefen' ###
-       if(is.null(a[["qMatrix"]])) {
-          qMatrix <- data.frame ( item = all.Names$variablen, Dim1 = 1, stringsAsFactors = FALSE)
-       } else {
-          qMatrix <- checkQmatrixConsistency(qMatrix)                           ### pruefe Konsistenz der q-matrix
-          notInDat<- setdiff(qMatrix[,1], all.Names$variablen)
-          notInQ  <- setdiff( all.Names$variablen , qMatrix[,1])
-          if(length(notInDat)>0) {
-             cat(paste("Following ", length(notInDat)," item(s) missed in data frame will be removed from Q matrix: \n    ",paste(notInDat,collapse=", "),"\n",sep=""))
-             qMatrix <- checkQmatrixConsistency(qMatrix[-match(notInDat, qMatrix[,1]),])
-          }
-          if(length(notInQ)>0) {
-             cat(paste("Following ", length(notInQ)," item(s) missed in Q matrix will be removed from data: \n    ",paste(notInQ,collapse=", "),"\n",sep=""))
-          }                                                                     ### Wichtig! Sicherstellen, dass Reihenfolge der Items in Q-Matrix mit Reihenfolge der Items im Data.frame uebereinstimmt!
-          all.Names[["variablen"]] <- qMatrix[,1]
-       }
-       flush.console()
+       obs3<- generateOrCheckQmatrix(a=a, qMatrix=obs[["qMatrix"]], all.Names = obs2[["all.Names"]])
      ### Sektion 'Alle Items auf einfache Konsistenz pruefen'
-       cic <- checkItemConsistency(dat=dat, allNam = all.Names, remove.missing.items=remove.missing.items, verbose=verbose, removeMinNperItem=removeMinNperItem, minNperItem=minNperItem, remove.constant.items=remove.constant.items, model.statement=model.statement, software=software)
+       cic <- checkItemConsistency(dat=dat, allNam = obs3[["all.Names"]], remove.missing.items=remove.missing.items, verbose=verbose, removeMinNperItem=removeMinNperItem, minNperItem=minNperItem, remove.constant.items=remove.constant.items, model.statement=model.statement, software=software, renam = obs[["renam"]])
      ### Sektion 'Hintergrundvariablen auf Konsistenz zu sich selbst und zu den Itemdaten pruefen'. Ausserdem Stelligkeit (Anzahl der benoetigten character) fuer jede Variable herausfinden
-       cbc <- checkBGV(allNam = cic[["allNam"]], dat=cic[["dat"]], software=software, remove.no.answersHG=remove.no.answersHG, remove.vars.DIF.missing=remove.vars.DIF.missing, namen.items.weg=cic[["namen.items.weg"]], remove.vars.DIF.constant=remove.vars.DIF.constant)
+       cbc <- checkBGV(allNam = cic[["allNam"]], dat=cic[["dat"]], software=software, remove.no.answersHG=remove.no.answersHG, remove.vars.DIF.missing=remove.vars.DIF.missing, namen.items.weg=cic[["namen.items.weg"]], remove.vars.DIF.constant=remove.vars.DIF.constant, renam=obs[["renam"]])
      ### Sektion 'Itemdatensatz zusammenbauen' (fuer Conquest ggf. mit Buchstaben statt Ziffern)
        if(length(cbc[["namen.items.weg"]])>0)  {
           cat(paste("Remove ",length(unique(cbc[["namen.items.weg"]]))," test item(s) overall.\n",sep=""))
           cbc[["allNam"]]$variablen <- setdiff(cbc[["allNam"]]$variablen, unique(cbc[["namen.items.weg"]]) )
-          qMatrix             <- qMatrix[match(cbc[["allNam"]]$variablen, qMatrix[,1]),]
+          obs3[["qMatrix"]]         <- obs3[["qMatrix"]][match(cbc[["allNam"]]$variablen, obs3[["qMatrix"]][,1]),]
        }
      ### Sektion 'Personen ohne gueltige Werte identifizieren und ggf. loeschen'. Gibt dat, perNA, datL zurueck
        pwvv<- personWithoutValidValues(dat=cbc[["dat"]], allNam=cbc[["allNam"]], remove.no.answers=remove.no.answers)
@@ -194,22 +142,9 @@ defineModelSingle <- function (a) {
      ### Sektion 'Anpassung der Methode (gauss, monte carlo) und der nodes'
        met <- adaptMethod(method=method, software=software, nodes=nodes)
      ### Sektion 'Datensaetze softwarespezifisch aufbereiten: Conquest' ###
-       if(length(cbc[["namen.all.hg"]])>0) {all.hg.char <- sapply(cbc[["namen.all.hg"]], FUN=function(ii) {max(nchar(as.character(na.omit(cpsc[["dat"]][,ii]))))})} else {all.hg.char <- NULL}
-       if(software == "conquest" )   {                                          ### untere Zeile: wieviele character muss ich fuer jedes Item reservieren?
-          var.char  <- sapply(cpsc[["dat"]][,cbc[["allNam"]][["variablen"]], drop = FALSE], FUN=function(ii) {max(nchar(as.character(na.omit(ii))))})
-          no.number <- setdiff(1:length(var.char), grep("[[:digit:]]",var.char))
-          if(length(no.number)>0) {var.char[no.number] <- 1}                    ### -Inf steht dort, wo nur missings sind, hier soll die Characterbreite auf 1 gesetzt sein
-          if(use.letters == TRUE)   {                                           ### sollen Buchstaben statt Ziffern benutzt werden? Dann erfolgt hier Recodierung.
-             rec.statement <- paste(0:25,"='",LETTERS,"'",sep="",collapse="; ")
-             daten.temp <- cpsc[["dat"]]                                        ### temporaer numerischen Datensatz erstellen, denn wenn letters = TRUE, stehen hier schon Buchstaben drin, und dann kann man keine part-whole correlation mehr bestimmen
-             for (i in cbc[["allNam"]][["variablen"]])  {                       ### Warum erst hier? Weil Pruefungen (auf Dichotomitaet etc. vorher stattfinden sollen)
-                cpsc[["dat"]][,i] <- car::recode(cpsc[["dat"]][,i], rec.statement)
-             }
-             var.char <- rep(1,length(cbc[["allNam"]][["variablen"]]))          ### var.char muss nun neu geschrieben werden, da nun alles wieder einstellig ist!
-          }
-       }
+       obs4<- prepareDatasets(namen.all.hg = cbc[["namen.all.hg"]], dat = cpsc[["dat"]], software=software, allNam = cbc[["allNam"]], use.letters=use.letters)
      ### Sektion 'deskriptive Ergebnisse berechnen und durchschleifen' ###
-       daten   <- data.frame(ID=as.character(cpsc[["dat"]][,cbc[["allNam"]][["ID"]]]), cpsc[["dat"]][,cbc[["namen.all.hg"]], drop = FALSE], cpsc[["dat"]][,cbc[["allNam"]][["variablen"]], drop = FALSE], stringsAsFactors = FALSE)
+       daten   <- data.frame(ID=as.character(obs4[["dat"]][,cbc[["allNam"]][["ID"]]]), obs4[["dat"]][,cbc[["namen.all.hg"]], drop = FALSE], obs4[["dat"]][,cbc[["allNam"]][["variablen"]], drop = FALSE], stringsAsFactors = FALSE)
        deskRes <- desk.irt(daten = daten, itemspalten = match(cbc[["allNam"]][["variablen"]], colnames(daten)))
        crit    <- which (deskRes[,"valid"] < minNperItem)
        if(length(crit)>0) {
@@ -234,7 +169,7 @@ defineModelSingle <- function (a) {
        }
        lab <- data.frame(itemNr = 1:length(cbc[["allNam"]][["variablen"]]), item = cbc[["allNam"]][["variablen"]], stringsAsFactors = FALSE)
        if(!is.null(a[["anchor"]]))  {
-          ankFrame <- anker (lab = lab, prm = anchor, qMatrix = qMatrix, domainCol=domainCol, itemCol=itemCol, valueCol=valueCol, catCol=catCol)
+          ankFrame <- anker (lab = lab, prm = anchor, qMatrix = obs3[["qMatrix"]], domainCol=domainCol, itemCol=itemCol, valueCol=valueCol, catCol=catCol)
        } else {
           ankFrame <- NULL
           if(fitTamMmlForBayesian == FALSE ) {
@@ -244,7 +179,7 @@ defineModelSingle <- function (a) {
        }
        if(software == "conquest" )   {
           daten$ID <- gsub ( " ", "0", formatC(daten$ID, width=max(as.numeric(names(table(nchar(daten$ID)))))) )
-          fixed.width <- c(as.numeric(names(table(nchar(daten[,"ID"])))), all.hg.char, rep(max(var.char),length(var.char)))
+          fixed.width <- c(as.numeric(names(table(nchar(daten[,"ID"])))), obs4[["all.hg.char"]], rep(max(obs4[["var.char"]]),length(obs4[["var.char"]])))
      ### erstmal testen, ob die Characterzahl wirklich einheitlich ist ... datensatz wird dazu nicht auf festplatte geschrieben
           txt  <-  capture.output ( gdata::write.fwf(daten , colnames = FALSE,rownames = FALSE, sep="",quote = FALSE,na=".", width=fixed.width))
           stopifnot(length(table(nchar(txt)))==1)                               ### Check: hat der Resultdatensatz eine einheitliche Spaltenanzahl? Muss unbedingt sein!
@@ -254,7 +189,7 @@ defineModelSingle <- function (a) {
           write.table(lab,file.path(dir,paste(analysis.name,".lab",sep="")),col.names = TRUE,row.names = FALSE, dec = ",", sep = " ", quote = FALSE)
           batch <- paste( normalize.path(conquest.folder),paste(analysis.name,".cqc",sep=""), sep=" ")
           write(batch, file.path(dir,paste(analysis.name,".bat",sep="")))
-          foo <- gen.syntax(Name=analysis.name, daten=daten, all.Names = cbc[["allNam"]], namen.all.hg = cbc[["namen.all.hg"]], all.hg.char = all.hg.char, var.char= max(var.char), model=qMatrix, anchored=anchor, pfad=dir, n.plausible=n.plausible, compute.fit = compute.fit,
+          foo <- gen.syntax(Name=analysis.name, daten=daten, all.Names = cbc[["allNam"]], namen.all.hg = cbc[["namen.all.hg"]], all.hg.char = obs4[["all.hg.char"]], var.char= max(obs4[["var.char"]]), model=obs3[["qMatrix"]], anchored=anchor, pfad=dir, n.plausible=n.plausible, compute.fit = compute.fit,
                  constraints=constraints, std.err=std.err, distribution=distribution, method=met[["method"]], n.iterations=n.iterations, nodes=met[["nodes"]], p.nodes=p.nodes, f.nodes=f.nodes, converge=converge,deviancechange=deviancechange, equivalence.table=equivalence.table, use.letters=use.letters, model.statement=model.statement, conquest.folder = conquest.folder, allowAllScoresEverywhere = allowAllScoresEverywhere, seed = seed, export = export)
           if(!is.null(anchor))  {
              write.table(ankFrame[["resConquest"]], file.path(dir,paste(analysis.name,".ank",sep="")) ,sep=" ", col.names = FALSE, row.names = FALSE, quote = FALSE)
@@ -268,15 +203,15 @@ defineModelSingle <- function (a) {
           options(scipen = unlist(original.options)); flush.console()           ### Achtung: setze Konsolenpfade in Hochkommas, da andernfalls keine Leerzeichen in den Ordner- bzw. Dateinamen erlaubt sind!
           sysInfo  <- Sys.info()
           if(sysInfo[["sysname"]] == "Linux") {suff <- ""; setwd("/")} else {suff <- "\""}
-          ret <- list ( software = software, input = paste(suff, file.path(dir, paste(analysis.name,"cqc",sep=".")), suff, sep=""), conquest.folder = paste(suff, conquest.folder, suff, sep=""), dir=dir, analysis.name=analysis.name, model.name = analysis.name, qMatrix=qMatrix, all.Names=cbc[["allNam"]], deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]], perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], daten=daten, method=met[["method"]], nodes=met[["nodes"]], p.nodes=p.nodes, f.nodes=f.nodes, renam=renam)
+          ret <- list ( software = software, input = paste(suff, file.path(dir, paste(analysis.name,"cqc",sep=".")), suff, sep=""), conquest.folder = paste(suff, conquest.folder, suff, sep=""), dir=dir, analysis.name=analysis.name, model.name = analysis.name, qMatrix=obs3[["qMatrix"]], all.Names=cbc[["allNam"]], deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]], perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], daten=daten, method=met[["method"]], nodes=met[["nodes"]], p.nodes=p.nodes, f.nodes=f.nodes, renam=obs[["renam"]])
           class(ret) <-  c("defineConquest", "list")
        }
      ### Sektion 'Rueckgabeobjekt fuer tam'
        if(software %in% c("tam", "mirt") )   {
-          cat(paste("Q matrix specifies ",ncol(qMatrix)-1," dimension(s).\n",sep=""))
+          cat(paste("Q matrix specifies ",ncol(obs3[["qMatrix"]])-1," dimension(s).\n",sep=""))
           est.slopegroups <- prepEstSlopegroupsTAM(esg = est.slopegroups, allNam = cbc[["allNam"]])
      ### Ladungsmatrix fuer 2pl und gpcm
-          fixSlopeMatPrep <- prepFixSlopeMatTAM(fsm = fixSlopeMat, allNam = cbc[["allNam"]], qma =  qMatrix, slopeMatDomainCol=slopeMatDomainCol, slopeMatItemCol=slopeMatItemCol, slopeMatValueCol=slopeMatValueCol, dat=daten, irtmodel=irtmodel)
+          fixSlopeMatPrep <- prepFixSlopeMatTAM(fsm = fixSlopeMat, allNam = cbc[["allNam"]], qma =  obs3[["qMatrix"]], slopeMatDomainCol=slopeMatDomainCol, slopeMatItemCol=slopeMatItemCol, slopeMatValueCol=slopeMatValueCol, dat=daten, irtmodel=irtmodel)
           fixSlopeMatPrep[["ori"]] <- fixSlopeMat
           guessMat        <- prepGuessMat(guessMat, allNam = fixSlopeMatPrep[["allNam"]])
        }
@@ -284,17 +219,101 @@ defineModelSingle <- function (a) {
           control         <- list ( snodes = met[["snodes"]] , QMC=met[["QMC"]], convD = deviancechange ,conv = converge , convM = .0001 , Msteps = Msteps , maxiter = n.iterations, max.increment = 1 ,
                                   min.variance = .001 , progress = progress , ridge=0 , seed = seed , xsi.start0=FALSE,  increment.factor=increment.factor , fac.oldxsi= fac.oldxsi)
           if ( !is.null(met[["nodes"]])) { control$nodes <- met[["nodes"]] }
-          ret     <- list ( software = software, constraint = match.arg(constraints, choices = eval(formals(defineModel)[["constraints"]])) , qMatrix=qMatrix, anchor=list(ank = ankFrame[["resTam"]], allNam = cbc[["allNam"]]),
+          ret     <- list ( software = software, constraint = match.arg(constraints, choices = eval(formals(defineModel)[["constraints"]])) , qMatrix=obs3[["qMatrix"]], anchor=list(ank = ankFrame[["resTam"]], allNam = cbc[["allNam"]]),  
                             all.Names=fixSlopeMatPrep[["allNam"]], daten=daten, irtmodel=fixSlopeMatPrep[["irtmodel"]], est.slopegroups = est.slopegroups[["esgNm"]], guessMat=guessMat, control = control,
                             n.plausible=n.plausible, dir = dir, analysis.name=analysis.name, deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]],
                             perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], fixSlopeMat = fixSlopeMatPrep[["slopMat"]], estVar = fixSlopeMatPrep[["estVar"]], pvMethod = pvMethod,  fitTamMmlForBayesian=fitTamMmlForBayesian)
           class(ret) <-  c("defineTam", "list")
        }
        if(software == "mirt" )   {
-          irtmodel <- prepItemTypeMirt(irtmodel = irtmodel, allNam = cbc[["allNam"]], qMatrix=qMatrix)
-          ret      <- list ( software = software, qMatrix=qMatrix, allNam = fixSlopeMatPrep[["allNam"]], daten=daten, irtmodel=irtmodel, anchor=list(ank = ankFrame[["resTam"]], allNam = cbc[["allNam"]]), fixSlopeMat = fixSlopeMatPrep,
+          irtmodel <- prepItemTypeMirt(irtmodel = irtmodel, allNam = cbc[["allNam"]], qMatrix=obs3[["qMatrix"]])
+          ret      <- list ( software = software, qMatrix=obs3[["qMatrix"]], allNam = fixSlopeMatPrep[["allNam"]], daten=daten, irtmodel=irtmodel, anchor=list(ank = ankFrame[["resTam"]], allNam = cbc[["allNam"]]), fixSlopeMat = fixSlopeMatPrep,
                             n.plausible=n.plausible, dir = dir, analysis.name=analysis.name, deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]],
                             perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], est.slopegroups = est.slopegroups, progress=progress)
           class(ret) <-  c("defineMirt", "list")
        }
        return(ret)}
+
+### hilfsfunktion fuer defineModelSingle
+renameVariables <- function(a, qMatrix, software, all.Names, dat) {
+       renam       <- NULL                                                      ### initialisieren
+       if(software == "conquest") {
+          if(max(nchar(all.Names[["variablen"]]))>10) {
+             neu   <- paste0("a", as.numeric(as.factor(all.Names[["variablen"]])))
+             i     <- 1
+             while(length(intersect(neu, colnames(dat))) > 0) {
+                i  <- i+1;
+                neu<- paste0(letters[i], as.numeric(as.factor(all.Names[["variablen"]])))
+             }
+             renam <- data.frame(old = all.Names[["variablen"]], new = neu, stringsAsFactors = FALSE)
+             all.Names[["variablen"]] <- eatTools::recodeLookup(all.Names[["variablen"]], renam)
+             colnames(dat) <- eatTools::recodeLookup(colnames(dat), renam)
+             if(!is.null(a[["qMatrix"]])) {                                     ### umbenennung muss auch in der q matrix erfolgen, wenn es eine gibt 
+                qMatrix[,1] <- eatTools::recodeLookup(qMatrix[,1], renam)
+             }
+          }
+       } else {
+          if(!is.null(all.Names[["group.var"]])) {
+             message("Specifying group.vars is only allowed for software = 'conquest'. 'group.vars' will be ignored.")
+             all.Names[["group.var"]] <- NULL
+          }
+       }
+       return(list(dat=dat, qMatrix=qMatrix, all.Names=all.Names, renam=renam))}
+
+renameVariables2 <- function(all.Names, dat, software) {       
+       exclude <- which(names(all.Names) == "DIF.free")
+       subsNam <- .substituteSigns(dat=dat, variable=unlist(all.Names[-unique(c(1,2, exclude))]), all.Names = all.Names)
+       if(software == "conquest" || !is.null(all.Names[["DIF.var"]])) {
+          if(!all(subsNam$old == subsNam$new)) {                                ### Conquest erlaubt keine gross geschriebenen und expliziten Variablennamen, die ein "." oder "_" enthalten
+             sn     <- subsNam[which( subsNam$old != subsNam$new),]
+             if(nrow(sn) > 4) {toadd <- " (truncated)"} else {toadd <- ""}
+             message("'.', '-', and '_' nor upper case letters are allowed in explicit variable names and numbers in DIF variable name. Delete signs from variables names for explicit and DIF variables",toadd,": \n\n", eatTools::print_and_capture (head(sn, n=4), spaces = 5), "\n")
+             colnames(dat) <- eatTools::recodeLookup(colnames(dat), sn[,c("old", "new")])
+             all.Names     <- lapply(all.Names, FUN = function ( y ) {eatTools::recodeLookup(y, sn[,c("old", "new")]) })
+             if(model.statement != "item") {
+                cat("    Remove deleted signs from variables names for explicit variables also in the model statement. Please check afterwards for consistency!\n")
+                for ( uu in 1:nrow(sn))  {model.statement <- gsub(sn[uu,"old"], sn[uu,"new"], model.statement)}
+             }
+          }
+          if("item" %in% unlist(all.Names[-c(1:2)])) { stop("Conquest does not allow labelling explicit variable(s) with 'Item' or 'item'.\n") }
+       }                                                                        ### untere Zeilen: Dif-Variablen und Testitems duerfen sich nicht ueberschneiden
+       if(length(intersect(all.Names$DIF.var, all.Names$variablen))>0)    {stop("Test items and DIF variable have to be mutually exclusive.\n")}
+       if(length(intersect(all.Names$weight.var, all.Names$variablen))>0) {stop("Test items and weighting variable have to be mutually exclusive.\n")}
+       if(length(intersect(all.Names$HG.var, all.Names$variablen))>0)     {stop("Test items and HG variable have to be mutually exclusive.\n")}
+       if(length(intersect(all.Names$group.var, all.Names$variablen))>0)  {stop("Test items and group variable have to be mutually exclusive.\n")}
+       return(list(all.Names = all.Names, dat=dat))}
+
+generateOrCheckQmatrix <- function(a, qMatrix, all.Names) {
+       if(is.null(a[["qMatrix"]])) {
+          qMatrix <- data.frame ( item = all.Names$variablen, Dim1 = 1, stringsAsFactors = FALSE)
+       } else {
+          qMatrix <- checkQmatrixConsistency(qMatrix)                  ### pruefe Konsistenz der q-matrix
+          notInDat<- setdiff(qMatrix[,1], all.Names$variablen)
+          notInQ  <- setdiff( all.Names$variablen , qMatrix[,1])
+          if(length(notInDat)>0) {
+             cat(paste("Following ", length(notInDat)," item(s) missed in data frame will be removed from Q matrix: \n    ",paste(notInDat,collapse=", "),"\n",sep=""))
+             qMatrix <- checkQmatrixConsistency(qMatrix[-match(notInDat, qMatrix[,1]),])
+          }
+          if(length(notInQ)>0) {
+             cat(paste("Following ", length(notInQ)," item(s) missed in Q matrix will be removed from data: \n    ",paste(notInQ,collapse=", "),"\n",sep=""))
+          }                                                                     ### Wichtig! Sicherstellen, dass Reihenfolge der Items in Q-Matrix mit Reihenfolge der Items im Data.frame uebereinstimmt!
+          all.Names[["variablen"]] <- qMatrix[,1]
+       }
+       return(list(qMatrix=qMatrix, all.Names = all.Names))}
+
+prepareDatasets <- function(namen.all.hg, dat, software, allNam, use.letters) {
+       if(length(namen.all.hg)>0) {all.hg.char <- sapply(namen.all.hg, FUN=function(ii) {max(nchar(as.character(na.omit(dat[,ii]))))})} else {all.hg.char <- NULL}
+       if(software == "conquest" )   {                                          ### untere Zeile: wieviele character muss ich fuer jedes Item reservieren?
+          var.char  <- sapply(dat[,allNam[["variablen"]], drop = FALSE], FUN=function(ii) {max(nchar(as.character(na.omit(ii))))})
+          no.number <- setdiff(1:length(var.char), grep("[[:digit:]]",var.char))
+          if(length(no.number)>0) {var.char[no.number] <- 1}                    ### -Inf steht dort, wo nur missings sind, hier soll die Characterbreite auf 1 gesetzt sein
+          if(use.letters == TRUE)   {                                           ### sollen Buchstaben statt Ziffern benutzt werden? Dann erfolgt hier Recodierung.
+             rec.statement <- paste(0:25,"='",LETTERS,"'",sep="",collapse="; ")
+             daten.temp <- dat                                                  ### temporaer numerischen Datensatz erstellen, denn wenn letters = TRUE, stehen hier schon Buchstaben drin, und dann kann man keine part-whole correlation mehr bestimmen
+             for (i in allNam[["variablen"]])  {                                ### Warum erst hier? Weil Pruefungen (auf Dichotomitaet etc. vorher stattfinden sollen)
+                dat[,i] <- car::recode(dat[,i], rec.statement)
+             }
+             var.char <- rep(1,length(allNam[["variablen"]]))                   ### var.char muss nun neu geschrieben werden, da nun alles wieder einstellig ist!
+          }
+       }
+       return(list(dat=dat, var.char = var.char, all.hg.char=all.hg.char))}

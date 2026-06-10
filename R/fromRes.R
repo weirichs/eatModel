@@ -120,8 +120,10 @@ itemFromRes <- function ( resultsObj) {
                      adb <- mod[intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")), which(mod[,"derived.par"] == "abs.dif.bound")),"value"]
                      sdb <- mod[intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")), which(mod[,"derived.par"] == "sig.dif.bound")),"value"]
                  }
-     ### ist es partial credit mit dif in tam? dann spezielle Auslesefunktion benutzen
-                 if(length(isDif)>0 && length(grep("Cat2", sel[,"var2"])) > 0 && unique(sel[,"source"]) == "tam")  {
+     ### ist es partial credit mit dif in tam? dann spezielle Auslesefunktion benutzen             
+                 isPC <- length(grep("Cat2", sel[,"var2"])) > 0
+                 soft <- unique(sel[,"source"])
+                 if(length(isDif)>0 && isPC && soft == "tam")  {
                      sel <- itemFromResPcmDifTam(sel, pval=pval, adb=adb, sdb=sdb)
                  }  else  {
      ### gibt es DIF? wenn ja, wird das separat ausgelesen und drangemergt
@@ -160,15 +162,19 @@ itemFromRes <- function ( resultsObj) {
      ### wenn es nur Cat1 in den Spaltennamen gibt, es also Rasch/2pl ist, soll Cat1 rausgeloescht werden
                              if(length(grep("Cat2", colnames(res)))==0) {res <- adaptOutputForNonPCM(res)}
                              return(res)}))
-                     if(length(isDif) > 0) {
-                        ciCo<- colnames(selDIF)[grep("^CI__", colnames(selDIF))]
-                        sel <- merge(sel, selDIF[,c("item", "model", "estDif", "seDif", "infitDif", "absDif", ciCo, "difIndex", "ETS")], by=c("item","model"), all=TRUE)
+                     if(length(isDif) > 0 && isPC == TRUE && soft == "conquest") {
+                        sel <- selDIF 
+                     } else {
+                        if(length(isDif) > 0) {
+                           ciCo<- colnames(selDIF)[grep("^CI__", colnames(selDIF))]
+                           sel <- merge(sel, selDIF[,c("item", "model", "estDif", "seDif", "infitDif", "absDif", ciCo, "difIndex", "ETS")], by=c("item","model"), all=TRUE)
+                        }
                      }
                      return(sel)
                  }
           }))
      ### simplify and reshape ... die alte Funktion endete hier
-          if(length(grep("^Cat2", colnames(res)))>0) {                          ### das soll nur fuer partial credit stattfinden, aber nicht fuer pcm + dif + tam
+          if(length(grep("^Cat2", colnames(res)))>0) {                          ### das soll nur fuer partial credit stattfinden, aber nicht fuer pcm + dif + tam, das wird schon vorher abgefangen (hoffe ich)
               cols <- grep("^Cat", colnames(res), value=TRUE, ignore.case=TRUE)
               resL <- reshape2::melt(res, measure.vars = cols, na.rm=TRUE) |> tidyr::separate(col = "variable", into = c("category", "parameter", "crit")) |> suppressWarnings()
               ind  <- which(resL[,"crit"] == "thurstone")

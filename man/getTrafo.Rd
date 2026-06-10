@@ -7,7 +7,7 @@ at the IQB to be retrieved from a centrally stored database. The function argume
 are used to specify in detail for which study, subject, competency areas, and mode
 the values are to be requested.}
 \usage{
-getTrafo(dataBase = "I:/Methoden/10_sonstige Materialien/trafo.rda",
+getTrafo(dataBase = system.file("extdata", "trafo.rda", package = "eatModel"),
          mode=c("paper","pc"), grade=c("primary", "secondary"),
          subject = c("math", "deu", "eng", "frz", "bio", "che", "phy"),
          domain = c("all", "GL", "ZO", "RF", "MS", "GM", "DHW", "ZA", "ME",
