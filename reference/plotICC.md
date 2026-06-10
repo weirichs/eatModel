@@ -82,17 +82,23 @@ mod1 <- defineModel(dat=datW, items= -1, id="idstud", software = "tam")
 #> 97 subject(s) solved each item: P00078 (6 correct), P00389 (10 correct), P03338 (27 correct) ... 
 #> Dataset is completely linked.
 #> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
-#> Error in prepareDatasets(namen.all.hg = cbc[["namen.all.hg"]], dat = cpsc[["dat"]],     software = software, allNam = cbc[["allNam"]], use.letters = use.letters): object 'var.char' not found
+#> Q matrix specifies 1 dimension(s).
 
 # run the model
 run1 <- runModel(mod1)
-#> Error: object 'mod1' not found
 
 # get the results
 res1 <- getResults(run1)
-#> Error: object 'run1' not found
+#> Getting standard errors with the tam.se function: 0.6 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.2 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.7 secs
+#> |*****|
+#> |-----|
+#> Getting PVs calling tam.pv from getTamPVs: 1.1 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 2.2 secs
 
 # plot for one item 
 plotICC  ( resultsObj = res1, defineModelObj = mod1, items = "T04_04")
-#> Error: object 'res1' not found
+
+#> Error in if (nrow(pl) > 0) {    if (inherits(defineModelObj, "defineMultiple")) {        dfm <- defineModelObj        rmo <- runModelObj    }    else {        dfm <- list(obj1 = defineModelObj)        rmo <- list(obj1 = runModelObj)    }    pl2 <- lapply(1:length(dfm), FUN = function(nr) {        i <- unique(intersect(colnames(dfm[[nr]][["daten"]]),             pl[, "item"]))        i2 <- eatTools::whereAre(i, rmo[[nr]]$item$item)        tx <- capture.output(p2 <- plot(rmo[[nr]], items = i2,             type = "items", export = FALSE, low = -6, high = 6))    })}: argument is of length zero
 ```

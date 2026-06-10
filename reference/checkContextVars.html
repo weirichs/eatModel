@@ -45,7 +45,7 @@ mainly used for internal consistency checks.</p>
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">checkContextVars</span> <span class="op">(</span><span class="va">x</span>, <span class="va">varname</span>, type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"weight"</span>, <span class="st">"DIF"</span>, <span class="st">"group"</span>, <span class="st">"HG"</span><span class="op">)</span>, <span class="va">itemdata</span>,</span>
-<span>                  suppressAbort <span class="op">=</span> <span class="cn">FALSE</span>, internal <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<span>                  suppressAbort <span class="op">=</span> <span class="cn">FALSE</span>, internal <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">renam</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -69,6 +69,15 @@ mainly used for internal consistency checks.</p>
   <dt id="arg-internal">internal<a class="anchor" aria-label="anchor" href="#arg-internal"></a></dt>
 <dd><p>Logical: is only used for internal use. Recommend to set to FALSE.</p></dd>
 
+  <dt id="arg-renam">renam<a class="anchor" aria-label="anchor" href="#arg-renam"></a></dt>
+<dd><p>Optional: A data.frame with two columns containing the renamed item names. This is necessary
+because, when using Conquest, item names cannot exceed ten characters. If there are more than
+ten characters, the items are temporarily renamed internally, and after the Conquest analysis
+is complete, the renaming is reversed. To ensure that the console output contains the original
+item names, a renaming back to the original is also performed for each console output. The
+specification of the <code>renam</code> argument is only necessary when the function is called
+internally; otherwise, the value <code>NULL</code> should always be used here.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -82,11 +91,25 @@ mainly used for internal consistency checks.</p>
 <span class="r-in"><span><span class="va">datW</span> <span class="op">&lt;-</span> <span class="fu">reshape2</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/reshape2/man/cast.html" class="external-link">dcast</a></span><span class="op">(</span><span class="va">trends</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">trends</span><span class="op">[</span>,<span class="st">"year"</span><span class="op">]</span> <span class="op">==</span> <span class="fl">2010</span><span class="op">)</span>,<span class="op">]</span>,</span></span>
 <span class="r-in"><span>                        <span class="va">idstud</span><span class="op">+</span><span class="va">sex</span><span class="op">+</span><span class="va">ses</span><span class="op">+</span><span class="va">language</span><span class="op">~</span><span class="va">item</span>, value.var<span class="op">=</span><span class="st">"value"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">chk1</span> <span class="op">&lt;-</span> <span class="fu">checkContextVars</span><span class="op">(</span><span class="va">datW</span><span class="op">[</span>,<span class="st">"language"</span><span class="op">]</span>, <span class="st">"language"</span>, type<span class="op">=</span><span class="st">"DIF"</span>,</span></span>
-<span class="r-in"><span>                         itemdata <span class="op">=</span> <span class="va">datW</span><span class="op">[</span>,<span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                         itemdata <span class="op">=</span> <span class="va">datW</span><span class="op">[</span>,<span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span><span class="op">]</span>, renam<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Warning: Following 14 items are constants in DIF variable 'language', group other:</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in checkContextVars(datW[, "language"], "language", type = "DIF",     itemdata = datW[, -c(1:4)]):</span> argument "renam" is missing, with no default</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    T01_01, T05_04, T07_04, T07_07, T07_08, T07_10, T09_04, T09_05, T09_06, T10_08, T12_05, T13_06, T15_10, T16_04</span>
 <span class="r-in"><span><span class="va">chk1</span><span class="op">$</span><span class="va">info</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'chk1' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     varname varlevel nCases     type   vars value nValue</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  language    other     41 constant T01_01     1      9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  language    other     41 constant T05_04     1      8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  language    other     41 constant T07_04     0      5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  language    other     41 constant T07_07     0      5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  language    other     41 constant T07_08     1      5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  language    other     41 constant T07_10     0      5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  language    other     41 constant T09_04     0      5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  language    other     41 constant T09_05     1      5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  language    other     41 constant T09_06     1      5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 language    other     41 constant T10_08     0      9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11 language    other     41 constant T12_05     1     14</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12 language    other     41 constant T13_06     0     13</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13 language    other     41 constant T15_10     0     17</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14 language    other     41 constant T16_04     1      9</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

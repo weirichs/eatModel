@@ -88,7 +88,7 @@ by <code><a href="defineModel.html">defineModel</a></code> whether there are fun
 <span class="r-out co"><span class="r-pr">#&gt;</span> 5 subject(s) solved each item: P00106 (17 correct), P00939 (17 correct), P00393 (20 correct) ... </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Dataset is completely linked.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in prepareDatasets(namen.all.hg = cbc[["namen.all.hg"]], dat = cpsc[["dat"]],     software = software, allNam = cbc[["allNam"]], use.letters = use.letters):</span> object 'var.char' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Q matrix specifies 2 dimension(s).</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># model 2 (misspecified)</span></span></span>
 <span class="r-in"><span><span class="va">def2</span> <span class="op">&lt;-</span> <span class="fu"><a href="defineModel.html">defineModel</a></span><span class="op">(</span><span class="va">datW</span>, items <span class="op">=</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span>, id<span class="op">=</span><span class="st">"idstud"</span>, qMatrix <span class="op">=</span> <span class="va">qMat</span><span class="op">[</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">20</span>,<span class="fl">35</span>,<span class="fl">40</span><span class="op">)</span>,<span class="op">]</span>,</span></span>
@@ -105,11 +105,22 @@ by <code><a href="defineModel.html">defineModel</a></code> whether there are fun
 <span class="r-out co"><span class="r-pr">#&gt;</span>    P04281 (11 false), P04290 (11 false), P00782 (12 false) ... </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 5 subject(s) solved each item: P00106 (15 correct), P00939 (15 correct), P00393 (18 correct) ... </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Dataset is completely linked.</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in prepareDatasets(namen.all.hg = cbc[["namen.all.hg"]], dat = cpsc[["dat"]],     software = software, allNam = cbc[["allNam"]], use.letters = use.letters):</span> object 'var.char' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Q matrix specifies 2 dimension(s).</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># compare both outputs</span></span></span>
 <span class="r-in"><span><span class="fu">compareDefineModelObjects</span> <span class="op">(</span><span class="va">def1</span>, <span class="va">def2</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'def1' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Additional common variables (beyond the 'by'-variables) found: 'value'. Add suffixes '.x', '.y' to these variables in the result data.frame.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 of 130 unit(s) of merging variable 'item' from data set 'target' not included in data set 'reference'.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 of 133 unit(s) of merging variable 'item' from data set 'reference' not included in data set 'target'.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8952 of 165773 unit(s) of merging variable combination 'ID'+'item' from data set 'target' not included in data set 'reference'.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4356 of 161177 unit(s) of merging variable combination 'ID'+'item' from data set 'reference' not included in data set 'target'.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Mismatch for entry 'variablen' of 'all.Names' object: 'Lengths (131, 126) differ (string compare on first 126)'. '126 string mismatches'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Mismatch for entry 'HG.var' of 'all.Names' object: 'Lengths (2, 4) differ (string compare on first 2)'. '2 string mismatches'</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Additional common variables (beyond the 'by'-variables) found: 'value'. Add suffixes '.x', '.y' to these variables in the result data.frame.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 of 131 unit(s) of merging variable 'item' from data set 'reference Q matrix' not included in data set 'target Q matrix'.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 of 262 unit(s) of merging variable combination 'item'+'dim' from data set 'reference Q matrix' not included in data set 'target Q matrix'.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Q matrix mismatch: ''is.NA' value mismatch: 10 in current 0 in target</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Control mismatch for object 'nodes': 'Numeric: lengths (20, 30) differ'</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
