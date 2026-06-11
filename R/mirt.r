@@ -81,7 +81,8 @@ getMirtPopPar <- function(runModelObj=runModelObj, qMatrix=qMatrix) {
    return(ret)}
 
 adaptSkelForAnchor<- function (allNam, skel, anch, qmat, slope, irtmodel, est.slopegroups){
-     ### pro dimension checken: wenn es mindestens ein item mit explizit fixierter Trennschaerfe oder eines des Typs 'Rasch'
+  
+   ### pro dimension checken: wenn es mindestens ein item mit explizit fixierter Trennschaerfe oder eines des Typs 'Rasch'
      ### gibt, muessen die latenten Varianzen frei geschaetzt werden
        dims   <- unlist(lapply(qmat[,-1, drop=FALSE], FUN = function (d) {      ### objekt slope ist fixSlopeMat
           it  <- qmat[which(d != 0),1]
@@ -166,7 +167,7 @@ adaptSkelForAnchor<- function (allNam, skel, anch, qmat, slope, irtmodel, est.sl
              }
           }
        }
-       return(skel)}
+  return(skel)}
 
 
 isItPCM <- function(eql) {
