@@ -95,7 +95,7 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
     ### mittels skeleton erzeugt werden muss, geschieht das hier zweimal, erstmal allgemein (untere Zeile); fuer partial credit wird das dann nochmal ueberschrieben
                    anchor <- prepAnchorTAM(dfm = defineModelObj)
                    if(length(defineModelObj[["all.Names"]][["DIF.var"]]) == 0 ) {
-                      if( defineModelObj[["irtmodel"]] %in% c("1PL", "PCM", "PCM2", "RSM", "GPCM", "GPCM.groups")) {
+                      if( defineModelObj[["irtmodel"]] %in% c("1PL", "PCM", "PCM2", "RSM")) {
                           if ( isTRUE(defineModelObj[["fitTamMmlForBayesian"]]) ) {
     ### ueberschreibe 'originales' anchor objekt!
                                if(!is.null(anchor) && grepl("pcm", defineModelObj[["irtmodel"]], ignore.case=TRUE)) {
