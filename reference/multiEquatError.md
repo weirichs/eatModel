@@ -82,12 +82,12 @@ results <- by(data = trends, INDICES = trends[,"year"], FUN = function (y){
 #> Dataset is completely linked.
 #> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
 #> Q matrix specifies 1 dimension(s).
-#> Getting standard errors with the tam.se function: 0.9 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 0.4 secs
+#> Getting standard errors with the tam.se function: 0.8 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs
 #> Getting WLEs calling tam.wle from getTamWles: 0.7 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 1.1 secs
+#> Getting PVs calling tam.pv from getTamPVs: 1.3 secs
 #> Getting Q3 statistic calling tam.modelfit from getTamQ3: 2.2 secs
 #> 56 subject(s) do not solve any item:
 #>    P04511 (6 false), P05616 (10 false), P08143 (14 false) ... 
@@ -102,7 +102,7 @@ results <- by(data = trends, INDICES = trends[,"year"], FUN = function (y){
 #> Getting WLEs calling tam.wle from getTamWles: 0.9 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 0.9 secs
+#> Getting PVs calling tam.pv from getTamPVs: 1 secs
 #> Getting Q3 statistic calling tam.modelfit from getTamQ3: 4.9 secs
 #> 83 subject(s) do not solve any item:
 #>    P09337 (6 false), P09202 (10 false), P10569 (17 false) ... 
@@ -111,11 +111,11 @@ results <- by(data = trends, INDICES = trends[,"year"], FUN = function (y){
 #> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
 #> Q matrix specifies 1 dimension(s).
 #> Getting standard errors with the tam.se function: 2.2 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.4 secs
 #> Getting WLEs calling tam.wle from getTamWles: 1.3 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 0.9 secs
+#> Getting PVs calling tam.pv from getTamPVs: 1.1 secs
 #> Getting Q3 statistic calling tam.modelfit from getTamQ3: 6.4 secs
 items   <- lapply(results, itemFromRes)
 eq.1_2  <- equat1pl(items[[1]][,c("item", "est")], items[[2]][,c("item", "est")],difBound = 0.64, iterativ = TRUE)
@@ -309,14 +309,14 @@ results2<- by(data = trends, INDICES = trends[,"year"], FUN = function (y){
 #> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
 #> Q matrix specifies 1 dimension(s).
 #> Getting standard errors with the tam.se function: 0.4 secs
-#> Getting WLEs calling tam.wle from getTamWles: 0.5 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.6 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 1 secs
+#> Getting PVs calling tam.pv from getTamPVs: 1.1 secs
 #> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.9 secs
 #> Getting standard errors with the tam.se function: 0.6 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs
-#> Getting WLEs calling tam.wle from getTamWles: 0.6 secs
+#> Getting infit parameters calling tam.fit from getTamInfit: 0.2 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.7 secs
 #> |*****|
 #> |-----|
 #> Getting PVs calling tam.pv from getTamPVs: 1.1 secs
@@ -369,17 +369,17 @@ results2<- by(data = trends, INDICES = trends[,"year"], FUN = function (y){
 #> Q matrix specifies 1 dimension(s).
 #> Getting standard errors with the tam.se function: 1.3 secs
 #> Getting infit parameters calling tam.fit from getTamInfit: 0.4 secs
-#> Getting WLEs calling tam.wle from getTamWles: 0.6 secs
+#> Getting WLEs calling tam.wle from getTamWles: 0.7 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 1.1 secs
+#> Getting PVs calling tam.pv from getTamPVs: 1.3 secs
 #> Getting Q3 statistic calling tam.modelfit from getTamQ3: 3.1 secs
 #> Getting standard errors with the tam.se function: 1.7 secs
 #> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs
 #> Getting WLEs calling tam.wle from getTamWles: 0.9 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 0.9 secs
+#> Getting PVs calling tam.pv from getTamPVs: 1.1 secs
 #> Getting Q3 statistic calling tam.modelfit from getTamQ3: 4.9 secs
 #> --------------------------------
 #> splitModels: generating 2 models
@@ -430,15 +430,15 @@ results2<- by(data = trends, INDICES = trends[,"year"], FUN = function (y){
 #> Getting WLEs calling tam.wle from getTamWles: 0.7 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 1 secs
+#> Getting PVs calling tam.pv from getTamPVs: 0.9 secs
 #> Getting Q3 statistic calling tam.modelfit from getTamQ3: 4.7 secs
-#> Getting standard errors with the tam.se function: 2.1 secs
+#> Getting standard errors with the tam.se function: 2.2 secs
 #> Getting infit parameters calling tam.fit from getTamInfit: 0.6 secs
-#> Getting WLEs calling tam.wle from getTamWles: 1.3 secs
+#> Getting WLEs calling tam.wle from getTamWles: 1.4 secs
 #> |*****|
 #> |-----|
 #> Getting PVs calling tam.pv from getTamPVs: 0.9 secs
-#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 6.5 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 6.4 secs
 eq.1_2  <- equat1pl(results2[[1]], itemFromRes(results2[[2]])[,c("item", "est")],difBound = 0.64, iterativ = TRUE)
 #> Found 2 model(s).
 #>    Equating is executed for each dimension in each model separately.

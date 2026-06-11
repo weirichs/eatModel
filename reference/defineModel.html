@@ -2468,12 +2468,12 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 0.4 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 1.7 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 1.5 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 0.6 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 0.2 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 1.2 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 1 secs</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># extract item parameters from the 'results' object</span></span></span>
 <span class="r-in"><span><span class="co"># t1 is the reference measurement occasion, i.e. no linking/equating is necessary</span></span></span>
@@ -2607,21 +2607,21 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># get the results (to save time, item fit estimation is skipped)</span></span></span>
 <span class="r-in"><span><span class="va">resT1P</span><span class="op">&lt;-</span> <span class="fu"><a href="getResults.html">getResults</a></span><span class="op">(</span><span class="va">runT1P</span>, omitWle <span class="op">=</span> <span class="cn">TRUE</span>, Q3 <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 15.5 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 4.8 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 14.3 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 4.6 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.7 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 17.9 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 4.7 secs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.7 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 15.3 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 3.9 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.5 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 16.8 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 4.5 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.6 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 14.3 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 3.7 secs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.5 secs</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># latent regression coefficients for the three countries and two dimensions</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="regcoefFromRes.html">regcoefFromRes</a></span><span class="op">(</span><span class="va">resT1P</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>
@@ -2764,19 +2764,19 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># get the results</span></span></span>
 <span class="r-in"><span><span class="va">resT2</span> <span class="op">&lt;-</span> <span class="fu"><a href="getResults.html">getResults</a></span><span class="op">(</span><span class="va">runT2</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 1.5 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 0.5 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 1.7 secs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 1.9 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting Q3 statistic calling tam.modelfit from getTamQ3: 3.2 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 2 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 1.3 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 0.4 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 1.4 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 1.3 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 1.3 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 1.4 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting Q3 statistic calling tam.modelfit from getTamQ3: 3.1 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 2 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 1 secs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 1.5 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting Q3 statistic calling tam.modelfit from getTamQ3: 4.9 secs</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># collect item parameters</span></span></span>
@@ -2961,23 +2961,23 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-in"><span><span class="co"># get the results</span></span></span>
 <span class="r-in"><span><span class="va">resT2P</span><span class="op">&lt;-</span> <span class="fu"><a href="getResults.html">getResults</a></span><span class="op">(</span><span class="va">runT2P</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Q3 is only available for unidimensional models. Estimation will be skipped.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 28.7 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 7.3 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 2.1 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 26.6 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 7.5 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 2 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 1 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.6 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Q3 is only available for unidimensional models. Estimation will be skipped.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 23.8 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 6.3 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 1.6 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 22.8 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 5.9 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 1.5 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.7 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.6 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Q3 is only available for unidimensional models. Estimation will be skipped.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 21.3 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 19.8 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 5 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 1.1 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 1 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.5 secs</span>
@@ -3069,20 +3069,20 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># get the results</span></span></span>
 <span class="r-in"><span><span class="va">resT3</span> <span class="op">&lt;-</span> <span class="fu"><a href="getResults.html">getResults</a></span><span class="op">(</span><span class="va">runT3</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 1.9 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 1.8 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 0.5 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 0.8 secs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 1.4 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting Q3 statistic calling tam.modelfit from getTamQ3: 4.7 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 2.7 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 0.6 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 1.5 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 1.2 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 1.2 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting Q3 statistic calling tam.modelfit from getTamQ3: 6.5 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting Q3 statistic calling tam.modelfit from getTamQ3: 4.7 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 2.3 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 0.6 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 2 secs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 1.2 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting Q3 statistic calling tam.modelfit from getTamQ3: 6.4 secs</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># collect item parameters</span></span></span>
 <span class="r-in"><span><span class="va">itemT3</span><span class="op">&lt;-</span> <span class="fu"><a href="itemFromRes.html">itemFromRes</a></span><span class="op">(</span><span class="va">resT3</span><span class="op">)</span></span></span>
@@ -3263,21 +3263,21 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-in"><span><span class="va">resT3P</span><span class="op">&lt;-</span> <span class="fu"><a href="getResults.html">getResults</a></span><span class="op">(</span><span class="va">runT3P</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Q3 is only available for unidimensional models. Estimation will be skipped.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 1.2 mins</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 9.4 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 1.7 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 9.3 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 1.9 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 1.2 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Q3 is only available for unidimensional models. Estimation will be skipped.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 57.5 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 6.2 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 1.7 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 57.8 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 6.3 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 1.3 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.9 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 1.2 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Q3 is only available for unidimensional models. Estimation will be skipped.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 55 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 6 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 53.7 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 5.7 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 0.7 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
@@ -4537,12 +4537,12 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 1.1 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting Q3 statistic calling tam.modelfit from getTamQ3: 0.9 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 0.8 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 1 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 0.2 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 1 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 0.6 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 1.2 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 1.1 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting Q3 statistic calling tam.modelfit from getTamQ3: 2.2 secs</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># extract item parameters from the 'results' object</span></span></span>
@@ -4642,24 +4642,24 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># get the results</span></span></span>
 <span class="r-in"><span><span class="va">resT1P</span><span class="op">&lt;-</span> <span class="fu"><a href="getResults.html">getResults</a></span><span class="op">(</span><span class="va">runT1P</span>, Q3 <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 38.6 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 3.8 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 0.9 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 40.3 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 4.1 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 0.7 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.5 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 45.6 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 4.1 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 0.6 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 46 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 4 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 0.7 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.6 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 38.6 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 3.1 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 37.6 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 3.2 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 0.8 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.5 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.6 secs</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">################################################################################</span></span></span>
@@ -4772,7 +4772,7 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-in"><span><span class="va">foo1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/capture.output.html" class="external-link">capture.output</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">run1</span>, items <span class="op">=</span> <span class="va">ind1</span>, type<span class="op">=</span><span class="st">"items"</span>, export<span class="op">=</span><span class="cn">FALSE</span>, low<span class="op">=</span><span class="op">-</span><span class="fl">6</span>, high<span class="op">=</span><span class="fl">6</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="defineModel-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="va">res1</span> <span class="op">&lt;-</span> <span class="fu"><a href="getResults.html">getResults</a></span><span class="op">(</span><span class="va">run1</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 1 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 0.9 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 0.4 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
@@ -4796,11 +4796,11 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-in"><span><span class="va">res2</span> <span class="op">&lt;-</span> <span class="fu"><a href="getResults.html">getResults</a></span><span class="op">(</span><span class="va">run2</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 0.9 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 0.4 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 0.3 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.3 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.4 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1.1 secs</span>
 <span class="r-in"><span><span class="va">it2</span>  <span class="op">&lt;-</span> <span class="fu"><a href="itemFromRes.html">itemFromRes</a></span><span class="op">(</span><span class="va">res2</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># link males to females ... males perform worse</span></span></span>
@@ -4869,12 +4869,12 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-in"><span><span class="va">run3A</span><span class="op">&lt;-</span> <span class="fu"><a href="runModel.html">runModel</a></span><span class="op">(</span><span class="va">def3A</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Generate skeleton for partial credit anchoring: 0.2 secs</span>
 <span class="r-in"><span><span class="va">res3A</span><span class="op">&lt;-</span> <span class="fu"><a href="getResults.html">getResults</a></span><span class="op">(</span><span class="va">run3A</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 1 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 0.9 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 0.3 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 0.4 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.3 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.5 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1 secs</span>
 <span class="r-in"><span><span class="va">it3A</span> <span class="op">&lt;-</span> <span class="fu"><a href="itemFromRes.html">itemFromRes</a></span><span class="op">(</span><span class="va">res3A</span><span class="op">)</span>                                                      <span class="co">### all items except the ones with linking dif with equal item parameters? check </span></span></span>
 <span class="r-in"><span><span class="va">comp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">it1</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"item"</span>, <span class="st">"category"</span>, <span class="st">"est"</span><span class="op">)</span><span class="op">]</span>, <span class="va">it3A</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"item"</span>, <span class="st">"category"</span>, <span class="st">"est"</span>, <span class="st">"offset"</span><span class="op">)</span><span class="op">]</span>, by<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"item"</span>, <span class="st">"category"</span><span class="op">)</span>, suffixes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"_ref"</span>, <span class="st">"_foc"</span><span class="op">)</span><span class="op">)</span></span></span>
@@ -4907,7 +4907,7 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 0.4 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.4 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.6 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1 secs</span>
 <span class="r-in"><span><span class="va">it3B</span> <span class="op">&lt;-</span> <span class="fu"><a href="itemFromRes.html">itemFromRes</a></span><span class="op">(</span><span class="va">res3B</span><span class="op">)</span>                                                      <span class="co">### all items except the ones with linking dif with equal item parameters? check </span></span></span>
 <span class="r-in"><span><span class="va">link</span> <span class="op">&lt;-</span> <span class="va">eq</span><span class="op">[[</span><span class="st">"items"</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="st">"not_specified"</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="st">"Dim1"</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="st">"cleanedLinkItemPars"</span><span class="op">]</span><span class="op">]</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"item"</span>, <span class="st">"category"</span>, <span class="st">"est"</span><span class="op">)</span><span class="op">]</span></span></span>
@@ -5028,13 +5028,13 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in file.choose():</span> file choice cancelled</span>
 <span class="r-in"><span><span class="va">run1</span> <span class="op">&lt;-</span> <span class="fu"><a href="runModel.html">runModel</a></span><span class="op">(</span><span class="va">def1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">res1</span> <span class="op">&lt;-</span> <span class="fu"><a href="getResults.html">getResults</a></span><span class="op">(</span><span class="va">run1</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 1 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 0.9 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 0.4 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.4 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1.3 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1 secs</span>
 <span class="r-in"><span><span class="va">it1</span>  <span class="op">&lt;-</span> <span class="fu"><a href="itemFromRes.html">itemFromRes</a></span><span class="op">(</span><span class="va">res1</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># males are focus group: initial free estimation of item parameters</span></span></span>
@@ -5048,7 +5048,7 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 0.4 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.3 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.4 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1 secs</span>
 <span class="r-in"><span><span class="va">it2</span>  <span class="op">&lt;-</span> <span class="fu"><a href="itemFromRes.html">itemFromRes</a></span><span class="op">(</span><span class="va">res2</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
@@ -5115,11 +5115,11 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Generate skeleton for partial credit anchoring: 0.2 secs</span>
 <span class="r-in"><span><span class="va">res3A</span><span class="op">&lt;-</span> <span class="fu"><a href="getResults.html">getResults</a></span><span class="op">(</span><span class="va">run3A</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 0.9 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 0.2 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 0.4 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.3 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.4 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1 secs</span>
 <span class="r-in"><span><span class="va">it3A</span> <span class="op">&lt;-</span> <span class="fu"><a href="itemFromRes.html">itemFromRes</a></span><span class="op">(</span><span class="va">res3A</span><span class="op">)</span>                                                      <span class="co">### all dichotomous items except the ones with linking dif with equal item parameters? check</span></span></span>
 <span class="r-in"><span><span class="va">comp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">it1</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"item"</span>, <span class="st">"category"</span>, <span class="st">"est"</span><span class="op">)</span><span class="op">]</span>, <span class="va">it3A</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"item"</span>, <span class="st">"category"</span>, <span class="st">"est"</span>, <span class="st">"offset"</span><span class="op">)</span><span class="op">]</span>, by<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"item"</span>, <span class="st">"category"</span><span class="op">)</span>, suffixes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"_ref"</span>, <span class="st">"_foc"</span><span class="op">)</span><span class="op">)</span></span></span>
@@ -5142,8 +5142,8 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Generate skeleton for partial credit anchoring: 0.2 secs</span>
 <span class="r-in"><span><span class="va">res3B</span><span class="op">&lt;-</span> <span class="fu"><a href="getResults.html">getResults</a></span><span class="op">(</span><span class="va">run3B</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 0.9 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 0.3 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 0.2 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 0.4 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.4 secs</span>
@@ -5227,12 +5227,12 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    D223013, D223023, D223033, D223043, D223063, D223073, D223083, D223103, D223113, D223123, D223133, D223143, D224013, D224023, D224033, D224043, D224053, D224063, D224083, D224093, D224103, D224113</span>
 <span class="r-in"><span><span class="va">run2T</span><span class="op">&lt;-</span> <span class="fu"><a href="runModel.html">runModel</a></span><span class="op">(</span><span class="va">def2T</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">res2T</span><span class="op">&lt;-</span> <span class="fu"><a href="getResults.html">getResults</a></span><span class="op">(</span><span class="va">run2T</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 1 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 0.9 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 0.3 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 0.4 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.3 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.4 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting Q3 statistic calling tam.modelfit from getTamQ3: 1.1 secs</span>
 <span class="r-in"><span><span class="va">it2T</span> <span class="op">&lt;-</span> <span class="fu"><a href="itemFromRes.html">itemFromRes</a></span><span class="op">(</span><span class="va">res2T</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">it1T</span><span class="op">[</span>,<span class="st">"estSlope"</span><span class="op">]</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">it2T</span><span class="op">[</span>,<span class="st">"estSlope"</span><span class="op">]</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span>          <span class="co">### average discrimination (reg vs. spf) differs for males, but not for females</span></span></span>
@@ -5304,12 +5304,11 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Following 22 items in dataset without fixed slopes in 'fixSlopeMat'. Slope(s) will be estimated freely.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    D223013, D223023, D223033, D223043, D223063, D223073, D223083, D223103, D223113, D223123, D223133, D223143, D224013, D224023, D224033, D224043, D224053, D224063, D224083, D224093, D224103, D224113</span>
 <span class="r-in"><span><span class="va">run3T</span><span class="op">&lt;-</span> <span class="fu"><a href="runModel.html">runModel</a></span><span class="op">(</span><span class="va">def3T</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generate skeleton for partial credit anchoring: 4.8 secs</span>
 <span class="r-in"><span><span class="va">res3T</span><span class="op">&lt;-</span> <span class="fu"><a href="getResults.html">getResults</a></span><span class="op">(</span><span class="va">run3T</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Q3 is only available for unidimensional models. Estimation will be skipped.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 13.7 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 2.7 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 1.3 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 14.2 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 2.8 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 1.1 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 0.4 secs</span>
@@ -5317,8 +5316,10 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-in"><span><span class="va">comp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">it1T</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"item"</span>, <span class="st">"category"</span>, <span class="st">"est"</span>, <span class="st">"estSlope"</span><span class="op">)</span><span class="op">]</span>,<span class="va">estSlope</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span>, <span class="va">it3T</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"item"</span>, <span class="st">"category"</span>, <span class="st">"est"</span>, <span class="st">"offset"</span><span class="op">)</span><span class="op">]</span>, by<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"item"</span>, <span class="st">"category"</span><span class="op">)</span>, all<span class="op">=</span><span class="cn">TRUE</span>, suffixes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"_ref"</span>, <span class="st">"_foc"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">equal</span><span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/na.fail.html" class="external-link">na.omit</a></span><span class="op">(</span><span class="va">comp</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"est_ref"</span>, <span class="st">"offset"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">equal</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span> <span class="op">==</span> <span class="va">equal</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>                                          <span class="co">### all item parameters without linking dif should be equal</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> all(equal[, 1] == equal[, 2]) is not TRUE</span>
 <span class="r-in"><span><span class="va">lDif</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">comp</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">est_foc</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">lDif</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">est_ref</span><span class="op">)</span><span class="op">)</span><span class="op">[</span>,<span class="st">"item"</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">lDif</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">est_ref</span><span class="op">)</span><span class="op">)</span><span class="op">[</span>,<span class="st">"category"</span><span class="op">]</span>, sep<span class="op">=</span><span class="st">"_"</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">eq</span><span class="op">$</span><span class="va">items</span><span class="op">[[</span><span class="st">"not_specified"</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="st">"Dim1"</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="st">"info"</span><span class="op">]</span><span class="op">]</span><span class="op">[</span>,<span class="st">"itemExcluded"</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> all(paste(subset(lDif, !is.na(est_ref))[, "item"], subset(lDif,  .... is not TRUE</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># variant 2: use the 1pl item parameters for males (linking dif items excluded), transformed to the metric of females</span></span></span>
 <span class="r-in"><span><span class="va">def4T</span><span class="op">&lt;-</span> <span class="fu">defineModel</span><span class="op">(</span><span class="fu">eatTools</span><span class="fu">::</span><span class="fu"><a href="https://weirichs.github.io/eatTools/reference/na_omit_selection.html" class="external-link">na_omit_selection</a></span><span class="op">(</span>dat<span class="op">=</span><span class="va">datW</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">datW</span><span class="op">[</span>,<span class="st">"sex"</span><span class="op">]</span> <span class="op">==</span> <span class="st">"male"</span><span class="op">)</span>,<span class="op">]</span>,<span class="st">"language"</span><span class="op">)</span>, </span></span>
@@ -5344,11 +5345,10 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Following 22 items in dataset without fixed slopes in 'fixSlopeMat'. Slope(s) will be estimated freely.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    D223013, D223023, D223033, D223043, D223063, D223073, D223083, D223103, D223113, D223123, D223133, D223143, D224013, D224023, D224033, D224043, D224053, D224063, D224083, D224093, D224103, D224113</span>
 <span class="r-in"><span><span class="va">run4T</span><span class="op">&lt;-</span> <span class="fu"><a href="runModel.html">runModel</a></span><span class="op">(</span><span class="va">def4T</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generate skeleton for partial credit anchoring: 4.5 secs</span>
 <span class="r-in"><span><span class="va">res4T</span><span class="op">&lt;-</span> <span class="fu"><a href="getResults.html">getResults</a></span><span class="op">(</span><span class="va">run4T</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Q3 is only available for unidimensional models. Estimation will be skipped.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 13.9 secs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 2.8 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting infit parameters calling tam.fit from getTamInfit: 2.9 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 1.3 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |-----|</span>
@@ -5358,8 +5358,10 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-in"><span><span class="va">comp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">link</span>, <span class="va">it4T</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"item"</span>, <span class="st">"category"</span>, <span class="st">"est"</span>, <span class="st">"offset"</span><span class="op">)</span><span class="op">]</span>, by<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"item"</span>, <span class="st">"category"</span><span class="op">)</span>, suffixes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"_ref"</span>, <span class="st">"_foc"</span><span class="op">)</span>, all<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">equal</span><span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/na.fail.html" class="external-link">na.omit</a></span><span class="op">(</span><span class="va">comp</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"est_ref"</span>, <span class="st">"offset"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">equal</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span> <span class="op">==</span> <span class="va">equal</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>                                          <span class="co">### all item parameters without linking dif should be equal</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> all(equal[, 1] == equal[, 2]) is not TRUE</span>
 <span class="r-in"><span><span class="va">lDif</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">comp</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">est_foc</span><span class="op">)</span><span class="op">)</span>                                           <span class="co">### all items with specific focus paraeter must be included in linking DIF exclusion list </span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">lDif</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">est_ref</span><span class="op">)</span><span class="op">)</span><span class="op">[</span>,<span class="st">"item"</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">lDif</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">est_ref</span><span class="op">)</span><span class="op">)</span><span class="op">[</span>,<span class="st">"category"</span><span class="op">]</span>, sep<span class="op">=</span><span class="st">"_"</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">eq</span><span class="op">$</span><span class="va">items</span><span class="op">[[</span><span class="st">"not_specified"</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="st">"Dim1"</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="st">"info"</span><span class="op">]</span><span class="op">]</span><span class="op">[</span>,<span class="st">"itemExcluded"</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> all(paste(subset(lDif, !is.na(est_ref))[, "item"], subset(lDif,  .... is not TRUE</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># transform to Bista metric</span></span></span>
 <span class="r-in"><span><span class="va">eq4</span>  <span class="op">&lt;-</span> <span class="fu"><a href="equat1pl.html">equat1pl</a></span><span class="op">(</span>results <span class="op">=</span> <span class="va">res4T</span><span class="op">)</span>                                               <span class="co">### reference population mean and SD</span></span></span>
@@ -5439,7 +5441,7 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Calculating information matrix...</span>
 <span class="r-in"><span><span class="va">res1</span> <span class="op">&lt;-</span> <span class="fu"><a href="getResults.html">getResults</a></span><span class="op">(</span><span class="va">run1</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling fscores(method="WLE") from getMirtWles: 15.7 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling fscores(method="WLE") from getMirtWles: 15.6 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling fscores from getMirtPVs: 0.3 secs</span>
 <span class="r-in"><span><span class="va">it1</span>  <span class="op">&lt;-</span> <span class="fu"><a href="itemFromRes.html">itemFromRes</a></span><span class="op">(</span><span class="va">res1</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
@@ -5461,7 +5463,7 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Calculating information matrix...</span>
 <span class="r-in"><span><span class="va">res2</span> <span class="op">&lt;-</span> <span class="fu"><a href="getResults.html">getResults</a></span><span class="op">(</span><span class="va">run2</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling fscores(method="WLE") from getMirtWles: 14.7 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling fscores(method="WLE") from getMirtWles: 14.6 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling fscores from getMirtPVs: 0.3 secs</span>
 <span class="r-in"><span><span class="va">it2</span>  <span class="op">&lt;-</span> <span class="fu"><a href="itemFromRes.html">itemFromRes</a></span><span class="op">(</span><span class="va">res2</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
@@ -5831,7 +5833,7 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>NaNs produced</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>NaNs produced</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>NaNs produced</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 2 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting standard errors with the tam.se function: 2.1 secs</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Expected 3 pieces. Missing pieces filled with `NA` in 168 rows [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, ...].</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Error in the computation of infit values with tam.fit. This should only occur for DIF estimation in partial credit models. Infit estimation is skipped.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |*****|</span>
@@ -5848,7 +5850,7 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-in"><span><span class="va">it</span>  <span class="op">&lt;-</span> <span class="fu"><a href="itemFromRes.html">itemFromRes</a></span><span class="op">(</span><span class="va">resC</span><span class="op">)</span></span></span>
 <span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'resC' not found</span>
 <span class="r-in"><span><span class="va">shw</span> <span class="op">&lt;-</span> <span class="fu"><a href="get.shw.html">get.shw</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"dif_pcm.shw"</span><span class="op">)</span>, dif.term <span class="op">=</span> <span class="st">"item*sex"</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>cannot open file '/tmp/Rtmp12EEiK/dif_pcm.shw': No such file or directory</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>cannot open file '/tmp/Rtmpq7fmeb/dif_pcm.shw': No such file or directory</span>
 <span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in file(file, "r"):</span> cannot open the connection</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
@@ -5890,7 +5892,7 @@ to be TRUE, these persons are excluded from the data set.</p></dd>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting WLEs calling tam.wle from getTamWles: 0.7 secs</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |***************|</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> |---------------|</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 20.4 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Getting PVs calling tam.pv from getTamPVs: 20.1 secs</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Getting Q3 statistic calling tam.modelfit from getTamQ3: 2 secs</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># estimate mean and standard deviation of the reference population from the plausible values</span></span></span>
