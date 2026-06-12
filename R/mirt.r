@@ -81,7 +81,7 @@ getMirtPopPar <- function(runModelObj=runModelObj, qMatrix=qMatrix) {
    return(ret)}
 
 adaptSkelForAnchor<- function (allNam, skel, anch, qmat, slope, irtmodel, est.slopegroups){
-     ### pro dimension checken: wenn es mindestens ein item mit explizit fixierter Trennschaerfe oder eines des Typs 'Rasch'
+   ### pro dimension checken: wenn es mindestens ein item mit explizit fixierter Trennschaerfe oder eines des Typs 'Rasch'
      ### gibt, muessen die latenten Varianzen frei geschaetzt werden
        dims   <- unlist(lapply(qmat[,-1, drop=FALSE], FUN = function (d) {      ### objekt slope ist fixSlopeMat
           it  <- qmat[which(d != 0),1]
@@ -147,26 +147,50 @@ adaptSkelForAnchor<- function (allNam, skel, anch, qmat, slope, irtmodel, est.sl
              }
           } else {
              slp <- subS[,allNam[["slopeMatValueCol"]]]
+             if(length(slp) != 1) {
+                stop(paste0("Item '",i,"': expected exactly one slope value in 'fixSlopeMat', but found ",length(slp)," (possibly duplicated rows)."))
+             }
           }
+
      ### slope-Parameter in skeleton eintragen und Wert in der "est"-Spalte auf FALSE setzen
      ### das funktioniert vermutlich erstmal alles nur fuer between item multidimensinality
           stopifnot(nrow(skel[intersect(intersect(which(skel[,"item"]==i), grep("^a[[:digit:]]", skel[,"name"])), which(skel[,"value"] != 0)),])==1)
           skel[intersect(intersect(which(skel[,"item"]==i), grep("^a[[:digit:]]", skel[,"name"])), which(skel[,"value"] != 0)),"est"] <- FALSE
           skel[intersect(intersect(which(skel[,"item"]==i), grep("^a[[:digit:]]", skel[,"name"])), which(skel[,"value"] != 0)),"value"] <- slp
-          if(unique(skel[which(skel[,"item"] == i),"class"]) == "dich") {       ### dichotome Items: nur einen parameter uebertragen
+          
+         
+         model_class_i <- unique(skel[which(skel[,"item"] == i),"class"]) 
+
+         if(model_class_i == "dich") {       ### dichotome Items: nur einen parameter uebertragen
              stopifnot(nrow(subI) == 1)
              skel[intersect(which(skel[,"item"] == i),which(skel[,"name"] == "d")), "value"] <- (-1) * subI[,"parameter"] * slp
              skel[intersect(which(skel[,"item"] == i),which(skel[,"name"] == "d")), "est"]   <- FALSE
           } else {                                                              ### polytom
      ### das was in metarep auf Anregung von Janines Mail passiert, muss hier nicht geschehen, da hier nicht einzelnen Stufen
      ### parametrisiert werden und nicht ein "globaler" Itemparameter und die STufen dann als Differenz davon (glaube ich zumindest)
-             for(z in 1:nrow(subI)) {
-                 skel[intersect(which(skel[,"item"] == i), which(skel[,"name"] == paste0("d", eatTools::removeNonNumeric(subI[z,"category"])))),"est"] <- FALSE
-                 skel[intersect(which(skel[,"item"] == i), which(skel[,"name"] == paste0("d", eatTools::removeNonNumeric(subI[z,"category"])))),"value"] <- (-1) * subI[z,"parameter"] * slp
+            
+     ### subI enthaelt die traditionellen (nicht kumulierten) Schwellen b_k; mirt erwartet
+     ### kumulierte Intercepts d_k = -a*(b_1+...+b_k), deshalb Umrechnung via traditional2mirt
+            catNum    <- as.numeric(eatTools::removeNonNumeric(subI[,"category"]))
+     ### die kumulierten Intercepts brauchen alle unteren Schwellen, deshalb muessen die verankerten
+     ### Kategorien lueckenlos sein und bei 1 beginnen
+            if(anyNA(catNum) || !all(sort(catNum) == seq_along(catNum))) {
+               stop(paste0("Item '",i,"': anchored categories must be consecutive, starting with category 1. Found: '",paste(subI[,"category"], collapse = "', '"),"'."))
+            }
+           if(!model_class_i %in% c("gpcm")) {
+   stop(paste0("Item '",i,"': anchoring of polytomous items is only implemented for item classes 'gpcm', not '",model_class_i,"'."))
+}
+            b_pars    <- subI[order(catNum), "parameter"]
+            mirt_pars <- mirt::traditional2mirt(c(slp, b_pars), model_class_i, ncat = length(b_pars) + 1)
+            for(z in 1:nrow(subI)) {
+                 rows <- intersect(which(skel[,"item"] == i), which(skel[,"name"] == paste0("d", catNum[z])))
+                 skel[rows,"est"]   <- FALSE
+                 skel[rows,"value"] <- mirt_pars[[paste0("d", catNum[z])]]
              }
-          }
+         }
        }
-       return(skel)}
+   return(skel)
+}
 
 
 isItPCM <- function(eql) {
