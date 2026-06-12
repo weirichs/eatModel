@@ -14,39 +14,34 @@ buildSkelInput <- function(ncat = 3) {
          qmat = data.frame(item = paste0("I", 1:4), dim1 = 1, stringsAsFactors = FALSE))
 }
 
-# test_that("anchored dichotomous item: slope and intercept fixed, d = -a*b", {
-#     ## Itempars in mirt can be called as irt parameters via  coef(..., IRTpars = TRUE))
-#     ## However, the intercept and slope are needed for anchoring.  
+test_that("anchored dichotomous item: slope and intercept fixed, d = -a*b", {
+    ## Itempars in mirt can be called as irt parameters via  coef(..., IRTpars = TRUE))
+    ## However, the intercept and slope are needed for anchoring.  
     
-#     ## pretend I have called the irt parameters before. This are the parameters for the anchor item:
-#     b = 0.5
-#     a = 1.2
-#     inp  <- buildSkelInput()
-#     anch <- list(ank = data.frame(item = "I1", parameter = b, stringsAsFactors = FALSE))
-#     slop <- list(ori = data.frame(item = "I1", estSlope = a, stringsAsFactors = FALSE))
-#     out  <- adaptSkelForAnchor(allNam = inp$allNam, skel = inp$skel, anch = anch,
-#                                qmat = inp$qmat, slope = slop, irtmodel = inp$irtmodel,
-#                                est.slopegroups = NULL)
-#     rowA <- which(out$item == "I1" & out$name == "a1")
-#     rowD <- which(out$item == "I1" & out$name == "d")
-#     expect_false(out[rowA, "est"])
-#     ## a stays as it is
-#     expect_equal(out[rowA, "value"], a)
-#     expect_false(out[rowD, "est"])
-#     ## We should get the transformed parameter d: 
-#     expect_equal(out[rowD, "value"], -1*(a * b)) ## formula: -1(b * a) = d
-#     # Mittelwert der Dimension mit Ankeritem sowie Varianz (Dimension enthaelt
-#     # Item mit fixierter Trennschaerfe) muessen frei geschaetzt werden
-#     expect_true(out[which(out$name == "MEAN_1"), "est"])
-#     expect_true(out[which(out$name == "COV_11"), "est"])
-#     # nicht verankerte Items bleiben frei
-#     expect_true(out[which(out$item == "I2" & out$name == "d"), "est"])
-# })
-
-
-## also check against coef(itempars = TRUE )
-
-
+    ## pretend I have called the irt parameters before. This are the parameters for the anchor item:
+    b = 0.5
+    a = 1.2
+    inp  <- buildSkelInput()
+    anch <- list(ank = data.frame(item = "I1", parameter = b, stringsAsFactors = FALSE))
+    slop <- list(ori = data.frame(item = "I1", estSlope = a, stringsAsFactors = FALSE))
+    out  <- adaptSkelForAnchor(allNam = inp$allNam, skel = inp$skel, anch = anch,
+                               qmat = inp$qmat, slope = slop, irtmodel = inp$irtmodel,
+                               est.slopegroups = NULL)
+    rowA <- which(out$item == "I1" & out$name == "a1")
+    rowD <- which(out$item == "I1" & out$name == "d")
+    expect_false(out[rowA, "est"])
+    ## a stays as it is
+    expect_equal(out[rowA, "value"], a)
+    expect_false(out[rowD, "est"])
+    ## We should get the transformed parameter d: 
+    expect_equal(out[rowD, "value"], -1*(a * b)) ## formula: -1(b * a) = d
+    # Mittelwert der Dimension mit Ankeritem sowie Varianz (Dimension enthaelt
+    # Item mit fixierter Trennschaerfe) muessen frei geschaetzt werden
+    expect_true(out[which(out$name == "MEAN_1"), "est"])
+    expect_true(out[which(out$name == "COV_11"), "est"])
+    # nicht verankerte Items bleiben frei
+    expect_true(out[which(out$item == "I2" & out$name == "d"), "est"])
+})
 
 test_that("anchored gpcm item: skeleton values match mirt:::traditional2mirt", {
     # Achtung: kodiert die mirt-Konvention (mirt:::traditional2mirt, itemclass 'gpcm');
@@ -68,18 +63,10 @@ test_that("anchored gpcm item: skeleton values match mirt:::traditional2mirt", {
     par_vec <- c(a = a, b1 = b[1], b2 = b[2], b3 = b[3])
     mirt_pars <- mirt::traditional2mirt(par_vec, "gpcm", ncat = length(b) + 1)
     
-    ## Manuell
-    d1 <- -1*b[1] * a
-    d2 <- -1*b[2] * a
-    d3 <- -1*b[3] * a
-    ## das ist wie in out
-
-    ## vs trad2mirt. cummulative parameters for mirt
+    ## This is how traditional2mirt transforms the parameters: 
     d1 = -a *  b[1]
     d2 = -a * (b[1] + b[2])
     d3 = -a * (b[1] + b[2] + b[3])
-## and this is probably, what mirt() 
-## are the anchors in adaptSkelForAnchor() already cumulated?! Check in adaptSkelForAnchor. 
 
     rowA  <- which(out$item == "I4" & out$name == "a1")
     rowD1 <- which(out$item == "I4" & out$name == "d1")
@@ -91,6 +78,32 @@ test_that("anchored gpcm item: skeleton values match mirt:::traditional2mirt", {
     expect_equal(out[rowA,  "value"], mirt_pars[["a1"]])    # = a
     expect_equal(out[rowD1, "value"], mirt_pars[["d1"]])    # = -a*b1
     expect_equal(out[rowD2, "value"], mirt_pars[["d2"]])    # = -a*(b1+b2)
+})
+
+test_that("gap in anchored categories raises informative error", {
+    # die kumulierte Transformation d_k = -a*(b_1+...+b_k) braucht alle unteren
+    # Schwellen; fehlt eine Kategorie, darf nicht stillschweigend falsch gerechnet werden
+    inp  <- buildSkelInput()
+    anch <- list(ank = data.frame(item = c("I4", "I4"), parameter = c(-1, 0.5),
+                                  category = c("Cat1", "Cat3"), stringsAsFactors = FALSE))
+    slop <- list(ori = data.frame(item = "I4", estSlope = 0.8, stringsAsFactors = FALSE))
+    expect_error(adaptSkelForAnchor(allNam = inp$allNam, skel = inp$skel, anch = anch,
+                                    qmat = inp$qmat, slope = slop, irtmodel = inp$irtmodel,
+                                    est.slopegroups = NULL),
+                 "categories must be consecutive")
+})
+
+test_that("duplicated slope rows in fixSlopeMat raise informative error", {
+    # mehr als ein slope pro Item wuerde den Parametervektor fuer traditional2mirt
+    # stillschweigend verschieben
+    inp  <- buildSkelInput()
+    anch <- list(ank = data.frame(item = c("I4", "I4", "I4"), parameter = c(-1, 0.1, 0.5),
+                                  category = c("Cat1", "Cat2", "Cat3"), stringsAsFactors = FALSE))
+    slop <- list(ori = data.frame(item = c("I4", "I4"), estSlope = c(0.8, 0.8), stringsAsFactors = FALSE))
+    expect_error(adaptSkelForAnchor(allNam = inp$allNam, skel = inp$skel, anch = anch,
+                                    qmat = inp$qmat, slope = slop, irtmodel = inp$irtmodel,
+                                    est.slopegroups = NULL),
+                 "exactly one slope value")
 })
 
 
