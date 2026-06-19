@@ -94,8 +94,8 @@ res1 <- getResults(run1)
 #> Getting WLEs calling tam.wle from getTamWles: 0.6 secs
 #> |*****|
 #> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 1.3 secs
-#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 2.2 secs
+#> Getting PVs calling tam.pv from getTamPVs: 1.2 secs
+#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 2.4 secs
 
 # plot for one item 
 plotICC  ( resultsObj = res1, defineModelObj = mod1, items = "T04_04")
