@@ -32,185 +32,297 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.10.19" id="eatmodel-01019">eatModel 0.10.19<a class="anchor" aria-label="anchor" href="#eatmodel-01019"></a></h2>
-<p>Changes based on available commit messages. The local Git history can be traced back to the initial commit on 2018-10-30.</p>
-<div class="section level3">
-<h3 id="id_2025-to-0-10-19">2025-08-25 to 2026-06-10<a class="anchor" aria-label="anchor" href="#id_2025-to-0-10-19"></a></h3>
-<div class="section level4">
-<h4 id="new-features-0-10-19">New features<a class="anchor" aria-label="anchor" href="#new-features-0-10-19"></a></h4>
-<ul><li>Added partial credit support for TAM, mirt, and ConQuest.</li>
-<li>Added DIF handling for partial credit models in TAM and ConQuest.</li>
-<li>Added partial credit support to <code><a href="../reference/plotICC.html">plotICC()</a></code>.</li>
-<li>Added <code><a href="../reference/getTrafo.html">getTrafo()</a></code> to extract IQB transformation rules from a database.</li>
-<li>Added an equivalence table for partial credit models.</li>
+<h2 class="pkg-version" data-toc-text="0.10.19" id="eatmodel-01019-jun-2026">eatModel 0.10.19 [Jun 2026]<a class="anchor" aria-label="anchor" href="#eatmodel-01019-jun-2026"></a></h2>
+<ul><li>describe renam argument in <code><a href="../reference/checkContextVars.html">checkContextVars()</a></code>
+</li>
+<li>minor bug fix in <code><a href="../reference/runModel.html">runModel()</a></code> for TAM: tam function selection between 1pl and 2pl is correct now</li>
+<li>Use <code><a href="https://philchalmers.github.io/mirt/reference/traditional2mirt.html" class="external-link">mirt::traditional2mirt()</a></code> for transformation of item parameters.</li>
+<li>implement 2pl transformation for item parameters according to a probability of 62.5%</li>
 </ul></div>
-<div class="section level4">
-<h4 id="improvements-0-10-19">Improvements<a class="anchor" aria-label="anchor" href="#improvements-0-10-19"></a></h4>
-<ul><li>Improved WLE handling in multidimensional models by accounting for missing values on subdimensions.</li>
-<li>Updated <code>adaptSkeletonForAnchor()</code> so covariances are not constrained.</li>
-<li>Omit empty categories.</li>
-<li>Allow ConQuest variable names longer than 10 characters.</li>
-<li>Restrict <code>group.var</code> to <code>software = "conquest"</code>.</li>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.10.18" id="eatmodel-01018-jun-2026">eatModel 0.10.18 [Jun 2026]<a class="anchor" aria-label="anchor" href="#eatmodel-01018-jun-2026"></a></h2>
+<ul><li>add help file for <code><a href="../reference/getTrafo.html">getTrafo()</a></code>
+</li>
+<li>add partial credit to <code><a href="../reference/plotICC.html">plotICC()</a></code>
+</li>
 </ul></div>
-<div class="section level4">
-<h4 id="bug-fixes-0-10-19">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-10-19"></a></h4>
-<ul><li>Fixed <code>getDevianceConquest()</code>.</li>
-<li>Fixed <code>getConquestDesc()</code>.</li>
-<li>Fixed <code><a href="../reference/runModel.html">runModel()</a></code> for partial credit models in mirt.</li>
-<li>Fixed <code>checkGenerateRefPop()</code>.</li>
-<li>Fixed issues in Thurstone threshold tests.</li>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.10.17" id="eatmodel-01017-may-2026">eatModel 0.10.17 [May 2026]<a class="anchor" aria-label="anchor" href="#eatmodel-01017-may-2026"></a></h2>
+<ul><li>dif for partial credit in tam</li>
+<li>add function <code><a href="../reference/getTrafo.html">getTrafo()</a></code> for extraction of IQB transformation rules from data base</li>
 </ul></div>
-<div class="section level4">
-<h4 id="documentation-and-tests-0-10-19">Documentation and tests<a class="anchor" aria-label="anchor" href="#documentation-and-tests-0-10-19"></a></h4>
-<ul><li>Added documentation for <code><a href="../reference/getTrafo.html">getTrafo()</a></code>.</li>
-<li>Updated the <code>defineModel</code> help page.</li>
-<li>Added and updated pkgdown documentation.</li>
-<li>Added <code>test_defineModel.R</code> with TAM and ConQuest examples from the <code>defineModel</code> documentation.</li>
-<li>Added tests for Thurstone thresholds and similarity tests for <code>it1</code>.</li>
-<li>Reworked <code><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot()</a></code> checks into <code>testthat</code> tests.</li>
-<li>Updated tests to ignore rows with missing values in comparisons.</li>
-<li>Added Edna Grewers as a package contributor.</li>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.10.10" id="eatmodel-01010-may-2026">eatModel 0.10.10 [May 2026]<a class="anchor" aria-label="anchor" href="#eatmodel-01010-may-2026"></a></h2>
+<ul><li>added pkgdown page</li>
 </ul></div>
-</div>
-<div class="section level3">
-<h3 id="id_2025-to-0-10-19-1">2025-01-13 to 2025-05-13<a class="anchor" aria-label="anchor" href="#id_2025-to-0-10-19-1"></a></h3>
-<ul><li>Added a message for <code><a href="../reference/equat1pl.html">equat1pl()</a></code>.</li>
-<li>Increased Q3 estimation speed by incorporating the Rfast package.</li>
-<li>Adapted <code><a href="../reference/transformToBista.html">transformToBista()</a></code> for non-nested person groups.</li>
-<li>Rewrote and clarified <code><a href="../reference/multiEquatError.html">multiEquatError()</a></code>.</li>
-<li>Added assertions.</li>
-<li>Removed selected assertions for <code>fixSlopeMat</code> and directories.</li>
-<li>Removed recursive calls.</li>
-<li>Fixed splitting by non-nested person groups.</li>
-<li>Fixed partial credit definitions.</li>
-<li>Fixed <code>scipen</code> handling for R &gt;= 4.5.0.</li>
-<li>Fixed and clarified help pages for <code><a href="../reference/defineModel.html">defineModel()</a></code> and <code><a href="../reference/multiEquatError.html">multiEquatError()</a></code>.</li>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.10.9" id="eatmodel-0109-apr-2026">eatModel 0.10.9 [Apr 2026]<a class="anchor" aria-label="anchor" href="#eatmodel-0109-apr-2026"></a></h2>
+<ul><li>updated tests to ignore NA rows in the comparison.</li>
+<li>bugfix in <code><a href="../reference/runModel.html">runModel()</a></code> for partial credit in mirt: column identification of irtmodel via number instead colname</li>
+<li>defineModel.rd help page: more streamlined examples that run faster</li>
 </ul></div>
-<div class="section level3">
-<h3 id="id_2024-0-10-19">2024<a class="anchor" aria-label="anchor" href="#id_2024-0-10-19"></a></h3>
-<div class="section level4">
-<h4 id="package-structure-and-maintenance-0-10-19">Package structure and maintenance<a class="anchor" aria-label="anchor" href="#package-structure-and-maintenance-0-10-19"></a></h4>
-<ul><li>Restructured R files into focused modules for <code><a href="../reference/defineModel.html">defineModel()</a></code>, <code><a href="../reference/runModel.html">runModel()</a></code>, <code><a href="../reference/getResults.html">getResults()</a></code>, <code><a href="../reference/equat1pl.html">equat1pl()</a></code>, <code><a href="../reference/transformToBista.html">transformToBista()</a></code>, <code><a href="../reference/plotICC.html">plotICC()</a></code>, ConQuest helpers, TAM helpers, result extractors, Q3 helpers, and model checks.</li>
-<li>Added <code>cli</code> support.</li>
-<li>Replaced deprecated <code><a href="https://rdrr.io/r/utils/memory.size.html" class="external-link">memory.limit()</a></code> usage with <code><a href="https://ps.r-lib.org/reference/ps_system_memory.html" class="external-link">ps::ps_system_memory()</a></code>.</li>
-<li>Updated the <code>eatTools</code> dependency.</li>
-<li>Removed outdated <code>getConquestVersion()</code>, <code>prepRep()</code>, the <code>date</code> dependency, and obsolete exports.</li>
-<li>Changed encoding in <code>getResults.Rd</code> from ANSI to UTF-8.</li>
-<li>Updated README content, logo, sticker, and R-CMD badge.</li>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.10.8" id="eatmodel-0108-mar-2026">eatModel 0.10.8 [Mar 2026]<a class="anchor" aria-label="anchor" href="#eatmodel-0108-mar-2026"></a></h2>
+<ul><li>add tests for thurstone thresholds</li>
+<li>added new test file test_defineModel.R, copied TAM and Conquest examples from .Rd file (examples 8, 8.1), renamed objects for comparison</li>
+<li>changed the stopifnot lines to test_that tests</li>
 </ul></div>
-<div class="section level4">
-<h4 id="assertions-and-checks-0-10-19">Assertions and checks<a class="anchor" aria-label="anchor" href="#assertions-and-checks-0-10-19"></a></h4>
-<ul><li>Added assertions for <code>verbose</code>, <code>digits</code>, <code>isLetter()</code>, <code><a href="../reference/simEquiTable.html">simEquiTable()</a></code>, <code>getConquestVersion()</code>, <code><a href="../reference/checkContextVars.html">checkContextVars()</a></code>, <code>checkQmatrixConsistency()</code>, <code>checkPersonGroupsConsistency()</code>, <code><a href="../reference/splitModels.html">splitModels()</a></code>, <code><a href="../reference/checkLinking.html">checkLinking()</a></code>, <code><a href="../reference/defineModel.html">defineModel()</a></code>, <code><a href="../reference/runModel.html">runModel()</a></code>, <code>anker()</code>, result extractor functions, low-level ConQuest readers, <code><a href="../reference/plotDevianceConquest.html">plotDevianceConquest()</a></code>, <code><a href="../reference/multiEquatError.html">multiEquatError()</a></code>, <code><a href="../reference/transformToBista.html">transformToBista()</a></code>, and logical arguments.</li>
-<li>Moved Q-matrix and person group consistency checks into shared check functions.</li>
-<li>Reworked <code><a href="../reference/checkLinking.html">checkLinking()</a></code> diagnostics and removed redundant checks.</li>
-<li>Updated warnings and messages in item consistency checks.</li>
-<li>Added and revised checks for <code>cutScores</code>, model name elements, <code>qMatrix</code>, <code>idVarName</code>, <code>logFile</code>, <code>weights</code>, <code>analysis.name</code>, and <code>irtmodel</code>.</li>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.10.5" id="eatmodel-0105-feb-2026">eatModel 0.10.5 [Feb 2026]<a class="anchor" aria-label="anchor" href="#eatmodel-0105-feb-2026"></a></h2>
+<ul><li>allow more than 10 characters in conquest variable names</li>
 </ul></div>
-<div class="section level4">
-<h4 id="improvements-and-bug-fixes-0-10-19">Improvements and bug fixes<a class="anchor" aria-label="anchor" href="#improvements-and-bug-fixes-0-10-19"></a></h4>
-<ul><li>Added customizable model statements and fixed related bugs.</li>
-<li>Fixed DIF identification and ETS DIF classification.</li>
-<li>Fixed <code>getTamEAPs()</code>, <code><a href="../reference/get.shw.html">get.shw()</a></code>, <code><a href="../reference/equat1pl.html">equat1pl()</a></code>, <code><a href="../reference/splitModels.html">splitModels()</a></code>, <code><a href="../reference/simEquiTable.html">simEquiTable()</a></code>, <code>getTamWLE()</code>, and item consistency checks.</li>
-<li>Enhanced <code><a href="../reference/get.dsc.html">get.dsc()</a></code>.</li>
-<li>Implemented <code>stringr</code> in <code><a href="../reference/get.shw.html">get.shw()</a></code>.</li>
-<li>Replaced <code>set.col.type</code> for better performance.</li>
-<li>Updated <code>getResults</code> documentation and the <code><a href="../reference/defineModel.html">defineModel()</a></code> help file.</li>
-<li>Tried to resolve R CMD check failures.</li>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.10.4" id="eatmodel-0104-dec-2025">eatModel 0.10.4 [Dec 2025]<a class="anchor" aria-label="anchor" href="#eatmodel-0104-dec-2025"></a></h2>
+<ul><li>add partial credit for conquest</li>
 </ul></div>
-</div>
-<div class="section level3">
-<h3 id="id_2023-0-10-19">2023<a class="anchor" aria-label="anchor" href="#id_2023-0-10-19"></a></h3>
-<ul><li>Added <code><a href="../reference/compareDefineModelObjects.html">compareDefineModelObjects()</a></code>.</li>
-<li>Added a seed argument in <code><a href="../reference/getResults.html">getResults()</a></code> for infit computation.</li>
-<li>Added warnings in <code><a href="../reference/equat1pl.html">equat1pl()</a></code>.</li>
-<li>Applied rounding in <code><a href="../reference/simEquiTable.html">simEquiTable()</a></code>.</li>
-<li>Fixed <code><a href="../reference/runModel.html">runModel()</a></code> with <code>show.output.on.console</code>.</li>
-<li>Fixed <code><a href="../reference/checkLinking.html">checkLinking()</a></code>, <code><a href="../reference/equat1pl.html">equat1pl()</a></code>, <code><a href="../reference/multiEquatError.html">multiEquatError()</a></code>, <code>tripleEquatError()</code>, and DIF estimation.</li>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.10.3" id="eatmodel-0103-nov-2025">eatModel 0.10.3 [Nov 2025]<a class="anchor" aria-label="anchor" href="#eatmodel-0103-nov-2025"></a></h2>
+<ul><li>do not constrain covariances in <code>adaptSkeletonForAnchor()</code>
+</li>
+<li>WLEs in multidimensional models for mirt: account for missings on sub dimensions</li>
 </ul></div>
-<div class="section level3">
-<h3 id="id_2022-0-10-19">2022<a class="anchor" aria-label="anchor" href="#id_2022-0-10-19"></a></h3>
-<div class="section level4">
-<h4 id="new-features-and-improvements-0-10-19">New features and improvements<a class="anchor" aria-label="anchor" href="#new-features-and-improvements-0-10-19"></a></h4>
-<ul><li>Added <code><a href="../reference/regcoefFromRes.html">regcoefFromRes()</a></code>.</li>
-<li>Added <code><a href="../reference/checkContextVars.html">checkContextVars()</a></code>.</li>
-<li>Added optional long-format output in <code><a href="../reference/q3FromRes.html">q3FromRes()</a></code>.</li>
-<li>Added Q3 pairs to <code><a href="../reference/transformToBista.html">transformToBista()</a></code> output.</li>
-<li>Added diagnostics and alternatives for <code><a href="../reference/checkLinking.html">checkLinking()</a></code>.</li>
-<li>Added error messages to <code><a href="../reference/simEquiTable.html">simEquiTable()</a></code> and <code>checkItemParLists()</code>.</li>
-<li>Updated exemplary data and GitHub Actions.</li>
-<li>Replaced <code>cat("Warning...")</code> with <code>warning("...")</code>.</li>
-<li>Tidied syntax and removed unnecessary lines and <code>assign(...)</code> calls.</li>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.10.1" id="eatmodel-0101-nov-2025">eatModel 0.10.1 [Nov 2025]<a class="anchor" aria-label="anchor" href="#eatmodel-0101-nov-2025"></a></h2>
+<ul><li>partial credit with TAM and mirt</li>
 </ul></div>
-<div class="section level4">
-<h4 id="bug-fixes-0-10-19-1">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-10-19-1"></a></h4>
-<ul><li>Fixed <code><a href="../reference/itemFromRes.html">itemFromRes()</a></code> and TAM DIF analysis handling.</li>
-<li>Fixed <code><a href="../reference/transformToBista.html">transformToBista()</a></code>.</li>
-<li>Fixed linking error calculations.</li>
-<li>Fixed <code>doAufb()</code>.</li>
-<li>Fixed <code>tripleEquatError()</code>, <code>equat1p()</code>, and <code><a href="../reference/equat1pl.html">equat1pl()</a></code>.</li>
-<li>Fixed <code><a href="../reference/q3FromRes.html">q3FromRes()</a></code>.</li>
-<li>Repaired <code>blockPositions</code> and updated position names in <code><a href="../reference/checkLinking.html">checkLinking()</a></code>.</li>
-<li>Updated <code><a href="../reference/checkLinking.html">checkLinking()</a></code> documentation.</li>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.5" id="eatmodel-095-aug-2025">eatModel 0.9.5 [Aug 2025]<a class="anchor" aria-label="anchor" href="#eatmodel-095-aug-2025"></a></h2>
+<ul><li>use the benchmarkme package for <code>getDevianceConquest()</code>
+</li>
 </ul></div>
-</div>
-<div class="section level3">
-<h3 id="id_2021-0-10-19">2021<a class="anchor" aria-label="anchor" href="#id_2021-0-10-19"></a></h3>
-<div class="section level4">
-<h4 id="new-features-and-improvements-0-10-19-1">New features and improvements<a class="anchor" aria-label="anchor" href="#new-features-and-improvements-0-10-19-1"></a></h4>
-<ul><li>Set up GitHub Actions for continuous integration.</li>
-<li>Added WLE reliability and EAP reliability to the results object.</li>
-<li>Added <code><a href="../reference/multiEquatError.html">multiEquatError()</a></code> for linking three measurements and updated it.</li>
-<li>Added empty <code>testletStr</code> handling and checks for testlet structures.</li>
-<li>Added examples for trend analyses with three measurement points.</li>
-<li>Added output information in <code><a href="../reference/defineModel.html">defineModel()</a></code>.</li>
-<li>Asked for the ConQuest executable location.</li>
-<li>Prepared for more than two measurement points.</li>
-<li>Modified dependencies and removed <code>readxl</code> from help files.</li>
-<li>Removed console files and remotes from the repository metadata.</li>
-<li>Added and corrected help file notes, examples, and typos.</li>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.4" id="eatmodel-094-may-2025">eatModel 0.9.4 [May 2025]<a class="anchor" aria-label="anchor" href="#eatmodel-094-may-2025"></a></h2>
+<ul><li>bugfix in scipen (adapted for R version &gt;= 4.5.0)</li>
 </ul></div>
-<div class="section level4">
-<h4 id="bug-fixes-0-10-19-2">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-10-19-2"></a></h4>
-<ul><li>Fixed <code>getTamResults()</code>, <code>getTam2plDiscrim()</code>, <code>checkQmatrixConsistency()</code>, <code>doAufb()</code>, <code><a href="../reference/get.shw.html">get.shw()</a></code>, <code>prepareAndCheckEatModelObject()</code>, <code><a href="../reference/itemFromRes.html">itemFromRes()</a></code>, and <code><a href="../reference/transformToBista.html">transformToBista()</a></code>.</li>
-<li>Eliminated notes and warnings.</li>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.0" id="eatmodel-090-mar-2025">eatModel 0.9.0 [Mar 2025]<a class="anchor" aria-label="anchor" href="#eatmodel-090-mar-2025"></a></h2>
+<ul><li>
+<code><a href="../reference/multiEquatError.html">multiEquatError()</a></code>: rewritten: tests added, help files adapted</li>
+<li>remove assertions in `fixSlopeMat(): In the assertions, the columns must not be selected according to order, as this can vary.</li>
+<li>remove recursive calls in <code><a href="../reference/defineModel.html">defineModel()</a></code>: new internally needed function <code>defineModelSingle()</code>
+</li>
 </ul></div>
-</div>
-<div class="section level3">
-<h3 id="id_2020-0-10-19">2020<a class="anchor" aria-label="anchor" href="#id_2020-0-10-19"></a></h3>
-<ul><li>Released versions 0.7.9 through 0.7.30.</li>
-<li>Updated <code>eatTools</code> and <code>eatRep</code> dependencies.</li>
-<li>Removed the <code>eatTools</code> remotes section from <code>DESCRIPTION</code>.</li>
-<li>Modified examples.</li>
-<li>Fixed bugs, including a bugfix after version 0.7.30.</li>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.8.52" id="eatmodel-0852-mar-2025">eatModel 0.8.52 [Mar 2025]<a class="anchor" aria-label="anchor" href="#eatmodel-0852-mar-2025"></a></h2>
+<ul><li>Fix in <code><a href="../reference/multiEquatError.html">multiEquatError()</a></code>: The old function lacked a check if the testlets are constant. In addition, the comparison of the original and chained linking errors was misleading. Both should now be corrected.</li>
 </ul></div>
-<div class="section level3">
-<h3 id="id_2019-0-10-19">2019<a class="anchor" aria-label="anchor" href="#id_2019-0-10-19"></a></h3>
-<div class="section level4">
-<h4 id="releases-and-new-functionality-0-10-19">Releases and new functionality<a class="anchor" aria-label="anchor" href="#releases-and-new-functionality-0-10-19"></a></h4>
-<ul><li>Released versions 0.6.27 through 0.7.9.</li>
-<li>Added <code>checkDesign()</code>.</li>
-<li>Added <code>quasiMontecarlo</code> for TAM methods.</li>
-<li>Added 2PL parameter handling from TAM when <code>omitRegr = TRUE</code>.</li>
-<li>Added remotes metadata.</li>
-<li>Updated <code><a href="../reference/plotICC.html">plotICC()</a></code> and defaults for <code><a href="../reference/plotICC.html">plotICC()</a></code>.</li>
-<li>Added hints for TAM compatibility.</li>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.8.49" id="eatmodel-0849-jan-2025">eatModel 0.8.49 [Jan 2025]<a class="anchor" aria-label="anchor" href="#eatmodel-0849-jan-2025"></a></h2>
+<ul><li>adapt <code><a href="../reference/transformToBista.html">transformToBista()</a></code> for non-nested person groups</li>
 </ul></div>
-<div class="section level4">
-<h4 id="bug-fixes-and-maintenance-0-10-19">Bug fixes and maintenance<a class="anchor" aria-label="anchor" href="#bug-fixes-and-maintenance-0-10-19"></a></h4>
-<ul><li>Fixed <code><a href="../reference/runModel.html">runModel()</a></code> for 2PL models.</li>
-<li>Updated messages in <code>anker()</code> and <code><a href="../reference/transformToBista.html">transformToBista()</a></code>.</li>
-<li>Fixed <code>checkDesign()</code>, <code>checkModel()</code>, and the set method for <code><a href="../reference/defineModel.html">defineModel()</a></code>.</li>
-<li>Fixed model splitting.</li>
-<li>Updated <code>DESCRIPTION</code> and uploaded package files.</li>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.8.43" id="eatmodel-0843-jan-2025">eatModel 0.8.43 [Jan 2025]<a class="anchor" aria-label="anchor" href="#eatmodel-0843-jan-2025"></a></h2>
+<ul><li>add message for <code><a href="../reference/equat1pl.html">equat1pl()</a></code> that testlet column name and dimension names must be different</li>
+<li>increase Q3 estimation speed by incorporating Rfast package</li>
 </ul></div>
-</div>
-<div class="section level3">
-<h3 id="id_2018-0-10-19">2018<a class="anchor" aria-label="anchor" href="#id_2018-0-10-19"></a></h3>
-<ul><li>Initial commit on 2018-10-30.</li>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.8.37" id="eatmodel-0837-nov-2024">eatModel 0.8.37 [Nov 2024]<a class="anchor" aria-label="anchor" href="#eatmodel-0837-nov-2024"></a></h2>
+<ul><li>
+<code><a href="../reference/transformToBista.html">transformToBista()</a></code>: Bug fix in the weights argument</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.8.36" id="eatmodel-0836-oct-2024">eatModel 0.8.36 [Oct 2024]<a class="anchor" aria-label="anchor" href="#eatmodel-0836-oct-2024"></a></h2>
+<ul><li>deleted <code>getConquestVersion()</code> (outdated) and <code>prepRep()</code> (now via eatGADS).</li>
+<li>deleted date dependency in DESCRIPTION</li>
+<li>
+<code><a href="../reference/simEquiTable.html">simEquiTable()</a></code>: added new checks for cutScores and applied feedback</li>
+<li>use <code>makeDateFrame()</code> for <code>checkPersonGroupsConsistency()</code>
+</li>
+<li>
+<code>anker()</code>: added column types for prm</li>
+<li>assertions for all <code>...FromRes()</code> functions</li>
+<li>assertions for all <code>get...()</code> functions</li>
+<li>assertions for <code><a href="../reference/plotDevianceConquest.html">plotDevianceConquest()</a></code>
+</li>
+<li>
+<code><a href="../reference/multiEquatError.html">multiEquatError()</a></code>: bugfix testletStr</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.8.35" id="eatmodel-0835-sep-2024">eatModel 0.8.35 [Sep 2024]<a class="anchor" aria-label="anchor" href="#eatmodel-0835-sep-2024"></a></h2>
+<ul><li>use cli for error/warning message presentation</li>
+<li>The functions are no longer contained in a single file (eatModel.r), but are grouped according to their intended use.</li>
+<li>
+<code>getConquestVersion()</code>, <code><a href="../reference/simEquiTable.html">simEquiTable()</a></code>: new assertions (input validation)</li>
+<li>getResults.rd: change file encoding from ISO-8859-1 to UTF-8</li>
+<li>
+<code>checkQmatrixConsistency()</code>: moved checks from <code><a href="../reference/splitModels.html">splitModels()</a></code> in here (because the function is also called by defineModel</li>
+<li>added checkmate checks for <code><a href="../reference/defineModel.html">defineModel()</a></code>
+</li>
+<li>remove problematic <code><a href="https://weirichs.github.io/eatTools/reference/gsubAll.html" class="external-link">eatTools::gsubAll()</a></code> from <code><a href="../reference/checkLinking.html">checkLinking()</a></code>
+</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.8.34" id="eatmodel-0834-aug-2024">eatModel 0.8.34 [Aug 2024]<a class="anchor" aria-label="anchor" href="#eatmodel-0834-aug-2024"></a></h2>
+<ul><li>changing encoding from ANSI to UTF-8 in getResults.rd</li>
+<li>replace deprecated <code><a href="https://rdrr.io/r/utils/memory.size.html" class="external-link">memory.limit()</a></code> with <code><a href="https://ps.r-lib.org/reference/ps_system_memory.html" class="external-link">ps::ps_system_memory()</a></code>
+</li>
+<li>
+<code><a href="../reference/get.shw.html">get.shw()</a></code>: Conquest only allows variable names with a maximum of 11 characters. If the variable name is exactly 11 characters long, the space between the variable name and the item parameter value is missing in the ASCII file. In this case, the columns could not be read correctly because this was done by identifying spaces in the ASCII file. This bug has been fixed here.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.8.21" id="eatmodel-0821-feb-2023">eatModel 0.8.21 [Feb 2023]<a class="anchor" aria-label="anchor" href="#eatmodel-0821-feb-2023"></a></h2>
+<ul><li>Bug fix for rounding in <code><a href="../reference/simEquiTable.html">simEquiTable()</a></code>: Depending on the number of decimal places to be displayed, a less ambiguous rounding method is now selected, which makes it possible to determine exactly which proficiency level an item falls into when the transformed item parameter lies on the boundary between proficiency levels.</li>
+<li>add warnings in <code><a href="../reference/equat1pl.html">equat1pl()</a></code> if dimension names do not correspond to refPop’s first column names</li>
+<li>add seed argument in <code><a href="../reference/getResults.html">getResults()</a></code> (for infit computation)</li>
+<li>added assertions in <code><a href="../reference/replaceLinkingError.html">replaceLinkingError()</a></code>: verbose, digits</li>
+<li>add package sticker</li>
+<li>customize model statement in <code><a href="../reference/defineModel.html">defineModel()</a></code> for Conquest: The function checks whether the variable names in the <code>model</code> statement are also included in the dataset. However, this does not apply to reserved names such as “item,”, “step,” etc.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.8.14" id="eatmodel-0814-jan-2023">eatModel 0.8.14 [Jan 2023]<a class="anchor" aria-label="anchor" href="#eatmodel-0814-jan-2023"></a></h2>
+<ul><li>add <code><a href="../reference/compareDefineModelObjects.html">compareDefineModelObjects()</a></code> which facilitates quality checks by comparing two objects returned by <code><a href="../reference/defineModel.html">defineModel()</a></code> whether there are functionally equivalent.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.8.13" id="eatmodel-0813-oct-2022">eatModel 0.8.13 [Oct 2022]<a class="anchor" aria-label="anchor" href="#eatmodel-0813-oct-2022"></a></h2>
+<ul><li>add q3 pairs in <code>transformtobista()</code> output</li>
+<li>update exemplary data (trends.rda)</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.8.12" id="eatmodel-0812-sep-2022">eatModel 0.8.12 [Sep 2022]<a class="anchor" aria-label="anchor" href="#eatmodel-0812-sep-2022"></a></h2>
+<ul><li>add exemplary conquest results files for demonstration purposes</li>
+<li>add appropriate error messages in <code>checkItemParLists()</code> when parameter value column is not numeric</li>
+<li>provide optional long format return in <code><a href="../reference/q3FromRes.html">q3FromRes()</a></code>
+</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.8.10" id="eatmodel-0810-may-2022">eatModel 0.8.10 [May 2022]<a class="anchor" aria-label="anchor" href="#eatmodel-0810-may-2022"></a></h2>
+<ul><li>add error messages to <code><a href="../reference/simEquiTable.html">simEquiTable()</a></code>
+</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.8.1" id="eatmodel-081-may-2022">eatModel 0.8.1 [May 2022]<a class="anchor" aria-label="anchor" href="#eatmodel-081-may-2022"></a></h2>
+<ul><li>The function <code>mergeAttr()</code> is being moved from the eatModel package to the eatTools package.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.8.0" id="eatmodel-080-feb-2022">eatModel 0.8.0 [Feb 2022]<a class="anchor" aria-label="anchor" href="#eatmodel-080-feb-2022"></a></h2>
+<ul><li>add function <code><a href="../reference/checkContextVars.html">checkContextVars()</a></code> which checks whether some types of context vars, i.e. group, DIF and weighting variables, are consistent with item variables. The function is mainly used for internal consistency checks.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.57" id="eatmodel-0757-feb-2022">eatModel 0.7.57 [Feb 2022]<a class="anchor" aria-label="anchor" href="#eatmodel-0757-feb-2022"></a></h2>
+<ul><li>add function <code><a href="../reference/regcoefFromRes.html">regcoefFromRes()</a></code> which lists the regression parameters of the conditioning model from the results object.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.51" id="eatmodel-0751-feb-2022">eatModel 0.7.51 [Feb 2022]<a class="anchor" aria-label="anchor" href="#eatmodel-0751-feb-2022"></a></h2>
+<ul><li>
+<code><a href="../reference/transformToBista.html">transformToBista()</a></code> now gives linking errors in a data.frame which is appropriate for eatRep</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.48" id="eatmodel-0748-jan-2022">eatModel 0.7.48 [Jan 2022]<a class="anchor" aria-label="anchor" href="#eatmodel-0748-jan-2022"></a></h2>
+<ul><li>Bug fix in <code><a href="../reference/transformToBista.html">transformToBista()</a></code>: drawing PVs failed when items are only partially linked</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.47" id="eatmodel-0747-dec-2021">eatModel 0.7.47 [Dec 2021]<a class="anchor" aria-label="anchor" href="#eatmodel-0747-dec-2021"></a></h2>
+<ul><li>add examples for trend analyses with 3 measurement occasions</li>
+<li>
+<code><a href="../reference/defineModel.html">defineModel()</a></code>: add output information about students with all items solved or all items failed</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.45" id="eatmodel-0745-nov-2021">eatModel 0.7.45 [Nov 2021]<a class="anchor" aria-label="anchor" href="#eatmodel-0745-nov-2021"></a></h2>
+<ul><li>add checks for testlet structure</li>
+<li>additional examples in <code><a href="../reference/multiEquatError.html">multiEquatError()</a></code> help file</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.39" id="eatmodel-0739-oct-2021">eatModel 0.7.39 [Oct 2021]<a class="anchor" aria-label="anchor" href="#eatmodel-0739-oct-2021"></a></h2>
+<ul><li>add functionality for &gt;2 measurement occasions</li>
+<li>Extracting the recursive function part from <code><a href="../reference/defineModel.html">defineModel()</a></code> which is now provided in a new function <code>doAufb()</code>
+</li>
+<li>add <code><a href="../reference/multiEquatError.html">multiEquatError()</a></code> for linking of three measurement</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.35" id="eatmodel-0735-jul-2021">eatModel 0.7.35 [Jul 2021]<a class="anchor" aria-label="anchor" href="#eatmodel-0735-jul-2021"></a></h2>
+<ul><li>add EAP reliability in the results object</li>
+<li>add checks in <code>checkQmatrixConsistency()</code>: Indicator columns must not be consistently 0 (a consistent 1 would be allowed; this would then constitute within-item multidimensionality).</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.34" id="eatmodel-0734-mar-2021">eatModel 0.7.34 [Mar 2021]<a class="anchor" aria-label="anchor" href="#eatmodel-0734-mar-2021"></a></h2>
+<ul><li>Bug fix in <code>getTam2plDiscrim()</code>: This internally used function reloads the 2pl discrimination parameters from TAM.</li>
+<li>
+<code><a href="../reference/wleRelFromRes.html">wleRelFromRes()</a></code> adds wle reliability to results object, also for multidimensionality models</li>
+<li>help files for test design data provided as rda instead of xlsx</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.33" id="eatmodel-0733-mar-2021">eatModel 0.7.33 [Mar 2021]<a class="anchor" aria-label="anchor" href="#eatmodel-0733-mar-2021"></a></h2>
+<ul><li>If it cannot be found on the network drives, the user will be prompted to specify the location of the Conquest console the first time it is needed.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.27" id="eatmodel-0727-nov-2020">eatModel 0.7.27 [Nov 2020]<a class="anchor" aria-label="anchor" href="#eatmodel-0727-nov-2020"></a></h2>
+<ul><li>Add validity checks to verify that background variables are consistent with themselves and with the item data. Also, determine the length (number of characters required) for each variable.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.25" id="eatmodel-0725-nov-2020">eatModel 0.7.25 [Nov 2020]<a class="anchor" aria-label="anchor" href="#eatmodel-0725-nov-2020"></a></h2>
+<ul><li>set compatibility to eatRep 0.13.0: replace <code><a href="https://weirichs.github.io/eatRep/reference/repMean.html" class="external-link">jk2.mean()</a></code> by <code><a href="https://weirichs.github.io/eatRep/reference/repMean.html" class="external-link">repMean()</a></code>
+</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.24" id="eatmodel-0724-aug-2020">eatModel 0.7.24 [Aug 2020]<a class="anchor" aria-label="anchor" href="#eatmodel-0724-aug-2020"></a></h2>
+<ul><li>Bug fix: Importing WLEs from Conquest now also works for multidimensional cases.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.21" id="eatmodel-0721-jul-2020">eatModel 0.7.21 [Jul 2020]<a class="anchor" aria-label="anchor" href="#eatmodel-0721-jul-2020"></a></h2>
+<ul><li>set compatibility to eatTools 0.3.1</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.14" id="eatmodel-0714-mar-2020">eatModel 0.7.14 [Mar 2020]<a class="anchor" aria-label="anchor" href="#eatmodel-0714-mar-2020"></a></h2>
+<ul><li>add ordinary least squares (OLS) to robust linking methods in <code><a href="../reference/equat1pl.html">equat1pl()</a></code>
+</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.13" id="eatmodel-0713-feb-2020">eatModel 0.7.13 [Feb 2020]<a class="anchor" aria-label="anchor" href="#eatmodel-0713-feb-2020"></a></h2>
+<ul><li>
+<code><a href="../reference/transformToBista.html">transformToBista()</a></code> calculates the mean and standard deviation of the reference population using eatRep methods when the given sample is drawn from the norm population and is not to be equated.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.11" id="eatmodel-0711-feb-2020">eatModel 0.7.11 [Feb 2020]<a class="anchor" aria-label="anchor" href="#eatmodel-0711-feb-2020"></a></h2>
+<ul><li>Add Haberman linking to <code><a href="../reference/equat1pl.html">equat1pl()</a></code>
+</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.10" id="eatmodel-0710-jan-2020">eatModel 0.7.10 [Jan 2020]<a class="anchor" aria-label="anchor" href="#eatmodel-0710-jan-2020"></a></h2>
+<ul><li>Add robust methods to <code><a href="../reference/equat1pl.html">equat1pl()</a></code> linking procedures</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.8" id="eatmodel-078-nov-2019">eatModel 0.7.8 [Nov 2019]<a class="anchor" aria-label="anchor" href="#eatmodel-078-nov-2019"></a></h2>
+<ul><li>Based on an idea by Johannes Schult, the <code><a href="../reference/simEquiTable.html">simEquiTable()</a></code> function now uses methods from Ivailo Partchev’s irtoys package to generate the item parameter equivalence table more quickly and efficiently.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.7" id="eatmodel-077-nov-2019">eatModel 0.7.7 [Nov 2019]<a class="anchor" aria-label="anchor" href="#eatmodel-077-nov-2019"></a></h2>
+<ul><li>Temporary storage of console messages that cannot be displayed immediately in the case of multicore. They are stored as strings and displayed on the console once the multicore analysis is complete.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.6" id="eatmodel-076-nov-2019">eatModel 0.7.6 [Nov 2019]<a class="anchor" aria-label="anchor" href="#eatmodel-076-nov-2019"></a></h2>
+<ul><li>Bug fix for recursive calls to <code><a href="../reference/defineModel.html">defineModel()</a></code> in cases involving multiple models</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.4" id="eatmodel-074-may-2019">eatModel 0.7.4 [May 2019]<a class="anchor" aria-label="anchor" href="#eatmodel-074-may-2019"></a></h2>
+<ul><li>compatibility issues: Add functionality that allow the ID variable to be specified manually when output generated by earlier package versions needs to be re-read by newer package versions.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.2" id="eatmodel-072-apr-2019">eatModel 0.7.2 [Apr 2019]<a class="anchor" aria-label="anchor" href="#eatmodel-072-apr-2019"></a></h2>
+<ul><li>Extractor functions for Conquest.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.0" id="eatmodel-070-mar-2019">eatModel 0.7.0 [Mar 2019]<a class="anchor" aria-label="anchor" href="#eatmodel-070-mar-2019"></a></h2>
+<ul><li>Added <code>quasiMontecarlo</code> for TAM methods.</li>
+<li>Fixed <code><a href="../reference/runModel.html">runModel()</a></code> for 2PL models.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.6.33" id="eatmodel-0633-feb-2019">eatModel 0.6.33 [Feb 2019]<a class="anchor" aria-label="anchor" href="#eatmodel-0633-feb-2019"></a></h2>
+<ul><li>add <code>checkDesign()</code> for verifying the underlying test design</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.6.32" id="eatmodel-0632-feb-2019">eatModel 0.6.32 [Feb 2019]<a class="anchor" aria-label="anchor" href="#eatmodel-0632-feb-2019"></a></h2>
+<ul><li>2pl parameter extraction</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.6.30" id="eatmodel-0630-jan-2019">eatModel 0.6.30 [Jan 2019]<a class="anchor" aria-label="anchor" href="#eatmodel-0630-jan-2019"></a></h2>
+<ul><li>plotICC() for dichotomous 1pl item characteristic curves</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.6.26" id="eatmodel-0626-oct-2018">eatModel 0.6.26 [Oct 2018]<a class="anchor" aria-label="anchor" href="#eatmodel-0626-oct-2018"></a></h2>
+<ul><li>Initial release on 2018-10-30.</li>
 <li>Released versions 0.6.23 through 0.6.26.</li>
 <li>Updated <code>eatModel.r</code>.</li>
 </ul></div>
-</div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
