@@ -90,8 +90,23 @@ transformToBista <- function(equatingList, refPop, cuts, weights = NULL,
                                           mat[,3] <- mat[,3] + equatingList[["items"]][[mod]][[dimname]][["eq"]][["B.est"]][[ equatingList[["items"]][[mod]][[dimname]][["method"]] ]]
                                      }
                                 }
-                                if(!isPCM) {                                    ### transformation auf .625 fuer dichotom
-                                   itFrame[,"estTransf625"]<- itFrame[,"estTransf"] + log(0.625/(1-0.625))
+                                if(!isPCM) {                                    ### transformation auf .625 fuer dichotom: andere Transformation fuer 2pl dichotom als fuer 1pl dichotom
+                                   slp1<- grep("slope", colnames(itFrame), value=TRUE, ignore.case=TRUE) 
+                                   slp2<- grep("est", colnames(itFrame), value=TRUE, ignore.case=TRUE) 
+                                   if(length(slp1) < 2 || length(slp2) ==0) {   ### wenn es nur eine spalte mit "slope" im Namen gibt, ist das die estimator-spalte,
+                                      slp <- slp1                               ### selbst wenn sie nicht mit "est" benannt ist. Gibt es zusaetzlich noch einen
+                                   } else {                                     ### Standardfehler des slopes, gibt es mehrere Spalten mit "slope" im Namen; in diesem
+                                      slp <- intersect(slp1, slp2)              ### Falle soll die ausgewaehlt werden, die zusaetzlich "est" im Namen traegt
+                                   }
+                                   stopifnot(length(slp) %in% 0:1)              ### es darf nur eine oder gar keine slope Spalte geben 
+                                   if(length(slp)==0) {                         ### untere Zeile: alte Variante (1pl)
+                                      itFrame[,"estTransf625"]<- itFrame[,"estTransf"] + log(0.625/(1-0.625))
+                                   } else {                                     
+                                      if(any(itFrame[,slp] < 0)) {
+                                         warning("The slope parameters for some items are less than 0. These item parameters cannot be meaningfully transformed into the educational standards metric.")
+                                      }                                         ### untere Zeile: Variante fuer 2pl entsprechend Karolines AI-Agent (Mail Karoline, 11.06.2026, 9.24 Uhr)
+                                      itFrame[,"estTransf625"]<- itFrame[,"estTransf"] + log(0.625/(1-0.625)) / itFrame[,slp]
+                                   }
                                 } else {                                        ### in pcm ist das der .625-thurstonian threshold
                                    itFrame[,"estTransf625"]<- itFrame[,"thurstone"]
                                 }
@@ -147,7 +162,7 @@ transformToBista <- function(equatingList, refPop, cuts, weights = NULL,
                                                 a1 <- sum ( dnorm ( ( kmp - mat[,5]) / mat[,6] ) * c(-1,1) / mat[,6] )
                                                 a2 <- sum ( dnorm ( ( kmp - msdFok[1]) / msdFok[2] ) * c(-1,1) / msdFok[2] )
     ### Achtung! der 'mutmassliche Fehler' kann auch auftreten, wenn das Equating zuvor durchgeschleift wurde und deshalb gar keine Linkingfehler berechnet werden koennen
-                                                if(a2 == 0 ) {cat("mutmasslicher fehler.\n")}
+                                                if(a2 == 0 ) {cat("Error during the transformation of linking errors. If the equating was previously looped through - meaning no equating took place in the strict sense - this message is non-critical and can be ignored.\n")}
                                                 del<- ( (  a1^2 + a2^2 ) * (unique(itFrame[,"linkingErrorTransfBista"])^2) / 2  )^0.5
                        			                    del<- data.frame ( traitLevel = attr(traitLevel, "cat.values")[l], linkingErrorTraitLevel = del )
                        			                    return(del)}))

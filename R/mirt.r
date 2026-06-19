@@ -311,13 +311,13 @@ getMirtItempars <- function(runModelObj, qL, qMatrix, leseAlles, software) {
     ### Thurstonian thresholds ausgeben lassen
     ### im dichotomen modell werden thresholds analog zur itemparametertransformaton bestimmt: wegen der abweichenden mirt 
     ### parametrisierung kann man nicht dieselbe Funktion nehmen, obwohl es konzeptuell aequivalent ist 
-               if("b" %in% colnames(coefs[[i]])) {
-                  thurs <- coefs[[i]][rowEst,"b"] + log(0.625/(1-0.625))
+               if("b" %in% colnames(coefs[[i]])) {                              ### untere Zeile: thurstone thresholds auch fuer 2pl
+                  thurs <- coefs[[i]][rowEst,"b"] + log(0.625/(1-0.625)) / coefs[[i]][rowEst,colSlo]
                } else {
                   pars  <- coef2[which(rownames(coef2) == i), , drop=TRUE]
                   ds    <- pars[grep("^(d|b)\\d+", names(pars))] |> as.numeric()
-                  ds    <- ds[!is.na(ds)]
-                  bounds<- c(-6, 6)                                             
+                  ds    <- ds[!is.na(ds)]                                       ### ds sind die untransformierten schwellenwerte aufsteigend
+                  bounds<- c(-6, 6)                                             ### untere Zeile: a ist der slope parameter
                   while(isTRUE(inherits(try(thurs  <- sapply(1:length(ds), FUN = function(k) { uniroot( function(th) P_get_k(theta = th, k=k, m = length(ds), ds=ds, a = coefs[[i]][rowEst,colSlo]) - 0.625, interval = bounds)$root  }) , silent=TRUE ),"try-error"))) {
                      bounds[1] <- bounds[1] - 1                                 ### theta bounds vergroessern wenn itemparameter ausserhalb des ranges und es daher fehlermeldung gibt 
                      bounds[2] <- bounds[2] + 1
