@@ -1,5 +1,22 @@
 ### runModel is usually used after defineModel().
 
+### ueberschreibe 'originales' anchor objekt! (hilfsfunktion fuer runmodel mit tam)
+overwriteAnchorGpcmTAM <- function(anchor, defineModelObj, Y, group, wgt) {
+   if(!is.null(anchor) && grepl("pcm", defineModelObj[["irtmodel"]], ignore.case=TRUE)) {
+      beg    <- Sys.time()
+      control<- defineModelObj[["control"]]
+      control[["maxiter"]] <- 50
+      if(defineModelObj[["irtmodel"]] %in% c("1PL", "PCM", "PCM2", "RSM")) {
+         skelet <- tam.mml(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], constraint = defineModelObj[["constraint"]], pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], irtmodel = defineModelObj[["irtmodel"]], pweights = wgt, control = control, group=group)
+      } else {
+         skelet <- tam.mml.2pl(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = defineModelObj[["irtmodel"]], est.slopegroups=defineModelObj[["est.slopegroups"]],pweights = wgt, B.fixed = defineModelObj[["fixSlopeMat"]], est.variance = defineModelObj[["estVar"]], control = control, group=group)
+      }         
+      diffe  <- Sys.time() - beg
+      if(as.numeric(diffe) > 0.2) {message(paste0("Generate skeleton for partial credit anchoring: ", timeFormat(diffe)))}
+      anchor <- prepAnchorTAM(dfm = defineModelObj, skeleton = skelet[["xsi.fixed.estimated"]])
+   }
+   return(anchor)}
+
 runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.console = TRUE, wait = TRUE, onlySkeleton = FALSE) {
             argString <-  paste(names(formals(runModel))[-1], names(formals(runModel))[-1], sep=" = ", collapse=", ")
             if (inherits(defineModelObj, "defineMultiple") ) {                  ### erstmal fuer den Multimodellfall: nur dafuer wird single core und multicore unterschieden
@@ -95,32 +112,23 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
     ### mittels skeleton erzeugt werden muss, geschieht das hier zweimal, erstmal allgemein (untere Zeile); fuer partial credit wird das dann nochmal ueberschrieben
                    anchor <- prepAnchorTAM(dfm = defineModelObj)
                    if(length(defineModelObj[["all.Names"]][["DIF.var"]]) == 0 ) {
-                      if( defineModelObj[["irtmodel"]] %in% c("1PL", "PCM", "PCM2", "RSM")) {
-                          if ( isTRUE(defineModelObj[["fitTamMmlForBayesian"]]) ) {
-    ### ueberschreibe 'originales' anchor objekt!
-                               if(!is.null(anchor) && grepl("pcm", defineModelObj[["irtmodel"]], ignore.case=TRUE)) {
-                                  beg    <- Sys.time()
-                                  control<- defineModelObj[["control"]]
-                                  control[["maxiter"]] <- 50
-                                  skelet <- tam.mml(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], constraint = defineModelObj[["constraint"]], pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], irtmodel = defineModelObj[["irtmodel"]], pweights = wgt, control = control, group=group)
-                                  diffe  <- Sys.time() - beg
-                                  if(as.numeric(diffe) > 0.2) {message(paste0("Generate skeleton for partial credit anchoring: ", timeFormat(diffe)))}
-                                  anchor <- prepAnchorTAM(dfm = defineModelObj, skeleton = skelet[["xsi.fixed.estimated"]])
-                               }
+                      anchor <- overwriteAnchorGpcmTAM(anchor=anchor, defineModelObj=defineModelObj, Y=Y, group=group, wgt=wgt)
+                      if(defineModelObj[["irtmodel"]] %in% c("1PL", "PCM", "PCM2", "RSM")) {
+                          if(isTRUE(defineModelObj[["fitTamMmlForBayesian"]])) {
                                mod  <- tam.mml(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], constraint = defineModelObj[["constraint"]], pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = defineModelObj[["irtmodel"]], pweights = wgt, control = defineModelObj[["control"]], group=group)
                           }  else  {
                                mod  <- tamObjForBayesianPV (anchor = anchor, qMatrix = defineModelObj[["qMatrix"]], resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y=Y)
                           }
                       }
-                      if( defineModelObj[["irtmodel"]] %in% c("2PL", "GPCM", "GPCM.groups", "2PL.groups", "GPCM.design", "3PL") )  {
-                          if( defineModelObj[["irtmodel"]] == "3PL") {
+                      if(defineModelObj[["irtmodel"]] %in% c("2PL", "GPCM", "GPCM.groups", "2PL.groups", "GPCM.design", "3PL"))  {
+                          if(defineModelObj[["irtmodel"]] == "3PL") {
                               if ( isTRUE(defineModelObj[["fitTamMmlForBayesian"]]) ) {
                                    mod  <- tam.mml.3pl(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = anchor, pweights = wgt, est.guess =defineModelObj[["guessMat"]],  est.variance = defineModelObj[["estVar"]], control = defineModelObj[["control"]], group=group)
                               }  else  {
                                    mod  <- tamObjForBayesianPV (anchor = anchor, qMatrix = defineModelObj[["qMatrix"]], resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y=Y, slopeMatrix = defineModelObj[["fixSlopeMat"]])
                               }
                           }  else {
-                              if ( defineModelObj[["fitTamMmlForBayesian"]] == TRUE ) {
+                              if(defineModelObj[["fitTamMmlForBayesian"]] == TRUE) {
                                    mod  <- tam.mml.2pl(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = defineModelObj[["irtmodel"]], est.slopegroups=defineModelObj[["est.slopegroups"]],pweights = wgt, B.fixed = defineModelObj[["fixSlopeMat"]], est.variance = defineModelObj[["estVar"]], control = defineModelObj[["control"]], group=group)
                               }  else  {
                                    mod  <- tamObjForBayesianPV (anchor = anchor, qMatrix = defineModelObj[["qMatrix"]], resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y=Y, slopeMatrix = defineModelObj[["fixSlopeMat"]])
@@ -149,7 +157,6 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
                    attr(mod, "Y")              <- Y
                    attr(mod, "software")       <- "tam"
                    return(mod)  }  }   }
-
 
 ### runModel() specific help functions -----------------------------------------
 
