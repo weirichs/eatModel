@@ -25,7 +25,7 @@ checkPersonGroupsConsistency <- function(d){
 ### called by defineModel() and splitModels() ----------------------------------
 
 ### fuer conquest werden itemnamen mit mehr als 10 zeichen temporaer umbenannt. Fuer konsolenausgaben 
-### muessen die jetzt aber wieder zurueckbenannt werden
+### muessen die jetzt aber wieder (temporaer) zurueckbenannt werden
 optionalRenam <- function(vec, renam) {
    if(is.null(renam)) {return(as.character(vec))} else {
       vec <- eatTools::recodeLookup(as.character(vec), renam[,c(2,1)])

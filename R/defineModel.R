@@ -98,7 +98,7 @@ defineModelSingle <- function (a) {
        }  else  {
           vars <- NULL
        }
-       allVars     <- list(ID = id, variablen=items, DIF.var=DIF.var, DIF.free=DIF.free, HG.var=HG.var, group.var=group.var, weight.var=weight.var, schooltype.var = schooltype.var, add.vars = vars)
+       allVars     <- list(ID = id, variablen=items, DIF.var=DIF.var, DIF.free=DIF.free, HG.var=HG.var, group.var=group.var, weight.var=weight.var, schooltype.var = schooltype.var, add.vars = vars) # nolint: line_length_linter.
        all.Names   <- lapply(allVars, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = dat, variable=ii)})
      ### wenn DIF estimation im partial credit context in TAM, muss ein Item referenz sein (kein dif per default)
      ### dieses Item muss in alphabetischer Sortierung am Ende stehen
@@ -115,11 +115,11 @@ defineModelSingle <- function (a) {
      ### pruefen, ob es Personen gibt, die weniger als <boundary> items gesehen haben (muss VOR den Konsistenzpruefungen geschehen)
        dat <- checkBoundary(dat=dat, allNam=obs[["all.Names"]], boundary=boundary, remove.boundary=remove.boundary)
      ### Sektion 'explizite Variablennamen ggf. aendern' ###
-       obs2<- renameVariables2(all.Names = obs[["all.Names"]], dat=dat, software=software)
+       obs2<- renameVariables2(all.Names = obs[["all.Names"]], dat=dat, software=software, model.statement = model.statement)
      ### Sektion 'Q matrix ggf. erstellen und auf Konsistenz zu sich selbst und zu den Daten pruefen' ###
        obs3<- generateOrCheckQmatrix(a=a, qMatrix=obs[["qMatrix"]], all.Names = obs2[["all.Names"]])
      ### Sektion 'Alle Items auf einfache Konsistenz pruefen'
-       cic <- checkItemConsistency(dat=dat, allNam = obs3[["all.Names"]], remove.missing.items=remove.missing.items, verbose=verbose, removeMinNperItem=removeMinNperItem, minNperItem=minNperItem, remove.constant.items=remove.constant.items, model.statement=model.statement, software=software, renam = obs[["renam"]])
+       cic <- checkItemConsistency(dat=obs2[["dat"]], allNam = obs3[["all.Names"]], remove.missing.items=remove.missing.items, verbose=verbose, removeMinNperItem=removeMinNperItem, minNperItem=minNperItem, remove.constant.items=remove.constant.items, model.statement=obs2[["model.statement"]], software=software, renam = obs[["renam"]])
      ### Sektion 'Hintergrundvariablen auf Konsistenz zu sich selbst und zu den Itemdaten pruefen'. Ausserdem Stelligkeit (Anzahl der benoetigten character) fuer jede Variable herausfinden
        cbc <- checkBGV(allNam = cic[["allNam"]], dat=cic[["dat"]], software=software, remove.no.answersHG=remove.no.answersHG, remove.vars.DIF.missing=remove.vars.DIF.missing, namen.items.weg=cic[["namen.items.weg"]], remove.vars.DIF.constant=remove.vars.DIF.constant, renam=obs[["renam"]])
      ### Sektion 'Itemdatensatz zusammenbauen' (fuer Conquest ggf. mit Buchstaben statt Ziffern)
@@ -190,7 +190,7 @@ defineModelSingle <- function (a) {
           batch <- paste( normalize.path(conquest.folder),paste(analysis.name,".cqc",sep=""), sep=" ")
           write(batch, file.path(dir,paste(analysis.name,".bat",sep="")))
           foo <- gen.syntax(Name=analysis.name, daten=daten, all.Names = cbc[["allNam"]], namen.all.hg = cbc[["namen.all.hg"]], all.hg.char = obs4[["all.hg.char"]], var.char= max(obs4[["var.char"]]), model=obs3[["qMatrix"]], anchored=anchor, pfad=dir, n.plausible=n.plausible, compute.fit = compute.fit,
-                 constraints=constraints, std.err=std.err, distribution=distribution, method=met[["method"]], n.iterations=n.iterations, nodes=met[["nodes"]], p.nodes=p.nodes, f.nodes=f.nodes, converge=converge,deviancechange=deviancechange, equivalence.table=equivalence.table, use.letters=use.letters, model.statement=model.statement, conquest.folder = conquest.folder, allowAllScoresEverywhere = allowAllScoresEverywhere, seed = seed, export = export)
+                 constraints=constraints, std.err=std.err, distribution=distribution, method=met[["method"]], n.iterations=n.iterations, nodes=met[["nodes"]], p.nodes=p.nodes, f.nodes=f.nodes, converge=converge,deviancechange=deviancechange, equivalence.table=equivalence.table, use.letters=use.letters, model.statement=obs2[["model.statement"]], conquest.folder = conquest.folder, allowAllScoresEverywhere = allowAllScoresEverywhere, seed = seed, export = export)
           if(!is.null(anchor))  {
              write.table(ankFrame[["resConquest"]], file.path(dir,paste(analysis.name,".ank",sep="")) ,sep=" ", col.names = FALSE, row.names = FALSE, quote = FALSE)
           }
@@ -260,7 +260,7 @@ renameVariables <- function(a, qMatrix, software, all.Names, dat) {
        }
        return(list(dat=dat, qMatrix=qMatrix, all.Names=all.Names, renam=renam))}
 
-renameVariables2 <- function(all.Names, dat, software) {       
+renameVariables2 <- function(all.Names, dat, software, model.statement) {       
        exclude <- which(names(all.Names) == "DIF.free")
        subsNam <- .substituteSigns(dat=dat, variable=unlist(all.Names[-unique(c(1,2, exclude))]), all.Names = all.Names)
        if(software == "conquest" || !is.null(all.Names[["DIF.var"]])) {
@@ -281,7 +281,7 @@ renameVariables2 <- function(all.Names, dat, software) {
        if(length(intersect(all.Names$weight.var, all.Names$variablen))>0) {stop("Test items and weighting variable have to be mutually exclusive.\n")}
        if(length(intersect(all.Names$HG.var, all.Names$variablen))>0)     {stop("Test items and HG variable have to be mutually exclusive.\n")}
        if(length(intersect(all.Names$group.var, all.Names$variablen))>0)  {stop("Test items and group variable have to be mutually exclusive.\n")}
-       return(list(all.Names = all.Names, dat=dat))}
+       return(list(all.Names = all.Names, dat=dat, model.statement=model.statement))}
 
 generateOrCheckQmatrix <- function(a, qMatrix, all.Names) {
        if(is.null(a[["qMatrix"]])) {
