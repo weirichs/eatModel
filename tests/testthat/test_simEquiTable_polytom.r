@@ -5,9 +5,9 @@ data(reading)
 # Booklet 8. This booklet contains questions with some partial credit items.
 d   <- subset(reading, bookletID == "TH08" & taskID == "D205")
 dw  <- reshape2::dcast(d, idstud~item, value.var = "valueSum")
-defT<- defineModel(dat = dw, items = -1, id = "idstud",  irtmodel = "PCM",software="tam")
+defT<- suppressWarnings(defineModel(dat = dw, items = -1, id = "idstud",  irtmodel = "PCM",software="tam"))
 runT<- runModel(defT)
-resT<- getResults(runT, omitPV=TRUE, Q3 = FALSE)
+resT<- suppressWarnings(getResults(runT, omitPV=TRUE, Q3 = FALSE))
 it  <- itemFromRes(resT)
 
 # conventional (cumbersome) equivalence table
@@ -15,7 +15,7 @@ perm<- lapply(colnames(dw)[-1], FUN = function(i) {sort(unique(na.omit(dw[,i])))
 simD<- expand.grid(perm)
 def2<- simD |> dplyr::mutate(id = paste0("P", 1:nrow(simD))) |> defineModel(items = colnames(simD), id = "id",  irtmodel = "PCM",software="tam", anchor=it, itemCol = "item", valueCol = "est", catCol = "category")
 run2<- runModel(def2)
-res2<- getResults(run2, omitPV=TRUE)
+res2<- suppressWarnings(getResults(run2, omitPV=TRUE))
 wle2<- wleFromRes(res2)
 eqt2<- unique(wle2[,c("NitemsSolved", "NitemsTotal", "wle_est")])
 
@@ -50,7 +50,7 @@ colnames(dtmp)[(1+length(pcitem)):ncol(dtmp)] <- diItem
 # 'eqt3' created now should be equivalent to 'eqt2'
 def3<- dtmp |> dplyr::mutate(id = paste0("P", 1:nrow(dtmp))) |> defineModel(items = colnames(dtmp), id = "id",  irtmodel = "PCM",software="tam", anchor=it, itemCol = "item", valueCol = "est", catCol = "category", verbose=FALSE)
 run3<- runModel(def3)
-res3<- getResults(run3, omitPV=TRUE)
+res3<- suppressWarnings(getResults(run3, omitPV=TRUE))
 wle3<- wleFromRes(res3)
 comp<- merge(wle3[,c("NitemsSolved", "wle_est")], eqt2[,c("NitemsSolved", "wle_est")], by = "NitemsSolved")
 

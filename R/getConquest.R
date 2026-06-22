@@ -366,76 +366,87 @@ getConquestDeviance <- function ( path, analysis.name, omitUntil = omitUntil) {
   ret  <- Filter(Negate(is.null), ret)
   tme  <- file.info ( file.path ( path, paste0(analysis.name, ".shw")))[["mtime"]] - file.info ( file.path ( path, paste0(analysis.name, ".cqc")))[["mtime"]]
   grDevices::pdf(file = file.path ( path, paste0(analysis.name, "_dev.pdf")), width = 10, height = 7.5)
-  plotDevianceConquest ( logFile = list ( path=path, analysis.name=analysis.name, ret=ret, tme=tme), omitUntil = omitUntil)
+  plotDevianceConquest ( logFile = list ( path=path, analysis.name=analysis.name, ret=ret, tme=tme), omitUntil = omitUntil, adaptWindow = FALSE)
   grDevices::dev.off() }
 
 ### called by getConquestDeviance() --------------------------------------------
 
-plotDevianceConquest <- function ( logFile, omitUntil = 1, reverse = TRUE, change = TRUE ) {
-  if ( inherits(logFile, "character")) {lf <- logFile}  else  { lf <- file.path(logFile[["path"]], paste0(logFile[["analysis.name"]], ".log"))}
-  input<- scan(lf,what="character",sep="\n",quiet=TRUE)
-  ind  <- grep("eviance=", input)
-  dev  <- unlist(lapply(input[ind], FUN = function (x) {               ### bei negativer deviance veraenderung erzeugt conquest klammern mit
-          brace <- grep("\\(", x)                                      ### niedrigster bisheriger deviance, die muessen jetzt mitsamt der werte darinnen entfernt werden
-          if(length(brace)>0) {
-              weg <- grep("\\(", unlist(strsplit(x, "")))              ### stelle mit aufgehender klammer finden
-              x   <- substr(x, 1, weg-1)
-          }
-          return(x)}))
-  dev  <- data.frame ( lapply(data.frame ( eatTools::halveString(dev, "\\."), stringsAsFactors = FALSE), eatTools::removeNonNumeric), stringsAsFactors = FALSE)
-  mat  <- data.frame ( iter = 1:length(ind), dev = as.numeric(paste(dev[,1], dev[,2], sep=".")), stringsAsFactors = FALSE)
-  if(omitUntil>0)  {
-     dc<- mat[-c(1:omitUntil),2]                                       ### 'dc' = 'deviance chance'
-  } else {
-     dc<- mat[,2]
-  }
-  if ( change ){
-     dc<- diff(dc)
-     yl<- "Deviance Change"                                            ### labels der y-Achse definieren
-  } else {
-     yl<- "Deviance"
-  }
-  if(reverse){
-     dc<- -1 * dc
-  }
-  dc   <- data.frame ( nr=omitUntil + 1:length(dc), dc)
-  xm   <- ceiling( max(dc[,1])/10 )*10
-  xt   <- NULL
-  for ( i in c( 1:30 ) ){
-        xt <- c ( xt, (xm/10) %% i==0 )
-  }
-  xt   <- max ( which ( xt ) )
-  cex  <- 0.85 - ( length(dc[,1]) / 1000 )
-  if ( cex < 0.40 ) {
-       cex <- 0.40
-  }
-  if (inherits(logFile,"list")) {
-      titel <- paste0("Deviance Change Plot for model '",logFile[["analysis.name"]],"'\n")
-  }  else  {
-      titel <- "Deviance Change Plot\n"
-  }
-  par(mar = c(5.1, 4.1, 8.1, 2.1))                                     ### mehr Abstand zwischen titel und plot, damit mehrzeilige ueberschriften reinpassen
-  plot ( dc[,1], dc[,2], type="o",
-       main=titel,  xlab="Iteration",
-       xlim=c(min(dc[,1]),max(dc[,1])),  xaxp=c(0,xm,xt),
-       ylab=yl, pch=20, cex=cex, lwd=0.75, mar = c(5, 4, 10, 2) + 0.1 )
-  si   <- devtools::session_info(pkgs = "eatModel")
-  si   <- si[["packages"]][which(si[["packages"]][,"package"] == "eatModel"),]
-  inf  <- Sys.getenv()
-  sysi <- Sys.info()
-  sys  <- sessionInfo()
-  if(inherits(try(cpu  <- benchmarkme::get_cpu(), silent=TRUE ),"try-error"))  {cpu <- list()}
-  if(inherits(try(ram  <- benchmarkme::get_ram(), silent=TRUE ),"try-error"))  {ram <- list()}
-  stri <- paste0("'eatModel', version ", si[["loadedversion"]], ", build ",si[["date"]], ", user: ",sysi[["user"]], ", computername: ", ifelse(sysi[["sysname"]] == "Linux", sysi[["nodename"]], inf["COMPUTERNAME"]), "\nsystem: ", sys[["running"]], ", cpu: ", cpu[["model_name"]], ", cores: ",cpu[["no_of_cores"]], ", RAM: ",capture.output(ram))
-  if (inherits(logFile,"list")) {
-      stri <- paste0(paste(names(logFile[["ret"]]), logFile[["ret"]], sep=" = ", collapse = "  |  "), "  |  elapsed time: ", timeFormat(logFile[["tme"]]), "\n" , stri, "\n")
-  } else {
-      stri <- paste0(stri, "\n")
-  }
-  graphics::mtext(stri)
-  graphics::abline( a=0, b=0 )
-  dcr  <- dc[dc[,2]<0,]
-  graphics::points( dcr[,1], dcr[,2], pch=20, cex=cex, col="red") }
+prepareWindow <- function(adaptWindow) {
+           sysInfo  <- Sys.info()
+           if(isTRUE(adaptWindow)) {
+              if(sysInfo[["sysname"]] == "Linux") {
+                  grDevices::x11(width = 800/72, height = 600/72)
+              } else  {
+                  grDevices::windows(width = 800/72, height = 600/72)
+              }
+           }}
+           
+plotDevianceConquest <- function ( logFile, omitUntil = 1, reverse = TRUE, change = TRUE, adaptWindow = TRUE) {
+           prepareWindow(adaptWindow)
+           if ( inherits(logFile, "character")) {lf <- logFile}  else  { lf <- file.path(logFile[["path"]], paste0(logFile[["analysis.name"]], ".log"))}
+           input<- scan(lf,what="character",sep="\n",quiet=TRUE)
+           ind  <- grep("eviance=", input)
+           dev  <- unlist(lapply(input[ind], FUN = function (x) {               ### bei negativer deviance veraenderung erzeugt conquest klammern mit
+                   brace <- grep("\\(", x)                                      ### niedrigster bisheriger deviance, die muessen jetzt mitsamt der werte darinnen entfernt werden
+                   if(length(brace)>0) {
+                       weg <- grep("\\(", unlist(strsplit(x, "")))              ### stelle mit aufgehender klammer finden
+                       x   <- substr(x, 1, weg-1)
+                   }
+                   return(x)}))
+           dev  <- data.frame ( lapply(data.frame ( eatTools::halveString(dev, "\\."), stringsAsFactors = FALSE), eatTools::removeNonNumeric), stringsAsFactors = FALSE)
+           mat  <- data.frame ( iter = 1:length(ind), dev = as.numeric(paste(dev[,1], dev[,2], sep=".")), stringsAsFactors = FALSE)
+           if(omitUntil>0)  {
+              dc<- mat[-c(1:omitUntil),2]                                       ### 'dc' = 'deviance chance'
+           } else {
+              dc<- mat[,2]
+           }
+           if ( change ){
+              dc<- diff(dc)
+              yl<- "Deviance Change"                                            ### labels der y-Achse definieren
+           } else {
+              yl<- "Deviance"
+           }
+           if(reverse){
+              dc<- -1 * dc
+           }
+           dc   <- data.frame ( nr=omitUntil + 1:length(dc), dc)
+           xm   <- ceiling( max(dc[,1])/10 )*10
+           xt   <- NULL
+           for ( i in c( 1:30 ) ){
+                 xt <- c ( xt, (xm/10) %% i==0 )
+           }
+           xt   <- max ( which ( xt ) )
+           cex  <- 0.85 - ( length(dc[,1]) / 1000 )
+           if ( cex < 0.40 ) {
+                cex <- 0.40
+           }
+           if (inherits(logFile,"list")) {
+               titel <- paste0("Deviance Change Plot for model '",logFile[["analysis.name"]],"'\n")
+           }  else  {
+               titel <- "Deviance Change Plot\n"
+           }
+           par(mar = c(5.1, 4.1, 8.1, 2.1))                                     ### mehr Abstand zwischen titel und plot, damit mehrzeilige ueberschriften reinpassen
+           plot ( dc[,1], dc[,2], type="o",
+                main=titel,  xlab="Iteration",
+                xlim=c(min(dc[,1]),max(dc[,1])),  xaxp=c(0,xm,xt),
+                ylab=yl, pch=20, cex=cex, lwd=0.75, mar = c(5, 4, 10, 2) + 0.1 )
+           si   <- devtools::session_info(pkgs = "eatModel")
+           si   <- si[["packages"]][which(si[["packages"]][,"package"] == "eatModel"),]
+           inf  <- Sys.getenv()
+           sysi <- Sys.info()
+           sys  <- sessionInfo()
+           if(inherits(try(cpu  <- benchmarkme::get_cpu(), silent=TRUE ),"try-error"))  {cpu <- list()}
+           if(inherits(try(ram  <- benchmarkme::get_ram(), silent=TRUE ),"try-error"))  {ram <- list()}
+           stri <- paste0("'eatModel', version ", si[["loadedversion"]], ", build ",si[["date"]], ", user: ",sysi[["user"]], ", computername: ", ifelse(sysi[["sysname"]] == "Linux", sysi[["nodename"]], inf["COMPUTERNAME"]), "\nsystem: ", sys[["running"]], ", cpu: ", cpu[["model_name"]], ", cores: ",cpu[["no_of_cores"]], ", RAM: ",capture.output(ram))
+           if (inherits(logFile,"list")) {
+               stri <- paste0(paste(names(logFile[["ret"]]), logFile[["ret"]], sep=" = ", collapse = "  |  "), "  |  elapsed time: ", timeFormat(logFile[["tme"]]), "\n" , stri, "\n")
+           } else {
+               stri <- paste0(stri, "\n")
+           }
+           graphics::mtext(stri)
+           graphics::abline( a=0, b=0 )
+           dcr  <- dc[dc[,2]<0,]
+           graphics::points( dcr[,1], dcr[,2], pch=20, cex=cex, col="red") }
 
 # funktion soll mal nach CRAN -> eatTools
 timeFormat <- function(timediff, digits, format = NULL) {

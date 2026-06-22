@@ -7,14 +7,7 @@ P_get_k <- function(theta, k, m, ds, a) {
     return(sum(num) / denom)  }
 
 plotDevianceMirt <- function ( mirt.obj, omitUntil = 1, adaptWindow = TRUE) {
-           sysInfo  <- Sys.info()
-           if(isTRUE(adaptWindow)) {
-              if(sysInfo[["sysname"]] == "Linux") {
-                  grDevices::x11(width = 800/72, height = 600/72)
-              } else  {
-                  grDevices::windows(width = 800/72, height = 600/72)
-              }
-           }
+           prepareWindow(adaptWindow)
            dev <- (-1) * diff( (-2) * mirt.obj@Internals$collectLL )
            mat <- data.frame ( iter = 1:length(dev), dev = dev, stringsAsFactors = FALSE)
            if(omitUntil>0)  {
@@ -38,7 +31,7 @@ plotDevianceMirt <- function ( mirt.obj, omitUntil = 1, adaptWindow = TRUE) {
                 xlim=c(min(dc[,1]),max(dc[,1])),  xaxp=c(0,xm,xt),
                 ylab="deviance change", pch=20, cex=cex, lwd=0.75, mar = c(5, 4, 10, 2) + 0.1)
            si  <- sessioninfo::package_info()
-		   row <- eatTools::whereAre("eatModel", si[,"package"], verbose=FALSE)
+		       row <- eatTools::whereAre("eatModel", si[,"package"], verbose=FALSE)
            inf <- Sys.getenv()
            sysi<- Sys.info()
            sys <- sessionInfo()
