@@ -129,5 +129,4 @@ it  <- itemFromRes(resT)
 # create equivalence table with arbitrary cuts and reference values
 ret2<- simEquiTable( anchor = it, item = "item", cat="category", value = "est",
        cutScores = list ( values = c(400, 600)), mRef = 0.047, sdRef = 1.181)
-#> Error in simEquiTable(anchor = it, item = "item", cat = "category", value = "est",     cutScores = list(values = c(400, 600)), mRef = 0.047, sdRef = 1.181): object 'it' not found
 ```
