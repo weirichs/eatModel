@@ -25,7 +25,7 @@ simEquiTable <- function ( anchor, item = NULL, cat = NULL, value = NULL, mRef, 
                        dtmp <- data.frame(rowSums(dtmp[,(ncol(dtmp)-ncat+1):ncol(dtmp)]), dtmp[,1:(ncol(dtmp)-ncat)], stringsAsFactors = FALSE)
                        colnames(dtmp)[1] <- i}
                    colnames(dtmp)[(1+length(pcitem)):ncol(dtmp)] <- diItem
-                   txt   <- capture.output(def3  <- dtmp |> dplyr::mutate(id = paste0("P", 1:nrow(dtmp))) |> defineModel(items = colnames(dtmp), id = "id",  irtmodel = "PCM",software="tam", anchor=it, itemCol = "item", valueCol = "est", catCol = "category", verbose=FALSE))
+                   txt   <- capture.output(def3  <- dtmp |> dplyr::mutate(id = paste0("P", 1:nrow(dtmp))) |> defineModel(items = colnames(dtmp), id = "id",  irtmodel = "PCM",software="tam", anchor=anchor, itemCol = "item", valueCol = "est", catCol = "category", verbose=FALSE))
                    run3  <- runModel(def3)
                    res3  <- getResults(run3, omitPV=TRUE, verbose=FALSE)
                    dtmp  <- wleFromRes(res3) |> dplyr::rename(est=wle_est, score = NitemsSolved, n = NitemsTotal)

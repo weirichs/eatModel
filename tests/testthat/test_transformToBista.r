@@ -9,8 +9,8 @@ compareObj <- function (obj1, obj2, by) {
   return(ret)}
 
 sysInfo  <- Sys.info()
-if(sysInfo[["sysname"]] == "Linux") {
-   load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example1.rda"))
+if(sysInfo[["sysname"]] == "Linux" && sysInfo[["nodename"]] == "oldboy") {
+   load(eatTools::pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example1.rda"))
 } else {
    load(test_path("tf_example1.rda"))
 }
@@ -26,8 +26,8 @@ test_that("tf1", {
 })
 
 # load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example2.rda"))
-if(sysInfo[["sysname"]] == "Linux") {
-   load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example2.rda"))
+if(sysInfo[["sysname"]] == "Linux" && sysInfo[["nodename"]] == "oldboy") {
+   load(eatTools::pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example2.rda"))
 } else {
    load(test_path("tf_example2.rda"))
 }
@@ -42,8 +42,8 @@ test_that("tf2", {
 })
 
 # load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example3.rda"))
-if(sysInfo[["sysname"]] == "Linux") {
-   load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example3.rda"))
+if(sysInfo[["sysname"]] == "Linux" && sysInfo[["nodename"]] == "oldboy") {
+   load(eatTools::pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example3.rda"))
 } else {
    load(test_path("tf_example3.rda"))
 }
@@ -58,9 +58,9 @@ test_that("tf3", {
 
 # load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example3a.rda"))
 # load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example3b.rda"))
-if(sysInfo[["sysname"]] == "Linux") {
-   load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example3a.rda"))
-   load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example3b.rda"))
+if(sysInfo[["sysname"]] == "Linux" && sysInfo[["nodename"]] == "oldboy") {
+   load(eatTools::pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example3a.rda"))
+   load(eatTools::pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example3b.rda"))
 } else {
    load(test_path("tf_example3a.rda"))
    load(test_path("tf_example3b.rda"))
@@ -75,8 +75,8 @@ test_that("tf3ab", {
 })
 
 # load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example4.rda"))
-if(sysInfo[["sysname"]] == "Linux") {
-   load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example4.rda"))
+if(sysInfo[["sysname"]] == "Linux" && sysInfo[["nodename"]] == "oldboy") {
+   load(eatTools::pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example4.rda"))
 } else {
    load(test_path("tf_example4.rda"))
 }

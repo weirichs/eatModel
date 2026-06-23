@@ -1,6 +1,6 @@
 sysInfo  <- Sys.info()
-if(sysInfo[["sysname"]] == "Linux") {
-   ref1 <- readRDS(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/lErrors.rds"))
+if(sysInfo[["sysname"]] == "Linux" && sysInfo[["nodename"]] == "oldboy") {
+   ref1 <- readRDS(eatTools::pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/lErrors.rds"))
 } else {
    ref1 <- readRDS(test_path("lErrors.rds"))
 }
@@ -24,8 +24,8 @@ test_that("chained linking errors of example 1 are equal between package version
 })
 
 # ref2 <- readRDS(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/lErrDif.rds"))
-if(sysInfo[["sysname"]] == "Linux") {
-   ref2 <- readRDS(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/lErrDif.rds"))
+if(sysInfo[["sysname"]] == "Linux" && sysInfo[["nodename"]] == "oldboy") {
+   ref2 <- readRDS(eatTools::pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/lErrDif.rds"))
 } else {
    ref2 <- readRDS(test_path("lErrDif.rds"))
 }
@@ -36,8 +36,8 @@ test_that("chained linking errors of example 1 (dependentDIF) are equal between 
 })
 
 # ref3 <- readRDS(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/lErrors2.rds"))
-if(sysInfo[["sysname"]] == "Linux") {
-   ref3 <- readRDS(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/lErrors2.rds"))
+if(sysInfo[["sysname"]] == "Linux" && sysInfo[["nodename"]] == "oldboy") {
+   ref3 <- readRDS(eatTools::pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/lErrors2.rds"))
 } else {
    ref3 <- readRDS(test_path("lErrors2.rds"))
 }
@@ -62,8 +62,8 @@ test_that("chained linking errors of example 1 (dependentDIF) are equal between 
 })
 
 # ref4 <- readRDS(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/jkErr2.rds"))
-if(sysInfo[["sysname"]] == "Linux") {
-   ref4 <- readRDS(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/jkErr2.rds"))
+if(sysInfo[["sysname"]] == "Linux" && sysInfo[["nodename"]] == "oldboy") {
+   ref4 <- readRDS(eatTools::pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/jkErr2.rds"))
 } else {
    ref4 <- readRDS(test_path("jkErr2.rds"))
 }
@@ -80,8 +80,8 @@ test_that("chained linking errors of example 3 (dependentDIF) are approximately 
 
 # example 4
 # ref5 <- readRDS(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/ex4.rds"))
-if(sysInfo[["sysname"]] == "Linux") {
-   ref5 <- readRDS(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/ex4.rds"))
+if(sysInfo[["sysname"]] == "Linux" && sysInfo[["nodename"]] == "oldboy") {
+   ref5 <- readRDS(eatTools::pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/ex4.rds"))
 } else {
    ref5 <- readRDS(test_path("ex4.rds"))
 }
