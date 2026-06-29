@@ -108,7 +108,7 @@
   Output interface for `multiEquatError`
 
 - [`runModel()`](https://weirichs.github.io/eatModel/reference/runModel.md)
-  : Run IRT model specified by 'defineModel' using Conquest, TAM, ort
+  : Run IRT model specified by 'defineModel' using Conquest, TAM, or
   mirt
 
 - [`simEquiTable()`](https://weirichs.github.io/eatModel/reference/simEquiTable.md)

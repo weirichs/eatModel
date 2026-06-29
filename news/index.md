@@ -1,5 +1,14 @@
 # Changelog
 
+## eatModel 0.10.22 \[Jun 2026\]
+
+- add tests for equivalence table in partial credit
+  ([`simEquiTable()`](https://weirichs.github.io/eatModel/reference/simEquiTable.md))
+- bug fix in
+  [`simEquiTable()`](https://weirichs.github.io/eatModel/reference/simEquiTable.md):
+  read in correct anchor file
+- bugfix in (g)pcm anchoring with tam
+
 ## eatModel 0.10.19 \[Jun 2026\]
 
 - describe renam argument in

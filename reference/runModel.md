@@ -1,4 +1,4 @@
-# Run IRT model specified by 'defineModel' using Conquest, TAM, ort mirt
+# Run IRT model specified by 'defineModel' using Conquest, TAM, or mirt
 
 Start the estimation of an IRT model defined by
 [`defineModel`](https://weirichs.github.io/eatModel/reference/defineModel.md).
