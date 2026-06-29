@@ -418,7 +418,7 @@ checkID_consistency <- function(dat, allNam, software){
 
 checkDir <- function(dir, software) {
   if(!is.null(dir)) {
-    dir <- eatTools::crop(dir,"/")
+    dir <- normalizePath(dir)
     if(dir.exists(dir) == FALSE) {
       cat(paste("Warning: Specified folder '",dir,"' does not exist. Create folder ... \n",sep=""))
       dir.create(dir, recursive = TRUE)

@@ -1,16 +1,8 @@
 cf <- system.file("extdata", "console_Feb2007.exe", package = "eatModel")
+path <- getwd() # defineMOdel aender setwd(), deshalb muss das hier wieder zurueckgesetzt werden
 
-# unter linux findet 'test_path' den Pfad nicht, es kommt die Fehlermeldung:
-# Error in `testthat::test_path()`:
-# ! Can't find 'tests/testthat'.
-# deshalb hier altenativer hotfix (schlecht; nur so lange bis ich was besseres hab)
-sysInfo  <- Sys.info()
-if(sysInfo[["sysname"]] == "Linux" && sysInfo[["nodename"]] == "oldboy") {
-   load(eatTools::pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/vera_dat.rda"))
-} else {
-   load(test_path("vera_dat.rda"))
-}
 #load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/vera_dat.rda"))
+load(test_path("vera_dat.rda"))
 
 if(isTRUE(file.exists(cf))){
     test_that("defineModel works for DIF", {
@@ -42,13 +34,11 @@ test_that("importing results works for three-dimensional model", {
     run3d[["dir"]] <- tempdir()
     results3d <- suppressWarnings(getResults(run3d))
 })
+
 # strange item namings ...
-if(sysInfo[["sysname"]] == "Linux" && sysInfo[["nodename"]] == "oldboy") {
-   load(eatTools::pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/japan.rda"))
-} else {
-   load(test_path("japan.rda"))
-}
 # load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/japan.rda"))
+setwd(path)
+load(test_path("japan.rda"))
 
 if(isTRUE(file.exists(cf))){
     test_that("temporal item renaming works", {
@@ -59,12 +49,8 @@ if(isTRUE(file.exists(cf))){
     })
 }
 # example 2
-# load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/df_example2.rda"))
-if(sysInfo[["sysname"]] == "Linux" && sysInfo[["nodename"]] == "oldboy") {
-   load(eatTools::pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/df_example2.rda"))
-} else {
-   load(test_path("df_example2.rda"))
-}
+setwd(path)
+load(test_path("df_example2.rda"))
 
 if(isTRUE(file.exists(cf))){
     test_that("defineModel works for achoring", {

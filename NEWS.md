@@ -1,3 +1,9 @@
+# eatModel 0.10.22 [Jun 2026]
+
+* add tests for equivalence table in partial credit (`simEquiTable()`)
+* bug fix in `simEquiTable()`: read in correct anchor file
+* bugfix in (g)pcm anchoring with tam
+
 # eatModel 0.10.19 [Jun 2026]
 
 * describe renam argument in `checkContextVars()`

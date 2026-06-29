@@ -1,6 +1,6 @@
 \name{runModel}
 \alias{runModel}
-\title{Run IRT model specified by 'defineModel' using Conquest, TAM, ort mirt}
+\title{Run IRT model specified by 'defineModel' using Conquest, TAM, or mirt}
 \description{Start the estimation of an IRT model defined by \code{\link{defineModel}}. \code{runModel}
 should be called with the argument returned by \code{\link{defineModel}}.}
 \usage{

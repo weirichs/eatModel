@@ -104,8 +104,12 @@ transformToBista <- function(equatingList, refPop, cuts, weights = NULL,
                                    } else {                                     
                                       if(any(itFrame[,slp] < 0)) {
                                          warning("The slope parameters for some items are less than 0. These item parameters cannot be meaningfully transformed into the educational standards metric.")
-                                      }                                         ### untere Zeile: Variante fuer 2pl entsprechend Karolines AI-Agent (Mail Karoline, 11.06.2026, 9.24 Uhr)
-                                      itFrame[,"estTransf625"]<- itFrame[,"estTransf"] + log(0.625/(1-0.625)) / itFrame[,slp]
+                                      }                                         ### untere Zeile: Variante fuer 2pl entsprechend Karolines AI-Agent (Mail Karoline, 11.06.2026, 9.24 Uhr, bzw. "https://github.com/weirichs/eatModel/issues/34#issuecomment-4829725821")
+                                      if(attr(equatingList[["results"]], "runModelAttributes")[["software"]] == "tam") {
+                                         itFrame[,"estTransf625"]<- (itFrame[,"estTransf"] + log(0.625/(1-0.625))) / itFrame[,slp]
+                                      } else {                                  ### obere Zeile: tam; untere Zeile: mirt
+                                         itFrame[,"estTransf625"]<- itFrame[,"estTransf"] + log(0.625/(1-0.625)) / itFrame[,slp]
+                                      }
                                    }
                                 } else {                                        ### in pcm ist das der .625-thurstonian threshold
                                    itFrame[,"estTransf625"]<- itFrame[,"thurstone"]

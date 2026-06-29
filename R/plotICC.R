@@ -1,29 +1,29 @@
 plotICC <- function ( resultsObj, defineModelObj, runModelObj = NULL, items = NULL, personPar = c("WLE", "EAP", "PV"), personsPerGroup = 30, pdfFolder = NULL, smooth = 7 ) {
            personPar  <- match.arg(arg = toupper(personPar), choices = c("WLE", "EAP", "PV"))
-           if (smooth<5) {smooth <- 5}
+           if(smooth<5) {smooth <- 5}
            it  <- itemFromRes ( resultsObj )
-           if ( !"est" %in% colnames(it) ) { it[,"est"] <- NA }
-           if ( !"estOffset" %in% colnames(it) ) { it[,"estOffset"] <- NA }
+           if(!"est" %in% colnames(it) ) { it[,"est"] <- NA }
+           if(!"estOffset" %in% colnames(it) ) { it[,"estOffset"] <- NA }
            it[,"est"] <- rowSums(it[,c("est", "estOffset")], na.rm = TRUE)      ### untere Zeilen: wenn 1pl und 2pl gemeinsam im resultsobjekt auftauchen, gibt es fuer 1pl keinen
-           if ( !"estSlope" %in% colnames(it) ) { it[,"estSlope"] <- 1 }        ### slope parameter; die werte sind NA. Zum Plotten muessen sie daher fuer das Raschmodell auf 1 gesetzt werden
-           if ( length(which(is.na(it[,"estSlope"]))) > 0) { it[which(is.na(it[,"estSlope"])), "estSlope"] <- 1 }
+           if(!"estSlope" %in% colnames(it) ) { it[,"estSlope"] <- 1 }          ### slope parameter; die werte sind NA. Zum Plotten muessen sie daher fuer das Raschmodell auf 1 gesetzt werden
+           if(length(which(is.na(it[,"estSlope"]))) > 0) { it[which(is.na(it[,"estSlope"])), "estSlope"] <- 1 }
            eapA<- eapFromRes (resultsObj)                                       ### eap fuer alle; muss wideformat haben!!!
-           if ( personPar == "WLE") {
-                eapA <- wleFromRes(resultsObj)
-                colnames(eapA) <- car::recode(colnames(eapA), "'wle_est'='EAP'")
+           if(personPar == "WLE") {
+              eapA <- wleFromRes(resultsObj)
+              colnames(eapA) <- car::recode(colnames(eapA), "'wle_est'='EAP'")
            }
-           if ( personPar == "PV") {
-                eapA <- pvFromRes(resultsObj, toWideFormat = TRUE)
-                colnames(eapA) <- car::recode(colnames(eapA), "'pv1'='EAP'")
+           if(personPar == "PV") {
+              eapA <- pvFromRes(resultsObj, toWideFormat = TRUE)
+              colnames(eapA) <- car::recode(colnames(eapA), "'pv1'='EAP'")
            }
            checkmate::assert_character(items,  null.ok = TRUE, unique = TRUE,  any.missing = FALSE)
-           if ( (is.null(items) || length(items) > 1)  & is.null(pdfFolder)) {stop("If ICCs for more than one item should be displayed, please specify an output folder for pdf.\n")}
-           if ( !is.null(pdfFolder)) { grDevices::pdf(file = pdfFolder, width = 10, height = 7.5) }
-           if ( !is.null ( items ) )  {
-                miss <- setdiff(items, it[,"item"])
-                if ( length(miss)>0) {warning(paste0("Following ",length(miss), " items not included in results object: '",paste(miss,, collapse="', '"),"'."))}
-                if ( length(intersect(items,it[,"item"]))==0) {stop("No commons items in 'items' and results object.")}
-                it <- subset(it, item %in% items)
+           if((is.null(items) || length(items) > 1)  & is.null(pdfFolder)) {stop("If ICCs for more than one item should be displayed, please specify an output folder for pdf.\n")}
+           if(!is.null(pdfFolder)) { grDevices::pdf(file = pdfFolder, width = 10, height = 7.5) }
+           if(!is.null(items))  {
+              miss <- setdiff(items, it[,"item"])
+              if(length(miss)>0) {warning(paste0("Following ",length(miss), " items not included in results object: '",paste(miss,, collapse="', '"),"'."))}
+              if(length(intersect(items,it[,"item"]))==0) {stop("No commons items in 'items' and results object.")}
+              it <- subset(it, item %in% items)
            }
      ### plotten findet fuer jedes dichotome Item separat statt
            inf <- grep("infit", colnames(it), value=TRUE, ignore.case=TRUE)     ### infit-spalte, es darf nur eine geben
@@ -50,8 +50,8 @@ plotICC <- function ( resultsObj, defineModelObj, runModelObj = NULL, items = NU
                      stopifnot(length(id)==1)
                      prbs<- na.omit ( merge ( dat[,c( "ID", as.character(i[["item"]]))], eap[,c( id, "EAP")], by.x = "ID", by.y = id))
                      anz <- round ( nrow(prbs) / personsPerGroup ) + 1             ### mindestens 'personsPerGroup' Personen pro Gruppe
-                     if ( anz < 3 ) { anz <- 3 }
-                     if ( anz > smooth) { anz <- round(smooth)}
+                     if(anz < 3 ) {anz <- 3}
+                     if(anz > smooth) {anz <- round(smooth)}
                      eapQ<- quantile ( prbs[,"EAP"], probs = seq(0,1,l = anz))
                      prbs[,"gr"] <- eatTools::num.to.cat ( x = prbs[,"EAP"], cut.points = eapQ[-c(1,length(eapQ))])
                      prbs<- do.call("rbind", by ( data = prbs, INDICES = prbs[,"gr"], FUN = function ( g ) {
@@ -67,7 +67,7 @@ plotICC <- function ( resultsObj, defineModelObj, runModelObj = NULL, items = NU
                      return(i)
                   }} ))
      ### jetzt die partial credit items dazu plotten
-           if(nrow(pl)>0) {
+           if(!is.null(pl) && nrow(pl)>0) {
               if(inherits(defineModelObj, "defineMultiple")) {                  ### Problem: je nachdem ob modelle gesplittet wurden oder nicht, treten die items in einem oder mehreren objekten auf
                  dfm <- defineModelObj
                  rmo <- runModelObj

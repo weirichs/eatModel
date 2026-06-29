@@ -1,6 +1,6 @@
 ### only 1pl Rasch and partial credit
 data(reading)
-sysInfo  <- Sys.info()
+#sysInfo  <- Sys.info()
 cf <- system.file("extdata", "console_Feb2007.exe", package = "eatModel")
 
 # tam: To speed up the process, the tests will be administered only for Test
@@ -21,9 +21,6 @@ resM<- suppressWarnings(getResults(runM))
 # conquest
 if(isTRUE(file.exists(cf))){
     defC<- suppressWarnings(defineModel(dat = dw, items = -1, id = "idstud", model.statement = "item+item*step", nodes = 21, analysis.name = "pcm_conquest", dir=tempdir()))
-    if(sysInfo[["sysname"]] == "Linux" && sysInfo[["nodename"]] == "oldboy") {
-       defC<- suppressWarnings(defineModel(dat = dw, items = -1, id = "idstud", model.statement = "item+item*step", nodes = 21, analysis.name = "pcm_conquest", dir=tempdir()))
-    }
     runC<- runModel(defC)
     resC<- suppressWarnings(getResults(runC))
 

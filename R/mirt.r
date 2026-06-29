@@ -347,27 +347,27 @@ getMirtWles <- function(runModelObj, qMatrix, omitWle) {
          
 
 mirtWlesMultidim <- function(m) {
+    pfad     <- tempdir()
     sysInfo  <- Sys.info()
     nams     <- sample(1:99999, size = 3, replace=FALSE)
     filenam1 <- paste0("F", nams[1], ".rds")
     filenam2 <- paste0("W", nams[2], ".rds")
     filenam3 <- paste0("S", nams[3], ".R")
-    saveRDS(m, file = file.path(tempdir(), filenam1), compress="bzip2")
-    syn      <- c("library(mirt)", paste0("m <- readRDS(\"",normalizePath(file.path(tempdir(), filenam1), winslash = "/"),"\")"),  "wle  <- fscores(m,method=\"WLE\", verbose=FALSE, full.scores.SE = TRUE)",   paste0("saveRDS(wle, file = \"",normalizePath(file.path(tempdir(), filenam2), winslash = "/"),"\")")  )
-    write(syn, file = file.path(tempdir(), filenam3), sep="\n")
-    setwd(tempdir())
+    saveRDS(m, file = file.path(pfad, filenam1), compress="bzip2")
+    syn      <- suppressWarnings(c("library(mirt)", paste0("m <- readRDS(\"",normalizePath(file.path(pfad, filenam1), winslash = "/"),"\")"),  "wle  <- fscores(m,method=\"WLE\", verbose=FALSE, full.scores.SE = TRUE)",   paste0("saveRDS(wle, file = \"",normalizePath(file.path(pfad, filenam2), winslash = "/"),"\")")  ))
+    write(syn, file = file.path(pfad, filenam3), sep="\n")
+    setwd(pfad)
     if(sysInfo[["sysname"]] == "Linux") {
        cat("#!/bin/bash\n",paste0( "R CMD BATCH --vanilla ",filenam3," syntax.Rout\n"), file = "run_analysis.sh")
        Sys.chmod("run_analysis.sh", mode = "0755")                              ### macht die Datei ausfuehrbar
        system("./run_analysis.sh")
     } else {
        rcmd<- file.path(Sys.getenv()[["R_HOME"]], "bin/x64/Rcmd.exe")           ### Pfad der 'rcmd' angeben
-       pfad<- tempdir()
        bat <- c(substr(pfad, 1, 2), paste0("cd ", normalizePath (pfad), "\\"), paste0("CALL ", "\"",normalizePath(rcmd),"\" BATCH --vanilla ",filenam3," syntax.rout"), "exit")
        write(bat,file.path(pfad, "start.bat"), sep="\n")
        system(file.path(pfad, "start.bat"), intern=FALSE, show.output.on.console = FALSE, wait=TRUE, invisible = FALSE)
     }
-    wle <- readRDS(file.path(tempdir(), filenam2))
+    wle <- readRDS(file.path(pfad, filenam2))
     return(wle)} 
 
 getMirtPVs <- function ( runModelObj, qMatrix, omitPV) {

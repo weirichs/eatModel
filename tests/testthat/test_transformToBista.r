@@ -8,13 +8,8 @@ compareObj <- function (obj1, obj2, by) {
          return(expect_true(all.equal(vgl.i[,1],vgl.i[,2])))})))
   return(ret)}
 
-sysInfo  <- Sys.info()
-if(sysInfo[["sysname"]] == "Linux" && sysInfo[["nodename"]] == "oldboy") {
-   load(eatTools::pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example1.rda"))
-} else {
-   load(test_path("tf_example1.rda"))
-}
 # load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example1.rda"))
+load(test_path("tf_example1.rda"))
 
 test_that("tf1", {
   tf2b.neu <- suppressWarnings(transformToBista ( equatingList = eq2b, refPop = ref, cuts = cuts))
@@ -26,11 +21,7 @@ test_that("tf1", {
 })
 
 # load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example2.rda"))
-if(sysInfo[["sysname"]] == "Linux" && sysInfo[["nodename"]] == "oldboy") {
-   load(eatTools::pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example2.rda"))
-} else {
    load(test_path("tf_example2.rda"))
-}
 
 test_that("tf2", {
   dfr.neu   <- suppressWarnings(transformToBista ( equatingList = anch3, refPop = refPop, cuts=cuts , vera=FALSE))
@@ -42,11 +33,7 @@ test_that("tf2", {
 })
 
 # load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example3.rda"))
-if(sysInfo[["sysname"]] == "Linux" && sysInfo[["nodename"]] == "oldboy") {
-   load(eatTools::pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example3.rda"))
-} else {
-   load(test_path("tf_example3.rda"))
-}
+load(test_path("tf_example3.rda"))
 test_that("tf3", {
   dfr.neu3  <- transformToBista ( equatingList = anch3, refPop = refPop, cuts=cuts )
   expect_true(compareObj( dfr$itempars, dfr.neu3$itempars, by=c("item", "dimension", "model")))
@@ -58,13 +45,8 @@ test_that("tf3", {
 
 # load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example3a.rda"))
 # load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example3b.rda"))
-if(sysInfo[["sysname"]] == "Linux" && sysInfo[["nodename"]] == "oldboy") {
-   load(eatTools::pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example3a.rda"))
-   load(eatTools::pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example3b.rda"))
-} else {
    load(test_path("tf_example3a.rda"))
    load(test_path("tf_example3b.rda"))
-}
 test_that("tf3ab", {
   tfRef.neu <- suppressWarnings(transformToBista ( equatingList = eqRef, cuts=cuts, vera=FALSE,weights = datT1[,c("idstud", "wgt")] ))
   expect_true(compareObj( tfRef$itempars, tfRef.neu$itempars, by=c("item", "dimension", "model")))
@@ -75,11 +57,7 @@ test_that("tf3ab", {
 })
 
 # load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example4.rda"))
-if(sysInfo[["sysname"]] == "Linux" && sysInfo[["nodename"]] == "oldboy") {
-   load(eatTools::pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example4.rda"))
-} else {
    load(test_path("tf_example4.rda"))
-}
 test_that("tf4", {
   dfrT1P.neu <- suppressWarnings(transformToBista ( equatingList = ankT1P, refPop = tfRef[["refPop"]],cuts=cuts, vera=FALSE ))
   expect_true(compareObj(dfrT1P$itempars, dfrT1P.neu$itempars, by=c("item", "dimension", "model")))
