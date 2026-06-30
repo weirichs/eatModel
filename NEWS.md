@@ -11,6 +11,7 @@
   GPCM Thurstonian thresholds/BISTA item parameters
 * run the TAM vs. mirt PCM Thurstonian threshold test independently from the
   optional ConQuest executable
+* re-add focus population mean and SD to `transformToBista()`'s `means` output
 
 # eatModel 0.10.19 [Jun 2026]
 
