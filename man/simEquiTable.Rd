@@ -78,9 +78,9 @@ ret <- simEquiTable( anchor = prm[,c("item", "est")], cutScores = cuts , mRef = 
 }
 
 ### Example 2: equivalence table for partial credit model
-if (interactive()) {
-# This example estimates a partial-credit model and is intended for interactive
-# exploration.
+\dontrun{
+# This example estimates a partial-credit model. R CMD check skips it by default,
+# but it can still be run locally via run_dontrun = TRUE.
 # load partial credit data
 data(reading)
 

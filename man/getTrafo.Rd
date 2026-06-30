@@ -94,16 +94,14 @@ A list with four objects.
 \item{info}{Character string with short information about refrence population}
 }
 \examples{
-\dontrun{
+trafoDB <- formals(getTrafo)$dataBase
+if (file.exists(trafoDB)) {
 # transformation rules for all domains subject deutsch, primary level
-primDeu <- getTrafo(mode="paper", grade="primary", subject = "deu",
+primDeu <- getTrafo(dataBase = trafoDB, mode="paper", grade="primary", subject = "deu",
            domain = "all", study = "vera")
 
 # transformation rules for all science domains
-secScien<- getTrafo(mode="paper", grade="secondary", subject = c("bio", "che", "phy"),
+secScien<- getTrafo(dataBase = trafoDB, mode="paper", grade="secondary", subject = c("bio", "che", "phy"),
            domain = "all", study = "bt")
 }
-}
-\references{
-
 }
