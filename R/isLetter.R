@@ -1,3 +1,8 @@
+is_true <- function(obj, crit) {
+   if(inherits(try(ret <- isTRUE(obj == crit), silent=TRUE  ),"try-error"))  {ret <- FALSE}
+   return(ret)}
+
+
 ### called by defineModel/.substituteSigns() and getResults/getConquestAdditionalTerms()
 
 isLetter <- function(string){
