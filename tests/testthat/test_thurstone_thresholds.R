@@ -6,6 +6,7 @@ expect_all_abs_lt <- function(x, tolerance) {
 data(reading)
 #sysInfo  <- Sys.info()
 cf <- system.file("extdata", "console_Feb2007.exe", package = "eatModel")
+hasConquest <- nchar(cf)>0 && file.exists(cf)
 
 # tam: To speed up the process, the tests will be administered only for Test
 # Booklet 8. This booklet contains questions with some partial credit items.
@@ -41,7 +42,7 @@ test_that("PCM Thurstonian thresholds are comparable for TAM and mirt", {
 })
 
 # conquest
-if(isTRUE(file.exists(cf))){
+if(hasConquest){
     defC<- suppressWarnings(defineModel(dat = dw, items = -1, id = "idstud", model.statement = "item+item*step", nodes = 21, analysis.name = "pcm_conquest", dir=tempdir()))
     runC<- runModel(defC)
     resC<- suppressWarnings(getResults(runC))

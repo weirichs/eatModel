@@ -49,23 +49,27 @@ doAufb <- function ( x, argL ) {
 
 identifyConquestFolder <- function () {
   cf <- system.file("extdata", "console_Feb2007.exe", package = "eatModel")
-  if ( nchar(cf)==0) {cf <- system.file("exec", "console_Feb2007.exe", package = "eatModel")} else{return(cf)}
-  if ( nchar(cf)==0) {
-    root <- system.file(package = "eatModel")
-    if ( !file.exists(file.path(root, "exec"))) {dir.create(file.path(root, "exec"))}
-    if ( !file.exists( system.file("exec", "console_Feb2007.exe", package = "eatModel") )) {
-      if ( !file.exists("i:/Methoden/00_conquest_console/console_Feb2007.exe") ) {
-        packageStartupMessage("Cannot find conquest 2007 executable file. Please choose manually.")
-        fname <- file.choose()
-      }  else  {
-        fname <- "i:/Methoden/00_conquest_console/console_Feb2007.exe"
-      }
-      if ( nchar(fname)>0) { foo <- file.copy(from = fname, to = file.path(root, "exec", "console_Feb2007.exe") ) }
-    }
-  } else {
-    return(cf)
-  }
-  return(file.path(root, "exec", "console_Feb2007.exe"))}
+  if ( nchar(cf)>0) {return(cf)}
+
+  cf <- system.file("exec", "console_Feb2007.exe", package = "eatModel")
+  if ( nchar(cf)>0) {return(cf)}
+
+  defaultConquest <- "i:/Methoden/00_conquest_console/console_Feb2007.exe"
+  if ( file.exists(defaultConquest)) {return(defaultConquest)}
+
+  msg <- paste0("Cannot find conquest 2007 executable file. ",
+                "Please provide it via the 'conquest.folder' argument.")
+  if ( !interactive()) {stop(msg, call. = FALSE)}
+
+  packageStartupMessage("Cannot find conquest 2007 executable file. Please choose manually.")
+  fname <- tryCatch(file.choose(), error = function(e) "")
+  if ( nchar(fname)==0) {stop(msg, call. = FALSE)}
+
+  root <- system.file(package = "eatModel")
+  execDir <- file.path(root, "exec")
+  if ( !file.exists(execDir)) {dir.create(execDir)}
+  foo <- file.copy(from = fname, to = file.path(execDir, "console_Feb2007.exe"))
+  return(file.path(execDir, "console_Feb2007.exe"))}
 
 ### ----------------------------------------------------------------------------
 

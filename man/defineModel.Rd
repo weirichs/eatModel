@@ -478,7 +478,7 @@ qMat <- data.frame ( qMat[,"item", drop=FALSE], model.matrix(~domain-1, data = q
 
 # Example 1: define and run a unidimensional Rasch model for the 2010 cohort
 # with all variables from booklet 02 (this booklet contains  reading and listening
-# items together). For the estimation, Conquest is used.
+# items together). For the estimation, TAM is used.
 # Since the wide-format dataset generated here will be used in later analyses,
 # several covariates - such as gender and SES - are generated at the same time.
 # These variables are not yet used in this example.
@@ -486,7 +486,7 @@ datW <- subset(trends, booklet == "Bo02" & year == 2010) |>
         reshape2::dcast(idstud+language+sex+ses+country~item, value.var = "value")
 
 # defining the unidimensional model: specifying q matrix is not necessary
-mod1 <- defineModel(dat=datW, items= -c(1:5), id="idstud", analysis.name = "unidim", dir = tempdir())
+mod1 <- defineModel(dat=datW, items= -c(1:5), id="idstud", analysis.name = "unidim", dir = tempdir(), software = "tam")
 
 # run the model
 run1 <- runModel(mod1)
@@ -514,7 +514,7 @@ datW[,"sexNum"] <- car::recode ( datW[,"sex"] , "'male'=0; 'female'=1", as.facto
 # means: Everything except column 1 to 5 are item columns
 items<- grep("^T[[:digit:]]{2}", colnames(datW))
 mod1a<- defineModel(dat=datW, items= items, id="idstud", DIF.var = "sexNum",
-        analysis.name = "unidimDIF", dir = tempdir())
+        analysis.name = "unidimDIF", dir = tempdir(), software = "tam")
 
 # run the model
 run1a<- runModel(mod1a)
@@ -527,6 +527,7 @@ res1a<- getResults(run1a)
 ### Example 1b: Rasch Model with DIF variable in customized model statement  ###
 ################################################################################
 
+\dontrun{
 # builing on example 1a, the DIF variable should be used without interaction term
 # and without eliminating items which do not vary within DIF groups. We need the
 # 'sexNum' variable which was defined previously
@@ -543,6 +544,7 @@ res1b<- getResults(run1b)
 
 # item parameter
 it1b <- itemFromRes(res1b)
+}
 
 
 ################################################################################
@@ -561,7 +563,7 @@ aPar <- itemFromRes(res1)[,c("item", "est")]
 # (This behavior is equivalent as in lm() for example.)
 mod2a<- defineModel(dat=datW, items= grep("^T[[:digit:]]{2}", colnames(datW)),
         id="idstud", analysis.name = "twodim", HG.var = c("language","sex", "ses"),
-        qMatrix = qMat, anchor = aPar, n.plausible = 20,dir = tempdir())
+        qMatrix = qMat, anchor = aPar, n.plausible = 20,dir = tempdir(), software = "tam")
 
 # run the model
 run2a<- runModel(mod2a)
@@ -578,7 +580,7 @@ res2a<- getResults(run2a)
 # without anchoring. Defining the model: specifying q matrix now is necessary.
 mod2b<- defineModel(dat=datW, items= grep("^T[[:digit:]]{2}", colnames(datW)),
         id="idstud", analysis.name = "twodim2", qMatrix = qMat,
-        n.plausible = 20, dir = tempdir())
+        n.plausible = 20, dir = tempdir(), software = "tam")
 
 # run the model
 run2b <- runModel(mod2b)
@@ -1348,6 +1350,7 @@ tf4  <- transformToBista(equatingList=eq4, refPop=refP, cuts=cuts, vera = FALSE)
 ### Example 8.1: same like example 8 (anchored 1pl PCM), now using Conquest  ###
 ################################################################################
 
+\dontrun{
 # load partial credit long format data
 data(reading)
 
@@ -1423,6 +1426,7 @@ eq4  <- equat1pl(results = res3B)                                               
 refP <- data.frame(domain = "Dim1", m = 0.0389, sd = 1.07108, stringsAsFactors = FALSE)
 cuts <- list ( Dim1 = list(values = 390+0:3*75))
 tf4  <- transformToBista(equatingList=eq4, refPop=refP, cuts=cuts, vera = FALSE)
+}
 
 
 ################################################################################
@@ -1616,12 +1620,14 @@ defT<- defineModel(dat = dw, items = -c(1:2), DIF.var="sex", DIF.free = "D204063
 runT<- runModel(defT)
 resT<- getResults(runT)
 
+\dontrun{
 # the same model in conquest (recommended)
 defC<- defineModel(dat = dw, items = -c(1:2), model.statement = "item+item*step - sex + item*sex", DIF.var="sex", id = "idstud", analysis.name = "dif_pcm", dir=tempdir())
 runC<- runModel(defC, wait=TRUE)
 resC<- getResults(runC)
 it  <- itemFromRes(resC)
 shw <- get.shw(file.path(tempdir(), "dif_pcm.shw"), dif.term = "item*sex")
+}
 
 
 ################################################################################
