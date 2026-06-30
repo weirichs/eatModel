@@ -59,7 +59,9 @@ A data frame with one row per person containing the following columns:
 
 ``` r
 file <- system.file("extdata", "twodim.pvl", package = "eatModel")
+if (nzchar(file)) {
 pv   <- get.plausible(file)
+}
 #> 2907 persons and 2 dimensions(s) found.
 #> 5 plausible values were drawn for each person on each dimension.
 ```

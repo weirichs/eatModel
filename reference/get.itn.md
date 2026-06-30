@@ -102,5 +102,7 @@ Software.* Camberwell, Victoria: ACER Press.
 
 ``` r
 file <- system.file("extdata", "twodim.itn", package = "eatModel")
+if (nzchar(file)) {
 itn  <- get.itn(file)
+}
 ```

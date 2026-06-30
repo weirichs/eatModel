@@ -38,6 +38,8 @@ Software.* Camberwell, Victoria: ACER Press.
 
 ``` r
 file <- system.file("extdata", "twodim.equ", package = "eatModel")
+if (nzchar(file)) {
 equ  <- get.equ(file)
+}
 #> Found 2 dimension(s).
 ```

@@ -25,6 +25,8 @@ reliability.
 ``` r
 ### read exemplary results object
 file <- system.file("extdata", "results.rda", package = "eatModel")
+if (nzchar(file)) {
 load(file)
 eapRel <- eapRelFromRes(res)
+}
 ```

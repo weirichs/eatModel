@@ -41,6 +41,8 @@ plausible values.
 ``` r
 ### read exemplary results object
 file <- system.file("extdata", "results.rda", package = "eatModel")
+if (nzchar(file)) {
 load(file)
 pv   <- pvFromRes(res)
+}
 ```

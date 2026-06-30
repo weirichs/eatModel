@@ -96,6 +96,7 @@ Johannes Schult, Sebastian Weirich
 ### Example 1: equivalence table for Rasch models
 # read anchor parameter
 file <- system.file("extdata", "results.rda", package = "eatModel")
+if (nzchar(file)) {
 load(file)
 
 # use domain 'reading'
@@ -106,8 +107,12 @@ cuts   <- list ( values = 390+0:3*75, labels = c("I", "II", "III", "IV", "V") )
 
 # create the equivalence table
 ret <- simEquiTable( anchor = prm[,c("item", "est")], cutScores = cuts , mRef = 0.039, sdRef = 1.071)
+}
 
 ### Example 2: equivalence table for partial credit model
+if (FALSE) { # \dontrun{
+# This example estimates a partial-credit model. R CMD check skips it by default,
+# but it can still be run locally via run_dontrun = TRUE.
 # load partial credit data
 data(reading)
 
@@ -116,12 +121,6 @@ data(reading)
 d   <- subset(reading, bookletID == "TH08")
 dw  <- reshape2::dcast(d, idstud~item, value.var = "valueSum")
 defT<- defineModel(dat = dw, items = -1, id = "idstud",  irtmodel = "PCM",software="tam")
-#> 4 variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.
-#>    Items(s) 'D025033', 'D204013', 'D225113': 0, 1, 2, 3, 4     
-#>    Items(s) 'D205143':                       0, 1, 2, 3, 4, 5  
-#> Dataset is completely linked.
-#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
-#> Q matrix specifies 1 dimension(s).
 runT<- runModel(defT)
 resT<- getResults(runT, omitPV=TRUE, Q3 = FALSE)
 it  <- itemFromRes(resT)
@@ -129,4 +128,5 @@ it  <- itemFromRes(resT)
 # create equivalence table with arbitrary cuts and reference values
 ret2<- simEquiTable( anchor = it, item = "item", cat="category", value = "est",
        cutScores = list ( values = c(400, 600)), mRef = 0.047, sdRef = 1.181)
+} # }
 ```

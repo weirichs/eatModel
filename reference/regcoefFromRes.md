@@ -30,7 +30,9 @@ dimension name, and the corresponding regression coefficients.
 ``` r
 ### read exemplary results object
 file <- system.file("extdata", "results.rda", package = "eatModel")
+if (nzchar(file)) {
 load(file)
 regs <- regcoefFromRes(res)
+}
 #> No regression coefficients found in results object.
 ```

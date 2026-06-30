@@ -28,6 +28,8 @@ infit and outfit.
 ``` r
 ### read exemplary results object
 file <- system.file("extdata", "results.rda", package = "eatModel")
+if (nzchar(file)) {
 load(file)
 items<- itemFromRes(res)
+}
 ```

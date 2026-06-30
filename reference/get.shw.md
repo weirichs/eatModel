@@ -138,7 +138,9 @@ dimension to which the regression is fitted.
 
 ``` r
 file <- system.file("extdata", "twodim.shw", package = "eatModel")
+if (nzchar(file)) {
 shw  <- get.shw(file)
+}
 #> Found TERM 1: 'item' 
 #> Found 2 dimension(s): Dimension 1, Dimension 2
 #> Found 4 regressor(s).

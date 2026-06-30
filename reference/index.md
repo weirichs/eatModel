@@ -85,7 +85,7 @@
   Deviance Plot for mirt objects
 
 - [`plotICC()`](https://weirichs.github.io/eatModel/reference/plotICC.md)
-  : Plots item characteristic curves.
+  : Plots item characteristic curves
 
 - [`pvFromRes()`](https://weirichs.github.io/eatModel/reference/pvFromRes.md)
   : Collects all plausible values from the object returned by

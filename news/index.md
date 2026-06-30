@@ -8,6 +8,16 @@
   [`simEquiTable()`](https://weirichs.github.io/eatModel/reference/simEquiTable.md):
   read in correct anchor file
 - bugfix in (g)pcm anchoring with tam
+- fix 2PL item parameter transformation to the 62.5% threshold for TAM
+  and mirt parameterizations in
+  [`transformToBista()`](https://weirichs.github.io/eatModel/reference/transformToBista.md)
+- make 2PL slope detection in
+  [`transformToBista()`](https://weirichs.github.io/eatModel/reference/transformToBista.md)
+  robust against slope standard error columns
+- add regression tests for TAM vs. mirt 2PL transformations and TAM
+  vs. mirt GPCM Thurstonian thresholds/BISTA item parameters
+- run the TAM vs. mirt PCM Thurstonian threshold test independently from
+  the optional ConQuest executable
 
 ## eatModel 0.10.19 \[Jun 2026\]
 

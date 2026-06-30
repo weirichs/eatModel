@@ -55,6 +55,8 @@ Software.* Camberwell, Victoria: ACER Press.
 
 ``` r
 file <- system.file("extdata", "twodim.wle", package = "eatModel")
+if (nzchar(file)) {
 wle  <- get.wle(file)
+}
 #> Found valid WLEs of 2907 person(s) for 2 dimension(s).
 ```

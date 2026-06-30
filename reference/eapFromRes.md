@@ -35,6 +35,8 @@ name, group name, EAP and the corresponding standard error.
 ``` r
 ### read exemplary results object
 file <- system.file("extdata", "results.rda", package = "eatModel")
+if (nzchar(file)) {
 load(file)
 eap  <- eapFromRes(res)
+}
 ```

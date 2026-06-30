@@ -1,4 +1,4 @@
-# Plots item characteristic curves.
+# Plots item characteristic curves
 
 Function provides item characteristic plots for each item.
 
@@ -66,6 +66,9 @@ Sebastian Weirich
 ## Examples
 
 ``` r
+if (FALSE) { # \dontrun{
+# This example estimates a TAM model before plotting. R CMD check skips it by
+# default, but it can still be run locally via run_dontrun = TRUE.
 data(trends)
 # choose only 2010
 dat <- trends[which(trends[,"year"] == 2010),]
@@ -77,26 +80,14 @@ datW <- reshape2::dcast(dat, idstud~item, value.var="value")
 
 # defining the model: specifying q matrix is not necessary
 mod1 <- defineModel(dat=datW, items= -1, id="idstud", software = "tam")
-#> 17 subject(s) do not solve any item:
-#>    P00173 (6 false), P01137 (7 false), P02863 (23 false) ... 
-#> 97 subject(s) solved each item: P00078 (6 correct), P00389 (10 correct), P03338 (27 correct) ... 
-#> Dataset is completely linked.
-#> 'gauss' has been chosen for estimation method. Number of nodes was not explicitly specified. Set nodes to 20.
-#> Q matrix specifies 1 dimension(s).
 
 # run the model
 run1 <- runModel(mod1)
 
 # get the results
 res1 <- getResults(run1)
-#> Getting standard errors with the tam.se function: 0.7 secs
-#> Getting infit parameters calling tam.fit from getTamInfit: 0.2 secs
-#> Getting WLEs calling tam.wle from getTamWles: 0.7 secs
-#> |*****|
-#> |-----|
-#> Getting PVs calling tam.pv from getTamPVs: 1.1 secs
-#> Getting Q3 statistic calling tam.modelfit from getTamQ3: 2.2 secs
 
-# plot for one item 
+# plot for one item
 plotICC  ( resultsObj = res1, defineModelObj = mod1, items = "T04_04")
+} # }
 ```

@@ -138,20 +138,17 @@ A list with four objects.
 
   Character string with short information about refrence population
 
-## References
-
 ## Examples
 
 ``` r
+trafoDB <- formals(getTrafo)$dataBase
+if (file.exists(trafoDB)) {
 # transformation rules for all domains subject deutsch, primary level
-primDeu <- getTrafo(mode="paper", grade="primary", subject = "deu",
+primDeu <- getTrafo(dataBase = trafoDB, mode="paper", grade="primary", subject = "deu",
            domain = "all", study = "vera")
-#> Warning: cannot open compressed file 'I:/Methoden/10_sonstige Materialien/trafo.rda', probable reason 'No such file or directory'
-#> Error in readChar(con, 5L, useBytes = TRUE): cannot open the connection
 
 # transformation rules for all science domains
-secScien<- getTrafo(mode="paper", grade="secondary", subject = c("bio", "che", "phy"),
+secScien<- getTrafo(dataBase = trafoDB, mode="paper", grade="secondary", subject = c("bio", "che", "phy"),
            domain = "all", study = "bt")
-#> Warning: cannot open compressed file 'I:/Methoden/10_sonstige Materialien/trafo.rda', probable reason 'No such file or directory'
-#> Error in readChar(con, 5L, useBytes = TRUE): cannot open the connection
+}
 ```
