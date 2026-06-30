@@ -37,6 +37,9 @@ Monseur, C., & Berezner, A. (2007). The Computation of Equating Errors in Intern
 in Education. \emph{Journal of Applied Measurement 8}(3): 323-335.
 }
 \examples{
+if (interactive()) {
+# These examples calibrate several TAM models and are intended for interactive
+# exploration. The package tests cover the linking-error calculations directly.
 data(trends)
 
 ################################################################################
@@ -126,4 +129,5 @@ eq.1_2 <- equat1pl(e1, e2,difBound = 0.64, iterativ = TRUE)
 eq.2_3 <- equat1pl(e2, e3,difBound = 0.64, iterativ = TRUE)
 eq.1_3 <- equat1pl(e1, e3,difBound = 0.64, iterativ = TRUE)
 multiEquatError(eq.1_2, eq.2_3, eq.1_3)
+}
 }

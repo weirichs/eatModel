@@ -47,6 +47,9 @@ behavior of the S3 plot method of \code{TAM}, use the value 7.
 Sebastian Weirich
 }
 \examples{
+if (interactive()) {
+# This example estimates a TAM model before plotting and is intended for
+# interactive exploration.
 data(trends)
 # choose only 2010
 dat <- trends[which(trends[,"year"] == 2010),]
@@ -65,6 +68,7 @@ run1 <- runModel(mod1)
 # get the results
 res1 <- getResults(run1)
 
-# plot for one item 
+# plot for one item
 plotICC  ( resultsObj = res1, defineModelObj = mod1, items = "T04_04")
+}
 }

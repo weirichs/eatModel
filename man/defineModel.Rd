@@ -458,6 +458,10 @@ Desired number of plausible values.
 Sebastian Weirich
 }
 \examples{
+if (interactive()) {
+# These examples run full TAM/mirt/ConQuest analyses and are intended for
+# interactive exploration. The corresponding smoke and regression coverage lives
+# in tests/testthat.
 ################################################################################
 ###               Preparation: necessary for all examples                    ###
 ################################################################################
@@ -1674,6 +1678,7 @@ trnsf<- transformToBista(equatingList=eq, refPop= data.frame(domain="Dim1",
         m = mSDR[which(mSDR[,"parameter"] == "mean"),"est"],
         sd = mSDR[which(mSDR[,"parameter"] == "sd"),"est"]),
         cuts = list(Dim1 = list(values = c(400,600))), vera=FALSE)
+}
 }
 
 

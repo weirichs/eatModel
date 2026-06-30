@@ -78,6 +78,9 @@ ret <- simEquiTable( anchor = prm[,c("item", "est")], cutScores = cuts , mRef = 
 }
 
 ### Example 2: equivalence table for partial credit model
+if (interactive()) {
+# This example estimates a partial-credit model and is intended for interactive
+# exploration.
 # load partial credit data
 data(reading)
 
@@ -93,4 +96,5 @@ it  <- itemFromRes(resT)
 # create equivalence table with arbitrary cuts and reference values
 ret2<- simEquiTable( anchor = it, item = "item", cat="category", value = "est",
        cutScores = list ( values = c(400, 600)), mRef = 0.047, sdRef = 1.181)
+}
 }
