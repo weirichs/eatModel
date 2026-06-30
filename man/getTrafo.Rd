@@ -94,6 +94,7 @@ A list with four objects.
 \item{info}{Character string with short information about refrence population}
 }
 \examples{
+\dontrun{
 # transformation rules for all domains subject deutsch, primary level
 primDeu <- getTrafo(mode="paper", grade="primary", subject = "deu",
            domain = "all", study = "vera")
@@ -101,6 +102,7 @@ primDeu <- getTrafo(mode="paper", grade="primary", subject = "deu",
 # transformation rules for all science domains
 secScien<- getTrafo(mode="paper", grade="secondary", subject = c("bio", "che", "phy"),
            domain = "all", study = "bt")
+}
 }
 \references{
 
