@@ -39,5 +39,7 @@ For example, se.eap_Dim.2 refers to the standard error of the EAP estimate of th
 }
 \examples{
 file <- system.file("extdata", "twodim.pvl", package = "eatModel")
+if (nzchar(file)) {
 pv   <- get.plausible(file)
+}
 }

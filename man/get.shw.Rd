@@ -83,5 +83,7 @@ fitted.
 }
 \examples{
 file <- system.file("extdata", "twodim.shw", package = "eatModel")
+if (nzchar(file)) {
 shw  <- get.shw(file)
+}
 }

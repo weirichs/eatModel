@@ -27,7 +27,7 @@ jobs:
       R_KEEP_PKG_SOURCE: yes
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
 
       - uses: r-lib/actions/setup-pandoc@v2
 
@@ -45,3 +45,35 @@ jobs:
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
+
+      - name: Annotate check logs on failure
+        if: failure()
+        shell: Rscript {0}
+        run: |
+          escape_annotation <- function(x) {
+            x <- gsub("%", "%25", x, fixed = TRUE)
+            x <- gsub("\r", "%0D", x, fixed = TRUE)
+            x <- gsub("\n", "%0A", x, fixed = TRUE)
+            x
+          }
+
+          rcheck_dirs <- list.dirs(".", recursive = TRUE, full.names = TRUE)
+          rcheck_dirs <- rcheck_dirs[grepl("\\.Rcheck$", rcheck_dirs)]
+          files <- file.path(rcheck_dirs, "00check.log")
+          test_dirs <- file.path(rcheck_dirs, "tests")
+          files <- c(files, unlist(lapply(test_dirs, list.files,
+            pattern = "\\.Rout(\\.fail)?$", full.names = TRUE
+          )))
+          files <- unique(files[file.exists(files)])
+
+          if (!length(files)) {
+            cat("::warning title=R CMD check logs::No .Rcheck logs found for annotation\n")
+          }
+
+          for (file in files) {
+            lines <- readLines(file, warn = FALSE)
+            tail_lines <- tail(lines, 80)
+            msg <- escape_annotation(paste(tail_lines, collapse = "\n"))
+            title <- escape_annotation(paste("Tail of", file))
+            cat(sprintf("::error title=%s::%s\n", title, msg))
+          }

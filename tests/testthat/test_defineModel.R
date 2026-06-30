@@ -1,10 +1,11 @@
 cf <- system.file("extdata", "console_Feb2007.exe", package = "eatModel")
+hasConquest <- nchar(cf)>0 && file.exists(cf)
 path <- getwd() # defineMOdel aender setwd(), deshalb muss das hier wieder zurueckgesetzt werden
 
 #load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/vera_dat.rda"))
 load(test_path("vera_dat.rda"))
 
-if(isTRUE(file.exists(cf))){
+if(hasConquest){
     test_that("defineModel works for DIF", {
         itemIndex <- grep("^CE|^EC|^CO|^OC", colnames(findat))
         itemNames <- colnames(findat)[itemIndex]
@@ -21,14 +22,14 @@ if(isTRUE(file.exists(cf))){
 ###
 load(system.file("extdata", "pcm", "input.rda", package = "eatModel"))
 
-if(isTRUE(file.exists(cf))){
+if(hasConquest){
     test_that("defineModel works for three-dimensional model", {
         define3d <- suppressWarnings(defineModel(dat = datAufbereitet, items = qmatrix[,"item_neu"], id = "Pseudonyme",HG.var = "Note.y", model.statement = "item + item*step", nodes = 50,
                     qMatrix = qmatrix[,c("item_neu", "dimensionIn", "dimensionSp","dimensionSt")],  dir = tempdir(), analysis.name = "pcm1_3d"))
     })
 }
 file.zip <- system.file("extdata", "pcm", "results.zip", package = "eatModel")
-zip::unzip(zipfile = file.zip, exdir=tempdir())
+utils::unzip(zipfile = file.zip, exdir=tempdir())
 
 test_that("importing results works for three-dimensional model", {
     run3d[["dir"]] <- tempdir()
@@ -40,7 +41,7 @@ test_that("importing results works for three-dimensional model", {
 setwd(path)
 load(test_path("japan.rda"))
 
-if(isTRUE(file.exists(cf))){
+if(hasConquest){
     test_that("temporal item renaming works", {
         defDif3 <- suppressWarnings(defineModel(dat = jpn, id = "person", items = grep("^M1", colnames(jpn), value=TRUE), software="conquest", DIF.var = "SEX", dir = tempdir(), analysis.name = "DIF"))
         runDif3 <- runModel(defDif3)
@@ -52,7 +53,7 @@ if(isTRUE(file.exists(cf))){
 setwd(path)
 load(test_path("df_example2.rda"))
 
-if(isTRUE(file.exists(cf))){
+if(hasConquest){
     test_that("defineModel works for achoring", {
         def <- suppressWarnings(defineModel(dat = datSel, items = intersect(qmat[,"item"],colnames(datSel)), compute.fit = FALSE, id = "IDSTUD", remove.constant.items = TRUE,method = "montecarlo", nodes = 8000,weight.var = "totwgt_NAW",
             qMatrix = qmat[,c("item", "splitbio_knowledge", "splitbio_procedural")], anchor = anchor[["itempars"]][,c("item", "estTransf")], HG.var = c("designDichotom", grep("^PC", colnames(datSel),value=TRUE)), analysis.name = "withWeights", n.plausible = 15, dir = tempdir()))
@@ -62,7 +63,7 @@ if(isTRUE(file.exists(cf))){
 # single
    data(trends)
 
-if(isTRUE(file.exists(cf))){
+if(hasConquest){
     test_that("item renaming (back and forward) works for single model", {
     dat  <- subset(trends, year == 2010 & booklet == "Bo01" & domain == "listening")
     datW <- reshape2::dcast(dat,idstud+sex~item, value.var = "value")
@@ -76,7 +77,7 @@ if(isTRUE(file.exists(cf))){
     })
 }
 # multiple
-if(isTRUE(file.exists(cf))){
+if(hasConquest){
     test_that("item renaming (back and forward) works for multiple models", {
     dat  <- subset(trends, year == 2010 & booklet == "Bo01")
     datW <- reshape2::dcast(dat,idstud+sex~item, value.var = "value")

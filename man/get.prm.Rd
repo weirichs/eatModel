@@ -26,5 +26,7 @@ A data frame with three columns:
 }
 \examples{
 file <- system.file("extdata", "twodim.prm", package = "eatModel")
+if (nzchar(file)) {
 prm  <- get.prm(file)
+}
 }

@@ -28,6 +28,8 @@ model dimension(s), student ID, and several columns with the plausible values.
 \examples{
 ### read exemplary results object
 file <- system.file("extdata", "results.rda", package = "eatModel")
+if (nzchar(file)) {
 load(file)
 pv   <- pvFromRes(res)
+}
 }

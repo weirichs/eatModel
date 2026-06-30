@@ -19,6 +19,8 @@ the corresponding WLE reliability.
 \examples{
 ### read exemplary results object
 file <- system.file("extdata", "results.rda", package = "eatModel")
+if (nzchar(file)) {
 load(file)
 wleRel <- wleRelFromRes(res)
+}
 }

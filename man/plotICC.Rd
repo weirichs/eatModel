@@ -1,6 +1,6 @@
 \name{plotICC}
 \alias{plotICC}
-\title{Plots item characteristic curves.}
+\title{Plots item characteristic curves}
 \description{Function provides item characteristic plots for each item.}
 \usage{plotICC  ( resultsObj, defineModelObj, runModelObj = NULL, items = NULL,
        personPar = c("WLE", "EAP", "PV"), personsPerGroup = 30, pdfFolder = NULL,
@@ -47,6 +47,9 @@ behavior of the S3 plot method of \code{TAM}, use the value 7.
 Sebastian Weirich
 }
 \examples{
+\dontrun{
+# This example estimates a TAM model before plotting. R CMD check skips it by
+# default, but it can still be run locally via run_dontrun = TRUE.
 data(trends)
 # choose only 2010
 dat <- trends[which(trends[,"year"] == 2010),]
@@ -65,6 +68,7 @@ run1 <- runModel(mod1)
 # get the results
 res1 <- getResults(run1)
 
-# plot for one item 
+# plot for one item
 plotICC  ( resultsObj = res1, defineModelObj = mod1, items = "T04_04")
+}
 }

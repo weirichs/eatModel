@@ -458,6 +458,9 @@ Desired number of plausible values.
 Sebastian Weirich
 }
 \examples{
+\dontrun{
+# These examples run full TAM/mirt/ConQuest analyses. R CMD check skips them by
+# default, but they can still be run locally via run_dontrun = TRUE.
 ################################################################################
 ###               Preparation: necessary for all examples                    ###
 ################################################################################
@@ -478,7 +481,7 @@ qMat <- data.frame ( qMat[,"item", drop=FALSE], model.matrix(~domain-1, data = q
 
 # Example 1: define and run a unidimensional Rasch model for the 2010 cohort
 # with all variables from booklet 02 (this booklet contains  reading and listening
-# items together). For the estimation, Conquest is used.
+# items together). For the estimation, TAM is used.
 # Since the wide-format dataset generated here will be used in later analyses,
 # several covariates - such as gender and SES - are generated at the same time.
 # These variables are not yet used in this example.
@@ -486,7 +489,7 @@ datW <- subset(trends, booklet == "Bo02" & year == 2010) |>
         reshape2::dcast(idstud+language+sex+ses+country~item, value.var = "value")
 
 # defining the unidimensional model: specifying q matrix is not necessary
-mod1 <- defineModel(dat=datW, items= -c(1:5), id="idstud", analysis.name = "unidim", dir = tempdir())
+mod1 <- defineModel(dat=datW, items= -c(1:5), id="idstud", analysis.name = "unidim", software = "tam")
 
 # run the model
 run1 <- runModel(mod1)
@@ -514,7 +517,7 @@ datW[,"sexNum"] <- car::recode ( datW[,"sex"] , "'male'=0; 'female'=1", as.facto
 # means: Everything except column 1 to 5 are item columns
 items<- grep("^T[[:digit:]]{2}", colnames(datW))
 mod1a<- defineModel(dat=datW, items= items, id="idstud", DIF.var = "sexNum",
-        analysis.name = "unidimDIF", dir = tempdir())
+        analysis.name = "unidimDIF", software = "tam")
 
 # run the model
 run1a<- runModel(mod1a)
@@ -561,7 +564,7 @@ aPar <- itemFromRes(res1)[,c("item", "est")]
 # (This behavior is equivalent as in lm() for example.)
 mod2a<- defineModel(dat=datW, items= grep("^T[[:digit:]]{2}", colnames(datW)),
         id="idstud", analysis.name = "twodim", HG.var = c("language","sex", "ses"),
-        qMatrix = qMat, anchor = aPar, n.plausible = 20,dir = tempdir())
+        qMatrix = qMat, anchor = aPar, n.plausible = 20, software = "tam")
 
 # run the model
 run2a<- runModel(mod2a)
@@ -578,7 +581,7 @@ res2a<- getResults(run2a)
 # without anchoring. Defining the model: specifying q matrix now is necessary.
 mod2b<- defineModel(dat=datW, items= grep("^T[[:digit:]]{2}", colnames(datW)),
         id="idstud", analysis.name = "twodim2", qMatrix = qMat,
-        n.plausible = 20, dir = tempdir())
+        n.plausible = 20, software = "tam")
 
 # run the model
 run2b <- runModel(mod2b)
@@ -1668,6 +1671,7 @@ trnsf<- transformToBista(equatingList=eq, refPop= data.frame(domain="Dim1",
         m = mSDR[which(mSDR[,"parameter"] == "mean"),"est"],
         sd = mSDR[which(mSDR[,"parameter"] == "sd"),"est"]),
         cuts = list(Dim1 = list(values = c(400,600))), vera=FALSE)
+}
 }
 
 

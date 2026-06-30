@@ -57,8 +57,10 @@ comp<- merge(wle3[,c("NitemsSolved", "wle_est")], eqt2[,c("NitemsSolved", "wle_e
 test_that("comparison object has exactly 15 rows", {
   expect_true(nrow(comp) == 15)
 })
-test_that("both wle columns are equivaent", {
-  expect_true(all(comp[,"wle_est.x"] == comp[,"wle_est.y"]))
+test_that("both wle columns are equivalent", {
+  # TAM's WLE estimates can differ by tiny platform-specific floating point
+  # amounts, especially on macOS/ARM, so compare numerically rather than by ==.
+  expect_equal(comp[,"wle_est.x"], comp[,"wle_est.y"], tolerance = 1e-6)
 })
 
 # creating the same table, now using the function simEquiTable()
@@ -69,7 +71,8 @@ comp <- merge(eqt4[["complete"]][,c("score", "est")], wle3[,c("NitemsSolved", "w
 test_that("there are exactly as many unique WLEs as there are overall item categories", {
   expect_true(nrow(comp) == (nrow(it) + 1))
 })
-test_that("both wle columns are equivaent", {
-  expect_true(all(comp[,"est"] == comp[,"wle_est"]))
+test_that("both wle columns are equivalent", {
+  # Same equivalence check as above, with numerical tolerance for platform drift.
+  expect_equal(comp[,"est"], comp[,"wle_est"], tolerance = 1e-6)
 })
 

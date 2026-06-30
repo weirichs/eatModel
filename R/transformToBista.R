@@ -91,7 +91,8 @@ transformToBista <- function(equatingList, refPop, cuts, weights = NULL,
                                      }
                                 }
                                 if(!isPCM) {                                    ### transformation auf .625 fuer dichotom: andere Transformation fuer 2pl dichotom als fuer 1pl dichotom
-                                   slp1<- grep("slope", colnames(itFrame), value=TRUE, ignore.case=TRUE) 
+                                   slp1<- grep("slope", colnames(itFrame), value=TRUE, ignore.case=TRUE)
+                                   slp1<- slp1[!grepl("(^se|_se$|\\.se$|se$|stderr|std\\.err|error)", slp1, ignore.case=TRUE)]
                                    slp2<- grep("est", colnames(itFrame), value=TRUE, ignore.case=TRUE) 
                                    if(length(slp1) < 2 || length(slp2) ==0) {   ### wenn es nur eine spalte mit "slope" im Namen gibt, ist das die estimator-spalte,
                                       slp <- slp1                               ### selbst wenn sie nicht mit "est" benannt ist. Gibt es zusaetzlich noch einen
@@ -105,7 +106,20 @@ transformToBista <- function(equatingList, refPop, cuts, weights = NULL,
                                       if(any(itFrame[,slp] < 0)) {
                                          warning("The slope parameters for some items are less than 0. These item parameters cannot be meaningfully transformed into the educational standards metric.")
                                       }                                         ### untere Zeile: Variante fuer 2pl entsprechend Karolines AI-Agent (Mail Karoline, 11.06.2026, 9.24 Uhr, bzw. "https://github.com/weirichs/eatModel/issues/34#issuecomment-4829725821")
-                                      if(attr(equatingList[["results"]], "runModelAttributes")[["software"]] == "tam") {
+                                      software <- attr(equatingList[["results"]], "runModelAttributes")[["software"]]
+                                      if(is.null(software) || length(software) == 0) {
+                                         if(exists("resMD") && "source" %in% colnames(resMD)) {
+                                            software <- unique(na.omit(resMD[,"source"]))
+                                         } else {
+                                            if("source" %in% colnames(equatingList[["results"]])) {
+                                               software <- unique(na.omit(equatingList[["results"]][,"source"]))
+                                            }
+                                         }
+                                      }
+                                      if(length(software) != 1) {
+                                         stop("Cannot uniquely identify estimation software for 2PL item parameter transformation.")
+                                      }
+                                      if(software == "tam") {
                                          itFrame[,"estTransf625"]<- (itFrame[,"estTransf"] + log(0.625/(1-0.625))) / itFrame[,slp]
                                       } else {                                  ### obere Zeile: tam; untere Zeile: mirt
                                          itFrame[,"estTransf625"]<- itFrame[,"estTransf"] + log(0.625/(1-0.625)) / itFrame[,slp]
