@@ -32,5 +32,7 @@ Version 2.0. Generalised Item Response Modeling Software.} Camberwell, Victoria:
 }
 \examples{
 file <- system.file("extdata", "twodim.equ", package = "eatModel")
+if (nzchar(file)) {
 equ  <- get.equ(file)
+}
 }

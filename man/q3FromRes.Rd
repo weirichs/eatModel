@@ -25,6 +25,8 @@ A list of data frames, one data.frame per model.
 \examples{
 ### read exemplary results object
 file <- system.file("extdata", "results.rda", package = "eatModel")
+if (nzchar(file)) {
 load(file)
 q3   <- q3FromRes(res)
+}
 }

@@ -64,6 +64,7 @@ Johannes Schult, Sebastian Weirich
 ### Example 1: equivalence table for Rasch models
 # read anchor parameter
 file <- system.file("extdata", "results.rda", package = "eatModel")
+if (nzchar(file)) {
 load(file)
 
 # use domain 'reading'
@@ -74,6 +75,7 @@ cuts   <- list ( values = 390+0:3*75, labels = c("I", "II", "III", "IV", "V") )
 
 # create the equivalence table
 ret <- simEquiTable( anchor = prm[,c("item", "est")], cutScores = cuts , mRef = 0.039, sdRef = 1.071)
+}
 
 ### Example 2: equivalence table for partial credit model
 # load partial credit data

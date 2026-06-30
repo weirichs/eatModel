@@ -23,6 +23,8 @@ the corresponding regression coefficients.
 \examples{
 ### read exemplary results object
 file <- system.file("extdata", "results.rda", package = "eatModel")
+if (nzchar(file)) {
 load(file)
 regs <- regcoefFromRes(res)
+}
 }
