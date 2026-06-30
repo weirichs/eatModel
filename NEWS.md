@@ -3,6 +3,15 @@
 * add tests for equivalence table in partial credit (`simEquiTable()`)
 * bug fix in `simEquiTable()`: read in correct anchor file
 * bugfix in (g)pcm anchoring with tam
+* fix 2PL item parameter transformation to the 62.5% threshold for TAM and mirt
+  parameterizations in `transformToBista()`
+* make 2PL slope detection in `transformToBista()` robust against slope standard
+  error columns
+* add regression tests for TAM vs. mirt 2PL transformations and TAM vs. mirt
+  GPCM Thurstonian thresholds/BISTA item parameters
+* run the TAM vs. mirt PCM Thurstonian threshold test independently from the
+  optional ConQuest executable
+* re-add focus population mean and SD to `transformToBista()`'s `means` output
 
 # eatModel 0.10.19 [Jun 2026]
 

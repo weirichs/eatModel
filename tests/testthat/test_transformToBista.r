@@ -54,6 +54,8 @@ test_that("tf3ab", {
   expect_true(all.equal(tfRef$linkingErrors , tfRef.neu$linkingErrors))
   expect_true(compareObj(tfRef$refPop , tfRef.neu$refPop, by="domain"))
   expect_true(compareObj(tfRef$means , tfRef.neu$means , by=c("model", "domain")))
+  expect_true(all(c("focusMean", "focusSD") %in% colnames(tfRef.neu$means)))
+  expect_false(anyNA(tfRef.neu$means[,c("focusMean", "focusSD")]))
 })
 
 # load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example4.rda"))
@@ -85,3 +87,44 @@ tle.neu   <- suppressWarnings(transformToBista ( equatingList = L.t1t3, refPop=t
   expect_true(compareObj(tle$refPop, tle.neu$refPop, by="domain"))
 })
 
+test_that("2PL transformation to 62.5% respects software parameterization", {
+  makeEq <- function(source) {
+    items <- c("I1", "I2")
+    est <- c(-0.6, 0.8)
+    slope <- c(0.75, 1.5)
+    rows <- rbind(
+      data.frame(model = "m1", source = source, var1 = items, var2 = "Cat1", type = "fixed", indicator.group = "items", group = "Dim1", par = "est", derived.par = NA, value = est),
+      data.frame(model = "m1", source = source, var1 = items, var2 = "Cat1", type = "fixed", indicator.group = "items", group = "Dim1", par = "estSlope", derived.par = NA, value = slope),
+      # Include slope standard errors because itemFromRes() creates estSlope_se;
+      # transformToBista() must still select the actual slope column.
+      data.frame(model = "m1", source = source, var1 = items, var2 = "Cat1", type = "fixed", indicator.group = "items", group = "Dim1", par = "estSlope", derived.par = "se", value = c(0.1, 0.2)),
+      data.frame(model = "m1", source = source, var1 = c("p1", "p2"), var2 = NA, type = "fixed", indicator.group = "persons", group = "Dim1", par = "pv", derived.par = "pv1", value = c(-0.2, 0.3)),
+      data.frame(model = "m1", source = source, var1 = NA, var2 = NA, type = "tech", indicator.group = NA, group = NA, par = "ID", derived.par = "id", value = NA)
+    )
+    ret <- list(
+      items = list(m1 = list(Dim1 = list(eq = list(B.est = c(Mean.Mean = 0, Haebara = 0, Stocking.Lord = 0), descriptives = c(N.Items = 0, SD = NA, Var = NA, linkerror = NA)), items = NULL, method = "Mean.Mean"))),
+      results = rows
+    )
+    class(ret) <- c("eq2tom", "list")
+    ret
+  }
+  refPop <- data.frame(domain = "Dim1", m = 0, sd = 1)
+  cuts <- list(Dim1 = list(values = c(400, 500, 600)))
+  logit625 <- log(0.625/(1 - 0.625))
+
+  # TAM stores the 2PL difficulty in the slope-scaled logit, so the whole
+  # threshold expression has to be divided by the slope.
+  tam <- suppressWarnings(transformToBista(makeEq("tam"), refPop = refPop, cuts = cuts, vera = FALSE, idVarName = "id"))
+  expect_true(all(c("focusMean", "focusSD") %in% colnames(tam$means)))
+  expect_equal(tam$itempars$estTransf625, with(tam$itempars, (estTransf + logit625) / estSlope), tolerance = 1e-10)
+  pTam <- with(tam$itempars, plogis(estSlope * estTransf625 - estTransf))
+  expect_equal(pTam, rep(0.625, 2), tolerance = 1e-10)
+
+  # mirt stores the 2PL difficulty on the theta scale; only the .625 logit
+  # offset is divided by the slope.
+  mirt <- suppressWarnings(transformToBista(makeEq("mirt"), refPop = refPop, cuts = cuts, vera = FALSE, idVarName = "id"))
+  expect_true(all(c("focusMean", "focusSD") %in% colnames(mirt$means)))
+  expect_equal(mirt$itempars$estTransf625, with(mirt$itempars, estTransf + logit625 / estSlope), tolerance = 1e-10)
+  pMirt <- with(mirt$itempars, plogis(estSlope * (estTransf625 - estTransf)))
+  expect_equal(pMirt, rep(0.625, 2), tolerance = 1e-10)
+})
