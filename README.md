@@ -1,4 +1,4 @@
-# eatModel <a href="https://weirichs.github.io/eatModel/"><img src="man/figures/logo.png" align="right" height="120" alt="placeholder logo" /></a>
+# eatModel <a href="https://weirichs.github.io/eatModel/"><img src="man/figures/logo.png" align="right" height="120" alt="eatModel logo" /></a>
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/weirichs/eatModel/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/weirichs/eatModel/actions/workflows/R-CMD-check.yaml)
