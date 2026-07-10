@@ -142,44 +142,51 @@ checkContextVars <- function(x, varname, type = c("weight", "DIF", "group", "HG"
                           weg     <- which(is.na(x))
                           if(length(weg) > 0 ) {cat(paste0("Found ",length(weg)," cases with missing on ",type," variable '",varname,"'. Conquest probably will collapse unless cases are not deleted.\n"))}
                           if(type == "DIF") {
-                                        if(mis > 2 && isTRUE(internal))   {cat(paste(type, " Variable '",varname,"' does not seem to be dichotomous.\n",sep=""))}
-                                        y       <- paste0("V", na.omit(x))      ### wenn x numerisch ist, sind die Spaltennamen in completeMissingGroupwise nicht mehr den levels von x zuweisbar, da haengt R dann ein X ran
+                             if(mis > 2 && isTRUE(internal))   {cat(paste(type, " Variable '",varname,"' does not seem to be dichotomous.\n",sep=""))}
+                             y       <- paste0("V", na.omit(x))                 ### wenn x numerisch ist, sind die Spaltennamen in completeMissingGroupwise nicht mehr den levels von x zuweisbar, da haengt R dann ein X ran
      ### wenn man nicht simplify = FALSE setzt, passieren (aber nur in extrem seltenen ausnahmefaellen) solche Fehler wie in der mail von anne (31.07.2023, 15.54 Uhr) beschrieben ... wieso in gottes namen kann man dafuer den default TRUE setzen!?!
-                                        ismis   <- which(is.na(x))
-                                        if(length(ismis)>0) {itemdata <- itemdata[-ismis,]}
-                                        n.werte <- lapply(itemdata, FUN=function(iii){by(iii, INDICES=list(y), FUN=table, simplify=FALSE)})
-                                        completeMissingGroupwise <- data.frame(t(sapply(n.werte, function(ll){unlist(lapply(ll, FUN = function (uu) { length(uu[uu>0])}))})), stringsAsFactors = FALSE)
-                                        for (iii in seq(along=completeMissingGroupwise)) {
-                                             missingCat.i <- which(completeMissingGroupwise[,iii] == 0)
-                                             if(length(missingCat.i) > 0) {
-                                                cat(paste("Warning: Following ",length(missingCat.i)," items with no values in ",type," variable '",varname,"', group ",substring(colnames(completeMissingGroupwise)[iii],2),": \n",sep=""))
-                                                wegDifMis <- c(wegDifMis, rownames(completeMissingGroupwise)[missingCat.i] )
-                                                cat(paste0("   ", paste(optionalRenam(rownames(completeMissingGroupwise)[missingCat.i],renam),collapse=", "), "\n"))
-                                                info      <- suppressWarnings(plyr::rbind.fill(info, data.frame(varname = varname, varlevel = substring(colnames(completeMissingGroupwise)[iii],2), nCases = table(y)[colnames(completeMissingGroupwise)[iii]], type = "missing", vars =optionalRenam(rownames(completeMissingGroupwise)[missingCat.i],renam), stringsAsFactors = FALSE)))
-                                             }
-                                             constantCat.i<- which(completeMissingGroupwise[,iii] == 1)
-                                             if(length(constantCat.i) > 0) {
-                                                cat(paste("Warning: Following ",length(constantCat.i)," items are constants in ",type," variable '",varname,"', group ",substring(colnames(completeMissingGroupwise)[iii],2),":\n",sep=""))
-                                                wegDifConst<- c(wegDifConst, rownames(completeMissingGroupwise)[constantCat.i] )
-                                                values    <- n.werte[rownames(completeMissingGroupwise)[constantCat.i]]
-                                                values    <- lapply(values, FUN = function(v){v[[colnames(completeMissingGroupwise)[iii]]]})
-                                                cat(paste0("   ", paste(optionalRenam(rownames(completeMissingGroupwise)[constantCat.i],renam),collapse=", "), "\n"))
-                                                info      <- suppressWarnings(plyr::rbind.fill(info, data.frame(varname = varname, varlevel = substring(colnames(completeMissingGroupwise)[iii],2), nCases = table(y)[colnames(completeMissingGroupwise)[iii]], type = "constant", vars =optionalRenam(names(values), renam), value =  sapply(values, names), nValue = unlist(values), stringsAsFactors = FALSE)))
-                                             }
-                                        }     
+                             ismis   <- which(is.na(x))
+                             if(length(ismis)>0) {itemdata <- itemdata[-ismis,]}
+                             n.werte <- lapply(itemdata, FUN=function(iii){by(iii, INDICES=list(y), FUN=table, simplify=FALSE)})
+                             completeMissingGroupwise <- data.frame(t(sapply(n.werte, function(ll){unlist(lapply(ll, FUN = function (uu) { length(uu[uu>0])}))})), stringsAsFactors = FALSE)
+                             for(iii in seq(along=completeMissingGroupwise)) {
+                                 missingCat.i <- which(completeMissingGroupwise[,iii] == 0)
+                                 if(length(missingCat.i) > 0) {
+                                    cat(paste("Warning: Following ",length(missingCat.i)," items with no values in ",type," variable '",varname,"', group ",substring(colnames(completeMissingGroupwise)[iii],2),": \n",sep=""))
+                                    wegDifMis <- c(wegDifMis, rownames(completeMissingGroupwise)[missingCat.i] )
+                                    cat(paste0("   ", paste(optionalRenam(rownames(completeMissingGroupwise)[missingCat.i],renam),collapse=", "), "\n"))
+                                    info      <- suppressWarnings(plyr::rbind.fill(info, data.frame(varname = varname, varlevel = substring(colnames(completeMissingGroupwise)[iii],2), nCases = table(y)[colnames(completeMissingGroupwise)[iii]], type = "missing", vars =optionalRenam(rownames(completeMissingGroupwise)[missingCat.i],renam), stringsAsFactors = FALSE)))
+                                 }
+                                 constantCat.i<- which(completeMissingGroupwise[,iii] == 1)
+                                 if(length(constantCat.i) > 0) {
+                                    cat(paste("Warning: Following ",length(constantCat.i)," items are constants in ",type," variable '",varname,"', group ",substring(colnames(completeMissingGroupwise)[iii],2),":\n",sep=""))
+                                    wegDifConst<- c(wegDifConst, rownames(completeMissingGroupwise)[constantCat.i] )
+                                    values    <- n.werte[rownames(completeMissingGroupwise)[constantCat.i]]
+                                    values    <- lapply(values, FUN = function(v){v[[colnames(completeMissingGroupwise)[iii]]]})
+                                    cat(paste0("   ", paste(optionalRenam(rownames(completeMissingGroupwise)[constantCat.i],renam),collapse=", "), "\n"))
+                                    info      <- suppressWarnings(plyr::rbind.fill(info, data.frame(varname = varname, varlevel = substring(colnames(completeMissingGroupwise)[iii],2), nCases = table(y)[colnames(completeMissingGroupwise)[iii]], type = "constant", vars =optionalRenam(names(values), renam), value =  sapply(values, names), nValue = unlist(values), stringsAsFactors = FALSE)))
+                                 }
+                             }     
      ### jetzt fuer partial credit die items identifizieren, wo die besetzten kategorien zwischen den dif-gruppen variieren
-                                        notIdent     <- which(completeMissingGroupwise[,1] != completeMissingGroupwise[,2])
-                                        if(length(notIdent)>0) {
-                                           cat(paste("Warning: Following ",length(notIdent)," items are have different number of valid categories between ",type," variable '",varname,"', groups:\n",sep=""))
-                                           liste <- completeMissingGroupwise[notIdent,]
-                                           row.names(liste) <- optionalRenam(row.names(liste), renam)
-                                           colnames(liste)  <- paste0("group_", 1:ncol(liste))
-                                           print(liste)
-                                           wegDifConst<- c(wegDifConst,  row.names(completeMissingGroupwise[notIdent,]))
-                                        }
+                             notIdent     <- which(completeMissingGroupwise[,1] != completeMissingGroupwise[,2])
+                             if(length(notIdent)>0) {
+                                cat(paste("Warning: Following ",length(notIdent)," items are have different number of valid categories between ",type," variable '",varname,"', groups:\n",sep=""))
+                                liste <- completeMissingGroupwise[notIdent,]
+                                row.names(liste) <- optionalRenam(row.names(liste), renam)
+                                colnames(liste)  <- paste0("group_", 1:ncol(liste))
+                                print(liste)
+                                wegDifConst<- c(wegDifConst,  row.names(completeMissingGroupwise[notIdent,]))
+                             }
+     ### jetzt die Items identifizieren, die in einer bestimmten DIF-gruppe fuer eine Kategorie weniger als 3 responses haben (mit denen sind auch keine DIF-Analysen moeglich)
+                             less3   <- which(sapply(n.werte, function(ll){min(unlist(ll)) < 3}))
+                             if(length(less3)>0) {
+                                cat(paste("Warning: For ",length(less3)," items, some response categories in some DIF groups have less than 3 valid responses: '",paste(names(less3), collapse="', '"), "'. \n   Remove these items because otherwise the IRT DIF model probably will crash.\n",sep=""))
+                                wegDifConst<- c(wegDifConst, names(less3))
+                             }
                           }
                      }
-                     return(list(x = x, char = char, weg = weg, varname=varname, wegDifMis = wegDifMis, wegDifConst = wegDifConst, toRemove = toRemove, info=info))}
+                     return(list(x = x, char = char, weg = weg, varname=varname, wegDifMis = wegDifMis, wegDifConst = unique(wegDifConst), toRemove = toRemove, info=info))}
+
 
 ### called by defineModel() ----------------------------------------------------
 
@@ -360,8 +367,8 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
           }
      ### identifiziere alle Items, die nicht dichotom (="ND") sind
           n.rasch  <- which(!isDichot)                                          ### (aber nicht die, die bereits wegen konstanter Werte aussortiert wurden!)
-          if(length(n.rasch) >0 )   {                                           ### also polytome Items oder Items, die mit 1/2 anstatt 0/1 kodiert sind
-             valND <- values[ which(names(values) %in% names(n.rasch)) ]
+          if(length(n.rasch) >0 && length(setdiff(names(n.rasch), namen.items.weg)) > 0)   {
+             valND <- values[ which(names(values) %in% names(n.rasch)) ]        ### also polytome Items oder Items, die mit 1/2 anstatt 0/1 kodiert sind
              valND <- valND[which(sapply(valND, length) > 1)]
              if(length(valND)>0) {
                 cat(paste(length(valND)," variable(s) are not strictly dichotomous with 0/1 ... Expect a rating scale model or partial credit model.\n",sep=""))
