@@ -116,7 +116,7 @@ checkContextVars <- function(x, varname, type = c("weight", "DIF", "group", "HG"
                         if(length(table(x)) < 12 ) { cat(paste("    Values of '", varname, "' are: ",paste(names(table(x)), collapse = ", "),"\n",sep=""))}
                      }
                      toRemove<- NULL
-                     mis     <- length(unique(x))
+                     mis     <- length(unique(na.omit(x)))
                      if(mis == 0)  {
                         if ( suppressAbort == FALSE ) {
                              stop(paste("Error: ",type," Variable '",varname,"' without any values.",sep=""))
@@ -143,8 +143,10 @@ checkContextVars <- function(x, varname, type = c("weight", "DIF", "group", "HG"
                           if(length(weg) > 0 ) {cat(paste0("Found ",length(weg)," cases with missing on ",type," variable '",varname,"'. Conquest probably will collapse unless cases are not deleted.\n"))}
                           if(type == "DIF") {
                                         if(mis > 2 && isTRUE(internal))   {cat(paste(type, " Variable '",varname,"' does not seem to be dichotomous.\n",sep=""))}
-                                        y       <- paste0("V", x)               ### wenn x numerisch ist, sind die Spaltennamen in completeMissingGroupwise nicht mehr den levels von x zuweisbar, da haengt R dann ein X ran
+                                        y       <- paste0("V", na.omit(x))      ### wenn x numerisch ist, sind die Spaltennamen in completeMissingGroupwise nicht mehr den levels von x zuweisbar, da haengt R dann ein X ran
      ### wenn man nicht simplify = FALSE setzt, passieren (aber nur in extrem seltenen ausnahmefaellen) solche Fehler wie in der mail von anne (31.07.2023, 15.54 Uhr) beschrieben ... wieso in gottes namen kann man dafuer den default TRUE setzen!?!
+                                        ismis   <- which(is.na(x))
+                                        if(length(ismis)>0) {itemdata <- itemdata[-ismis,]}
                                         n.werte <- lapply(itemdata, FUN=function(iii){by(iii, INDICES=list(y), FUN=table, simplify=FALSE)})
                                         completeMissingGroupwise <- data.frame(t(sapply(n.werte, function(ll){unlist(lapply(ll, FUN = function (uu) { length(uu[uu>0])}))})), stringsAsFactors = FALSE)
                                         for (iii in seq(along=completeMissingGroupwise)) {

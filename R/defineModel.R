@@ -265,7 +265,7 @@ renameVariables2 <- function(all.Names, dat, software, model.statement) {
        subsNam <- .substituteSigns(dat=dat, variable=unlist(all.Names[-unique(c(1,2, exclude))]), all.Names = all.Names)
        if(software == "conquest" || !is.null(all.Names[["DIF.var"]])) {
           if(!all(subsNam$old == subsNam$new)) {                                ### Conquest erlaubt keine gross geschriebenen und expliziten Variablennamen, die ein "." oder "_" enthalten
-             sn     <- subsNam[which( subsNam$old != subsNam$new),]
+             sn     <- unique(subsNam[which( subsNam$old != subsNam$new),])
              if(nrow(sn) > 4) {toadd <- " (truncated)"} else {toadd <- ""}
              message("'.', '-', and '_' nor upper case letters are allowed in explicit variable names and numbers in DIF variable name. Delete signs from variables names for explicit and DIF variables",toadd,": \n\n", eatTools::print_and_capture (head(sn, n=4), spaces = 5), "\n")
              colnames(dat) <- eatTools::recodeLookup(colnames(dat), sn[,c("old", "new")])

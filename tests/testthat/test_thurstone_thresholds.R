@@ -113,13 +113,3 @@ test_that("GPCM Thurstonian thresholds and BISTA item parameters are comparable 
    expect_all_abs_lt(bistaG[,"diff_bista"], tolerance = 2)
 })
 
-
-
-
-
-
-
-
-
-
-
