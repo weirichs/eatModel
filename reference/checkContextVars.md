@@ -66,6 +66,8 @@ chk1 <- checkContextVars(datW[,"language"], "language", type="DIF",
                          itemdata = datW[,-c(1:4)], renam=NULL)
 #> Warning: Following 14 items are constants in DIF variable 'language', group other:
 #>    T01_01, T05_04, T07_04, T07_07, T07_08, T07_10, T09_04, T09_05, T09_06, T10_08, T12_05, T13_06, T15_10, T16_04
+#> Warning: For 58 items, some response categories in some DIF groups have less than 3 valid responses: 'T01_03', 'T01_04', 'T01_05', 'T01_07', 'T02_01', 'T02_02', 'T02_06', 'T02_07', 'T03_03', 'T04_02', 'T04_06', 'T04_07', 'T05_02', 'T06_03', 'T06_05', 'T07_01', 'T07_02', 'T07_03', 'T07_05', 'T07_06', 'T07_09', 'T08_01', 'T08_02', 'T08_03', 'T08_05', 'T08_06', 'T09_02', 'T09_03', 'T09_07', 'T09_08', 'T09_09', 'T09_10', 'T09_11', 'T10_02', 'T10_06', 'T10_07', 'T11_01', 'T11_03', 'T11_04', 'T11_06', 'T11_09', 'T11_10', 'T12_01', 'T12_03', 'T12_04', 'T12_06', 'T12_09', 'T13_08', 'T14_01', 'T14_03', 'T14_04', 'T14_06', 'T15_02', 'T16_02', 'T16_07', 'T16_09', 'T16_10', 'T16_11'. 
+#>    Remove these items because otherwise the IRT DIF model probably will crash.
 chk1$info
 #>     varname varlevel nCases     type   vars value nValue
 #> 1  language    other     41 constant T01_01     1      9

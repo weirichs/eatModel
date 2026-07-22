@@ -14,21 +14,20 @@ with the argument returned by `defineModel`.
 ``` r
 defineModel (dat, items, id, splittedModels = NULL,
    irtmodel = c("1PL", "2PL", "PCM", "PCM2", "RSM", "GPCM", "GPCM.groups", "2PL.groups", "GPCM.design", "3PL"),
-   qMatrix=NULL, DIF.var=NULL, DIF.free = NULL, HG.var=NULL, group.var=NULL, weight.var=NULL, anchor = NULL, 
-   domainCol=NULL, itemCol=NULL, valueCol=NULL, catCol = NULL, check.for.linking = TRUE, minNperItem = 50, removeMinNperItem = FALSE,
-   boundary = 6, remove.boundary = FALSE, remove.no.answers = TRUE, remove.no.answersHG = TRUE, 
-   remove.missing.items = TRUE, remove.constant.items = TRUE, remove.failures = FALSE, 
-   remove.vars.DIF.missing = TRUE, remove.vars.DIF.constant = TRUE, 
-   verbose=TRUE, software = c("conquest","tam", "mirt"), dir = NULL, analysis.name,
-   schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE,
-   pvMethod = c("regular", "bayesian"), fitTamMmlForBayesian = TRUE,
-   n.plausible=5, seed = NULL, conquest.folder= NULL,
-   constraints=c("cases","none","items"), std.err=c("quick","full","none"), distribution=c("normal","discrete"),
-   method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo"), n.iterations=2000,
-   nodes=NULL, p.nodes=2000, f.nodes=2000,converge=0.001,deviancechange=0.0001,
+   qMatrix=NULL, DIF.var=NULL, DIF.free = NULL, HG.var=NULL, group.var=NULL, weight.var=NULL, anchor = NULL,
+   domainCol=NULL, itemCol=NULL, valueCol=NULL, catCol = NULL, check.for.linking = TRUE, minNperItem = 50,
+   removeMinNperItem = FALSE, boundary = 6, remove.boundary = FALSE, remove.no.answers = TRUE,
+   remove.no.answersHG = TRUE, remove.missing.items = TRUE, remove.constant.items = TRUE,
+   remove.failures = FALSE, remove.vars.DIF.missing = TRUE, remove.vars.DIF.constant = TRUE,
+   remove.insuff.pattern = TRUE, verbose=TRUE, software = c("conquest","tam", "mirt"), dir = NULL,
+   analysis.name, schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE,
+   pvMethod = c("regular", "bayesian"), fitTamMmlForBayesian = TRUE, n.plausible=5, seed = NULL,
+   conquest.folder= NULL, constraints=c("cases","none","items"), std.err=c("quick","full","none"),
+   distribution=c("normal","discrete"), method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo"),
+   n.iterations=2000, nodes=NULL, p.nodes=2000, f.nodes=2000,converge=0.001,deviancechange=0.0001,
    equivalence.table=c("wle","mle","NULL"), use.letters=FALSE,
    allowAllScoresEverywhere = TRUE, guessMat = NULL, est.slopegroups = NULL,
-   fixSlopeMat = NULL, slopeMatDomainCol=NULL, slopeMatItemCol=NULL, slopeMatValueCol=NULL, 
+   fixSlopeMat = NULL, slopeMatDomainCol=NULL, slopeMatItemCol=NULL, slopeMatValueCol=NULL,
    progress = NULL, Msteps = NULL, increment.factor=1 , fac.oldxsi=0,
    export = list(logfile = TRUE, systemfile = FALSE, history = TRUE,
    covariance = TRUE, reg_coefficients = TRUE, designmatrix = FALSE))
@@ -221,6 +220,18 @@ defineModel (dat, items, id, splittedModels = NULL,
   Logical: Applies only in DIF analyses. Should items without variance
   in at least one DIF group being removed prior to analyses? Note:
   Conquest may crash if these items remain in the data.
+
+- remove.insuff.pattern:
+
+  Logical: Applies only for polytomous models. Should items with
+  insufficient response pattern being removed prior to analyses? Invalid
+  patterns include, for example, items where the categories are not
+  consistently filled—that is, where there are no observations. For
+  example, if only categories 0, 2, and 3 are filled for an item, but
+  not category 1, the model may fail to converge. The same applies to
+  items for which the lowest category (or categories) is not filled.
+  This tends to occur more frequently with the partial credit model than
+  with the rating scale model.
 
 - verbose:
 
