@@ -313,8 +313,15 @@ createNamenItemsWeg <- function (crit, remove) {
   return(list(niw=niw, mess=mess))}
 
 ### Hilfsfunktion fuer defineModel
-checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, removeMinNperItem, minNperItem, remove.constant.items, model.statement, software, renam){
+checkItemConsistency <- function(dat, allNam, remove.missing.items, remove.insuff.pattern, verbose, removeMinNperItem, minNperItem, remove.constant.items, model.statement, software, renam){
           namen.items.weg <- NULL                                               ### initialisieren
+          if(length(allNam[["DIF.var"]])>0) {                                   ### missings auf DIF-variable muessen jetzt schon raus, sonst funktionieren die spaeteren checks nicht
+             nMis <- length(which(is.na(dat[,allNam[["DIF.var"]]])))
+             if(nMis>0) {
+                cat(paste0("Remove ",nMis, " cases with missings on DIF variable.\n"))
+                dat <- eatTools::na_omit_selection(dat, allNam[["DIF.var"]])
+             }
+          }
      ### Wandle NaN in NA, falls es welche gibt
           is.NaN <- do.call("cbind", lapply(dat[,allNam[["variablen"]], drop = FALSE], FUN = function (uu) { is.nan(uu) } ) )
           if(sum(is.NaN) > 0 ) {
@@ -376,7 +383,8 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
                     max.nchar <-  max(nchar(names(table(dat[,names(valND)[ii]]))))
                     if(max.nchar>1) {cat(paste("Arity of variable",optionalRenam(names(valND)[ii], renam),"exceeds 1.\n"))}
                 }
-                foo <- printPartialCreditInfToConsole(valND=valND, verbose = verbose, renam=renam)
+                rem <- printPartialCreditInfToConsole(valND=valND, verbose = verbose, renam=renam)
+                if(remove.insuff.pattern) {namen.items.weg <- c(namen.items.weg, rem)}
              }
              if(model.statement == "item" && software=="conquest") { warning("Sure you want to use 'model statement = item' even when items are not dichotomous?")}
           }
@@ -385,7 +393,7 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, verbose, rem
 ### Hilfsfunktion fuer checkItemConsistency
 printPartialCreditInfToConsole <- function(valND, verbose, renam){
           patt <- unique(lapply(valND, names))
-          prnt <- do.call("rbind", lapply(patt, FUN = function(x){
+          prnt <- lapply(patt, FUN = function(x){
                   it <- optionalRenam(names(valND)[suppressWarnings(which(unlist(lapply(valND, FUN = function (y) {all(names(y)==x)}))))], renam)
                   if(!all(x == 0:(length(x)-1))) {add <- "      !!! INSUFFICIENT PATTERN !!! "} else {add <- ""}
                   if(length(it)>8) {
@@ -393,7 +401,11 @@ printPartialCreditInfToConsole <- function(valND, verbose, renam){
                   } else {
                      st <- paste0("'",paste(it, collapse="', '"), "':")
                   }
-                  return(data.frame ( v1 = "   Items(s)", v2 = st, v4 = paste(x,collapse=", "), v5 = add, v6 = "\n", stringsAsFactors = FALSE))}))
+                  ret <- data.frame ( v1 = "   Items(s)", v2 = st, v4 = paste(x,collapse=", "), v5 = add, v6 = "\n", stringsAsFactors = FALSE)
+                  if(!all(x == 0:(length(x)-1))) {attr(ret, "weg") <- it}
+                  return(ret)})
+          weg  <- unlist(lapply(prnt, FUN = function(x) {attr(x, "weg")}))
+          prnt <- do.call("rbind", prnt)
           einr <- lapply(c("v2", "v4"), FUN = function (col){                   ### einrueckungen fuer spalten 2 und 4
                   mxCh <- max(nchar(prnt[,col]))
                   add  <- mxCh - nchar(prnt[,col])
@@ -402,7 +414,7 @@ printPartialCreditInfToConsole <- function(valND, verbose, renam){
               prnt[i,"v2"] <- paste0(prnt[i,"v2"], paste(rep(" ", times = einr[[1]][i]), collapse=""))
               prnt[i,"v4"] <- paste0(prnt[i,"v4"], paste(rep(" ", times = einr[[2]][i]), collapse=""))
               cat(paste0(prnt[i,]))}
-}
+          return(weg)}
 
 
 ### called by defineModel() ----------------------------------------------------
@@ -458,37 +470,44 @@ checkBoundary <- function(dat, allNam, boundary, remove.boundary) {
 
 ### called by defineModel() ----------------------------------------------------
 
-checkPersonSumScores <- function(datL, allNam, dat, remove.failures){
-  minMax<- do.call("rbind", by ( data = datL, INDICES = datL[,"variable"], FUN = function ( v ) {
-    v[,"valueMin"] <- min(v[,"value"])
-    v[,"valueMax"] <- max(v[,"value"])
-    return(v)}))
-  datW  <- reshape2::dcast(minMax, as.formula(paste(allNam[["ID"]], "~variable",sep="")), value.var = "value")
-  datMin<- reshape2::dcast(minMax, as.formula(paste(allNam[["ID"]], "~variable",sep="")), value.var = "valueMin")
-  datMax<- reshape2::dcast(minMax, as.formula(paste(allNam[["ID"]], "~variable",sep="")), value.var = "valueMax")
-  allFal<- datW[ which ( rowSums ( datW[,-1], na.rm = TRUE ) == rowSums ( datMin[,-1], na.rm = TRUE ) ), allNam[["ID"]] ]
-  allTru<- datW[ which ( rowSums ( datW[,-1], na.rm = TRUE ) == rowSums ( datMax[,-1], na.rm = TRUE ) ), allNam[["ID"]] ]
-  per0  <- NULL; perA <- NULL
-  if(length(allFal)>0) {
-    num <- rowSums(datMax[ which ( datMax[,1] %in% allFal), -1], na.rm = TRUE)
-    numF<- data.frame ( id = allFal, itemsVisited = num)
-    numF<- data.frame(numF[sort(numF[,"itemsVisited"],decreasing=FALSE,index.return=TRUE)$ix,])
-    if ( nrow( numF) > 5) { auswahl  <- numF[c(1, round(nrow(numF)/2), nrow(numF)),] }  else { auswahl <- na.omit(numF[c(1, 2, nrow(numF)),]) }
-    cat(paste( length(allFal), " subject(s) do not solve any item:\n   ", paste(auswahl[,"id"], " (",auswahl[,"itemsVisited"]," false)",sep="",collapse=", ")," ... \n",sep=""))
-    weg0<- na.omit(match(allFal, dat[,allNam[["ID"]]]))
-    per0<- data.frame ( numF, itemsSolved = 0, stringsAsFactors = FALSE)
-    if (isTRUE(remove.failures))  {
-      cat("   Remove subjects without any correct response.\n"); flush.console()
-      dat <- dat[-weg0,]
-    }
-  }
-  if(length(allTru)>0) {
-    num <- rowSums(datMax[ which ( datMax[,1] %in% allTru), -1], na.rm = TRUE)
-    numT<- data.frame ( id = allTru, itemsVisited = num, itemsSolved = num)
-    numT<- data.frame(numT[sort(numT[,"itemsSolved"],decreasing=FALSE,index.return=TRUE)$ix,])
-    if ( nrow( numT) > 5) { auswahl  <- numT[c(1, round(nrow(numT)/2), nrow(numT)),] }  else { auswahl <- na.omit(numT[c(1, 2, nrow(numT)),]) }
-    cat(paste( length(allTru), " subject(s) solved each item: ", paste(auswahl[,"id"], " (",auswahl[,"itemsSolved"] ," correct)",sep="", collapse=", ")," ... \n",sep=""))
-    perA<- numT
-  }
-  return(list(dat=dat, per0=per0, perA=perA))}
+checkPersonSumScores <- function(datL, allNam, dat, remove.failures, qmat){
+          minMax<- do.call("rbind", by ( data = datL, INDICES = datL[,"variable"], FUN = function ( v ) {
+                   v[,"valueMin"] <- min(v[,"value"])                           ### obere Zeile: hier wird variablenweise der kleinstmoegliche Wert gesucht
+                   v[,"valueMax"] <- max(v[,"value"])                           ### da der hier verwendete Longdatensatz 'datL' oben mit 'na.rm = TRUE' erzeugt wurde,
+                   return(v)}))                                                 ### sind hier diejenigen Personen mit ausschliesslich Missings bereits eliminiert
+          datW  <- reshape2::dcast(minMax, as.formula(paste(allNam[["ID"]], "~variable",sep="")), value.var = "value")
+          datMin<- reshape2::dcast(minMax, as.formula(paste(allNam[["ID"]], "~variable",sep="")), value.var = "valueMin")
+          datMax<- reshape2::dcast(minMax, as.formula(paste(allNam[["ID"]], "~variable",sep="")), value.var = "valueMax")
+          allFal<- datW[ which ( rowSums ( datW[,-1], na.rm = TRUE ) == rowSums ( datMin[,-1], na.rm = TRUE ) ), allNam[["ID"]] ]
+          allTru<- datW[ which ( rowSums ( datW[,-1], na.rm = TRUE ) == rowSums ( datMax[,-1], na.rm = TRUE ) ), allNam[["ID"]] ]
+          per0  <- NULL; perA <- NULL
+          if(length(allFal)>0) {
+             num <- rowSums(datMax[ which ( datMax[,1] %in% allFal), -1], na.rm = TRUE)
+             numF<- data.frame ( id = allFal, itemsVisited = num)
+             numF<- data.frame(numF[sort(numF[,"itemsVisited"],decreasing=FALSE,index.return=TRUE)$ix,])
+             if ( nrow( numF) > 5) { auswahl  <- numF[c(1, round(nrow(numF)/2), nrow(numF)),] }  else { auswahl <- na.omit(numF[c(1, 2, nrow(numF)),]) }
+             cat(paste( length(allFal), " subject(s) do not solve any item:\n   ", paste(auswahl[,"id"], " (",auswahl[,"itemsVisited"]," false)",sep="",collapse=", ")," ... \n",sep=""))
+             weg0<- na.omit(match(allFal, dat[,allNam[["ID"]]]))
+             per0<- data.frame ( numF, itemsSolved = 0, stringsAsFactors = FALSE)
+             if (isTRUE(remove.failures))  {
+                 cat("   Remove subjects without any correct response.\n"); flush.console()
+                 dat <- dat[-weg0,]
+             }
+          }
+          if(length(allTru)>0) {
+             num <- rowSums(datMax[ which ( datMax[,1] %in% allTru), -1], na.rm = TRUE)
+             numT<- data.frame ( id = allTru, itemsVisited = num, itemsSolved = num)
+             numT<- data.frame(numT[sort(numT[,"itemsSolved"],decreasing=FALSE,index.return=TRUE)$ix,])
+             if ( nrow( numT) > 5) { auswahl  <- numT[c(1, round(nrow(numT)/2), nrow(numT)),] }  else { auswahl <- na.omit(numT[c(1, 2, nrow(numT)),]) }
+             cat(paste( length(allTru), " subject(s) solved each item: ", paste(auswahl[,"id"], " (",auswahl[,"itemsSolved"] ," correct)",sep="", collapse=", ")," ... \n",sep=""))
+             # alle<- na.omit(match(allTru, dat[,allNam[["ID"]]]))
+             perA<- numT
+          }
+    ### wird spaeter fuer wle-Auslesen gebraucht: fuer jede person ausgeben lassen, wieviele items sie auf jeder domaene vorgelegt bekommen hat. geht nur fuer between item dimensionality
+          mat   <- do.call("rbind", by(qmat, INDICES = qmat[,1], FUN = function(z) {
+                   z[,"dim"] <- colnames(z)[which(z[1,] == 1)]
+                   return(z[,c(1, ncol(z))])}))
+          datL  <- merge(datL, mat, by.x = "variable", by.y = colnames(mat)[1])
+          datM  <- do.call("rbind", by(data=datL, INDICES = datL[,c(allNam[["ID"]], colnames(mat)[ncol(mat)])], FUN = function(x) {data.frame(x[1,c(allNam[["ID"]], colnames(mat)[ncol(mat)])], viewed = nrow(x), stringsAsFactors = FALSE)}))
+          return(list(dat=dat, per0=per0, perA=perA, viewed = datM))}
 

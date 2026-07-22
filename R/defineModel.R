@@ -1,12 +1,13 @@
 defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL", "2PL", "PCM", "PCM2", "RSM", "GPCM", "GPCM.groups", "2PL.groups", "GPCM.design", "3PL"),
                qMatrix=NULL, DIF.var=NULL, DIF.free = NULL, HG.var=NULL, group.var=NULL, weight.var=NULL, anchor = NULL, domainCol=NULL, itemCol=NULL, valueCol=NULL,catCol = NULL, check.for.linking = TRUE,
                minNperItem = 50, removeMinNperItem = FALSE, boundary = 6, remove.boundary = FALSE, remove.no.answers = TRUE, remove.no.answersHG = TRUE, remove.missing.items = TRUE, remove.constant.items = TRUE,
-               remove.failures = FALSE, remove.vars.DIF.missing = TRUE, remove.vars.DIF.constant = TRUE, verbose=TRUE, software = c("conquest","tam", "mirt"), dir = NULL,
+               remove.failures = FALSE, remove.vars.DIF.missing = TRUE, remove.vars.DIF.constant = TRUE, remove.insuff.pattern = TRUE, verbose=TRUE, software = c("conquest","tam", "mirt"), dir = NULL,
                analysis.name, schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE, pvMethod = c("regular", "bayesian"), fitTamMmlForBayesian = TRUE, n.plausible=5, seed = NULL, conquest.folder=NULL,
                constraints=c("cases","none","items"),std.err=c("quick","full","none"), distribution=c("normal","discrete"), method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo"),
                n.iterations=2000,nodes=NULL, p.nodes=2000, f.nodes=2000,converge=0.001,deviancechange=0.0001, equivalence.table=c("wle","mle","NULL"), use.letters=FALSE,
                allowAllScoresEverywhere = TRUE, guessMat = NULL, est.slopegroups = NULL, fixSlopeMat = NULL, slopeMatDomainCol=NULL, slopeMatItemCol=NULL, slopeMatValueCol=NULL,
                progress = NULL, Msteps = NULL, increment.factor=1 , fac.oldxsi=0, export = list(logfile = TRUE, systemfile = FALSE, history = TRUE, covariance = TRUE, reg_coefficients = TRUE, designmatrix = FALSE) )   {
+       options(warn=1)
        argL <- mget(ls())                                                       ### Argumentenliste erzeugen
      ### soll der Aufruf fuer mehrere Modelle stattfinden? dann ist splittedModels NICHT null.
      ### Sektion 'multiple models handling': jedes Modell einzeln von 'defineModel' aufbereiten lassen
@@ -49,13 +50,14 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
      ### kein model split
          resAll <- defineModelSingle(a=argL)
        }
+       options(warn=0)
        return(resAll) }
 
 defineModelSingle <- function (a) {
      ### assertions
        lapply(a[c("minNperItem", "boundary", "n.iterations", "p.nodes", "f.nodes","converge","deviancechange", "increment.factor" , "fac.oldxsi", "n.plausible")],checkmate::assert_numeric, lower = 0, len = 1)
        checkmate::assert_numeric(a[["nodes"]], lower = 1, null.ok = TRUE, len = 1)
-       lapply(a[c("check.for.linking", "removeMinNperItem", "remove.boundary", "remove.no.answers", "remove.no.answersHG", "remove.missing.items", "remove.vars.DIF.missing", "remove.vars.DIF.constant", "verbose", "compute.fit", "fitTamMmlForBayesian", "use.letters", "allowAllScoresEverywhere")],checkmate::assert_logical, len = 1)
+       lapply(a[c("check.for.linking", "removeMinNperItem", "remove.boundary", "remove.no.answers", "remove.no.answersHG", "remove.missing.items", "remove.vars.DIF.missing", "remove.vars.DIF.constant", "verbose", "compute.fit", "fitTamMmlForBayesian", "use.letters", "allowAllScoresEverywhere", "remove.insuff.pattern")],checkmate::assert_logical, len = 1)
        for ( i in names(a)) { assign(i, a[[i]]) }                               ### alle Objekte in a auf den NAMESPACE exportieren
        checkmate::assert_logical(progress, null.ok = TRUE, len = 1)
        if(is.null(progress)) {progress <- software != "tam"}
@@ -68,9 +70,9 @@ defineModelSingle <- function (a) {
           if(is.null(Msteps) ) {                                                ### den Default fuer Msteps so setzen wie in TAM
              if ( irtmodel == "3PL" ) { Msteps <- 10 } else { Msteps <- 4 }
           }
-       } else {                                                                 ### in mirt muss das argument ein data.frame sein 
+       } else {                                                                 ### in mirt muss das argument ein data.frame sein
           checkmate::assert_data_frame(irtmodel, any.missing = FALSE, ncols = 2)
-       }  
+       }
        method   <- match.arg(method, choices = eval(formals(defineModel)[["method"]]))
        pvMethod <- match.arg(pvMethod, choices = eval(formals(defineModel)[["pvMethod"]]))
        if(software == "conquest") {
@@ -107,7 +109,7 @@ defineModelSingle <- function (a) {
           colnames(dat)            <- eatTools::recodeLookup(colnames(dat), data.frame(old = DIF.free, new = paste0("ZZ",DIF.free)))
        }
      ### wenn software = conquest, duerfen variablennamen nicht mehr als 11 Zeichen haben! das heisst, falls doch, werden die items hier umbenannt
-       obs <- renameVariables(a=a, qMatrix=qMatrix, software=software, all.Names=all.Names, dat=dat) 
+       obs <- renameVariables(a=a, qMatrix=qMatrix, software=software, all.Names=all.Names, dat=dat)
      ### ID-Variable pruefen und ggf. aendern
        dat <- checkID_consistency(dat=obs[["dat"]], allNam=obs[["all.Names"]], software=software)
      ### Verzeichnis ('dir') pruefen oder erzeugen
@@ -119,7 +121,7 @@ defineModelSingle <- function (a) {
      ### Sektion 'Q matrix ggf. erstellen und auf Konsistenz zu sich selbst und zu den Daten pruefen' ###
        obs3<- generateOrCheckQmatrix(a=a, qMatrix=obs[["qMatrix"]], all.Names = obs2[["all.Names"]])
      ### Sektion 'Alle Items auf einfache Konsistenz pruefen'
-       cic <- checkItemConsistency(dat=obs2[["dat"]], allNam = obs3[["all.Names"]], remove.missing.items=remove.missing.items, verbose=verbose, removeMinNperItem=removeMinNperItem, minNperItem=minNperItem, remove.constant.items=remove.constant.items, model.statement=obs2[["model.statement"]], software=software, renam = obs[["renam"]])
+       cic <- checkItemConsistency(dat=obs2[["dat"]], allNam = obs3[["all.Names"]], remove.missing.items=remove.missing.items, remove.insuff.pattern=remove.insuff.pattern, verbose=verbose, removeMinNperItem=removeMinNperItem, minNperItem=minNperItem, remove.constant.items=remove.constant.items, model.statement=obs2[["model.statement"]], software=software, renam = obs[["renam"]])
      ### Sektion 'Hintergrundvariablen auf Konsistenz zu sich selbst und zu den Itemdaten pruefen'. Ausserdem Stelligkeit (Anzahl der benoetigten character) fuer jede Variable herausfinden
        cbc <- checkBGV(allNam = cic[["allNam"]], dat=cic[["dat"]], software=software, remove.no.answersHG=remove.no.answersHG, remove.vars.DIF.missing=remove.vars.DIF.missing, namen.items.weg=cic[["namen.items.weg"]], remove.vars.DIF.constant=remove.vars.DIF.constant, renam=obs[["renam"]])
      ### Sektion 'Itemdatensatz zusammenbauen' (fuer Conquest ggf. mit Buchstaben statt Ziffern)
@@ -131,7 +133,7 @@ defineModelSingle <- function (a) {
      ### Sektion 'Personen ohne gueltige Werte identifizieren und ggf. loeschen'. Gibt dat, perNA, datL zurueck
        pwvv<- personWithoutValidValues(dat=cbc[["dat"]], allNam=cbc[["allNam"]], remove.no.answers=remove.no.answers)
      ### Sektion 'Summenscores fuer Personen pruefen'
-       cpsc<- checkPersonSumScores(datL = pwvv[["datL"]], allNam = cbc[["allNam"]], dat=pwvv[["dat"]], remove.failures=remove.failures)
+       cpsc<- checkPersonSumScores(datL = pwvv[["datL"]], allNam = cbc[["allNam"]], dat=pwvv[["dat"]], remove.failures=remove.failures, qmat = obs3[["qMatrix"]])
      ### Sektion 'Verlinkung pruefen'
        if(check.for.linking == TRUE) {                                          ### Dies geschieht auf dem nutzerspezifisch reduzierten/selektierten Datensatz
           linkNaKeep <- checkLink(dataFrame = cpsc[["dat"]][,cbc[["allNam"]][["variablen"]], drop = FALSE], remove.non.responser = FALSE, verbose = FALSE )
@@ -203,7 +205,7 @@ defineModelSingle <- function (a) {
           options(scipen = unlist(original.options)); flush.console()           ### Achtung: setze Konsolenpfade in Hochkommas, da andernfalls keine Leerzeichen in den Ordner- bzw. Dateinamen erlaubt sind!
           sysInfo  <- Sys.info()
           if(sysInfo[["sysname"]] == "Linux") {suff <- ""; setwd("/")} else {suff <- "\""}
-          ret <- list ( software = software, input = paste(suff, file.path(dir, paste(analysis.name,"cqc",sep=".")), suff, sep=""), conquest.folder = paste(suff, conquest.folder, suff, sep=""), dir=dir, analysis.name=analysis.name, model.name = analysis.name, qMatrix=obs3[["qMatrix"]], all.Names=cbc[["allNam"]], deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]], perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], daten=daten, method=met[["method"]], nodes=met[["nodes"]], p.nodes=p.nodes, f.nodes=f.nodes, renam=obs[["renam"]])
+          ret <- list ( software = software, input = paste(suff, file.path(dir, paste(analysis.name,"cqc",sep=".")), suff, sep=""), conquest.folder = paste(suff, conquest.folder, suff, sep=""), dir=dir, analysis.name=analysis.name, model.name = analysis.name, qMatrix=obs3[["qMatrix"]], all.Names=cbc[["allNam"]], deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]], perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], daten=daten, method=met[["method"]], nodes=met[["nodes"]], p.nodes=p.nodes, f.nodes=f.nodes, renam=obs[["renam"]], viewed = cpsc[["viewed"]])
           class(ret) <-  c("defineConquest", "list")
        }
      ### Sektion 'Rueckgabeobjekt fuer tam'
@@ -219,17 +221,17 @@ defineModelSingle <- function (a) {
           control         <- list ( snodes = met[["snodes"]] , QMC=met[["QMC"]], convD = deviancechange ,conv = converge , convM = .0001 , Msteps = Msteps , maxiter = n.iterations, max.increment = 1 ,
                                   min.variance = .001 , progress = progress , ridge=0 , seed = seed , xsi.start0=FALSE,  increment.factor=increment.factor , fac.oldxsi= fac.oldxsi)
           if ( !is.null(met[["nodes"]])) { control$nodes <- met[["nodes"]] }
-          ret     <- list ( software = software, constraint = match.arg(constraints, choices = eval(formals(defineModel)[["constraints"]])) , qMatrix=obs3[["qMatrix"]], anchor=list(ank = ankFrame[["resTam"]], allNam = cbc[["allNam"]]),  
+          ret     <- list ( software = software, constraint = match.arg(constraints, choices = eval(formals(defineModel)[["constraints"]])) , qMatrix=obs3[["qMatrix"]], anchor=list(ank = ankFrame[["resTam"]], allNam = cbc[["allNam"]]),
                             all.Names=fixSlopeMatPrep[["allNam"]], daten=daten, irtmodel=fixSlopeMatPrep[["irtmodel"]], est.slopegroups = est.slopegroups[["esgNm"]], guessMat=guessMat, control = control,
                             n.plausible=n.plausible, dir = dir, analysis.name=analysis.name, deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]],
-                            perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], fixSlopeMat = fixSlopeMatPrep[["slopMat"]], estVar = fixSlopeMatPrep[["estVar"]], pvMethod = pvMethod,  fitTamMmlForBayesian=fitTamMmlForBayesian)
+                            perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], fixSlopeMat = fixSlopeMatPrep[["slopMat"]], estVar = fixSlopeMatPrep[["estVar"]], pvMethod = pvMethod,  fitTamMmlForBayesian=fitTamMmlForBayesian, viewed = cpsc[["viewed"]])
           class(ret) <-  c("defineTam", "list")
        }
        if(software == "mirt" )   {
           irtmodel <- prepItemTypeMirt(irtmodel = irtmodel, allNam = cbc[["allNam"]], qMatrix=obs3[["qMatrix"]])
           ret      <- list ( software = software, qMatrix=obs3[["qMatrix"]], allNam = fixSlopeMatPrep[["allNam"]], daten=daten, irtmodel=irtmodel, anchor=list(ank = ankFrame[["resTam"]], allNam = cbc[["allNam"]]), fixSlopeMat = fixSlopeMatPrep,
                             n.plausible=n.plausible, dir = dir, analysis.name=analysis.name, deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]],
-                            perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], est.slopegroups = est.slopegroups, progress=progress)
+                            perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], est.slopegroups = est.slopegroups, progress=progress, viewed = cpsc[["viewed"]])
           class(ret) <-  c("defineMirt", "list")
        }
        return(ret)}

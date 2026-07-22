@@ -307,7 +307,7 @@ getTamModInd    <- function(runModelObj, leseAlles) {
 
 ### ----------------------------------------------------------------------------
 
-getTamWles    <- function(runModelObj, qMatrix, leseAlles, omitWle) {
+getTamWles <- function(runModelObj, qMatrix, leseAlles, omitWle) {
          if(leseAlles == FALSE || omitWle == TRUE ) {return(NULL)}
          txt  <- capture.output(wle  <- tam.wle(runModelObj, progress = FALSE)) ### Achtung: im eindimensionalen Fall enthalten die Spaltennamen keine Benennung der Dimension
          eind1<- ncol(wle) == 7                                                 ### ist das eindimensional?
@@ -322,10 +322,16 @@ getTamWles    <- function(runModelObj, qMatrix, leseAlles, omitWle) {
          trans<- na.omit(unique(data.frame ( original = unlist(lapply(strsplit(as.character(wleL[,"variable"]),"\\."), FUN = function (l) {l[2]})), uebersetzt = wleL[,"group"], stringsAsFactors = FALSE)))
          wleL[,"par"]   <- car::recode(unlist(lapply(strsplit(as.character(wleL[,"variable"]),"\\."), FUN = function (l) {l[1]})), "'PersonScores'='NitemsSolved'; 'PersonMax'='NitemsTotal'; 'theta'='wle'; 'error'='wle'")
          wleL[,"derived.par"] <- car::recode(unlist(lapply(strsplit(as.character(wleL[,"variable"]),"\\."), FUN = function (l) {l[1]})), "'theta'='est'; 'error'='se';else=NA")
-         nIt  <- do.call("rbind", by(wleL[which(wleL[,"par"] == "NitemsTotal"),], INDICES = wleL[which(wleL[,"par"] == "NitemsTotal"),"group"], FUN = function(g) {         
-                 g[,"value"] <- nrow(qMatrix[which(qMatrix[,g[1,"group"]] ==1),])
-                 return(g)}))                                                   ### in partial credit entspricht 'PersonMax' nicht der Gesamtzahl der Items der Domaene, muss also aus q matrix rekonstruiert werden 
-         wleL <- rbind(wleL[which(wleL[,"par"] != "NitemsTotal"),], nIt)
+    ### in partial credit entspricht 'PersonMax' nicht der Gesamtzahl der Items der Domaene, muss also aus q matrix rekonstruiert werden
+         if(grepl("PCM|RSM", runModelObj[["irtmodel"]], ignore.case=TRUE)) {
+            if(!all(unique(wleL[,"group"]) %in% unique(attr(runModelObj, "defineModelObj")[["viewed"]][,"dim"]))) {
+               cat(paste0("Cannot match dimensions of Q matrix ('",paste(unique(attr(runModelObj, "defineModelObj")[["viewed"]][,"dim"]), collapse="', '"), "') with groups in WLE object ('",paste(unique(wleL[,"group"]), collapse="', '"),"'). WLE object will not contain valid number of items presented per person and per dimension.\n"))
+            } else {
+               wleX <- merge(wleL[which(wleL[,"par"] == "NitemsTotal"),], attr(runModelObj, "defineModelObj")[["viewed"]], by.x = c("pid", "group"), by.y = c(attr(runModelObj, "defineModelObj")[["all.Names"]][["ID"]], "dim"), all=TRUE)
+               if(any(is.na(wleX[,"viewed"]))) {wleX[which(is.na(wleX[,"viewed"])),"viewed"] <- 0}
+               wleL <- eatTools::rbind_common(wleL[which(wleL[,"par"] != "NitemsTotal"),], wleX)
+            }
+         }
          rel  <- reshape2::melt(as.data.frame ( wle)[1,weg1], na.rm = TRUE) |> suppressMessages()
          if ( "variable" %in% colnames(rel)) {                                  ### das Auslesen der Dimensionsnamen fuer den ein- und zweidimensionalen Fall (Objekt 'trans') ist noch nicht wirklich schoen, muesste gegebenenfalls (wenn mal Zeit ist) elegantisiert werden
                rel[,"original"] <- unlist(lapply(strsplit(as.character(rel[,"variable"]),"\\."), FUN = function (l) {l[length(l)]}))
