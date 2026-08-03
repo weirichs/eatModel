@@ -189,7 +189,6 @@ checkContextVars <- function(x, varname, type = c("weight", "DIF", "group", "HG"
 
 
 ### called by defineModel() ----------------------------------------------------
-
 checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF.missing, namen.items.weg, remove.vars.DIF.constant, renam){
             weg.dif <- NULL; weg.hg <- NULL; weg.weight <- NULL; weg.group <- NULL# initialisieren
      ### Gibt es ueberhaupt irgendwelche Kovariaten?
@@ -200,8 +199,8 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
                     stop("Following ",length(fehler), " variables with more that one class: \n", eatTools::print_and_capture(varClass[names(fehler)], spaces = 5))
                }
             }
-     ### Variablen fuer model.statement sollen numerisch sein 
-            if(length(allNam[["add.vars"]])>0)  { 
+     ### Variablen fuer model.statement sollen numerisch sein
+            if(length(allNam[["add.vars"]])>0)  {
                clss <- sapply(allNam[["add.vars"]], FUN = function(ii) { inherits(dat[,ii], c("integer", "numeric"))})
                if(any(clss == FALSE)) {
                   mess <- sapply(dat[,names(clss[which(clss == FALSE)]), drop=FALSE], class)
@@ -212,10 +211,18 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
             if(length(allNam[["HG.var"]])>0)    {
                varClass<- sapply(allNam[["HG.var"]], FUN = function(ii) { inherits(dat[,ii], c("integer", "numeric"))})
                if(!all(varClass)) {
+                  datX<- dat                                                    ### originalen Datensatz zum Vergleich speichern
                   vnam<- names(varClass)[which(varClass == FALSE)]              ### das sind die Variablennamen, die jetzt zu indikatoren gemacht werden muessen
+                  dat <- eatTools::na_omit_selection(dat, varsToOmitIfNA=vnam)
+                  if(nrow(dat) != nrow(datX)) {
+                     if(isFALSE(remove.no.answersHG)) {
+                        stop(paste0("Found ",nrow(datX) - nrow(dat), " missings on background variable(s). With 'remove.no.answersHG = FALSE', the conversion of the factor variable into dichotomous indicators fails.\n   Please use 'remove.no.answersHG = TRUE' or replace the missings on factor variables of the conditioning model with an explicit indicator value, for example 'miss'."))
+                     } else {
+                        cat(paste("Remove ",nrow(datX) - nrow(dat)," cases with missings on background variable(s) because otherwise the conversion of the factor variable into dichotomous indicators would fail.\n",sep=""))
+                     }
+                  }
                   cat(paste("Background variable(s) '",paste(vnam, collapse="', '"),"' of class \n    '",paste(sapply(dat[,vnam, drop=FALSE], class),collapse="', '"),"' will be converted to indicator variables.\n",sep=""))
                   ind <- do.call("cbind", lapply ( vnam, FUN = function ( yy ) {### wenn background-variable ein faktor ist, werden daraus jetzt numerische dummies
-                         if ( length(which(is.na(dat[,yy])))>0) { stop(paste0("Found ",length(which(is.na(dat[,yy]))), " missings on background variable '",yy,"'."))}
                          dat[,yy] <- eatTools::cleanifyString(dat[,yy])
                          newFr <- model.matrix( as.formula (paste("~",yy,sep="")), data = dat)[,-1,drop=FALSE]
                          cat(paste("    Variable '",yy,"' was converted to ",ncol(newFr)," indicator(s) with name(s) '",paste(colnames(newFr), collapse= "', '"), "'.\n",sep=""))

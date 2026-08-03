@@ -243,8 +243,8 @@ See Conquest manual pp.167 for details on population distributions.
   \item{method}{
 A character string indicating which method should be used for numerical or stochastic
 integration. Possible options are \code{"gauss"} (Gauss-Hermite quadrature: default),
-\code{"quadrature"} (Bock/Aitken quadrature) and \code{"montecarlo"}. See Conquest manual 
-pp.167 for details on these methods. When using \code{software = "tam"}, \code{"gauss"} and 
+\code{"quadrature"} (Bock/Aitken quadrature) and \code{"montecarlo"}. See Conquest manual
+pp.167 for details on these methods. When using \code{software = "tam"}, \code{"gauss"} and
 \code{"quadrature"} essentially leads to numerical integration, i.e TAM is called with
 \code{control$snodes = 0} and with \code{control$nodes = seq(-6,6,len=nn)}, where
 \code{nn} equals the number of nodes specified in the \code{nodes} argument of
@@ -254,8 +254,10 @@ depends on whether \code{"montecarlo"} or \code{"quasiMontecarlo"} is chosen.
 \code{snodes = nn}, where \code{nn} equals the number of nodes specified in the \code{nodes} argument of
 \code{defineModel}. \code{"quasiMontecarlo"} leads to calling TAM with \code{control$QMC = TRUE} and
 \code{snodes = nn}, where \code{nn} equals the number of nodes specified in the \code{nodes} argument of
-\code{defineModel}. To met the \code{software = "tam"} default (Quasi Monte Carlo integration with
-\code{control$QMC = TRUE}), use \code{software="tam", nodes = 21, method = "quasiMontecarlo"}.
+\code{defineModel}. To met the \code{software = "tam"} default (numerical integration),
+use \code{software="tam", nodes = 21}. To met the conditions of model 4.4 of the \code{\link[TAM]{tam.mml}}
+help page, use \code{software="tam", method = "quasiMontecarlo", nodes = 2000}. To met the conditions of
+model 4.5 of the \code{\link[TAM]{tam.mml}} help page, use \code{software="tam", method = "montecarlo", nodes = 2000}.
 }
   \item{n.iterations}{
 %%     ~~Describe \code{dif.term} here~~
