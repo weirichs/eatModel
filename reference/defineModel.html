@@ -302,8 +302,10 @@ depends on whether <code>"montecarlo"</code> or <code>"quasiMontecarlo"</code> i
 <code>snodes = nn</code>, where <code>nn</code> equals the number of nodes specified in the <code>nodes</code> argument of
 <code>defineModel</code>. <code>"quasiMontecarlo"</code> leads to calling TAM with <code>control$QMC = TRUE</code> and
 <code>snodes = nn</code>, where <code>nn</code> equals the number of nodes specified in the <code>nodes</code> argument of
-<code>defineModel</code>. To met the <code>software = "tam"</code> default (Quasi Monte Carlo integration with
-<code>control$QMC = TRUE</code>), use <code>software="tam", nodes = 21, method = "quasiMontecarlo"</code>.</p></dd>
+<code>defineModel</code>. To met the <code>software = "tam"</code> default (numerical integration),
+use <code>software="tam", nodes = 21</code>. To met the conditions of model 4.4 of the <code><a href="https://rdrr.io/pkg/TAM/man/tam.mml.html" class="external-link">tam.mml</a></code>
+help page, use <code>software="tam", method = "quasiMontecarlo", nodes = 2000</code>. To met the conditions of
+model 4.5 of the <code><a href="https://rdrr.io/pkg/TAM/man/tam.mml.html" class="external-link">tam.mml</a></code> help page, use <code>software="tam", method = "montecarlo", nodes = 2000</code>.</p></dd>
 
   <dt id="arg-n-iterations">n.iterations<a class="anchor" aria-label="anchor" href="#arg-n-iterations"></a></dt>
 <dd><p><!-- %%     ~~Describe \code{dif.term} here~~ -->

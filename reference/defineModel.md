@@ -351,9 +351,14 @@ koennen
   `nodes` argument of `defineModel`. `"quasiMontecarlo"` leads to
   calling TAM with `control$QMC = TRUE` and `snodes = nn`, where `nn`
   equals the number of nodes specified in the `nodes` argument of
-  `defineModel`. To met the `software = "tam"` default (Quasi Monte
-  Carlo integration with `control$QMC = TRUE`), use
-  `software="tam", nodes = 21, method = "quasiMontecarlo"`.
+  `defineModel`. To met the `software = "tam"` default (numerical
+  integration), use `software="tam", nodes = 21`. To met the conditions
+  of model 4.4 of the
+  [`tam.mml`](https://rdrr.io/pkg/TAM/man/tam.mml.html) help page, use
+  `software="tam", method = "quasiMontecarlo", nodes = 2000`. To met the
+  conditions of model 4.5 of the
+  [`tam.mml`](https://rdrr.io/pkg/TAM/man/tam.mml.html) help page, use
+  `software="tam", method = "montecarlo", nodes = 2000`.
 
 - n.iterations:
 
