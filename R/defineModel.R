@@ -109,7 +109,8 @@ defineModelSingle <- function (a) {
           colnames(dat)            <- eatTools::recodeLookup(colnames(dat), data.frame(old = DIF.free, new = paste0("ZZ",DIF.free)))
        }
      ### wenn software = conquest, duerfen variablennamen nicht mehr als 11 Zeichen haben! das heisst, falls doch, werden die items hier umbenannt
-       obs <- renameVariables(a=a, qMatrix=qMatrix, software=software, all.Names=all.Names, dat=dat)
+       mat <- generateOrCheckQmatrix(a=a, qMatrix=qMatrix, all.Names = all.Names)## Funktion muss hier schon aufgerufen werden (insgesamt zweimal), denn wenn (noch) keine q Matrix spezifiziert wurde, schlaegt 'renameVariables()' fehl
+       obs <- renameVariables(a=a, qMatrix=mat[["qMatrix"]], software=software, all.Names=mat[["all.Names"]], dat=dat)
      ### ID-Variable pruefen und ggf. aendern
        dat <- checkID_consistency(dat=obs[["dat"]], allNam=obs[["all.Names"]], software=software)
      ### Verzeichnis ('dir') pruefen oder erzeugen
