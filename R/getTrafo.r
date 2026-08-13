@@ -29,6 +29,7 @@ getTrafo <- function(dataBase = "I:/Methoden/10_sonstige Materialien/trafo.rda",
        if(length(dom3)>0) {
           ret    <- lapply(subj2, FUN = function(su) {
                     extr <- intersect(dom3, names(trafo[[mode]][[grade]][[su]][[study]]))
+                    if(length(extr) == 0) {return(NULL)}
                     if(length(extr) > 0) {
                        rp <- do.call("rbind", lapply(extr, FUN = function(e) {trafo[[mode]][[grade]][[su]][[study]][[e]][["refPop"]]}))
                        cts<- do.call("c", lapply(extr, FUN = function(e) {trafo[[mode]][[grade]][[su]][[study]][[e]][["cuts"]]}))
@@ -36,9 +37,10 @@ getTrafo <- function(dataBase = "I:/Methoden/10_sonstige Materialien/trafo.rda",
                        inf<- do.call("c", lapply(extr, FUN = function(e) {trafo[[mode]][[grade]][[su]][[study]][[e]][["info"]]}))
                     }
                     return(list(refPop=rp, cuts = cts, anchor = anc, info=inf))})
+          ret    <- ret[!vapply(ret, is.null, logical(1))]
           refPop <- do.call("rbind", lapply(ret, FUN = function(r) {r[["refPop"]]}))
           cuts   <- do.call("c", lapply(ret, FUN = function(r) {r[["cuts"]]}))
-          anchor <- do.call("rbind", lapply(ret, FUN = function(r) {r[["anchor"]]}))
+          anchor <- do.call(plyr::rbind.fill, lapply(ret, FUN = function(r) {r[["anchor"]]}))
           info   <- do.call("c", lapply(ret, FUN = function(r) {r[["info"]]}))
           return(list(anchor=anchor, refPop = refPop, cuts=cuts, info=info))
        }
