@@ -8,8 +8,8 @@
   transformations and continuous linking errors are still returned, while VERA
   item output is allowed without `kstufe`
 * fix duplicate plausible-value ID checks in `transformToBista()`
-* pin the macOS R CMD check job to the Intel runner because `mirt` currently
-  fails during package installation on the ARM `macos-latest` runner
+* rebuild `RcppParallel` and `qs2` from source in the macOS R CMD check job to
+  avoid incompatible binary TBB linkage when loading `mirt`
 * annotate `00install.out` in failed R CMD check jobs
 * bugfix in Q matrix consistency checks
 * improve handling of missings in background variables

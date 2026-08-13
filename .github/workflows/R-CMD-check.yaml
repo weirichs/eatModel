@@ -42,6 +42,13 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
+      - name: Rebuild macOS TBB-linked dependencies
+        if: runner.os == 'macOS'
+        shell: Rscript {0}
+        run: |
+          install.packages("RcppParallel", type = "source", repos = "https://cloud.r-project.org")
+          install.packages("qs2", type = "source", repos = "https://cloud.r-project.org")
+
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
