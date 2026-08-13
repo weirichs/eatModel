@@ -8,6 +8,27 @@ compareObj <- function (obj1, obj2, by) {
          return(expect_true(all.equal(vgl.i[,1],vgl.i[,2])))})))
   return(ret)}
 
+makeTiny2plEq <- function(source = "tam", person_ids = c("p1", "p2"), pv_values = c(-0.2, 0.3)) {
+  items <- c("I1", "I2")
+  est <- c(-0.6, 0.8)
+  slope <- c(0.75, 1.5)
+  rows <- rbind(
+    data.frame(model = "m1", source = source, var1 = items, var2 = "Cat1", type = "fixed", indicator.group = "items", group = "Dim1", par = "est", derived.par = NA, value = est),
+    data.frame(model = "m1", source = source, var1 = items, var2 = "Cat1", type = "fixed", indicator.group = "items", group = "Dim1", par = "estSlope", derived.par = NA, value = slope),
+    # Include slope standard errors because itemFromRes() creates estSlope_se;
+    # transformToBista() must still select the actual slope column.
+    data.frame(model = "m1", source = source, var1 = items, var2 = "Cat1", type = "fixed", indicator.group = "items", group = "Dim1", par = "estSlope", derived.par = "se", value = c(0.1, 0.2)),
+    data.frame(model = "m1", source = source, var1 = person_ids, var2 = NA, type = "fixed", indicator.group = "persons", group = "Dim1", par = "pv", derived.par = "pv1", value = pv_values),
+    data.frame(model = "m1", source = source, var1 = NA, var2 = NA, type = "tech", indicator.group = NA, group = NA, par = "ID", derived.par = "id", value = NA)
+  )
+  ret <- list(
+    items = list(m1 = list(Dim1 = list(eq = list(B.est = c(Mean.Mean = 0, Haebara = 0, Stocking.Lord = 0), descriptives = c(N.Items = 0, SD = NA, Var = NA, linkerror = 0.2)), items = NULL, method = "Mean.Mean"))),
+    results = rows
+  )
+  class(ret) <- c("eq2tom", "list")
+  ret
+}
+
 # load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example1.rda"))
 load(test_path("tf_example1.rda"))
 
@@ -18,6 +39,33 @@ test_that("tf1", {
   expect_true(all.equal(tf2b$linkingErrors , tf2b.neu$linkingErrors))
   expect_true(compareObj(tf2b$means,tf2b.neu$means, by = c("model", "domain")))
   expect_true(compareObj(tf2b$refPop , tf2b.neu$refPop , by="domain"))
+})
+
+test_that("BISTA transformation follows the documented linear formulas", {
+  tf2b.neu <- suppressWarnings(transformToBista(equatingList = eq2b, refPop = ref, cuts = cuts, vera = FALSE))
+  ip <- tf2b.neu$itempars
+  expect_equal(
+    ip$estTransfBista,
+    (ip$estTransf625 - ip$refMean) / ip$refSD * ip$refTransfSD + ip$refTransfMean,
+    tolerance = 1e-10
+  )
+  expect_equal(
+    ip$linkingErrorTransfBista,
+    sqrt((ip$linkingError^2) * (ip$refTransfSD^2) / (ip$refSD^2)),
+    tolerance = 1e-10
+  )
+
+  pp <- tf2b.neu$personpars
+  info <- unique(ip[,c("model", "dimension", "linkingConstant", "refMean", "refSD", "refTransfMean", "refTransfSD", "linkingErrorTransfBista")])
+  colnames(info)[match("linkingErrorTransfBista", colnames(info))] <- "itemLinkingErrorTransfBista"
+  pp <- merge(pp, info, by = c("model", "dimension"), all.x = TRUE, all.y = FALSE, sort = FALSE)
+  expect_false(anyNA(pp$refMean))
+  expect_equal(
+    pp$valueTransfBista,
+    (pp$value + pp$linkingConstant - pp$refMean) / pp$refSD * pp$refTransfSD + pp$refTransfMean,
+    tolerance = 1e-10
+  )
+  expect_equal(pp$linkingErrorTransfBista, pp$itemLinkingErrorTransfBista, tolerance = 1e-10)
 })
 
 # load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example2.rda"))
@@ -86,41 +134,68 @@ tle.neu   <- suppressWarnings(transformToBista ( equatingList = L.t1t3, refPop=t
 })
 
 test_that("2PL transformation to 62.5% respects software parameterization", {
-  makeEq <- function(source) {
-    items <- c("I1", "I2")
-    est <- c(-0.6, 0.8)
-    slope <- c(0.75, 1.5)
-    rows <- rbind(
-      data.frame(model = "m1", source = source, var1 = items, var2 = "Cat1", type = "fixed", indicator.group = "items", group = "Dim1", par = "est", derived.par = NA, value = est),
-      data.frame(model = "m1", source = source, var1 = items, var2 = "Cat1", type = "fixed", indicator.group = "items", group = "Dim1", par = "estSlope", derived.par = NA, value = slope),
-      # Include slope standard errors because itemFromRes() creates estSlope_se;
-      # transformToBista() must still select the actual slope column.
-      data.frame(model = "m1", source = source, var1 = items, var2 = "Cat1", type = "fixed", indicator.group = "items", group = "Dim1", par = "estSlope", derived.par = "se", value = c(0.1, 0.2)),
-      data.frame(model = "m1", source = source, var1 = c("p1", "p2"), var2 = NA, type = "fixed", indicator.group = "persons", group = "Dim1", par = "pv", derived.par = "pv1", value = c(-0.2, 0.3)),
-      data.frame(model = "m1", source = source, var1 = NA, var2 = NA, type = "tech", indicator.group = NA, group = NA, par = "ID", derived.par = "id", value = NA)
-    )
-    ret <- list(
-      items = list(m1 = list(Dim1 = list(eq = list(B.est = c(Mean.Mean = 0, Haebara = 0, Stocking.Lord = 0), descriptives = c(N.Items = 0, SD = NA, Var = NA, linkerror = NA)), items = NULL, method = "Mean.Mean"))),
-      results = rows
-    )
-    class(ret) <- c("eq2tom", "list")
-    ret
-  }
   refPop <- data.frame(domain = "Dim1", m = 0, sd = 1)
   cuts <- list(Dim1 = list(values = c(400, 500, 600)))
   logit625 <- log(0.625/(1 - 0.625))
 
   # TAM stores the 2PL difficulty in the slope-scaled logit, so the whole
   # threshold expression has to be divided by the slope.
-  tam <- suppressWarnings(transformToBista(makeEq("tam"), refPop = refPop, cuts = cuts, vera = FALSE, idVarName = "id"))
+  tam <- suppressWarnings(transformToBista(makeTiny2plEq("tam"), refPop = refPop, cuts = cuts, vera = FALSE, idVarName = "id"))
   expect_equal(tam$itempars$estTransf625, with(tam$itempars, (estTransf + logit625) / estSlope), tolerance = 1e-10)
   pTam <- with(tam$itempars, plogis(estSlope * estTransf625 - estTransf))
   expect_equal(pTam, rep(0.625, 2), tolerance = 1e-10)
 
   # mirt stores the 2PL difficulty on the theta scale; only the .625 logit
   # offset is divided by the slope.
-  mirt <- suppressWarnings(transformToBista(makeEq("mirt"), refPop = refPop, cuts = cuts, vera = FALSE, idVarName = "id"))
+  mirt <- suppressWarnings(transformToBista(makeTiny2plEq("mirt"), refPop = refPop, cuts = cuts, vera = FALSE, idVarName = "id"))
   expect_equal(mirt$itempars$estTransf625, with(mirt$itempars, estTransf + logit625 / estSlope), tolerance = 1e-10)
   pMirt <- with(mirt$itempars, plogis(estSlope * (estTransf625 - estTransf)))
   expect_equal(pMirt, rep(0.625, 2), tolerance = 1e-10)
+})
+
+test_that("transformation works without competence level cuts", {
+  refPop <- data.frame(domain = "Dim1", m = 0, sd = 1)
+  warn <- character()
+  txt <- capture.output(out <- withCallingHandlers(
+    transformToBista(makeTiny2plEq(), refPop = refPop, vera = FALSE, idVarName = "id"),
+    warning = function(w) {
+      warn <<- c(warn, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  ))
+
+  expect_s3_class(out, "transfBista")
+  expect_false(any(grepl("Skip check whether all competence levels", warn, fixed = TRUE)))
+  expect_false("traitLevel" %in% colnames(out$itempars))
+  expect_false("traitLevel" %in% colnames(out$personpars))
+  expect_equal(out$itempars$estTransfBista, out$itempars$estTransf625 * 100 + 500, tolerance = 1e-10)
+  expect_equal(out$personpars$valueTransfBista, out$personpars$value * 100 + 500, tolerance = 1e-10)
+  expect_equal(unique(out$itempars$linkingErrorTransfBista), 20, tolerance = 1e-10)
+  expect_equal(unique(out$personpars$linkingErrorTransfBista), 20, tolerance = 1e-10)
+})
+
+test_that("no-cuts transformation keeps VERA output and continuous linking errors", {
+  refPop <- data.frame(domain = "Dim1", m = 0, sd = 1)
+  out <- suppressWarnings(transformToBista(
+    makeTiny2plEq(), refPop = refPop, roman = TRUE, years = c(2020, 2024),
+    idVarName = "id"
+  ))
+
+  expect_s3_class(out, "transfBista")
+  expect_s3_class(out$itemparsVera, "data.frame")
+  expect_false("kstufe" %in% colnames(out$itemparsVera))
+  expect_setequal(out$linkingErrors$depVar, c("value", "valueTransfBista"))
+  expect_false("traitLevel" %in% out$linkingErrors$depVar)
+  expect_equal(unique(out$linkingErrors$linkingError[out$linkingErrors$depVar == "value"]), 0.2)
+  expect_equal(unique(out$linkingErrors$linkingError[out$linkingErrors$depVar == "valueTransfBista"]), 20)
+})
+
+test_that("duplicated PV ids are rejected before reshaping", {
+  refPop <- data.frame(domain = "Dim1", m = 0, sd = 1)
+  cuts <- list(Dim1 = list(values = c(400, 500, 600)))
+
+  expect_error(
+    suppressWarnings(transformToBista(makeTiny2plEq(person_ids = c("p1", "p1")), refPop = refPop, cuts = cuts, vera = FALSE, idVarName = "id")),
+    "cases according to 'id' variable are not unique"
+  )
 })

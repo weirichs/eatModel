@@ -1,3 +1,23 @@
+# eatModel 0.10.32 [Aug 2026]
+
+* fix `getTrafo()` for transformation databases that store mathematics under
+  `mat` while keeping the public `subject = "math"` API
+* make `getTrafo()` robust when requested subjects do not contain all requested
+  domains and when combined anchor data frames have different columns
+* make `transformToBista()` work without competence level `cuts`; continuous
+  transformations and continuous linking errors are still returned, while VERA
+  item output is allowed without `kstufe`
+* fix duplicate plausible-value ID checks in `transformToBista()`
+* rebuild `RcppParallel` and `qs2` from source in the macOS R CMD check job to
+  avoid incompatible binary TBB linkage when loading `mirt`
+* annotate `00install.out` in failed R CMD check jobs
+* bugfix in Q matrix consistency checks
+* improve handling of missings in background variables
+* add argument `remove.insuff.pattern` in `defineModel()`
+* avoid duplicate notifications when items violate more than one model
+  requirement criterion
+* bugfix in variable renaming for ConQuest conditioning models
+
 # eatModel 0.10.22 [Jun 2026]
 
 * add tests for equivalence table in partial credit (`simEquiTable()`)

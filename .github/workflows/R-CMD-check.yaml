@@ -42,6 +42,13 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
+      - name: Rebuild macOS TBB-linked dependencies
+        if: runner.os == 'macOS'
+        shell: Rscript {0}
+        run: |
+          install.packages("RcppParallel", type = "source", repos = "https://cloud.r-project.org")
+          install.packages("qs2", type = "source", repos = "https://cloud.r-project.org")
+
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
@@ -59,7 +66,7 @@ jobs:
 
           rcheck_dirs <- list.dirs(".", recursive = TRUE, full.names = TRUE)
           rcheck_dirs <- rcheck_dirs[grepl("\\.Rcheck$", rcheck_dirs)]
-          files <- file.path(rcheck_dirs, "00check.log")
+          files <- file.path(rcheck_dirs, c("00check.log", "00install.out"))
           test_dirs <- file.path(rcheck_dirs, "tests")
           files <- c(files, unlist(lapply(test_dirs, list.files,
             pattern = "\\.Rout(\\.fail)?$", full.names = TRUE

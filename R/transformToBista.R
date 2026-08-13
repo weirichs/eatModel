@@ -47,9 +47,14 @@ transformToBista <- function(equatingList, refPop, cuts, weights = NULL,
                           wahl <- intersect(which(equatingList[["results"]][,"model"] == mod), which(equatingList[["results"]][,"group"] == dimname))
                           if(length(wahl)==0) {return(NULL)}
                           resMD<- equatingList[["results"]][unique(c(wahl,  which(equatingList[["results"]][,"type"] == "tech"))),]
+                          pvRows <- intersect(which(resMD[,"par"] == "pv"), which(resMD[,"indicator.group"] == "persons"))
+                          if(length(pvRows)>0) {
+                              pvIds <- resMD[pvRows, c("var1", "derived.par"), drop=FALSE]
+                              if(any(duplicated(pvIds))) {stop(paste( "Model '",mod,"', Dimension '",dimname,"': cases according to '", id,"' variable are not unique.\n",sep=""))}
+                          }
                           rex  <- pvFromRes(resMD, toWideFormat = TRUE, idVarName = idVarName, verbose=FALSE)
                           if (!is.null(rex)) {
-                              if(length(rex[,id]) != unique(length(rex[,id]))) {stop(paste( "Model '",mod,"', Dimension '",dimname,"': cases according to '", id,"' variable are not unique.\n",sep=""))}
+                              if(length(rex[,id]) != length(unique(rex[,id]))) {stop(paste( "Model '",mod,"', Dimension '",dimname,"': cases according to '", id,"' variable are not unique.\n",sep=""))}
                           }
     ### check: keine verankerten parameter?
                           offSet  <- grep("offset", as.character(resMD[,"par"]))
@@ -151,7 +156,7 @@ transformToBista <- function(equatingList, refPop, cuts, weights = NULL,
                                 equ <- equatingList[["items"]][[mod]][[dimname]][["eq"]][["B.est"]][[ equatingList[["items"]][[mod]][[dimname]][["method"]] ]]
                                 if(isPCM) {if(equ != 0) {stop("For partial credit models, the equating constant must be zero, i.e. you have to calibrate the focus population with anchored parameters before calling equat1pl().")}}
     ### Hotfix fuer bayesianisch
-                                if (!exists("mat")) { mat <- refPop[match(dimname,  refPop[,"domain"]),] }
+                                if (!exists("mat", inherits = FALSE)) { mat <- refPop[match(dimname,  refPop[,"domain"]),] }
                                 pv[,"valueTransfBista"] <- (pv[,"value"] + equ - mat[,3]) / mat[,4] * mat[,6] + mat[,5]
     ### Dazu muss zuerst Mittelwert und SD der Fokuspopulation bestimmt werden.
                                 if (!is.null(pv)) {
@@ -196,23 +201,28 @@ transformToBista <- function(equatingList, refPop, cuts, weights = NULL,
                                     itFrame <- itFrame |> dplyr::mutate(refMean= mat[,3], refSD = mat[,4], refTransfMean=mat[,5], refTransfSD= mat[,6])
                                 }
     ### 2. Transformation der Personenparameter: kann auch dann stattfinden, wenn PVs bayesianisch gezogen wurden
-                                if(!exists("mat1") ) {mat1 <- match(dimname, names(cuts)); stopifnot(length(mat1)==1)}
+                                if(isFALSE(cutsMis) && !exists("mat1", inherits = FALSE)) {mat1 <- match(dimname, names(cuts)); stopifnot(length(mat1)==1)}
                                 if (!is.null(pv)) {
                                     if ( isFALSE(cutsMis) ) { pv[,"traitLevel"]   <- eatTools::num.to.cat(x = pv[,"valueTransfBista"], cut.points = cuts[[mat1]][["values"]], cat.values = cuts[[mat1]][["labels"]])}
                                     pv[,"dimension"]  <- pv[,"group"]
-                                    if(!exists("le")) {
-                                        warning("Skip check whether all competence levels are occupied (due to bayesian plausible values imputation).")
-                                    }  else  {
-                                        chk <- unique(le[,"traitLevel"]) %in% unique(pv[,"traitLevel"])
-                                        if ( length( which(chk == FALSE)) > 0) {
-                                             warning(paste("Model '",unique(itFrame[,"model"]),"', dimension '",unique(itFrame[,"dimension"]),"': No plausible values on trait level(s) '",paste( unique(le[,"traitLevel"])[which(chk == FALSE)], collapse = "', '"), "'.", sep=""))
+                                    if ( isFALSE(cutsMis) && !isPCM && !is.null ( equatingList[["items"]]) ) {
+                                        if(!exists("le", inherits = FALSE)) {
+                                            warning("Skip check whether all competence levels are occupied (due to bayesian plausible values imputation).")
+                                        }  else  {
+                                            chk <- unique(le[,"traitLevel"]) %in% unique(pv[,"traitLevel"])
+                                            if ( length( which(chk == FALSE)) > 0) {
+                                                 warning(paste("Model '",unique(itFrame[,"model"]),"', dimension '",unique(itFrame[,"dimension"]),"': No plausible values on trait level(s) '",paste( unique(le[,"traitLevel"])[which(chk == FALSE)], collapse = "', '"), "'.", sep=""))
+                                            }
                                         }
-                                        stopifnot ( length( unique ( na.omit(itFrame[,"linkingErrorTransfBista"]))) %in% 0:1)
+                                    }
+                                    if(!isPCM && !is.null ( equatingList[["items"]]) && !is.null(itFrame) && "linkingErrorTransfBista" %in% colnames(itFrame)) {
+                                        leTransf <- unique(na.omit(itFrame[,"linkingErrorTransfBista"]))
+                                        stopifnot ( length(leTransf) %in% 0:1)
                                         pv[,"linkingError"] <- equatingList[["items"]][[mod]][[dimname]][["eq"]][["descriptives"]][["linkerror"]]
-                                        pv[,"linkingErrorTransfBista"] <- unique ( itFrame[,"linkingErrorTransfBista"])
+                                        pv[,"linkingErrorTransfBista"] <- if(length(leTransf)==0) {NA_real_} else {leTransf}
                                     }
                                     ori <- colnames(pv)                             ### nur wenn untere Bedingung == TRUE, gibt es das Objekt 'le', das gemergt werden soll
-                                    if ( cutsMis == FALSE && !is.null ( equatingList[["items"]]) && exists("le") ) {
+                                    if ( cutsMis == FALSE && !is.null ( equatingList[["items"]]) && exists("le", inherits = FALSE) ) {
                                          pv  <- eatTools::mergeAttr ( pv, le, by = "traitLevel", sort = FALSE, all.x = TRUE, all.y = FALSE, setAttr = FALSE, unitName = "trait levels", xName = "plausible values", yName = "linking error list", verbose = c("match"))
                                          pv  <- pv[,c(ori, "linkingErrorTraitLevel")]
                                     }
