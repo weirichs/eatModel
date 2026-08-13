@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: macOS-latest,   r: 'release'}
+          - {os: macos-15-intel, r: 'release'}
           - {os: windows-latest, r: 'release'}
           - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
           - {os: ubuntu-latest,   r: 'release'}
@@ -59,7 +59,7 @@ jobs:
 
           rcheck_dirs <- list.dirs(".", recursive = TRUE, full.names = TRUE)
           rcheck_dirs <- rcheck_dirs[grepl("\\.Rcheck$", rcheck_dirs)]
-          files <- file.path(rcheck_dirs, "00check.log")
+          files <- file.path(rcheck_dirs, c("00check.log", "00install.out"))
           test_dirs <- file.path(rcheck_dirs, "tests")
           files <- c(files, unlist(lapply(test_dirs, list.files,
             pattern = "\\.Rout(\\.fail)?$", full.names = TRUE

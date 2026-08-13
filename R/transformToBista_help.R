@@ -12,8 +12,24 @@ adaptEatRepVersion <- function ( x ) {
 ### ----------------------------------------------------------------------------
 
 createLinkingErrorObject <- function (itempars, years) {
+  if (is.null(itempars) || nrow(itempars) == 0 || !"dimension" %in% colnames(itempars)) {
+    return(NULL)
+  }
+  depVars <- character()
+  if ("linkingError" %in% colnames(itempars)) {
+    depVars <- c(depVars, "value")
+  }
+  if ("linkingErrorTransfBista" %in% colnames(itempars)) {
+    depVars <- c(depVars, "valueTransfBista")
+  }
+  if (all(c("traitLevel", "linkingErrorTraitLevel") %in% colnames(itempars))) {
+    depVars <- c(depVars, "traitLevel")
+  }
+  if (length(depVars) == 0) {
+    return(NULL)
+  }
   res <- do.call("rbind", by(data = itempars, INDICES = itempars[,"dimension"], FUN = function (d) {
-    r1 <- do.call("rbind", lapply(c("value", "valueTransfBista", "traitLevel"), FUN = function (av) {
+    r1 <- do.call("rbind", lapply(depVars, FUN = function (av) {
       if ( av %in% c("value", "valueTransfBista")) {
         prm <- "mean"
         le  <- unique(d[,car::recode(av, "'value'='linkingError'; 'valueTransfBista'='linkingErrorTransfBista'")])
@@ -37,7 +53,7 @@ createItemVeraObj <- function(itempars, roman, results, q3bound){
   itemVera   <- itempars[,allCols]
   colnames(itemVera) <- car::recode ( colnames(itemVera), "'dimension'='domain'; 'item'='iqbitem_id'; 'itemDiscrim'='trennschaerfe'; 'estTransf'='logit'; 'estTransfBista'='bista'; 'traitLevel'='kstufe'")
   colnames(itemVera)[match(pCols, colnames(itemVera))] <- paste0("lh", eatTools::removePattern ( string = pCols, pattern = "^itemP"))
-  if ( roman == TRUE ) {
+  if ( roman == TRUE && "kstufe" %in% colnames(itemVera) ) {
     if (!all(itemVera[,"kstufe"] %in% c("1a", "1b", 1:5))) {stop(paste("Competence levels do not match allowed values. '1a', '1b', '1', '2', '3', '4', '5' is allowed. '",paste(names(table(itemVera[,"kstufe"])), collapse = "', '"),"' was found.\n",sep=""))}
     itemVera[,"kstufe"] <- car::recode (itemVera[,"kstufe"], "'1a'='Ia'; '1b'='Ib'; '1'='I'; '2'='II'; '3'='III'; '4'='IV'; '5'='V'")
   }

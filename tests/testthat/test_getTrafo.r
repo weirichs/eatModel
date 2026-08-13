@@ -13,7 +13,7 @@ makeMiniTrafo <- function() {
   list(
     paper = list(
       primary = list(
-        math = list(vera = list(
+        mat = list(vera = list(
           GL = domainEntry("GL", "m1", 0),
           MS = domainEntry("MS", "m2", 1)
         )),

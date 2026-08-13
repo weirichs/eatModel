@@ -100,6 +100,8 @@ test_that("GPCM Thurstonian thresholds and BISTA item parameters are comparable 
    cuts <- list(Dim1 = list(values = c(400, 500, 600)))
    tfTG <- suppressWarnings(transformToBista(equat1pl(resTG), refPop = refPop, cuts = cuts, vera = FALSE))
    tfMG <- suppressWarnings(transformToBista(equat1pl(resMG), refPop = refPop, cuts = cuts, vera = FALSE))
+   expect_equal(tfTG[["itempars"]][["estTransf625"]], tfTG[["itempars"]][["thurstone"]], tolerance = 1e-10)
+   expect_equal(tfMG[["itempars"]][["estTransf625"]], tfMG[["itempars"]][["thurstone"]], tolerance = 1e-10)
    bistaG <- eatTools::mergeAttr(tfTG[["itempars"]][,c("item", "category", "dimension", "estTransf625", "estTransfBista")],
                                  tfMG[["itempars"]][,c("item", "category", "dimension", "estTransf625", "estTransfBista")],
                                  by = c("item", "category", "dimension"), setAttr = FALSE, all = TRUE,

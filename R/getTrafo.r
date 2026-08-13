@@ -18,9 +18,11 @@ getTrafo <- function(dataBase = "I:/Methoden/10_sonstige Materialien/trafo.rda",
     study  <- match.arg(arg=study, choices=eval(formals(getTrafo)[["study"]]))
     target1<- trafo[[mode]][[grade]]
     subj1  <- names(target1)
-    mis1   <- setdiff(subject, subj1)
+    subjectTrafo <- subject
+    subjectTrafo[subject == "math" & !"math" %in% subj1 & "mat" %in% subj1] <- "mat"
+    mis1   <- subject[!subjectTrafo %in% subj1]
     if(length(mis1)>0) {message(paste0("subject(s) '",paste(mis1, collapse="', '"), "' not included in mode '",mode,"', grade '",grade,"'. These subjects will be ignored."))}
-    subj2  <- intersect(subject, subj1)
+    subj2  <- subjectTrafo[subjectTrafo %in% subj1]
     if(length(subj2) > 0 ) {
        dom1  <- unique(unlist(lapply(subj2, FUN = function(su) {names(trafo[[mode]][[grade]][[su]][[study]])})))
        dom2  <- setdiff(domain, dom1)

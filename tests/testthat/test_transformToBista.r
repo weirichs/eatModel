@@ -174,6 +174,22 @@ test_that("transformation works without competence level cuts", {
   expect_equal(unique(out$personpars$linkingErrorTransfBista), 20, tolerance = 1e-10)
 })
 
+test_that("no-cuts transformation keeps VERA output and continuous linking errors", {
+  refPop <- data.frame(domain = "Dim1", m = 0, sd = 1)
+  out <- suppressWarnings(transformToBista(
+    makeTiny2plEq(), refPop = refPop, roman = TRUE, years = c(2020, 2024),
+    idVarName = "id"
+  ))
+
+  expect_s3_class(out, "transfBista")
+  expect_s3_class(out$itemparsVera, "data.frame")
+  expect_false("kstufe" %in% colnames(out$itemparsVera))
+  expect_setequal(out$linkingErrors$depVar, c("value", "valueTransfBista"))
+  expect_false("traitLevel" %in% out$linkingErrors$depVar)
+  expect_equal(unique(out$linkingErrors$linkingError[out$linkingErrors$depVar == "value"]), 0.2)
+  expect_equal(unique(out$linkingErrors$linkingError[out$linkingErrors$depVar == "valueTransfBista"]), 20)
+})
+
 test_that("duplicated PV ids are rejected before reshaping", {
   refPop <- data.frame(domain = "Dim1", m = 0, sd = 1)
   cuts <- list(Dim1 = list(values = c(400, 500, 600)))
