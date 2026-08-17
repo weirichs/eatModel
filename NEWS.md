@@ -1,3 +1,8 @@
+# eatModel 0.10.32 [Aug 2026]
+
+* speed up Q3 item-pair frequency checks and handle missing-response edge cases
+  consistently with `table()`
+
 # eatModel 0.10.22 [Jun 2026]
 
 * add tests for equivalence table in partial credit (`simEquiTable()`)

@@ -1,27 +1,78 @@
 ### called by getConquestQ3() or getTamQ3(),
 ### which are called by getResults() e.g. getConquestResults() or getTamResults()
 
-tabdt <- function(x, q3MinType){
-  d   <- na.omit(data.frame (x[[1]], x[[2]]))
-  if(nrow(d) < 2) {return(NULL)}
-  tab <- Rfast::Table(x = d[,1], y = d[,2], names=FALSE)
-  if(ncol(tab)==1) {
-      minVal <- 0
+.q3TabLevels <- function(x) {
+  if(is.factor(x)) {return(levels(x))}
+  return(sort(unique(x[!is.na(x)])))}
+
+.q3TabCodes <- function(x, levels) {
+  if(is.factor(x)) {x <- as.character(x)}
+  return(match(x, levels))}
+
+.q3MinTabValue <- function(x, y, q3MinType) {
+  xLev <- .q3TabLevels(x)
+  yLev <- .q3TabLevels(y)
+  nX   <- length(xLev)
+  nY   <- length(yLev)
+  if(nX < 2 || nY < 2) {return(0)}
+  xCod <- .q3TabCodes(x, xLev)
+  yCod <- .q3TabCodes(y, yLev)
+  ok   <- !is.na(xCod) & !is.na(yCod)
+  if(!any(ok)) {return(0)}
+  tab <- matrix(tabulate(xCod[ok] + (yCod[ok] - 1L) * nX, nbins = nX * nY),
+                nrow = nX, ncol = nY)
+  if ( q3MinType == "singleObs" ) {
+    minVal <- min(tab)
   }  else  {
-      if ( q3MinType == "singleObs" ) {
-        minVal <- min(tab)
-      }  else  {
-        minVal <- min(c(colSums(tab), rowSums(tab)))
-      }
+    minVal <- min(c(colSums(tab), rowSums(tab)))
   }
-  ret <- data.frame ( Var1 = names(x)[1], Var2 = names(x)[2], minValue = minVal)
+  return(minVal)}
+
+tabdt <- function(x, q3MinType){
+  minVal <- .q3MinTabValue(x = x[[1]], y = x[[2]], q3MinType = q3MinType)
+  ret <- data.frame ( Var1 = names(x)[1], Var2 = names(x)[2], minValue = minVal, stringsAsFactors = FALSE)
   return(ret)}
 
 
 ### Hilfsfunktion zur Bestimmung der Anzahl der Beobachtungen je Itempaar
 nObsItemPairs <- function ( responseMatrix, q3MinType) {
-        a   <- as.list(data.frame(responseMatrix))
-        spl <- do.call("rbind", combinat::combn(x=a, m=2, fun = tabdt, simplify=FALSE, q3MinType=q3MinType))
+        q3MinType <- match.arg(q3MinType, choices = c("singleObs", "marginalSum"))
+        dat <- data.frame(responseMatrix, check.names = FALSE)
+        nItems <- ncol(dat)
+        if(nItems < 2) {
+          return(data.frame(Var1 = character(0), Var2 = character(0), minValue = numeric(0), stringsAsFactors = FALSE))
+        }
+        itemNames <- colnames(dat)
+        itemLevels <- lapply(dat, FUN = .q3TabLevels)
+        nLevels <- lengths(itemLevels)
+        itemCodes <- Map(f = .q3TabCodes, x = dat, levels = itemLevels)
+        itemPairs <- utils::combn(seq_len(nItems), 2)
+        minValue <- numeric(ncol(itemPairs))
+        for(pp in seq_len(ncol(itemPairs))) {
+          ii <- itemPairs[1, pp]
+          jj <- itemPairs[2, pp]
+          if(nLevels[ii] < 2 || nLevels[jj] < 2) {
+            minValue[pp] <- 0
+          } else {
+            iiCodes <- itemCodes[[ii]]
+            jjCodes <- itemCodes[[jj]]
+            complete <- !is.na(iiCodes) & !is.na(jjCodes)
+            if(!any(complete)) {
+              minValue[pp] <- 0
+            } else {
+              tab <- matrix(tabulate(iiCodes[complete] + (jjCodes[complete] - 1L) * nLevels[ii],
+                                     nbins = nLevels[ii] * nLevels[jj]),
+                            nrow = nLevels[ii], ncol = nLevels[jj])
+              if(q3MinType == "singleObs") {
+                minValue[pp] <- min(tab)
+              } else {
+                minValue[pp] <- min(c(rowSums(tab), colSums(tab)))
+              }
+            }
+          }
+        }
+        spl <- data.frame(Var1 = itemNames[itemPairs[1,]], Var2 = itemNames[itemPairs[2,]],
+                          minValue = minValue, stringsAsFactors = FALSE)
         return(spl)}
 
 ### ----------------------------------------------------------------------------
