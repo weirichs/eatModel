@@ -1,5 +1,14 @@
 ### runModel is usually used after defineModel().
 
+# dient dazu, conquest ueber wine aus linux aufzurufen 
+run_conquest_linux <- function(conquest_exe, syntax_file, wait) {
+  script <- tempfile(fileext = ".sh")
+  writeLines(c("#!/bin/bash",  paste("wine", shQuote(conquest_exe), shQuote(basename(syntax_file))) ), script)
+  Sys.chmod(script, "0755")
+  system2("xfce4-terminal",
+          args = c("--disable-server",  paste0("--working-directory=", shQuote(dirname(syntax_file))),
+                    paste0("--command=", shQuote(script))),  wait = wait)}
+
 ### ueberschreibe 'originales' anchor objekt! (hilfsfunktion fuer runmodel mit tam)
 overwriteAnchorGpcmTAM <- function(anchor, defineModelObj, Y, group, wgt) {
    if(!is.null(anchor) && grepl("pcm", defineModelObj[["irtmodel"]], ignore.case=TRUE)) {
@@ -10,9 +19,9 @@ overwriteAnchorGpcmTAM <- function(anchor, defineModelObj, Y, group, wgt) {
          skelet <- tam.mml(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], constraint = defineModelObj[["constraint"]], pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], irtmodel = defineModelObj[["irtmodel"]], pweights = wgt, control = control, group=group)
       } else {
          skelet <- tam.mml.2pl(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = defineModelObj[["irtmodel"]], est.slopegroups=defineModelObj[["est.slopegroups"]],pweights = wgt, B.fixed = defineModelObj[["fixSlopeMat"]], est.variance = defineModelObj[["estVar"]], control = control, group=group)
-      }         
+      }
       diffe  <- Sys.time() - beg
-      if(as.numeric(diffe) > 0.2) {message(paste0("Generate skeleton for partial credit anchoring: ", timeFormat(diffe)))}
+      if(as.numeric(diffe) > 0.2) {message(paste0("Model '",defineModelObj[["analysis.name"]],"': Generate skeleton for partial credit anchoring: ", timeFormat(diffe)))}
       anchor <- prepAnchorTAM(dfm = defineModelObj, skeleton = skelet[["xsi.fixed.estimated"]])
    }
    return(anchor)}
@@ -52,8 +61,7 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
                 if(inherits(defineModelObj, "defineConquest")) {
                    sysInfo  <- Sys.info()
                    if(sysInfo[["sysname"]] == "Linux") {
-                      if(isTRUE(wait)) {add <- ""} else {add <- " &"}
-                      paste0("xfce4-terminal -e \"bash -c \'cd /", gsub(" ", "\\ ", defineModelObj$dir, fixed = TRUE), " && wine ",gsub(" ", "\\ ", defineModelObj$conquest.folder,fixed = TRUE), " ", defineModelObj$analysis.name, ".cqc\'\"", add) |> system()
+                      foo     <- run_conquest_linux(conquest_exe = defineModelObj$conquest.folder, syntax_file = defineModelObj$input, wait = wait) 
                    } else {
                       oldPfad <- getwd()
                       setwd(defineModelObj$dir)

@@ -122,7 +122,7 @@ defineModelSingle <- function (a) {
      ### Sektion 'Q matrix ggf. erstellen und auf Konsistenz zu sich selbst und zu den Daten pruefen' ###
        obs3<- generateOrCheckQmatrix(a=a, qMatrix=obs[["qMatrix"]], all.Names = obs2[["all.Names"]])
      ### Sektion 'Alle Items auf einfache Konsistenz pruefen'
-       cic <- checkItemConsistency(dat=obs2[["dat"]], allNam = obs3[["all.Names"]], remove.missing.items=remove.missing.items, remove.insuff.pattern=remove.insuff.pattern, verbose=verbose, removeMinNperItem=removeMinNperItem, minNperItem=minNperItem, remove.constant.items=remove.constant.items, model.statement=obs2[["model.statement"]], software=software, renam = obs[["renam"]])
+       cic <- checkItemConsistency(dat=obs2[["dat"]], allNam = obs3[["all.Names"]], remove.missing.items=remove.missing.items, remove.insuff.pattern=remove.insuff.pattern, verbose=verbose, removeMinNperItem=removeMinNperItem, minNperItem=minNperItem, remove.constant.items=remove.constant.items, model.statement=obs2[["model.statement"]], software=software, renam = obs[["renam"]], irtmodel=irtmodel)
      ### Sektion 'Hintergrundvariablen auf Konsistenz zu sich selbst und zu den Itemdaten pruefen'. Ausserdem Stelligkeit (Anzahl der benoetigten character) fuer jede Variable herausfinden
        cbc <- checkBGV(allNam = cic[["allNam"]], dat=cic[["dat"]], software=software, remove.no.answersHG=remove.no.answersHG, remove.vars.DIF.missing=remove.vars.DIF.missing, namen.items.weg=cic[["namen.items.weg"]], remove.vars.DIF.constant=remove.vars.DIF.constant, renam=obs[["renam"]])
      ### Sektion 'Itemdatensatz zusammenbauen' (fuer Conquest ggf. mit Buchstaben statt Ziffern)
@@ -236,6 +236,7 @@ defineModelSingle <- function (a) {
           class(ret) <-  c("defineMirt", "list")
        }
        return(ret)}
+
 
 ### hilfsfunktion fuer defineModelSingle
 renameVariables <- function(a, qMatrix, software, all.Names, dat) {

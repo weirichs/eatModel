@@ -245,7 +245,7 @@ getMirtResults <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV) {
          varName<- colnames(qMatrix)[1]
     ### deskriptive Werte auslesen
          ret    <- getTamDescriptives(runModelObj=runModelObj, qL=qL, qMatrix=qMatrix, leseAlles = TRUE, software = "mirt")
-    ### (saemtliche) itemkennwerte auslesen 
+    ### (saemtliche) itemkennwerte auslesen
          ret    <- rbind(ret, getMirtItempars(runModelObj=runModelObj, qL=qL, qMatrix=qMatrix, leseAlles = TRUE, software = "mirt"))
     ### Diskriminationswerte auslesen: hier kann dieselbe Funktion verwendet werden wie fuer TAM
          ret    <- rbind(ret, getTamDiscrim(runModelObj=runModelObj, qL=qL, qMatrix = qMatrix, leseAlles = TRUE, software="mirt"))
@@ -261,12 +261,12 @@ getMirtResults <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV) {
          beg    <- Sys.time()
          ret    <- rbind(ret, getMirtWles(runModelObj=runModelObj, qMatrix=qMatrix,  omitWle = omitWle))
          diffe <- Sys.time() - beg
-         if(as.numeric(diffe) > 0.2) {message(paste0("Getting WLEs calling fscores(method=\"WLE\") from getMirtWles: ", timeFormat(diffe)))}
+         if(as.numeric(diffe) > 0.2) {message(paste0("Model '",attr(runModelObj, "defineModelObj")[["analysis.name"]], "': Getting WLEs calling fscores(method=\"WLE\") from getMirtWles: ", timeFormat(diffe)))}
     ### PVs auslesen
          beg    <- Sys.time()
          ret    <- rbind(ret, getMirtPVs ( runModelObj=runModelObj, qMatrix=qMatrix, omitPV = omitPV))
          diffe <- Sys.time() - beg
-         if(as.numeric(diffe) > 0.2) {message(paste0("Getting PVs calling fscores from getMirtPVs: ", timeFormat(diffe)))}
+         if(as.numeric(diffe) > 0.2) {message(paste0("Model '",attr(runModelObj, "defineModelObj")[["analysis.name"]], "': Getting PVs calling fscores from getMirtPVs: ", timeFormat(diffe)))}
     ### EAPs auslesen
          ret    <- rbind(ret, getMirtEAPs(runModelObj=runModelObj, qMatrix=qMatrix))
     ### Q3 auslesen
@@ -274,8 +274,8 @@ getMirtResults <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV) {
          #beg    <- Sys.time()
          #ret    <- rbind(ret, getTamQ3(runModelObj=runModelObj, leseAlles = leseAlles, shw1 = resItem[["shw1"]], Q3=Q3, q3MinObs=q3MinObs, q3MinType=q3MinType))
          #diffe  <- Sys.time() - beg
-         #if(as.numeric(diffe) > 0.2) {message(paste0("Getting Q3 statistic calling tam.modelfit from getTamQ3: ", timeFormat(diffe)))}
-         return(ret)}   
+         #if(as.numeric(diffe) > 0.2) {message(paste0("Getting Q3 statistic calling tam.modelfit from getTamQ3: ", eatTools::timeFormat(diffe)))}
+         return(ret)}
                
 getMirtItempars <- function(runModelObj, qL, qMatrix, leseAlles, software) {
       coefs <- coef(runModelObj, IRTpars = TRUE, printSE = TRUE) 
@@ -327,7 +327,7 @@ getMirtItempars <- function(runModelObj, qL, qMatrix, leseAlles, software) {
       
 getMirtWles <- function(runModelObj, qMatrix, omitWle) {
          if(omitWle == TRUE ) {return(NULL)}
-         if(ncol(qMatrix) ==2) {                                                ### fuer eindimensionale MOdelle funktion direkt aufrufen
+         if(ncol(qMatrix) ==2) {                                                ### fuer eindimensionale Modelle funktion direkt aufrufen
             wle  <- fscores(runModelObj,method="WLE", verbose=FALSE, full.scores.SE = TRUE)
          } else {                                                               ### fuer mehrdimensionale Modelle ueber batch-aufruf, um die konsole nicht mit verwirrenden mirt fehlermeldungen zu bombardieren
             wle  <- mirtWlesMultidim(runModelObj)
@@ -336,7 +336,12 @@ getMirtWles <- function(runModelObj, qMatrix, omitWle) {
          wleL <- reshape2::melt(data.frame(ID = ids, wle,stringsAsFactors = FALSE), id.vars = "ID",  na.rm=TRUE)
          if(nrow(wleL)>0) {
             dims <- colnames(qMatrix)[-1]
-            wleL[,"group"] <- dims[as.numeric(eatTools::removeNonNumeric(stringr::str_remove(as.character(wleL[,"variable"]), pattern = "^SE_")))]
+            dims1<- as.numeric(eatTools::removeNonNumeric(stringr::str_remove(as.character(wleL[,"variable"]), pattern = "^SE_")))
+            if(!any(is.na(dims1))) {
+               wleL[,"group"] <- dims[dims1]                                    ### in frueheren versionen funktionierte das, jetzt seltsamerweise nicht mehr 
+            } else {
+               wleL[,"group"] <- stringr::str_remove(as.character(wleL[,"variable"]), pattern = "^SE_")
+            }   
             wleL[,"derived.par"] <- car::recode(eatTools::halveString(as.character(wleL[,"variable"]), "_")[,2], "NA='est'; else = 'se'")
             res  <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "mirt", var1 = wleL[,"ID"], var2 = NA,  type = "indicator", indicator.group = "persons",  group = wleL[,"group"], par = "wle", derived.par = wleL[,"derived.par"], value = wleL[,"value"], stringsAsFactors = FALSE)
          } else {
@@ -344,31 +349,32 @@ getMirtWles <- function(runModelObj, qMatrix, omitWle) {
             res <- NULL
          }   
          return(res)}           
-         
+       
 
 mirtWlesMultidim <- function(m) {
     pfad     <- tempdir()
     sysInfo  <- Sys.info()
-    nams     <- sample(1:99999, size = 3, replace=FALSE)
-    filenam1 <- paste0("F", nams[1], ".rds")
-    filenam2 <- paste0("W", nams[2], ".rds")
-    filenam3 <- paste0("S", nams[3], ".R")
-    saveRDS(m, file = file.path(pfad, filenam1), compress="bzip2")
-    syn      <- suppressWarnings(c("library(mirt)", paste0("m <- readRDS(\"",normalizePath(file.path(pfad, filenam1), winslash = "/"),"\")"),  "wle  <- fscores(m,method=\"WLE\", verbose=FALSE, full.scores.SE = TRUE)",   paste0("saveRDS(wle, file = \"",normalizePath(file.path(pfad, filenam2), winslash = "/"),"\")")  ))
-    write(syn, file = file.path(pfad, filenam3), sep="\n")
+    filenam1 <- tempfile(fileext = ".rds") 
+    filenam2 <- tempfile(fileext = ".rds") 
+    filenam3 <- tempfile(fileext = ".R") 
+    filenam4 <- tempfile(fileext = ".sh") 
+    saveRDS(m, file =  filenam1, compress="bzip2")
+    syn      <- c("library(mirt)", paste0("m <- readRDS(\"",filenam1,"\")"), "wle  <- fscores(m,method=\"WLE\", verbose=FALSE, full.scores.SE = TRUE)", paste0("saveRDS(wle, file = \"",filenam2,"\")")  )
+    write(syn, file =  filenam3, sep="\n")
     setwd(pfad)
     if(sysInfo[["sysname"]] == "Linux") {
-       cat("#!/bin/bash\n",paste0( "R CMD BATCH --vanilla ",filenam3," syntax.Rout\n"), file = "run_analysis.sh")
-       Sys.chmod("run_analysis.sh", mode = "0755")                              ### macht die Datei ausfuehrbar
-       system("./run_analysis.sh")
+       cat("#!/bin/bash\n",paste0( "R CMD BATCH --vanilla ",filenam3," syntax.Rout\n"), file = filenam4)
+       Sys.chmod(filenam4, mode = "0755")                                      ### macht die Datei ausfuehrbar
+       system(filenam4)
     } else {
        rcmd<- file.path(Sys.getenv()[["R_HOME"]], "bin/x64/Rcmd.exe")           ### Pfad der 'rcmd' angeben
        bat <- c(substr(pfad, 1, 2), paste0("cd ", normalizePath (pfad), "\\"), paste0("CALL ", "\"",normalizePath(rcmd),"\" BATCH --vanilla ",filenam3," syntax.rout"), "exit")
        write(bat,file.path(pfad, "start.bat"), sep="\n")
        system(file.path(pfad, "start.bat"), intern=FALSE, show.output.on.console = FALSE, wait=TRUE, invisible = FALSE)
     }
-    wle <- readRDS(file.path(pfad, filenam2))
+    wle <- readRDS(filenam2)
     return(wle)} 
+
 
 getMirtPVs <- function ( runModelObj, qMatrix, omitPV) {
          if(omitPV == TRUE ) {return(NULL)}
@@ -387,7 +393,12 @@ getMirtEAPs <- function ( runModelObj, qMatrix) {
          id   <- attr(runModelObj, "personID")
          dims <- colnames(qMatrix)[-1]
          eapL <- reshape2::melt(data.frame(ID = id, eap,stringsAsFactors = FALSE), id.vars = "ID",  na.rm=TRUE)
-         eapL[,"group"] <- dims[as.numeric(eatTools::removeNonNumeric(stringr::str_remove(as.character(eapL[,"variable"]), pattern = "^SE_")))]
+         dims1<- as.numeric(eatTools::removeNonNumeric(stringr::str_remove(as.character(eapL[,"variable"]), pattern = "^SE_")))
+         if(!any(is.na(dims1))) {
+            eapL[,"group"] <- dims[dims1]
+         } else {
+            eapL[,"group"] <- stringr::str_remove(as.character(eapL[,"variable"]), pattern = "^SE_") |> unique()
+         }   
          eapL[,"derived.par"] <- car::recode(eatTools::halveString(as.character(eapL[,"variable"]), "_")[,2], "NA='est'; else = 'se'")
          res  <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "mirt", var1 = eapL[,"ID"], var2 = NA, type = "indicator", indicator.group = "persons", par = "eap", eapL[,c("group", "derived.par", "value")],stringsAsFactors = FALSE)
          return(res)}

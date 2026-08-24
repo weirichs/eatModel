@@ -9,7 +9,7 @@ the values are to be requested.}
 \usage{
 getTrafo(dataBase = "I:/Methoden/10_sonstige Materialien/trafo.rda",
          mode=c("paper","pc"), grade=c("primary", "secondary"),
-         subject = c("math", "deu", "eng", "frz", "bio", "che", "phy"),
+         subject = c("mat", "deu", "eng", "frz", "bio", "che", "phy"),
          domain = c("all", "GL", "ZO", "RF", "MS", "GM", "DHW", "ZA", "ME",
                     "FZ", "DZ", "lesen", "hoeren", "ortho", "sg",
                     "CE", "CF", "PE", "PF", "BE", "BF"),
@@ -94,14 +94,14 @@ A list with four objects.
 \item{info}{Character string with short information about refrence population}
 }
 \examples{
-trafoDB <- formals(getTrafo)$dataBase
-if (file.exists(trafoDB)) {
 # transformation rules for all domains subject deutsch, primary level
-primDeu <- getTrafo(dataBase = trafoDB, mode="paper", grade="primary", subject = "deu",
+primDeu <- getTrafo(mode="paper", grade="primary", subject = "deu",
            domain = "all", study = "vera")
 
 # transformation rules for all science domains
-secScien<- getTrafo(dataBase = trafoDB, mode="paper", grade="secondary", subject = c("bio", "che", "phy"),
+secScien<- getTrafo(mode="paper", grade="secondary", subject = c("bio", "che", "phy"),
            domain = "all", study = "bt")
 }
+\references{
+
 }

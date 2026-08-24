@@ -107,7 +107,7 @@ itemFromResPcmDifTam <- function(sel, pval, adb, sdb) {
 ### Funktion wird so oft ausgefuehrt, wie es Modelle gibt
 itemFromRes <- function ( resultsObj) {
      ### hier muss "rbind.fill" genommen werden, denn 1pl und 2pl Modelle unterscheiden sich in den Spalten (bei 2pl gibt es zusaetzliche Diskriminationsspalten)
-          res <- do.call(plyr::rbind.fill, by ( data = resultsObj, INDICES = resultsObj[,"model"], FUN = function ( mod ) {
+          res <- Filter(Negate(is.null), by ( data = resultsObj, INDICES =resultsObj[,"model"], FUN = function ( mod ) {
                  sel  <- mod[intersect( which(mod[,"par"] %in% c("est", "estSlope", "Nvalid", "itemP", "ptBis", "itemDiscrim", "offset")),which(mod[,"indicator.group"] == "items")),]
                  if(nrow(sel)==0) {
                      return(NULL)
@@ -120,9 +120,10 @@ itemFromRes <- function ( resultsObj) {
                      adb <- mod[intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")), which(mod[,"derived.par"] == "abs.dif.bound")),"value"]
                      sdb <- mod[intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")), which(mod[,"derived.par"] == "sig.dif.bound")),"value"]
                  }
-     ### ist es partial credit mit dif in tam? dann spezielle Auslesefunktion benutzen             
+     ### ist es partial credit mit dif in tam? dann spezielle Auslesefunktion benutzen
                  isPC <- length(grep("Cat2", sel[,"var2"])) > 0
                  soft <- unique(sel[,"source"])
+                 sel[,"isPC"] <- isPC
                  if(length(isDif)>0 && isPC && soft == "tam")  {
                      sel <- itemFromResPcmDifTam(sel, pval=pval, adb=adb, sdb=sdb)
                  }  else  {
@@ -141,18 +142,8 @@ itemFromRes <- function ( resultsObj) {
                         stopifnot(length( intersect(weg, forDif)) == 0 )
                         selForDif<- sel[forDif, ]
                         sel      <- sel[-c(weg, forDif) , ]
-                        sel      <- sel[which ( sel[,"par"] != "ptBis" ) , ] ### Hotfix: wenn DIF ausgegeben, wird keine ptBis berechnet
-                        selDIF   <- do.call("rbind", by(selForDif, INDICES = selForDif[,"group"], FUN = function ( gr ) {
-                                    res  <- reshape2::dcast ( gr , model+var1~par+derived.par, value.var = "value")
-                                    mat  <- lapply( vars, FUN = function ( v ) { grep(paste0("_",v,"_"), res[,"var1"])})
-                                    stopifnot (  all ( sapply(mat, length) == 1) )
-                                    res[unlist(mat),"item"]  <- vars
-                                    colnames(res) <- car::recode ( colnames(res) , "'est_infit'='infitDif'; 'est_se'='seDif'; 'est_NA'='estDif'")
-                                    res[,"absDif"]<- abs ( res[,"estDif"]  * 2 )
-                                    res[,paste("CI__", pval ,"__lb",sep="")] <- res[,"absDif"] - 2*abs(qnorm(0.5*(1-pval))) * res[,"seDif"]
-                                    res[,paste("CI__", pval ,"__ub",sep="")] <- res[,"absDif"] + 2*abs(qnorm(0.5*(1-pval))) * res[,"seDif"]
-                                    res  <- lord1980(dat=res, absDifCol="absDif", seDifCol="seDif", lbCol=paste("CI__",pval,"__lb",sep=""), ubCol=paste("CI__",pval,"__ub",sep=""), adb=adb, sdb=sdb)
-                                    return(res)}))
+                        sel      <- sel[which ( sel[,"par"] != "ptBis" ) , ]    ### Hotfix: wenn DIF ausgegeben, wird keine ptBis berechnet
+                        selDIF   <- reshapeForDIF(selForDif=selForDif, vars=vars, pval=pval, adb=adb, sdb=sdb)
                      }
                      sel  <- do.call(plyr::rbind.fill, by(sel, INDICES = sel[,"group"], FUN = function ( gr ) {
      ### erstmal ohne schulformspezifische p-Werte (die kommen spaeter dazu)
@@ -163,7 +154,7 @@ itemFromRes <- function ( resultsObj) {
                              if(length(grep("Cat2", colnames(res)))==0) {res <- adaptOutputForNonPCM(res)}
                              return(res)}))
                      if(length(isDif) > 0 && isPC == TRUE && soft == "conquest") {
-                        sel <- selDIF 
+                        sel <- selDIF
                      } else {
                         if(length(isDif) > 0) {
                            ciCo<- colnames(selDIF)[grep("^CI__", colnames(selDIF))]
@@ -173,16 +164,43 @@ itemFromRes <- function ( resultsObj) {
                      return(sel)
                  }
           }))
-     ### simplify and reshape ... die alte Funktion endete hier
-          if(length(grep("^Cat2", colnames(res)))>0) {                          ### das soll nur fuer partial credit stattfinden, aber nicht fuer pcm + dif + tam, das wird schon vorher abgefangen (hoffe ich)
-              cols <- grep("^Cat", colnames(res), value=TRUE, ignore.case=TRUE)
-              resL <- reshape2::melt(res, measure.vars = cols, na.rm=TRUE) |> tidyr::separate(col = "variable", into = c("category", "parameter", "crit")) |> suppressWarnings()
-              ind  <- which(resL[,"crit"] == "thurstone")
-              if(length(ind)>0) {resL[ind,"parameter"] <- ""}
-              res  <- reshape2::dcast(resL, ... ~ parameter+crit, value.var = "value")
-              colnames(res) <- eatTools::crop(eatTools::crop(colnames(res), "NA"), "_")
+     ### simplify and reshape (aber nur das, was PCM ist) ... die alte Funktion endete hier
+          res <- simplifyAndReshape(res=res)
+          return(res)}
+
+simplifyAndReshape <- function(res){
+          ispc<- sapply(res, FUN = function(x) {length(grep("^Cat2", colnames(x)))>0})
+          if(any(ispc)) {                                                       ### das soll nur fuer partial credit stattfinden, aber nicht fuer pcm + dif + tam, das wird schon vorher abgefangen (hoffe ich)
+             ind1<- which(ispc)
+             res <- do.call(plyr::rbind.fill, lapply(ind1, FUN = function(ii) {res[[ii]]}))
+             cols<- grep("^Cat", colnames(res), value=TRUE, ignore.case=TRUE)
+             resL<- reshape2::melt(res, measure.vars = cols, na.rm=TRUE) |> tidyr::separate(col = "variable", into = c("category", "parameter", "crit")) |> suppressWarnings()
+             ind2<- which(resL[,"crit"] == "thurstone")
+             if(length(ind2)>0) {resL[ind2,"parameter"] <- ""}
+             res <- reshape2::dcast(resL, ... ~ parameter+crit, value.var = "value")
+             colnames(res ) <- eatTools::crop(eatTools::crop(colnames(res), "NA"), "_")
+             if(!all(ispc)) {
+                res2<- do.call(plyr::rbind.fill, lapply(setdiff(1:length(ispc), ind1), FUN = function(ii) {res[[ii]]}))
+                res <- plyr::rbind.fill(res, res2)
+             }
+          } else {
+             res <- do.call(plyr::rbind.fill, res)
           }
-          return (res )}
+          return(res)}
+
+reshapeForDIF <- function(selForDif, vars, pval, adb, sdb) {
+          selDIF <- do.call("rbind", by(selForDif, INDICES = selForDif[,"group"], FUN = function ( gr ) {
+                    res  <- reshape2::dcast ( gr , model+var1~par+derived.par, value.var = "value")
+                    mat  <- lapply( vars, FUN = function ( v ) { grep(paste0("_",v,"_"), res[,"var1"])})
+                    stopifnot (  all ( sapply(mat, length) == 1) )
+                    res[unlist(mat),"item"]  <- vars
+                    colnames(res) <- car::recode ( colnames(res) , "'est_infit'='infitDif'; 'est_se'='seDif'; 'est_NA'='estDif'")
+                    res[,"absDif"]<- abs(res[,"estDif"] * 2 )
+                    res[,paste("CI__", pval ,"__lb",sep="")] <- res[,"absDif"] - 2*abs(qnorm(0.5*(1-pval))) * res[,"seDif"]
+                    res[,paste("CI__", pval ,"__ub",sep="")] <- res[,"absDif"] + 2*abs(qnorm(0.5*(1-pval))) * res[,"seDif"]
+                    res  <- lord1980(dat=res, absDifCol="absDif", seDifCol="seDif", lbCol=paste("CI__",pval,"__lb",sep=""), ubCol=paste("CI__",pval,"__ub",sep=""), adb=adb, sdb=sdb)
+                    return(res)}))
+          return(selDIF)}
 
 adaptOutputForNonPCM <- function(res){
        newNam <- eatTools::crop(eatTools::removePattern(colnames(res), "Cat1"), char="_") |> car::recode(recodes = "'offset'='estOffset'")
@@ -226,14 +244,13 @@ q3FromRes <- function(resultsObj, out = c("wide", "long"), triangular = FALSE){
 
 ### called by transformToBista() and other fromRes-functions  ------------------
 
-getIdVarName <- function(id, idVarName, verbose=TRUE){
-  if(length(id) == 0){
-    if(is.null(idVarName)) { new <- "idstud"} else { new <- idVarName}
-    if(verbose){warning(paste0("Cannot identify student identifier variable (possibly because 'resultsObj' was created by an older version of 'eatModel'). student id variable will be defaulted to '",
-                               new, "'."))}
-    id <- new
-  }
-  return(id)}
+getIdVarName <- function ( id, idVarName, verbose=TRUE) {
+          if (length( id ) == 0 ) {
+              if ( is.null(idVarName)) { new <- "idstud"} else { new <- idVarName}
+              if(verbose){cli::cli_warn(c("Cannot identify student identifier variable. Possible reasons:", "x"="'resultsObj' was created by an older version of 'eatModel'", "x"="'mirt' was used.", "i" = paste0("Solution: student id variable will be defaulted to '",new,"'.")))}
+              id <- new
+          }
+          return(id)}
 
 ### not called  ----------------------------------------------------------------
 

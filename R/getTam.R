@@ -9,9 +9,9 @@ getTamResults <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV, nplau
          varName<- colnames(qMatrix)[1]                                         ### untere Zeile: Standardfehler auslesen, falls vorhanden
          if( omitRegr == FALSE && !inherits(runModelObj, "tamBayes")) {
              beg <- Sys.time()
-             txt <- capture.output ( regr <- tam.se(runModelObj))               ### Namen der Regressoren stehen nicht im tam-Output 'reg' drin, nur Ziffern
+             txt <- capture.output (regr <- tam.se(runModelObj))                ### Namen der Regressoren stehen nicht im tam-Output 'reg' drin, nur Ziffern
              diffe <- Sys.time() - beg
-             if(as.numeric(diffe) > 0.2) {message(paste0("Getting standard errors with the tam.se function: ", timeFormat(diffe)))}
+             if(as.numeric(diffe) > 0.2) {message(paste0("Model '",attr(runModelObj, "defineModelObj")[["analysis.name"]], "': Getting standard errors with the tam.se function: ", timeFormat(diffe)))}
              stopifnot ( nrow(regr$beta) == ncol(attr(runModelObj, "Y") )+1)    ### die Namen muessen daher jetzt wieder aus den Spaltennamen der Y-Matrix rekonstruiert werden
              rownames(regr$beta) <- c("(Intercept)", colnames(attr(runModelObj, "Y")))
          } else {
@@ -30,11 +30,11 @@ getTamResults <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV, nplau
          ret    <- rbind(ret, getTam2plDiscrim(runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles, regr = regr, omitRegr=omitRegr))
     ### Infit auslesen
          beg    <- Sys.time()
-         if(inherits(try(ret    <- rbind(ret, getTamInfit(runModelObj=runModelObj, qL=qL, qMatrix = qMatrix, leseAlles = leseAlles, omitFit = omitFit, seed=seed)), silent=TRUE ),"try-error"))  {
-            message("Error in the computation of infit values with tam.fit. This should only occur for DIF estimation in partial credit models. Infit estimation is skipped.")
+         if(inherits(try(ret <- rbind(ret, getTamInfit(runModelObj=runModelObj, qL=qL, qMatrix = qMatrix, leseAlles = leseAlles, omitFit = omitFit, seed=seed)), silent=TRUE ),"try-error"))  {
+            cli::cli_warn(c("Error in the computation of infit values with 'tam.fit'. Possible reasons:", "x"="DIF estimation in partial credit models using TAM", "x"=paste0("irtmodel = '",attr(runModelObj, "defineModelObj")[["irtmodel"]],"' was used even though the data are dichotomous."), "i" = "Solution: Infit estimation is skipped."))
          } else {
             diffe <- Sys.time() - beg
-            if(as.numeric(diffe) > 0.2) {message(paste0("Getting infit parameters calling tam.fit from getTamInfit: ", timeFormat(diffe)))}
+            if(as.numeric(diffe) > 0.2) {message(paste0("Model '",attr(runModelObj, "defineModelObj")[["analysis.name"]], "': Getting infit parameters calling tam.fit from getTamInfit: ", timeFormat(diffe)))}
          }
     ### Populationsparameter auslesen
          ret    <- rbind(ret, getTamPopPar(runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles))
@@ -46,7 +46,7 @@ getTamResults <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV, nplau
          beg    <- Sys.time()
          ret    <- rbind(ret, getTamWles(runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles, omitWle = omitWle))
          diffe <- Sys.time() - beg
-         if(as.numeric(diffe) > 0.2) {message(paste0("Getting WLEs calling tam.wle from getTamWles: ", timeFormat(diffe)))}
+         if(as.numeric(diffe) > 0.2) {message(paste0("Model '",attr(runModelObj, "defineModelObj")[["analysis.name"]], "': Getting WLEs calling tam.wle from getTamWles: ", timeFormat(diffe)))}
     ### PVs auslesen
          beg    <- Sys.time()
          tamArg <- as.list(match.call(definition = getTamResults))
@@ -60,14 +60,14 @@ getTamResults <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV, nplau
          retPVs <- getTamPVs ( runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles, omitPV = omitPV, pvMethod = pvMethod, tam.pv.arguments = tamarg)
          ret    <- rbind(ret, retPVs)
          diffe <- Sys.time() - beg
-         if(as.numeric(diffe) > 0.2) {message(paste0("Getting PVs calling tam.pv from getTamPVs: ", timeFormat(diffe)))}
+         if(as.numeric(diffe) > 0.2) {message(paste0("Model '",attr(runModelObj, "defineModelObj")[["analysis.name"]], "': Getting PVs calling tam.pv from getTamPVs: ", timeFormat(diffe)))}
     ### EAPs auslesen
          ret    <- rbind(ret, getTamEAPs(runModelObj=runModelObj, qMatrix=qMatrix, leseAlles = leseAlles))
     ### Q3 auslesen
          beg    <- Sys.time()
          ret    <- rbind(ret, getTamQ3(runModelObj=runModelObj, leseAlles = leseAlles, shw1 = resItem[["shw1"]], Q3=Q3, q3MinObs=q3MinObs, q3MinType=q3MinType))
          diffe  <- Sys.time() - beg
-         if(as.numeric(diffe) > 0.2) {message(paste0("Getting Q3 statistic calling tam.modelfit from getTamQ3: ", timeFormat(diffe)))}
+         if(as.numeric(diffe) > 0.2) {message(paste0("Model '",attr(runModelObj, "defineModelObj")[["analysis.name"]], "': Getting Q3 statistic calling tam.modelfit from getTamQ3: ", timeFormat(diffe)))}
          return(ret)}
 
 ### ----------------------------------------------------------------------------
@@ -110,6 +110,10 @@ getTamItempars_conv <- function(runModelObj, qL, qMatrix) {
                  ttLong<- data.frame(item = rownames(tt), tt, stringsAsFactors = FALSE) |> reshape2::melt(id.vars = "item", na.rm=TRUE, variable.name = "var2", value.name = "thurstone")
                  items <- eatTools::crop(stringr::str_remove(rownames(runModelObj[["xsi"]]), pattern="step[:digit:]{1}$|Cat[:digit:]{1}$"), "_")
                  var2  <- car::recode(eatTools::crop(stringr::str_remove(rownames(runModelObj[["xsi"]]), pattern = items), "_"), "''=NA")
+                 if(all(is.na(var2))) {
+                    cli::cli_warn(c("Cannot identify item category from 'xsi'-slot of the fitted TAM object. ",  "x"=paste0("Possible reason: irtmodel = '",attr(runModelObj, "defineModelObj")[["irtmodel"]],"' was used even though the data are dichotomous."), "i" = "Solution: item category will be defaulted to 'Cat1' for all items."))
+                    var2 <- "Cat1"
+                 }
               } else {
                  items <- rownames(runModelObj[["xsi"]])
                  var2  <- "Cat1"
@@ -402,19 +406,17 @@ getTamEAPs <- function ( runModelObj, qMatrix, leseAlles = leseAlles) {
 ### ----------------------------------------------------------------------------
 
 getTamQ3 <- function(runModelObj, leseAlles, shw1, Q3, q3MinObs, q3MinType){
-  if(leseAlles == FALSE || Q3 == FALSE) {return(NULL)}
-  nObs <- NULL
-    if ( q3MinObs > 1 ) {
-      nObs <- nObsItemPairs ( responseMatrix = runModelObj[["resp"]], q3MinType = q3MinType )
-    }
-    mat  <- tam.modelfit ( tamobj = runModelObj, progress = FALSE )
-    matL <- reshapeQ3 (mat = mat$Q3.matr, q3MinObs = q3MinObs, nObs = nObs)
-    if( nrow(matL)>0) {
-      res  <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = matL[,"Var1"], var2 = matL[,"Var2"] , type = "fixed",indicator.group = "items", group = paste(names(table(shw1[,"group"])), collapse="_"), par = "q3", derived.par = NA, value = matL[,"value"] , stringsAsFactors = FALSE)
-    }  else  {
-      res  <- NULL
-    }
-  return(res)}
+         if(leseAlles == FALSE || Q3 == FALSE) {return(NULL)}
+         nObs <- NULL                                                           ### untere Zeile: paarweise Anzahl Beobachtungen je Itempaar
+         if(q3MinObs > 1 ) {nObs<- fast_pairwise_tables(runModelObj[["resp"]])}
+         mat  <- tam.modelfit(tamobj = runModelObj, progress = FALSE )
+         matL <- reshapeQ3(mat = mat$Q3.matr, q3MinObs = q3MinObs, q3MinType = q3MinType, nObs = nObs)
+         if( nrow(matL)>0) {
+             res  <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = matL[,"Var1"], var2 = matL[,"Var2"] , type = "fixed",indicator.group = "items", group = paste(names(table(shw1[,"group"])), collapse="_"), par = "q3", derived.par = NA, value = matL[,"value"] , stringsAsFactors = FALSE)
+         }  else  {
+             res  <- NULL
+         }
+         return(res)}
 
 ### Hilfsfunktion, die Zeilen findet, wo ein Item Teil des Parameternamens ist
 findItemRows <- function(qMatrix, dataFrame, colQ, colDF, index2 = NULL) {

@@ -320,7 +320,7 @@ createNamenItemsWeg <- function (crit, remove) {
   return(list(niw=niw, mess=mess))}
 
 ### Hilfsfunktion fuer defineModel
-checkItemConsistency <- function(dat, allNam, remove.missing.items, remove.insuff.pattern, verbose, removeMinNperItem, minNperItem, remove.constant.items, model.statement, software, renam){
+checkItemConsistency <- function(dat, allNam, remove.missing.items, remove.insuff.pattern, verbose, removeMinNperItem, minNperItem, remove.constant.items, model.statement, software, renam, irtmodel){
           namen.items.weg <- NULL                                               ### initialisieren
           if(length(allNam[["DIF.var"]])>0) {                                   ### missings auf DIF-variable muessen jetzt schon raus, sonst funktionieren die spaeteren checks nicht
              nMis <- length(which(is.na(dat[,allNam[["DIF.var"]]])))
@@ -394,6 +394,8 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, remove.insuf
                 if(remove.insuff.pattern) {namen.items.weg <- c(namen.items.weg, rem)}
              }
              if(model.statement == "item" && software=="conquest") { warning("Sure you want to use 'model statement = item' even when items are not dichotomous?")}
+          } else {
+             if(software != "conquest" && irtmodel %nin% c("1PL", "2PL","3PL", "2PL.groups")) {cli::cli_warn(c("Possible inconsistency between the data and the chosen model. It is possible that the process will crash at the latest when the parameterized models are re-read and further processed.", "x"="Data are dichotomous.", "x"=paste0("'irtmodel' is '",irtmodel,"'"))) }
           }
           return(list(dat=dat,allNam=allNam, namen.items.weg=unique(namen.items.weg)))}
 

@@ -1,10 +1,7 @@
-getTrafo <- function(dataBase = "I:/Methoden/10_sonstige Materialien/trafo.rda", mode=c("paper","pc"), grade=c("primary", "secondary"), subject = c("math", "deu", "eng", "frz", "bio", "che", "phy"),
+getTrafo <- function(dataBase = "I:/Methoden/10_sonstige Materialien/trafo.rda", mode=c("paper","pc"), grade=c("primary", "secondary"), subject = c("mat", "deu", "eng", "frz", "bio", "che", "phy"),
             domain = c("all", "GL", "ZO", "RF", "MS", "GM", "DHW", "ZA", "ME", "FZ", "DZ", "lesen", "hoeren", "ortho", "sg", "CE", "CF", "PE", "PF", "BE", "BF"),
             study = c("bt", "vera")) {
-    if(inherits(dataBase, "character")) {
-       if(!file.exists(dataBase)) {stop(paste0("Cannot find transformation database '", dataBase, "'."), call. = FALSE)}
-       load(dataBase)
-    } else {trafo <- dataBase}
+    if(inherits(dataBase, "character")) {load(dataBase)} else {trafo <- dataBase}
     mode   <- match.arg(arg=mode, choices=eval(formals(getTrafo)[["mode"]]))
     grade  <- match.arg(arg=grade, choices=eval(formals(getTrafo)[["grade"]]))
     subject<- match.arg(arg=subject, choices=eval(formals(getTrafo)[["subject"]]), several.ok = TRUE)
@@ -29,6 +26,7 @@ getTrafo <- function(dataBase = "I:/Methoden/10_sonstige Materialien/trafo.rda",
        if(length(dom3)>0) {
           ret    <- lapply(subj2, FUN = function(su) {
                     extr <- intersect(dom3, names(trafo[[mode]][[grade]][[su]][[study]]))
+                    if(length(extr) == 0) {return(NULL)}
                     if(length(extr) > 0) {
                        rp <- do.call("rbind", lapply(extr, FUN = function(e) {trafo[[mode]][[grade]][[su]][[study]][[e]][["refPop"]]}))
                        cts<- do.call("c", lapply(extr, FUN = function(e) {trafo[[mode]][[grade]][[su]][[study]][[e]][["cuts"]]}))
@@ -36,6 +34,7 @@ getTrafo <- function(dataBase = "I:/Methoden/10_sonstige Materialien/trafo.rda",
                        inf<- do.call("c", lapply(extr, FUN = function(e) {trafo[[mode]][[grade]][[su]][[study]][[e]][["info"]]}))
                     }
                     return(list(refPop=rp, cuts = cts, anchor = anc, info=inf))})
+          ret    <- ret[!vapply(ret, is.null, logical(1))]
           refPop <- do.call("rbind", lapply(ret, FUN = function(r) {r[["refPop"]]}))
           cuts   <- do.call("c", lapply(ret, FUN = function(r) {r[["cuts"]]}))
           anchor <- do.call("rbind", lapply(ret, FUN = function(r) {r[["anchor"]]}))
