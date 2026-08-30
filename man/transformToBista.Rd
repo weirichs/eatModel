@@ -108,7 +108,7 @@ performed according to the following formula:
 where \eqn{m_{ref}} is the empirical mean of the reference population, \eqn{sd_{ref}}
 is the empirical standard deviation of the reference population, \eqn{m_{refTF}} is
 the transformed mean on the Bista metric of the reference population (usually 500),
-and \eqn{sd_{ref}} is the transformed standard deviation on the Bista metric of the
+and \eqn{sd_{refTF}} is the transformed standard deviation on the Bista metric of the
 reference population (usually 100). In the partial credit model, \eqn{\beta_{625}}
 equals the thurstonian threshold of the step parameter according to a probabiliy
 level of .625.

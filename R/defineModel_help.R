@@ -176,11 +176,11 @@ prepEstSlopegroupsTAM <- function(esg, allNam){
        return(list(esg=esg, esgNm=esgNm))}
 
 ### ----------------------------------------------------------------------------
-
 prepAnchorTAM <- function (dfm, skeleton = NULL) {                              ### dfm = defineModelObject
         ank <- NULL                                                             ### initialisieren
-        if(!is.null(dfm[["anchor"]][["ank"]])) {
-            ank         <- dfm[["anchor"]][["ank"]]
+        if(!is.null(dfm[["anchor"]][["ank"]])) {                                ### untere Zeile: hotfix: entfernt konstante spalten aus data.frame. Die koennen vorkommen,
+            ank         <- dfm[["anchor"]][["ank"]]                             ### wenn noch eine konstante Spalte fuer die Dimension drin ist
+            ank         <- ank[,!apply(ank, MARGIN = 2, function(x) max(x, na.rm = TRUE) == min(x, na.rm = TRUE))]
             allNam      <- dfm[["anchor"]][["allNam"]]
             if(ncol(ank) != 2 && dfm[["irtmodel"]] %nin% c("PCM", "GPCM", "GPCM.groups")) {stop("Anchor parameter frame must have two columns for non-PCM models without specifying item and/or domain column.")}
             notInData   <- setdiff(ank[,1], allNam[["variablen"]])              ### Untere Zeile: Wichtig! Sicherstellen, dass Reihenfolge der Items in Anker-Statement der Reihenfolge im datensatz entspricht
@@ -198,7 +198,6 @@ prepAnchorTAM <- function (dfm, skeleton = NULL) {                              
             }
         }
         return(ank)}
-
 
 ### ----------------------------------------------------------------------------
 
@@ -283,23 +282,30 @@ return(string)}
 
 ### ----------------------------------------------------------------------------
 
+recodeNULL <- function(x) {
+              if(is.null(x)) {return(eatTools::cleanifyString(tempfile(pattern="", tmpdir = "")))}
+              return(x)}
+
 anker <- function(lab, prm, qMatrix, domainCol, itemCol, valueCol, catCol)  {
                   stopifnot(ncol(lab)==2)
                   if(!ncol(prm) == 2 ) {                                        ### wenn itemliste nicht unique ... 'domain'-Spalte kann ausgelassen werden
-                     if(is.null(itemCol) || is.null(valueCol))  { stop("If anchor parameter frame has more than two columns, 'itemCol' and 'valueCol' must be specified.\n")}
+                     if(is.null(itemCol) || is.null(valueCol))  {stop("If anchor parameter frame has more than two columns, 'itemCol' and 'valueCol' must be specified.\n")}
                      allVars <- list(domainCol = domainCol, itemCol=itemCol, valueCol=valueCol, catCol=catCol)
                      allNams <- lapply(allVars, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = prm, variable=ii)})
                      notIncl <- setdiff ( colnames(qMatrix)[-1], prm[,allNams[["domainCol"]]])
                      if(length(notIncl) > 0 && !is.null(allNams[["domainCol"]]) ) {stop(paste ( "Q matrix contains domain(s) ",paste("'",paste(notIncl, collapse="', '"),"'",sep="")," which are not included in the '",allNams[["domainCol"]],"' column of the anchor parameter frame.\n",sep=""))}
-                     weg     <- setdiff ( unique(prm[,allNams[["domainCol"]]]), colnames(qMatrix)[-1])
+                     weg     <- setdiff(unique(prm[,allNams[["domainCol"]]]), colnames(qMatrix)[-1])
                      if(length(weg) > 0 ) {
-                        ind <- eatTools::whereAre ( weg, prm[,allNams[["domainCol"]]], verbose=FALSE)
+                        ind  <- eatTools::whereAre(weg, prm[,allNams[["domainCol"]]], verbose=FALSE)
                         cat(paste("Remove ",length(ind)," rows from the anchor parameter frame which do not belong to any of the specified domains in the Q matrix.\n",sep=""))
-                        prm <- prm[-ind,]
+                        prm  <- prm[-ind,]
                      }
                      prm     <- prm[,c(allNams[["itemCol"]], allNams[["valueCol"]], allNams[["catCol"]], allNams[["domainCol"]])]
+                     altneu  <- data.frame(alt = c(recodeNULL(allNams[["itemCol"]]), recodeNULL(allNams[["valueCol"]]), recodeNULL(allNams[["catCol"]]), recodeNULL(allNams[["domainCol"]])),  neu = c("item", "parameter", "category", "domain"), stringsAsFactors = FALSE)
+                     colnames(prm) <- eatTools::recodeLookup(colnames(prm), altneu)
+                  } else {
+                     colnames(prm) <- c("item", "parameter")
                   }
-                  colnames(prm) <- c("item", "parameter", "category", "domain")[1:ncol(prm)]
                   if("category" %in% colnames(prm)) {                           ### wenn es die Spalte "category" gibt, darf sie nur Werte enthalten, die "Cat1", "Cat2", ... lauten
                      if(!all(unique(prm[,"category"]) %in% paste0("Cat", 1:9))) {stop(paste0("Invalid values in 'category' column: '",paste( setdiff(unique(prm[,"category"]), paste0("Cat", 1:9)), collapse="', '"), "'"))}
                   }
@@ -315,6 +321,7 @@ anker <- function(lab, prm, qMatrix, domainCol, itemCol, valueCol, catCol)  {
                   resT<- eatTools::mergeAttr(lab, prm, by = "item", sort = FALSE, all = FALSE, setAttr = FALSE, unitName = "item", xName = "item response data", yName = "anchor list", verbose = c("match", "unique"))
                   res <- resT |> dplyr::arrange(dplyr::across(tidyselect::all_of(intersect(c("itemNr", "category"), names(resT))))) |> dplyr::select(-tidyselect::any_of("item"))
                   return(list ( resConquest = res, resTam = resT[,-2]))}
+
 
 ### ----------------------------------------------------------------------------
 
