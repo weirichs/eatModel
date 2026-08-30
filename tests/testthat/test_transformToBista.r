@@ -54,6 +54,8 @@ test_that("tf3ab", {
   expect_true(all.equal(tfRef$linkingErrors , tfRef.neu$linkingErrors))
   expect_true(compareObj(tfRef$refPop , tfRef.neu$refPop, by="domain"))
   expect_true(compareObj(tfRef$means , tfRef.neu$means , by=c("model", "domain")))
+  expect_true(all(c("focusMean", "focusSD") %in% colnames(tfRef.neu$means)))
+  expect_false(anyNA(tfRef.neu$means[,c("focusMean", "focusSD")]))
 })
 
 # load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/tf_example4.rda"))
@@ -113,6 +115,7 @@ test_that("2PL transformation to 62.5% respects software parameterization", {
   # TAM stores the 2PL difficulty in the slope-scaled logit, so the whole
   # threshold expression has to be divided by the slope.
   tam <- suppressWarnings(transformToBista(makeEq("tam"), refPop = refPop, cuts = cuts, vera = FALSE, idVarName = "id"))
+  expect_true(all(c("focusMean", "focusSD") %in% colnames(tam$means)))
   expect_equal(tam$itempars$estTransf625, with(tam$itempars, (estTransf + logit625) / estSlope), tolerance = 1e-10)
   pTam <- with(tam$itempars, plogis(estSlope * estTransf625 - estTransf))
   expect_equal(pTam, rep(0.625, 2), tolerance = 1e-10)
@@ -120,6 +123,7 @@ test_that("2PL transformation to 62.5% respects software parameterization", {
   # mirt stores the 2PL difficulty on the theta scale; only the .625 logit
   # offset is divided by the slope.
   mirt <- suppressWarnings(transformToBista(makeEq("mirt"), refPop = refPop, cuts = cuts, vera = FALSE, idVarName = "id"))
+  expect_true(all(c("focusMean", "focusSD") %in% colnames(mirt$means)))
   expect_equal(mirt$itempars$estTransf625, with(mirt$itempars, estTransf + logit625 / estSlope), tolerance = 1e-10)
   pMirt <- with(mirt$itempars, plogis(estSlope * (estTransf625 - estTransf)))
   expect_equal(pMirt, rep(0.625, 2), tolerance = 1e-10)
