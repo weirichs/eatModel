@@ -38,40 +38,43 @@ createLinkingErrorObject <- function (itempars, years) {
 ### ----------------------------------------------------------------------------
 
 createItemVeraObj <- function(itempars, roman, results, q3bound){
-  pCols      <- colnames(itempars)[grep("^itemP", colnames(itempars))]
-  allCols    <- na.omit(match ( c("dimension","item", pCols, "itemDiscrim", "estTransf", "infit", "estTransfBista", "traitLevel"), colnames(itempars)))
-  itemVera   <- itempars[,allCols]
-  colnames(itemVera) <- car::recode ( colnames(itemVera), "'dimension'='domain'; 'item'='iqbitem_id'; 'itemDiscrim'='trennschaerfe'; 'estTransf'='logit'; 'estTransfBista'='bista'; 'traitLevel'='kstufe'")
-  colnames(itemVera)[match(pCols, colnames(itemVera))] <- paste0("lh", eatTools::removePattern ( string = pCols, pattern = "^itemP"))
-  if ( roman == TRUE ) {
-    if (!all(itemVera[,"kstufe"] %in% c("1a", "1b", 1:5))) {stop(paste("Competence levels do not match allowed values. '1a', '1b', '1', '2', '3', '4', '5' is allowed. '",paste(names(table(itemVera[,"kstufe"])), collapse = "', '"),"' was found.\n",sep=""))}
-    itemVera[,"kstufe"] <- car::recode (itemVera[,"kstufe"], "'1a'='Ia'; '1b'='Ib'; '1'='I'; '2'='II'; '3'='III'; '4'='IV'; '5'='V'")
-  }
-  if ( length ( unique ( itemVera[,"iqbitem_id"])) != length ( itemVera[,"iqbitem_id"]) ) {
-    cat("Found duplicated entries in 'item-ID' column. This should only occur for subject 'math' in grade 3.\n")
-    tab  <- table(itemVera[,c("domain", "iqbitem_id")])
-    if ( !"GL" %in% rownames(tab)) {
-      cat("Cannot find 'global' entry in the 'domain' column. Cancel reshaping.\n")
-    }  else  {
-      if ( !sum(tab[which(rownames(tab) == "GL"),]) == ncol(tab)) {
-        cat("Found items without values on the 'global' domain. Cancel reshaping.\n")
-      }  else  {
-        if ( !all(colSums(tab) == 2) ) {
-          cat("Found items which do not have one 'global' and one domain-specific parameter. Cancel reshaping.\n")
-        }  else  {
-          itemVera[,"dummy"] <- car::recode ( itemVera[,"domain"], "'GL'='GL'; else = 'domain'")
-          colsValid <- c("lh", "trennschaerfe", "logit", "infit", "bista", "kstufe")
-          colsValid <- colsValid[which(colsValid %in% colnames(itemVera))]
-          long      <- reshape2::melt ( itemVera, id.vars = c("iqbitem_id", "dummy"), measure.vars = colsValid, na.rm=TRUE)
-          itemVera  <- suppressWarnings(eatTools::asNumericIfPossible(reshape2::dcast ( long , iqbitem_id ~ dummy + variable, value.var = "value"), force.string = FALSE))
-        }
-      }
-    }
-  }
-  if ( "q3" %in% results[,"par"]) {
-    itemVera   <- addQ3(dfr=itemVera, results=results, q3bound=q3bound)
-  }
-  return(itemVera) }
+       pCols      <- colnames(itempars)[grep("^itemP", colnames(itempars))]
+       allCols    <- na.omit(match ( c("dimension","item", pCols, "itemDiscrim", "estTransf", "infit", "estTransfBista", "traitLevel"), colnames(itempars)))
+       itemVera   <- itempars[,allCols]
+       colnames(itemVera) <- car::recode ( colnames(itemVera), "'dimension'='domain'; 'item'='iqbitem_id'; 'itemDiscrim'='trennschaerfe'; 'estTransf'='logit'; 'estTransfBista'='bista'; 'traitLevel'='kstufe'")
+       colnames(itemVera)[match(pCols, colnames(itemVera))] <- paste0("lh", eatTools::removePattern ( string = pCols, pattern = "^itemP"))
+       if ( roman == TRUE ) {                                                   ### sollen roemische Zahlen fuer Kompetenzstufen verwendet werden?
+            if (!all(itemVera[,"kstufe"] %in% c("1a", "1b", 1:5))) {stop(paste("Competence levels do not match allowed values. '1a', '1b', '1', '2', '3', '4', '5' is allowed. '",paste(names(table(itemVera[,"kstufe"])), collapse = "', '"),"' was found.\n",sep=""))}
+            itemVera[,"kstufe"] <- car::recode (itemVera[,"kstufe"], "'1a'='Ia'; '1b'='Ib'; '1'='I'; '2'='II'; '3'='III'; '4'='IV'; '5'='V'")
+       }
+    ### jetzt den scheiss reshapen fuer vera-3 mathe, wenn es separate werte fuer global- und domaenenspezifische modelle gibt
+       if ( length ( unique ( itemVera[,"iqbitem_id"])) != length ( itemVera[,"iqbitem_id"]) ) {
+            cat("Function 'createItemVeraObj': Found duplicated entries in 'item-ID' column. This should only occur for subject 'math' in grade 3 or partial credit models.\n")
+    ### vorher rauskriegen, ob jedes item nur zu einer domaene und einem globalmodell gehoert, dann 'domain' umbenennen, um NAs im Ergebnis zu vermeiden
+            tab  <- table(itemVera[,c("domain", "iqbitem_id")])
+            if ( !"GL" %in% rownames(tab)) {
+                 cat("Cannot find 'global' entry in the 'domain' column. Cancel reshaping.\n")
+            }  else  {
+                 if ( !sum(tab[which(rownames(tab) == "GL"),]) == ncol(tab)) {  ### hat jedes Item einen Wert auf 'global'?
+                     cat("Found items without values on the 'global' domain. Cancel reshaping.\n")
+                 }  else  {
+                     if ( !all(colSums(tab) == 2) ) {
+                         cat("Found items which do not have one 'global' and one domain-specific parameter. Cancel reshaping.\n")
+                     }  else  {
+                         itemVera[,"dummy"] <- car::recode ( itemVera[,"domain"], "'GL'='GL'; else = 'domain'")
+                         colsValid <- c("lh", "trennschaerfe", "logit", "infit", "bista", "kstufe")
+                         colsValid <- colsValid[which(colsValid %in% colnames(itemVera))]
+                         long      <- reshape2::melt ( itemVera, id.vars = c("iqbitem_id", "dummy"), measure.vars = colsValid, na.rm=TRUE)
+                         itemVera  <- eatTools::asNumericIfPossible(reshape2::dcast ( long , iqbitem_id ~ dummy + variable, value.var = "value"), force.string = FALSE) |> suppressWarnings()
+                     }
+                 }
+            }
+       }
+    ### jetzt die q3-Werte dranmergen
+       if ( "q3" %in% results[,"par"]) {
+            itemVera   <- addQ3(dfr=itemVera, results=results, q3bound=q3bound)
+       }
+       return(itemVera) }
 
 ### called by createItemVeraObj() ----------------------------------------------
 
@@ -193,7 +196,7 @@ transformPersonParameter <- function(cutsMis, pv, cuts, mat1, isPCM, equatingLis
           pv[,"linkingErrorTransfBista"] <- if(length(leTransf)==0) {NA_real_} else {leTransf}
        }
        ori <- colnames(pv)                             ### nur wenn untere Bedingung == TRUE, gibt es das Objekt 'le', das gemergt werden soll
-       if(cutsMis == FALSE && !is.null ( equatingList[["items"]]) && exists("le", inherits = FALSE) ) {
+       if(cutsMis == FALSE && !is.null(equatingList[["items"]]) && !is.null(le)) {
           pv  <- eatTools::mergeAttr ( pv, le, by = "traitLevel", sort = FALSE, all.x = TRUE, all.y = FALSE, setAttr = FALSE, unitName = "trait levels", xName = "plausible values", yName = "linking error list", verbose = "match")
           pv  <- pv[,c(ori, "linkingErrorTraitLevel")]
        }
