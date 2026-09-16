@@ -32,9 +32,14 @@ A data frame containing all variables necessary for analysis.
 }
   \item{items}{
 Names or column numbers of variables with item responses. Item response values must
-be numeric (i.e. 0, 1, 2, 3 ... ). Character values (i.e. A, B, C ... or a, b, c, ...) 
-are not allowed. Class of item columns are expected to be numeric or integer. 
-Columns of class \code{character} will be transformed. 
+be numeric (i.e. 0, 1, 2, 3 ... ). Character values (i.e. A, B, C ... or a, b, c, ...)
+are not allowed. Class of item columns are expected to be numeric or integer.
+Columns of class \code{character} will be transformed. If a ``model split'' was
+previously executed on items and the object created by that operation is passed
+here as an argument to \code{splittedModels}, the \code{items} argument is ignored
+here, even if it is specified by the user. The reason for this is that the selection
+of items is already defined by the \code{splittedModels} argument. However, this does
+not apply if the ``model split'' refers only to person groups.
 }
   \item{id}{
 Name or column number of the identifier (ID) variable.

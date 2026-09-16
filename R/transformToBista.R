@@ -213,4 +213,10 @@ generateOrCheckRefPop <- function (equatingList, refPop, dims, mods, isRunM, id,
        } else {
            if ( ncol ( refPop) != 6 ) { stop ( "Invalid 'refPop'.\n") }
        }
+    ### in der vorletzten Spalte werden Werte um die 500 erwartet, in der letzten Spalte Werte um die 100 ... wenn das nicht so ist, gibt es eine kleine Warnung
+       r1 <- sort(range(refPop[,ncol(refPop)-1], na.rm=TRUE))
+       r2 <- sort(range(refPop[,ncol(refPop)], na.rm=TRUE))
+       if(min(r1) < 400 || max(r1) > 600) {cli::cli_warn(c("'refPop': Unexpected values for the the transformed mean on the Bista metric of the reference population.", "i"="Value expected: 500", "x"=paste0("Value(s) found: ",paste( unique(round(refPop[,ncol(refPop)-1], digits = 2)), collapse= ", ")))) }
+       if(min(r1) < 50 || max(r1) > 150) {cli::cli_warn(c("'refPop': Unexpected values for the the transformed standard deviation on the Bista metric of the reference population.", "i"="Value expected: 100", "x"=paste0("Value(s) found: ",paste( unique(round(refPop[,ncol(refPop)], digits = 2)), collapse= ", ")))) }
        return(refPop)}
+
