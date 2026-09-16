@@ -21,7 +21,7 @@ call runModel with the argument returned by defineModel."><meta property="og:ima
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">eatModel</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.10.39</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.10.40</span>
       </span>
     </div>
 
@@ -92,7 +92,12 @@ call <code><a href="runModel.html">runModel</a></code> with the argument returne
 <dd><p>Names or column numbers of variables with item responses. Item response values must
 be numeric (i.e. 0, 1, 2, 3 ... ). Character values (i.e. A, B, C ... or a, b, c, ...)
 are not allowed. Class of item columns are expected to be numeric or integer.
-Columns of class <code>character</code> will be transformed.</p></dd>
+Columns of class <code>character</code> will be transformed. If a “model split” was
+previously executed on items and the object created by that operation is passed
+here as an argument to <code>splittedModels</code>, the <code>items</code> argument is ignored
+here, even if it is specified by the user. The reason for this is that the selection
+of items is already defined by the <code>splittedModels</code> argument. However, this does
+not apply if the “model split” refers only to person groups.</p></dd>
 
   <dt id="arg-id">id<a class="anchor" aria-label="anchor" href="#arg-id"></a></dt>
 <dd><p>Name or column number of the identifier (ID) variable.</p></dd>
