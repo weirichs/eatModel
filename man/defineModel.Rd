@@ -9,7 +9,7 @@ call \code{\link{runModel}} with the argument returned by \code{defineModel}.}
 \usage{
 defineModel (dat, items, id, splittedModels = NULL,
    irtmodel = c("1PL", "2PL", "PCM", "PCM2", "RSM", "GPCM", "GPCM.groups", "2PL.groups", "GPCM.design", "3PL"),
-   qMatrix=NULL, DIF.var=NULL, DIF.free = NULL, HG.var=NULL, group.var=NULL, weight.var=NULL, anchor = NULL,
+   qMatrix=NULL, DIF.var=NULL, DIF.free = NULL, HG.var=NULL, group.var=NULL, weight.var=NULL, anchor = NULL, 
    domainCol=NULL, itemCol=NULL, valueCol=NULL, catCol = NULL, check.for.linking = TRUE, minNperItem = 50,
    removeMinNperItem = FALSE, boundary = 6, remove.boundary = FALSE, remove.no.answers = TRUE,
    remove.no.answersHG = TRUE, remove.missing.items = TRUE, remove.constant.items = TRUE,
@@ -18,11 +18,11 @@ defineModel (dat, items, id, splittedModels = NULL,
    analysis.name, schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE,
    pvMethod = c("regular", "bayesian"), fitTamMmlForBayesian = TRUE, n.plausible=5, seed = NULL,
    conquest.folder= NULL, constraints=c("cases","none","items"), std.err=c("quick","full","none"),
-   distribution=c("normal","discrete"), method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo"),
+   distribution=c("normal","discrete"), method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo", "MHRM", "SEM", "BL"),
    n.iterations=2000, nodes=NULL, p.nodes=2000, f.nodes=2000,converge=0.001,deviancechange=0.0001,
    equivalence.table=c("wle","mle","NULL"), use.letters=FALSE,
    allowAllScoresEverywhere = TRUE, guessMat = NULL, est.slopegroups = NULL,
-   fixSlopeMat = NULL, slopeMatDomainCol=NULL, slopeMatItemCol=NULL, slopeMatValueCol=NULL,
+   fixSlopeMat = NULL, slopeMatDomainCol=NULL, slopeMatItemCol=NULL, slopeMatValueCol=NULL, 
    progress = NULL, Msteps = NULL, increment.factor=1 , fac.oldxsi=0,
    export = list(logfile = TRUE, systemfile = FALSE, history = TRUE,
    covariance = TRUE, reg_coefficients = TRUE, designmatrix = FALSE))}
@@ -32,8 +32,8 @@ A data frame containing all variables necessary for analysis.
 }
   \item{items}{
 Names or column numbers of variables with item responses. Item response values must
-be numeric (i.e. 0, 1, 2, 3 ... ). Character values (i.e. A, B, C ... or a, b, c, ...)
-are not allowed. Class of item columns are expected to be numeric or integer.
+be numeric (i.e. 0, 1, 2, 3 ... ). Character values (i.e. A, B, C ... or a, b, c, ...) 
+are not allowed. Class of item columns are expected to be numeric or integer. 
 Columns of class \code{character} will be transformed. If a ``model split'' was
 previously executed on items and the object created by that operation is passed
 here as an argument to \code{splittedModels}, the \code{items} argument is ignored
@@ -82,9 +82,8 @@ Optional: Names or column numbers of one or more context variables (e.g., sex, s
 These variables will be used for latent regression model in Conquest or TAM.
 }
   \item{group.var}{
-Applies only if \code{software = "tam"}. Optional: Optional: Names or column numbers of one or more grouping variables. Descriptive
-statistics for WLEs and Plausible Values will be computed separately for each
-group in Conquest.
+Applies only if \code{software = "tam"}. Optional: Names or column numbers of one or more grouping variables. Descriptive
+statistics for WLEs and Plausible Values will be computed separately for each group in Conquest.
 }
   \item{weight.var}{
 Optional: Name or column number of one weighting variable.
@@ -247,9 +246,10 @@ See Conquest manual pp.167 for details on population distributions.
 }
   \item{method}{
 A character string indicating which method should be used for numerical or stochastic
-integration. Possible options are \code{"gauss"} (Gauss-Hermite quadrature: default),
-\code{"quadrature"} (Bock/Aitken quadrature) and \code{"montecarlo"}. See Conquest manual
-pp.167 for details on these methods. When using \code{software = "tam"}, \code{"gauss"} and
+integration. Which method can be used depends on the software being used. For \code{software="conquest"},
+possible options are \code{"gauss"} (Gauss-Hermite quadrature: default),
+\code{"quadrature"} (Bock/Aitken quadrature) and \code{"montecarlo"}. See Conquest manual 
+pp.167 for details on these methods. When using \code{software = "tam"}, \code{"gauss"} and 
 \code{"quadrature"} essentially leads to numerical integration, i.e TAM is called with
 \code{control$snodes = 0} and with \code{control$nodes = seq(-6,6,len=nn)}, where
 \code{nn} equals the number of nodes specified in the \code{nodes} argument of
@@ -263,9 +263,14 @@ depends on whether \code{"montecarlo"} or \code{"quasiMontecarlo"} is chosen.
 use \code{software="tam", nodes = 21}. To met the conditions of model 4.4 of the \code{\link[TAM]{tam.mml}}
 help page, use \code{software="tam", method = "quasiMontecarlo", nodes = 2000}. To met the conditions of
 model 4.5 of the \code{\link[TAM]{tam.mml}} help page, use \code{software="tam", method = "montecarlo", nodes = 2000}.
+For \code{\link[mirt]{mirt}}, the \code{method} argument is passed to the argument of the same name
+in the mirt function. For consistency, when the default \code{method = "gauss"} or \code{method = "quadrature"} is selected, \code{mirt}
+also starts with the default (“EM”). If the user selects \code{method="montecarlo"}, mirt starts with
+\code{method="MCEM"}; if the user selects \code{method="quasiMontecarlo"}, \code{mirt} starts with
+\code{method="QMCEM"}. The remaining argument values \code{"MHRM"}, \code{"SEM"}, and \code{"BL"}
+are passed to mirt exactly as they are.
 }
   \item{n.iterations}{
-%%     ~~Describe \code{dif.term} here~~
 An integer value specifying the maximum number of iterations for which estimation
 will proceed without improvement in the deviance. 
 }

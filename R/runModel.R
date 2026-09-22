@@ -10,19 +10,19 @@ run_conquest_linux <- function(conquest_exe, syntax_file, wait) {
                     paste0("--command=", shQuote(script))),  wait = wait)}
 
 ### ueberschreibe 'originales' anchor objekt! (hilfsfunktion fuer runmodel mit tam)
-overwriteAnchorGpcmTAM <- function(anchor, defineModelObj, Y, group, wgt) {
-   if(!is.null(anchor) && grepl("pcm", defineModelObj[["irtmodel"]], ignore.case=TRUE)) {
+overwriteAnchorGpcmTAM <- function(anchor, dmo, Y, group, wgt) {
+   if(!is.null(anchor) && grepl("pcm", dmo[["irtmodel"]], ignore.case=TRUE)) {
       beg    <- Sys.time()
-      control<- defineModelObj[["control"]]
+      control<- dmo[["control"]]
       control[["maxiter"]] <- 50
-      if(defineModelObj[["irtmodel"]] %in% c("1PL", "PCM", "PCM2", "RSM")) {
-         skelet <- tam.mml(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], constraint = defineModelObj[["constraint"]], pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], irtmodel = defineModelObj[["irtmodel"]], pweights = wgt, control = control, group=group)
+      if(dmo[["irtmodel"]] %in% c("1PL", "PCM", "PCM2", "RSM")) {
+         skelet <- tam.mml(resp = dmo[["daten"]][,dmo[["all.Names"]][["variablen"]]], constraint = dmo[["constraint"]], pid = dmo[["daten"]][,"ID"], Y = Y, Q = dmo[["qMatrix"]][,-1,drop=FALSE], irtmodel = dmo[["irtmodel"]], pweights = wgt, control = control, group=group)
       } else {
-         skelet <- tam.mml.2pl(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = defineModelObj[["irtmodel"]], est.slopegroups=defineModelObj[["est.slopegroups"]],pweights = wgt, B.fixed = defineModelObj[["fixSlopeMat"]], est.variance = defineModelObj[["estVar"]], control = control, group=group)
-      }
+         skelet <- tam.mml.2pl(resp = dmo[["daten"]][,dmo[["all.Names"]][["variablen"]]], pid = dmo[["daten"]][,"ID"], Y = Y, Q = dmo[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = dmo[["irtmodel"]], est.slopegroups=dmo[["est.slopegroups"]],pweights = wgt, B.fixed = dmo[["fixSlopeMat"]], est.variance = dmo[["estVar"]], control = control, group=group)
+      }         
       diffe  <- Sys.time() - beg
-      if(as.numeric(diffe) > 0.2) {message(paste0("Model '",defineModelObj[["analysis.name"]],"': Generate skeleton for partial credit anchoring: ", timeFormat(diffe)))}
-      anchor <- prepAnchorTAM(dfm = defineModelObj, skeleton = skelet[["xsi.fixed.estimated"]])
+      if(as.numeric(diffe) > 0.2) {message(paste0("Model '",dmo[["analysis.name"]],"': Generate skeleton for partial credit anchoring: ", timeFormat(diffe)))}
+      anchor <- prepAnchorTAM(dfm = dmo, skeleton = skelet[["xsi.fixed.estimated"]])
    }
    return(anchor)}
 
@@ -57,114 +57,123 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
                 attr(res, "split") <- attr(defineModelObj, "split")
                 return(res)
             } else {                                                            ### ab hier fuer den single model Fall
-    ### runModel for conquest
-                if(inherits(defineModelObj, "defineConquest")) {
-                   sysInfo  <- Sys.info()
-                   if(sysInfo[["sysname"]] == "Linux") {
-                      foo     <- run_conquest_linux(conquest_exe = defineModelObj$conquest.folder, syntax_file = defineModelObj$input, wait = wait) 
-                   } else {
-                      oldPfad <- getwd()
-                      setwd(defineModelObj$dir)
-                      suppressWarnings(system(paste(defineModelObj$conquest.folder," ",defineModelObj$input,sep=""),invisible=!show.dos.console,show.output.on.console=show.output.on.console, wait=wait) )
-                      if(wait == FALSE) { Sys.sleep(0.2) }
-                      setwd(oldPfad)                                             ### untere Zeile: Rueckgabeobjekt definieren: Conquest
-                   }
-                   class(defineModelObj) <- c("runConquest", "list")
-                   attr(defineModelObj, "software") <- "conquest"
-                   return ( defineModelObj )
-                }
-                if(inherits(defineModelObj, "defineMirt")) {
-    ### runModel for mirt 
-                   if(ncol(defineModelObj[["qMatrix"]]) == 2) {                 ### eindimensionales Modell
-                      mirtMod <- 1
-                   } else {                                                     ### mehrdimensionales Modell
-                      mirtMod<- mirt.model(as.matrix(defineModelObj[["qMatrix"]][,-1]), COV= matrix(rep(TRUE, times = 2*(ncol(defineModelObj[["qMatrix"]])-1)), ncol(defineModelObj[["qMatrix"]])-1))
-                   }                                                            
-                   if(!is.null(defineModelObj[["allNam"]][["HG.var"]])) {
-                      covdata<- defineModelObj[["daten"]][,defineModelObj[["allNam"]][["HG.var"]], drop=FALSE]
-                      formula<- as.formula(paste0("~ ", paste(defineModelObj[["allNam"]][["HG.var"]], collapse = " + ")))
-                   } else {
-                      covdata<- NULL; formula <- NULL
-                   }                                                            ### wenn untere Zeile TRUE, dann wird skeleton gebraucht
-                   if(!is.null(defineModelObj[["anchor"]][["ank"]]) || !is.null(defineModelObj[["fixSlopeMat"]][["slopMat"]])) {pars <- "values"} else {pars <- NULL}  
-                   if("Rasch" %in%  defineModelObj[["irtmodel"]][,2]) {pars <- "values"}
-                   skel <- mirt(data = defineModelObj[["daten"]][,defineModelObj[["allNam"]][["variablen"]]], model = mirtMod,  itemtype = defineModelObj[["irtmodel"]][,2], SE = TRUE,  covdata=covdata, formula=formula, verbose =defineModelObj[["progress"]], pars="values")
-                   # skel[grep("^d", skel[,"name"]),"est"] <- TRUE              ### standardmaessig alle Itemschwierigkeiten frei schaetzen lassen: problematisch
-                   if(!is.null(pars)) {                                         ### constraints werden in adaptSkelForAnchor() umgesetzt 
-                      if(isFALSE(onlySkeleton)) {message("Modify skeleton ... ")}## skeleton anpassen
-                      skelN<- skel <- adaptSkelForAnchor(allNam = defineModelObj[["allNam"]], skel = skel, anch = defineModelObj[["anchor"]], qmat = defineModelObj[["qMatrix"]], slope = defineModelObj[["fixSlopeMat"]], irtmodel =  defineModelObj[["irtmodel"]], est.slopegroups =defineModelObj[["est.slopegroups"]][["esg"]])
-                   } else {                                                     ### wenn skeleton angepasst wurde, soll der angepasste skeleton als attribut gespeichert werden
-                      skelN<- NULL                                              ### wenn er NICHT angepasst wurde, soll der originale (d.h., der von mirt erzeugte)
-                   }                                                            ### skeleton als attribut gespeichert werden 
-                   if(isTRUE(onlySkeleton)) {
-                      return(skel)
-                   } else {
-                      mod  <- mirt(data = defineModelObj[["daten"]][,defineModelObj[["allNam"]][["variablen"]]], model = mirtMod,  itemtype = defineModelObj[["irtmodel"]][,2], SE = TRUE,  covdata=covdata, formula=formula, verbose =defineModelObj[["progress"]], pars=skelN)
-                      attr(mod, "defineModelObj") <- defineModelObj[-match("daten", names(defineModelObj))]
-                      attr(mod, "personID") <- defineModelObj[["daten"]][,"ID"]
-                      attr(mod, "software") <- "mirt"
-                      attr(mod, "skeleton") <- skel
-                      return(mod)
-                   }
-                }
-    ### runModel for TAM
-                if(inherits(defineModelObj, "defineTam")) {
-                   if ( show.output.on.console == TRUE ) { defineModelObj[["control"]][["progress"]] <- TRUE }
-                   if(length( defineModelObj[["all.Names"]][["HG.var"]])>0)     { Y <- defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["HG.var"]], drop=FALSE] } else { Y <- NULL }
-                   if(length( defineModelObj[["all.Names"]][["weight.var"]])>0) { wgt <- as.vector(defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["weight.var"]]])} else {wgt <- NULL}
-                   if(length( defineModelObj[["all.Names"]][["group.var"]])>0)  { group <- as.vector(defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["group.var"]]])} else {group <- NULL}
-                   stopifnot(all(defineModelObj[["qMatrix"]][,1] == defineModelObj[["all.Names"]][["variablen"]]))
+    ### runModel for conquest, mirt, tam
+                if(inherits(defineModelObj, "defineConquest")) {ret <- runModelConquest(dmo=defineModelObj, show.dos.console=show.dos.console,show.output.on.console=show.output.on.console, wait=wait)}   
+                if(inherits(defineModelObj, "defineMirt"))     {ret <- runModelMirt(dmo=defineModelObj)}
+                if(inherits(defineModelObj, "defineTam"))      {ret <- runModelTam(dmo=defineModelObj, show.output.on.console=show.output.on.console)}
+            }
+            return(ret) }
+
+runModelConquest <- function(dmo, show.dos.console,show.output.on.console, wait) {
+    sysInfo  <- Sys.info()
+    if(sysInfo[["sysname"]] == "Linux") {
+       foo     <- run_conquest_linux(conquest_exe = dmo$conquest.folder, syntax_file = dmo$input, wait = wait) 
+    } else {
+       oldPfad <- getwd()
+       setwd(dmo$dir)
+       suppressWarnings(system(paste(dmo$conquest.folder," ",dmo$input,sep=""),invisible=!show.dos.console,show.output.on.console=show.output.on.console, wait=wait) )
+       if(wait == FALSE) { Sys.sleep(0.2) }
+       setwd(oldPfad)                                                           ### untere Zeile: Rueckgabeobjekt definieren: Conquest
+    }
+    class(dmo) <- c("runConquest", "list")
+    attr(dmo, "software") <- "conquest"
+    return(dmo) }      
+
+runModelMirt <- function(dmo) {
+    if(ncol(dmo[["qMatrix"]]) == 2) {                                           ### eindimensionales Modell
+       mirtMod <- 1
+    } else {                                                                    ### mehrdimensionales Modell
+       mirtMod<- mirt.model(as.matrix(dmo[["qMatrix"]][,-1]), COV= matrix(rep(TRUE, times = 2*(ncol(dmo[["qMatrix"]])-1)), ncol(dmo[["qMatrix"]])-1))
+    }                                                            
+    if(!is.null(dmo[["allNam"]][["HG.var"]])) {
+       covdata<- dmo[["daten"]][,dmo[["allNam"]][["HG.var"]], drop=FALSE]
+       formula<- as.formula(paste0("~ ", paste(dmo[["allNam"]][["HG.var"]], collapse = " + ")))
+    } else {
+       covdata<- NULL; formula <- NULL
+    }                                                                           ### wenn untere Zeile TRUE, dann wird skeleton gebraucht
+    if(!is.null(dmo[["anchor"]][["ank"]]) || !is.null(dmo[["fixSlopeMat"]][["slopMat"]])) {pars <- "values"} else {pars <- NULL}  
+    if("Rasch" %in%  dmo[["irtmodel"]][,2]) {pars <- "values"}
+    if(!is.null(dmo[["allNam"]][["weight.var"]])) {
+       wgtvec <- dmo[["daten"]][,dmo[["allNam"]][["weight.var"]]]
+    } else {
+       wgtvec <- NULL
+    }
+    tech <- dmo[["technical"]]
+    skel <- mirt(data = dmo[["daten"]][,dmo[["allNam"]][["variablen"]]], model = mirtMod,  itemtype = dmo[["irtmodel"]][,2], SE = TRUE,  covdata=covdata, formula=formula, verbose =dmo[["progress"]], pars="values", method = dmo[["met"]][["method"]], quadpts = dmo[["met"]][["nodes"]], survey.weights = wgtvec, technical=tech)
+    if(!is.null(pars)) {                                                        ### constraints werden in adaptSkelForAnchor() umgesetzt 
+       if(isFALSE(onlySkeleton)) {message("Modify skeleton ... ")}              ### skeleton anpassen
+       skelN<- skel <- adaptSkelForAnchor(allNam = dmo[["allNam"]], skel = skel, anch = dmo[["anchor"]], qmat = dmo[["qMatrix"]], slope = dmo[["fixSlopeMat"]], irtmodel =  dmo[["irtmodel"]], est.slopegroups =dmo[["est.slopegroups"]][["esg"]])
+    } else {                                                                    ### wenn skeleton angepasst wurde, soll der angepasste skeleton als attribut gespeichert werden
+       skelN<- NULL                                                             ### wenn er NICHT angepasst wurde, soll der originale (d.h., der von mirt erzeugte)
+    }                                                                           ### skeleton als attribut gespeichert werden 
+    if(isTRUE(onlySkeleton)) {
+       return(skel)
+    } else {
+       mod  <- mirt(data = dmo[["daten"]][,dmo[["allNam"]][["variablen"]]], model = mirtMod,  itemtype = dmo[["irtmodel"]][,2], SE = TRUE,  covdata=covdata, formula=formula, verbose =dmo[["progress"]], pars=skelN, method = dmo[["met"]][["method"]], quadpts = dmo[["met"]][["nodes"]], survey.weights = wgtvec, technical=tech)
+       attr(mod, "defineModelObj") <- dmo[-match("daten", names(dmo))]
+       attr(mod, "personID") <- dmo[["daten"]][,"ID"]
+       attr(mod, "software") <- "mirt"
+       attr(mod, "skeleton") <- skel
+       return(mod)
+    }}   
+
+runModelTam <- function(dmo, show.output.on.console) {
+    if(show.output.on.console == TRUE) {dmo[["control"]][["progress"]] <- TRUE }
+    if(length( dmo[["all.Names"]][["HG.var"]])>0)     { Y <- dmo[["daten"]][,dmo[["all.Names"]][["HG.var"]], drop=FALSE] } else { Y <- NULL }
+    if(length( dmo[["all.Names"]][["weight.var"]])>0) { wgt <- as.vector(dmo[["daten"]][,dmo[["all.Names"]][["weight.var"]]])} else {wgt <- NULL}
+    if(length( dmo[["all.Names"]][["group.var"]])>0)  { group <- as.vector(dmo[["daten"]][,dmo[["all.Names"]][["group.var"]]])} else {group <- NULL}
+    stopifnot(all(dmo[["qMatrix"]][,1] == dmo[["all.Names"]][["variablen"]]))
     ### Achtung! in alter Paketversion wurde der anchor parameter frame noch in 'defineModel' fuer TAM aufbereitet, neuerdings in 'runModel'.
     ### Grund: fuer partial credit muss sicherheitshalber erst ein 'skeleton' erzeugt werden, damit die richtigkeit der reihenfolge der
-    ### Verankerungsparameter sichergestellt ist! Da der anchor partameter frame fuer mehrere Modelle gebraucht wird, aber nur fuer partial credit
+    ### Verankerungsparameter sichergestellt ist! Da der anchor parameter frame fuer mehrere Modelle gebraucht wird, aber nur fuer partial credit
     ### mittels skeleton erzeugt werden muss, geschieht das hier zweimal, erstmal allgemein (untere Zeile); fuer partial credit wird das dann nochmal ueberschrieben
-                   anchor <- prepAnchorTAM(dfm = defineModelObj)
-                   if(length(defineModelObj[["all.Names"]][["DIF.var"]]) == 0 ) {
-                      anchor <- overwriteAnchorGpcmTAM(anchor=anchor, defineModelObj=defineModelObj, Y=Y, group=group, wgt=wgt)
-                      if(defineModelObj[["irtmodel"]] %in% c("1PL", "PCM", "PCM2", "RSM")) {
-                          if(isTRUE(defineModelObj[["fitTamMmlForBayesian"]])) {
-                               mod  <- tam.mml(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], constraint = defineModelObj[["constraint"]], pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = defineModelObj[["irtmodel"]], pweights = wgt, control = defineModelObj[["control"]], group=group)
-                          }  else  {
-                               mod  <- tamObjForBayesianPV (anchor = anchor, qMatrix = defineModelObj[["qMatrix"]], resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y=Y)
-                          }
-                      }
-                      if(defineModelObj[["irtmodel"]] %in% c("2PL", "GPCM", "GPCM.groups", "2PL.groups", "GPCM.design", "3PL"))  {
-                          if(defineModelObj[["irtmodel"]] == "3PL") {
-                              if ( isTRUE(defineModelObj[["fitTamMmlForBayesian"]]) ) {
-                                   mod  <- tam.mml.3pl(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = anchor, pweights = wgt, est.guess =defineModelObj[["guessMat"]],  est.variance = defineModelObj[["estVar"]], control = defineModelObj[["control"]], group=group)
-                              }  else  {
-                                   mod  <- tamObjForBayesianPV (anchor = anchor, qMatrix = defineModelObj[["qMatrix"]], resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y=Y, slopeMatrix = defineModelObj[["fixSlopeMat"]])
-                              }
-                          }  else {
-                              if(defineModelObj[["fitTamMmlForBayesian"]] == TRUE) {
-                                   mod  <- tam.mml.2pl(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = defineModelObj[["irtmodel"]], est.slopegroups=defineModelObj[["est.slopegroups"]],pweights = wgt, B.fixed = defineModelObj[["fixSlopeMat"]], est.variance = defineModelObj[["estVar"]], control = defineModelObj[["control"]], group=group)
-                              }  else  {
-                                   mod  <- tamObjForBayesianPV (anchor = anchor, qMatrix = defineModelObj[["qMatrix"]], resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y=Y, slopeMatrix = defineModelObj[["fixSlopeMat"]])
-                              }
-                          }
-                      }
-                   } else {
-                     assign(paste("DIF_",defineModelObj[["all.Names"]][["DIF.var"]],sep="") , as.data.frame (defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["DIF.var"]]]) )
-                     formel   <- as.formula(paste("~item - ",paste("DIF_",defineModelObj[["all.Names"]][["DIF.var"]],sep="")," + item * ",paste("DIF_",defineModelObj[["all.Names"]][["DIF.var"]],sep=""),sep=""))
-                     if(grepl("PCM", defineModelObj[["irtmodel"]])) {
-                        formel <- as.formula(paste0("~item+item:step + ",paste("DIF_",defineModelObj[["all.Names"]][["DIF.var"]],sep="")," * item*step"))
-                     }
-                     facetten <- as.data.frame (defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["DIF.var"]]])
-                     colnames(facetten) <- paste("DIF_",defineModelObj[["all.Names"]][["DIF.var"]],sep="")
-                     if ( isTRUE(defineModelObj[["fitTamMmlForBayesian"]]) ) {
-                          if(grepl("PCM", defineModelObj[["irtmodel"]])) {
-                             mod  <- tam.mml.mfr(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], facets = facetten, formulaA = formel, pid = defineModelObj[["daten"]][,"ID"], control = defineModelObj[["control"]], group=group)
-                          } else {
-                             mod  <- tam.mml.mfr(resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], facets = facetten, constraint = defineModelObj[["constraint"]], formulaA = formel, pid = defineModelObj[["daten"]][,"ID"], Y = Y, Q = defineModelObj[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = defineModelObj[["irtmodel"]], pweights = wgt, control = defineModelObj[["control"]], group=group)
-                          }
-                     }  else  {
-                          mod  <- tamObjForBayesianPV (anchor = anchor, qMatrix = defineModelObj[["qMatrix"]], resp = defineModelObj[["daten"]][,defineModelObj[["all.Names"]][["variablen"]]], pid = defineModelObj[["daten"]][,"ID"], Y=Y, slopeMatrix = defineModelObj[["fixSlopeMat"]])
-                     }                                                          ### hier werden fuer 'tam' zusaetzliche Objekte als Attribute an das Rueckgabeobjekt angehangen
-                   }                                                            ### Grund: Rueckgabeobjekt soll weitgehend beibehalten werden, damit alle 'tam'-Funktionen, die darauf aufsetzen, lauffaehig sind
-                   attr(mod, "defineModelObj") <- defineModelObj[-match("daten", names(defineModelObj))]
-                   attr(mod, "Y")              <- Y
-                   attr(mod, "software")       <- "tam"
-                   return(mod)  }  }   }
+    anchor <- prepAnchorTAM(dfm = dmo)
+    if(length(dmo[["all.Names"]][["DIF.var"]]) == 0) {
+       anchor <- overwriteAnchorGpcmTAM(anchor=anchor, dmo=dmo, Y=Y, group=group, wgt=wgt)
+       if(dmo[["irtmodel"]] %in% c("1PL", "PCM", "PCM2", "RSM")) {
+          if(isTRUE(dmo[["fitTamMmlForBayesian"]])) {
+             mod  <- tam.mml(resp = dmo[["daten"]][,dmo[["all.Names"]][["variablen"]]], constraint = dmo[["constraint"]], pid = dmo[["daten"]][,"ID"], Y = Y, Q = dmo[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = dmo[["irtmodel"]], pweights = wgt, control = dmo[["control"]], group=group)
+          } else {
+             mod  <- tamObjForBayesianPV (anchor = anchor, qMatrix = dmo[["qMatrix"]], resp = dmo[["daten"]][,dmo[["all.Names"]][["variablen"]]], pid = dmo[["daten"]][,"ID"], Y=Y)
+          }
+       }
+       if(dmo[["irtmodel"]] %in% c("2PL", "GPCM", "GPCM.groups", "2PL.groups", "GPCM.design", "3PL"))  {
+          if(dmo[["irtmodel"]] == "3PL") {
+             if(isTRUE(dmo[["fitTamMmlForBayesian"]]) ) {
+                mod  <- tam.mml.3pl(resp = dmo[["daten"]][,dmo[["all.Names"]][["variablen"]]], pid = dmo[["daten"]][,"ID"], Y = Y, Q = dmo[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = anchor, pweights = wgt, est.guess =dmo[["guessMat"]],  est.variance = dmo[["estVar"]], control = dmo[["control"]], group=group)
+             } else {
+                mod  <- tamObjForBayesianPV (anchor = anchor, qMatrix = dmo[["qMatrix"]], resp = dmo[["daten"]][,dmo[["all.Names"]][["variablen"]]], pid = dmo[["daten"]][,"ID"], Y=Y, slopeMatrix = dmo[["fixSlopeMat"]])
+             }
+          } else{
+             if(dmo[["fitTamMmlForBayesian"]] == TRUE) {
+                mod  <- tam.mml.2pl(resp = dmo[["daten"]][,dmo[["all.Names"]][["variablen"]]], pid = dmo[["daten"]][,"ID"], Y = Y, Q = dmo[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = dmo[["irtmodel"]], est.slopegroups=dmo[["est.slopegroups"]],pweights = wgt, B.fixed = dmo[["fixSlopeMat"]], est.variance = dmo[["estVar"]], control = dmo[["control"]], group=group)
+             } else {
+                mod  <- tamObjForBayesianPV (anchor = anchor, qMatrix = dmo[["qMatrix"]], resp = dmo[["daten"]][,dmo[["all.Names"]][["variablen"]]], pid = dmo[["daten"]][,"ID"], Y=Y, slopeMatrix = dmo[["fixSlopeMat"]])
+             }
+          }
+       }
+    } else {
+       assign(paste("DIF_",dmo[["all.Names"]][["DIF.var"]],sep="") , as.data.frame (dmo[["daten"]][,dmo[["all.Names"]][["DIF.var"]]]) )
+       formel   <- as.formula(paste("~item - ",paste("DIF_",dmo[["all.Names"]][["DIF.var"]],sep="")," + item * ",paste("DIF_",dmo[["all.Names"]][["DIF.var"]],sep=""),sep=""))
+       if(grepl("PCM", dmo[["irtmodel"]])) {
+          formel <- as.formula(paste0("~item+item:step + ",paste("DIF_",dmo[["all.Names"]][["DIF.var"]],sep="")," * item*step"))
+       }
+       facetten <- as.data.frame (dmo[["daten"]][,dmo[["all.Names"]][["DIF.var"]]])
+       colnames(facetten) <- paste("DIF_",dmo[["all.Names"]][["DIF.var"]],sep="")
+       if(isTRUE(dmo[["fitTamMmlForBayesian"]]) ) {
+          if(grepl("PCM", dmo[["irtmodel"]])) {
+             mod  <- tam.mml.mfr(resp = dmo[["daten"]][,dmo[["all.Names"]][["variablen"]]], facets = facetten, formulaA = formel, pid = dmo[["daten"]][,"ID"], control = dmo[["control"]], group=group)
+          } else {
+             mod  <- tam.mml.mfr(resp = dmo[["daten"]][,dmo[["all.Names"]][["variablen"]]], facets = facetten, constraint = dmo[["constraint"]], formulaA = formel, pid = dmo[["daten"]][,"ID"], Y = Y, Q = dmo[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = dmo[["irtmodel"]], pweights = wgt, control = dmo[["control"]], group=group)
+          }
+       } else {
+          mod  <- tamObjForBayesianPV (anchor = anchor, qMatrix = dmo[["qMatrix"]], resp = dmo[["daten"]][,dmo[["all.Names"]][["variablen"]]], pid = dmo[["daten"]][,"ID"], Y=Y, slopeMatrix = dmo[["fixSlopeMat"]])
+       }                                                                        ### hier werden fuer 'tam' zusaetzliche Objekte als Attribute an das Rueckgabeobjekt angehangen
+    }                                                                           ### Grund: Rueckgabeobjekt soll weitgehend beibehalten werden, damit alle 'tam'-Funktionen, die darauf aufsetzen, lauffaehig sind
+    attr(mod, "defineModelObj") <- dmo[-match("daten", names(dmo))]
+    attr(mod, "Y")              <- Y
+    attr(mod, "software")       <- "tam"
+    return(mod)}
 
 ### runModel() specific help functions -----------------------------------------
 

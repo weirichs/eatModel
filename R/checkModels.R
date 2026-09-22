@@ -189,7 +189,7 @@ checkContextVars <- function(x, varname, type = c("weight", "DIF", "group", "HG"
 
 
 ### called by defineModel() ----------------------------------------------------
-checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF.missing, namen.items.weg, remove.vars.DIF.constant, renam){
+checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF.missing, namen.items.weg, remove.vars.DIF.constant, renam, method){
             weg.dif <- NULL; weg.hg <- NULL; weg.weight <- NULL; weg.group <- NULL# initialisieren
      ### Gibt es ueberhaupt irgendwelche Kovariaten?
             if(length(allNam[["HG.var"]])>0 || length(allNam[["group.var"]])>0 || length(allNam[["DIF.var"]])>0 || length(allNam[["weight.var"]]) >0 || length(allNam[["add.vars"]]) >0 ) {
@@ -199,8 +199,8 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
                     stop("Following ",length(fehler), " variables with more that one class: \n", eatTools::print_and_capture(varClass[names(fehler)], spaces = 5))
                }
             }
-     ### Variablen fuer model.statement sollen numerisch sein
-            if(length(allNam[["add.vars"]])>0)  {
+     ### Variablen fuer model.statement sollen numerisch sein 
+            if(length(allNam[["add.vars"]])>0)  { 
                clss <- sapply(allNam[["add.vars"]], FUN = function(ii) { inherits(dat[,ii], c("integer", "numeric"))})
                if(any(clss == FALSE)) {
                   mess <- sapply(dat[,names(clss[which(clss == FALSE)]), drop=FALSE], class)
@@ -243,7 +243,10 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
                hg.info <- lapply(allNam[["HG.var"]], FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="HG", itemdata=dat[,allNam[["variablen"]], drop = FALSE], suppressAbort = TRUE, internal=TRUE, renam=renam )})
                for ( i in 1:length(hg.info)) { dat[, hg.info[[i]][["varname"]] ] <- hg.info[[i]]$x }
                wegVar  <- unlist(lapply(hg.info, FUN = function ( uu ) { uu[["toRemove"]] }))
-               if(length(wegVar)>0) { allNam[["HG.var"]] <- setdiff ( allNam[["HG.var"]], wegVar) }
+               if(length(wegVar)>0) {
+                  allNam[["HG.var"]] <- setdiff ( allNam[["HG.var"]], wegVar) 
+                  if(length(allNam[["HG.var"]]) ==0) {allNam[["HG.var"]] <- NULL}
+               }
                weg.hg  <- unique(unlist(lapply(hg.info, FUN = function ( y ) {y$weg})))
                if(length(weg.hg)>0) {                                           ### untere Zeile: das removen geschieht erst etwas spaeter, wenn datensatz zusammengebaut ist
                    if ( remove.no.answersHG == TRUE ) {
@@ -281,18 +284,25 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
                 for ( i in 1:length(dif.info)) { dat[, dif.info[[i]]$varname ] <- dif.info[[i]]$x }
                 weg.dif  <- unique(unlist(lapply(dif.info, FUN = function ( y ) {y$weg})))
                 if(length(weg.dif)>0)  {                                        ### untere Zeile: removen geschieht erst etwas spaeter, wenn datensatz zusammengebaut ist
-                    cat(paste("Remove ",length(weg.dif)," cases with missings on DIF variable.\n",sep=""))
+                    stop("sollte nicht vorkommen")                              ### cat(paste("Remove ",length(weg.dif)," cases with missings on DIF variable.\n",sep=""))
                 }
             }
      ### Gewichtungsvariablen
             if(length(allNam[["weight.var"]])>0)  {
                 if(length(allNam[["weight.var"]])!=1) {stop("Use only one weight variable.")}
                 weight.info <- lapply(allNam[["weight.var"]], FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="weight", itemdata=dat[,allNam[["variablen"]], drop = FALSE], internal = TRUE, renam=renam)})
-                for ( i in 1:length(weight.info)) { dat[, weight.info[[i]]$varname ] <- weight.info[[i]]$x }
+                for ( i in 1:length(weight.info)) {dat[, weight.info[[i]]$varname ] <- weight.info[[i]]$x}
                 weg.weight  <- unique(unlist(lapply(weight.info, FUN = function ( y ) {y$weg})))
                 if(length(weg.weight)>0) {                                      ### untere Zeile: remove geschieht erst etwas spaeter, wenn datensatz zusammengebaut ist
                     cat(paste("Remove ",length(weg.weight)," cases with missings on weight variable.\n",sep=""))
                 }
+                if(software=="mirt") {                                          ### siehe mirt-Hilfe: gewichte sollen sich zur Anzahl der Faelle addieren und koennen nur fuer EM genutzt werden
+                   sumWgt <- sum(dat[,allNam[["weight.var"]]], na.rm=TRUE)
+                   if(sumWgt != nrow(dat)) {cli::cli_warn(c("For 'mirt', the sum of the weights must equal the total sample size for proper weighting to be applied.", "x"=paste0("Sample size: ",nrow(dat)), "x"=paste0("Sum of weights: ", sumWgt)))}
+                   if(method %nin% c("gauss", "quadrature")) {cli::cli_warn(c("In the mirt software, weights can only be included in the estimation for the 'EM' method. This corresponds to 'gauss' or 'quadrature' in eatModel.", "x"=paste0("Chosen method: ", method)))}
+                }
+                is0 <- which(dat[,allNam[["weight.var"]]] == 0)
+                if(length(is0)>0) {warning(paste0(length(is0), " cases with zero weight."))}
             }                                                                   ### untere Zeile, Achtung: group- und DIF- bzw. group- und HG-Variablen duerfen sich ueberschneiden!
      ### jetzt alles rausschmeissen, was wegen irgendeines Grundes raus soll
             namen.all.hg <- unique(c(allNam[["HG.var"]],allNam[["group.var"]],allNam[["DIF.var"]],allNam[["weight.var"]], allNam[["add.vars"]]))

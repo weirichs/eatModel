@@ -3,7 +3,7 @@ defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL
                minNperItem = 50, removeMinNperItem = FALSE, boundary = 6, remove.boundary = FALSE, remove.no.answers = TRUE, remove.no.answersHG = TRUE, remove.missing.items = TRUE, remove.constant.items = TRUE,
                remove.failures = FALSE, remove.vars.DIF.missing = TRUE, remove.vars.DIF.constant = TRUE, remove.insuff.pattern = TRUE, verbose=TRUE, software = c("conquest","tam", "mirt"), dir = NULL,
                analysis.name, schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE, pvMethod = c("regular", "bayesian"), fitTamMmlForBayesian = TRUE, n.plausible=5, seed = NULL, conquest.folder=NULL,
-               constraints=c("cases","none","items"),std.err=c("quick","full","none"), distribution=c("normal","discrete"), method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo"),
+               constraints=c("cases","none","items"),std.err=c("quick","full","none"), distribution=c("normal","discrete"), method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo", "MHRM", "SEM", "BL"),
                n.iterations=2000,nodes=NULL, p.nodes=2000, f.nodes=2000,converge=0.001,deviancechange=0.0001, equivalence.table=c("wle","mle","NULL"), use.letters=FALSE,
                allowAllScoresEverywhere = TRUE, guessMat = NULL, est.slopegroups = NULL, fixSlopeMat = NULL, slopeMatDomainCol=NULL, slopeMatItemCol=NULL, slopeMatValueCol=NULL,
                progress = NULL, Msteps = NULL, increment.factor=1 , fac.oldxsi=0, export = list(logfile = TRUE, systemfile = FALSE, history = TRUE, covariance = TRUE, reg_coefficients = TRUE, designmatrix = FALSE) )   {
@@ -70,9 +70,9 @@ defineModelSingle <- function (a) {
           if(is.null(Msteps) ) {                                                ### den Default fuer Msteps so setzen wie in TAM
              if ( irtmodel == "3PL" ) { Msteps <- 10 } else { Msteps <- 4 }
           }
-       } else {                                                                 ### in mirt muss das argument ein data.frame sein
+       } else {                                                                 ### in mirt muss das argument ein data.frame sein 
           checkmate::assert_data_frame(irtmodel, any.missing = FALSE, ncols = 2)
-       }
+       }  
        method   <- match.arg(method, choices = eval(formals(defineModel)[["method"]]))
        pvMethod <- match.arg(pvMethod, choices = eval(formals(defineModel)[["pvMethod"]]))
        if(software == "conquest") {
@@ -124,7 +124,7 @@ defineModelSingle <- function (a) {
      ### Sektion 'Alle Items auf einfache Konsistenz pruefen'
        cic <- checkItemConsistency(dat=obs2[["dat"]], allNam = obs3[["all.Names"]], remove.missing.items=remove.missing.items, remove.insuff.pattern=remove.insuff.pattern, verbose=verbose, removeMinNperItem=removeMinNperItem, minNperItem=minNperItem, remove.constant.items=remove.constant.items, model.statement=obs2[["model.statement"]], software=software, renam = obs[["renam"]], irtmodel=irtmodel)
      ### Sektion 'Hintergrundvariablen auf Konsistenz zu sich selbst und zu den Itemdaten pruefen'. Ausserdem Stelligkeit (Anzahl der benoetigten character) fuer jede Variable herausfinden
-       cbc <- checkBGV(allNam = cic[["allNam"]], dat=cic[["dat"]], software=software, remove.no.answersHG=remove.no.answersHG, remove.vars.DIF.missing=remove.vars.DIF.missing, namen.items.weg=cic[["namen.items.weg"]], remove.vars.DIF.constant=remove.vars.DIF.constant, renam=obs[["renam"]])
+       cbc <- checkBGV(allNam = cic[["allNam"]], dat=cic[["dat"]], software=software, remove.no.answersHG=remove.no.answersHG, remove.vars.DIF.missing=remove.vars.DIF.missing, namen.items.weg=cic[["namen.items.weg"]], remove.vars.DIF.constant=remove.vars.DIF.constant, renam=obs[["renam"]], method=method)
      ### Sektion 'Itemdatensatz zusammenbauen' (fuer Conquest ggf. mit Buchstaben statt Ziffern)
        if(length(cbc[["namen.items.weg"]])>0)  {
           cat(paste("Remove ",length(unique(cbc[["namen.items.weg"]]))," test item(s) overall.\n",sep=""))
@@ -132,7 +132,7 @@ defineModelSingle <- function (a) {
           obs3[["qMatrix"]]         <- obs3[["qMatrix"]][match(cbc[["allNam"]]$variablen, obs3[["qMatrix"]][,1]),]
        }
      ### Sektion 'Personen ohne gueltige Werte identifizieren und ggf. loeschen'. Gibt dat, perNA, datL zurueck
-       pwvv<- personWithoutValidValues(dat=cbc[["dat"]], allNam=cbc[["allNam"]], remove.no.answers=remove.no.answers)
+       pwvv<- personWithoutValidValues(dat=cbc[["dat"]], allNam=cbc[["allNam"]], remove.no.answers=remove.no.answers, software=software)
      ### Sektion 'Summenscores fuer Personen pruefen'
        cpsc<- checkPersonSumScores(datL = pwvv[["datL"]], allNam = cbc[["allNam"]], dat=pwvv[["dat"]], remove.failures=remove.failures, qmat = obs3[["qMatrix"]])
      ### Sektion 'Verlinkung pruefen'
@@ -222,7 +222,7 @@ defineModelSingle <- function (a) {
           control         <- list ( snodes = met[["snodes"]] , QMC=met[["QMC"]], convD = deviancechange ,conv = converge , convM = .0001 , Msteps = Msteps , maxiter = n.iterations, max.increment = 1 ,
                                   min.variance = .001 , progress = progress , ridge=0 , seed = seed , xsi.start0=FALSE,  increment.factor=increment.factor , fac.oldxsi= fac.oldxsi)
           if ( !is.null(met[["nodes"]])) { control$nodes <- met[["nodes"]] }
-          ret     <- list ( software = software, constraint = match.arg(constraints, choices = eval(formals(defineModel)[["constraints"]])) , qMatrix=obs3[["qMatrix"]], anchor=list(ank = ankFrame[["resTam"]], allNam = cbc[["allNam"]]),
+          ret     <- list ( software = software, constraint = match.arg(constraints, choices = eval(formals(defineModel)[["constraints"]])) , qMatrix=obs3[["qMatrix"]], anchor=list(ank = ankFrame[["resTam"]], allNam = cbc[["allNam"]]),  
                             all.Names=fixSlopeMatPrep[["allNam"]], daten=daten, irtmodel=fixSlopeMatPrep[["irtmodel"]], est.slopegroups = est.slopegroups[["esgNm"]], guessMat=guessMat, control = control,
                             n.plausible=n.plausible, dir = dir, analysis.name=analysis.name, deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]],
                             perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], fixSlopeMat = fixSlopeMatPrep[["slopMat"]], estVar = fixSlopeMatPrep[["estVar"]], pvMethod = pvMethod,  fitTamMmlForBayesian=fitTamMmlForBayesian, viewed = cpsc[["viewed"]])
@@ -230,12 +230,15 @@ defineModelSingle <- function (a) {
        }
        if(software == "mirt" )   {
           irtmodel <- prepItemTypeMirt(irtmodel = irtmodel, allNam = cbc[["allNam"]], qMatrix=obs3[["qMatrix"]])
+          technical<- list(NCYCLES = n.iterations, MAXQUAD = 50000, set.seed = seed, SEtol = converge)
+          if(is.null(seed)) {technical[["set.seed"]] <- NULL}                   ### seed aus liste entfernen, wenn vom user nicht definiert
           ret      <- list ( software = software, qMatrix=obs3[["qMatrix"]], allNam = fixSlopeMatPrep[["allNam"]], daten=daten, irtmodel=irtmodel, anchor=list(ank = ankFrame[["resTam"]], allNam = cbc[["allNam"]]), fixSlopeMat = fixSlopeMatPrep,
                             n.plausible=n.plausible, dir = dir, analysis.name=analysis.name, deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]],
-                            perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], est.slopegroups = est.slopegroups, progress=progress, viewed = cpsc[["viewed"]])
+                            perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], est.slopegroups = est.slopegroups, progress=progress, viewed = cpsc[["viewed"]], met=met, technical=technical)
           class(ret) <-  c("defineMirt", "list")
        }
        return(ret)}
+
 
 
 ### hilfsfunktion fuer defineModelSingle

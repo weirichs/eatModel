@@ -202,7 +202,7 @@ prepAnchorTAM <- function (dfm, skeleton = NULL) {                              
 ### ----------------------------------------------------------------------------
 
 ### Hilfsfunktion fuer defineModel
-personWithoutValidValues <- function (dat, allNam, remove.no.answers){
+personWithoutValidValues <- function (dat, allNam, remove.no.answers, software){
           if(inherits(try(datL  <- reshape2::melt(data = dat, id.vars = unique(unlist(allNam[-na.omit(match(c("variablen","DIF.free"), names(allNam)))])), measure.vars = allNam[["variablen"]], na.rm=TRUE)  ),"try-error"))  {
              cat("W A R N I N G ! ! !   Error in melting for unknown reasons. Try workaround.\n"); flush.console()
              allHG <- setdiff(unique(unlist(allNam[-match("variablen", names(allNam))])), allNam[["ID"]] )
@@ -215,12 +215,16 @@ personWithoutValidValues <- function (dat, allNam, remove.no.answers){
           if(length(wegNV)>0)   {                                               ### identifiziere Faelle mit ausschliesslich missings
              cat(paste("Found ",length(wegNV)," cases with missings on all items.\n",sep=""))
              perNA<- dat[match(wegNV,dat[,allNam[["ID"]]] ), allNam[["ID"]]]
-             if( remove.no.answers == TRUE)  {
+             if(remove.no.answers == TRUE)  {
                  cat("Cases with missings on all items will be deleted.\n")
                  dat  <- dat[-match(wegNV,dat[,allNam[["ID"]]] ) ,]
              }
-             if( remove.no.answers == FALSE) {
-                 cat("Cases with missings on all items will be kept.\n")
+             if(remove.no.answers == FALSE) {
+                 if(software != "mirt") {           
+                    cat("Cases with missings on all items will be kept.\n")
+                 } else {
+                    cli::cli_warn(c("Cases with missings on all items should be kept. However, the mirt model may crash if 'remove.no.answers = FALSE' and cases with missings on all items occur.", "x"="'mirt' should not be used along with 'remove.no.answers = FALSE' (tested with version 1.47)","i" = "Solution: set 'remove.no.answers = TRUE' or use another software."))
+                 }   
              }
           }
           return(list(dat=dat, perNA=perNA, datL=datL))}
@@ -230,8 +234,11 @@ personWithoutValidValues <- function (dat, allNam, remove.no.answers){
 adaptMethod <- function(method, software,nodes){
         snodes <- NULL; QMC <- NULL                                             ### initialisieren
         if(software == "mirt") {
-           cat("Specifying 'method' and 'nodes' not yet implemented for 'mirt'.\n")
-           return(list(method=method, nodes=nodes, snodes=snodes, QMC=QMC))
+           method <- car::recode(method, "'montecarlo'='MCEM'; 'quasiMontecarlo'='QMCEM'; 'gauss'='EM'; 'quadrature'='EM'")
+           if(is.null(nodes)) {cat(paste("'",method,"' has been chosen for estimation method. Number of nodes was not explicitly specified. The '",method,"' default will be used.\n",sep=""))}
+           return(list(method=method, nodes=nodes))
+        } else {
+           if(method %in% c("MHRM", "SEM", "BL")) {stop(paste0("Method '",method,"' is only available for software = 'mirt'"))}
         }
         if(method == "quasiMontecarlo" && software == "conquest") {
            cat("Method 'quasiMontecarlo' is not available for software 'conquest'. Set method to 'montecarlo'.\n")
@@ -317,11 +324,17 @@ anker <- function(lab, prm, qMatrix, domainCol, itemCol, valueCol, catCol)  {
                   }
                   ind <- intersect(lab[,"item"],prm[,"item"])
                   if(length(ind) == 0) {stop("No common items found in 'anchor' list and data frame.\n")}
-                  if(length(ind) > 0)  {cat(paste(length(ind), " common items found in 'anchor' list and data frame.\n",sep="")) }
+                  if(length(ind) > 0)  {
+                     cat(paste(length(ind), " common items found in 'anchor' list and data frame. ",sep="")) 
+                     if(length(setdiff(lab[,"item"], prm[,"item"])) == 0) {
+                        cat("(All items anchored.)\n")
+                     } else {
+                        cat(paste0("(",length(setdiff(lab[,"item"], prm[,"item"]))," of ", nrow(lab), " items without anchor.)\n"))
+                     }
+                  }
                   resT<- eatTools::mergeAttr(lab, prm, by = "item", sort = FALSE, all = FALSE, setAttr = FALSE, unitName = "item", xName = "item response data", yName = "anchor list", verbose = c("match", "unique"))
                   res <- resT |> dplyr::arrange(dplyr::across(tidyselect::all_of(intersect(c("itemNr", "category"), names(resT))))) |> dplyr::select(-tidyselect::any_of("item"))
                   return(list ( resConquest = res, resTam = resT[,-2]))}
-
 
 ### ----------------------------------------------------------------------------
 
