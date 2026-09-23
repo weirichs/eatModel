@@ -180,12 +180,13 @@ prepAnchorTAM <- function (dfm, skeleton = NULL) {                              
         ank <- NULL                                                             ### initialisieren
         if(!is.null(dfm[["anchor"]][["ank"]])) {                                ### untere Zeile: hotfix: entfernt konstante spalten aus data.frame. Die koennen vorkommen,
             ank         <- dfm[["anchor"]][["ank"]]                             ### wenn noch eine konstante Spalte fuer die Dimension drin ist
-            ank         <- ank[,!apply(ank, MARGIN = 2, function(x) max(x, na.rm = TRUE) == min(x, na.rm = TRUE))]
+            ank         <- ank[,!apply(ank, MARGIN = 2, function(x) max(x, na.rm = TRUE) == min(x, na.rm = TRUE))] 
             allNam      <- dfm[["anchor"]][["allNam"]]
             if(ncol(ank) != 2 && dfm[["irtmodel"]] %nin% c("PCM", "GPCM", "GPCM.groups")) {stop("Anchor parameter frame must have two columns for non-PCM models without specifying item and/or domain column.")}
             notInData   <- setdiff(ank[,1], allNam[["variablen"]])              ### Untere Zeile: Wichtig! Sicherstellen, dass Reihenfolge der Items in Anker-Statement der Reihenfolge im datensatz entspricht
             if(length(notInData)>0)  {ank <- ank[-match(notInData, ank[,1]),]}  ### messages entfernt, denn die werden ja schon in anker() durch mergeAttr() ausgegeben
             if(dfm[["irtmodel"]] %in% c("PCM", "GPCM", "GPCM.groups") && !is.null(skeleton)) {
+               stopifnot(length(dim(skeleton)) == 2)                            ### skeleton soll kein x-dimensionaler array sein, sondern genau zweidimensionale Matrix
                ankLong  <- ank |> dplyr::mutate(name = paste(item,category, sep="_"))
                weg      <- which(rownames(skeleton) %nin% ankLong[,"name"])     ### partial credit anchoring using skeleton
                if(length(weg)>0) {skeleton <- skeleton[-weg,]}

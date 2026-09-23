@@ -1,0 +1,2 @@
+auf github ersetzen
+- hilfeseite defineModel() ab bsp. 8 

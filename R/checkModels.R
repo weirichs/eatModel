@@ -191,22 +191,8 @@ checkContextVars <- function(x, varname, type = c("weight", "DIF", "group", "HG"
 ### called by defineModel() ----------------------------------------------------
 checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF.missing, namen.items.weg, remove.vars.DIF.constant, renam, method){
             weg.dif <- NULL; weg.hg <- NULL; weg.weight <- NULL; weg.group <- NULL# initialisieren
-     ### Gibt es ueberhaupt irgendwelche Kovariaten?
-            if(length(allNam[["HG.var"]])>0 || length(allNam[["group.var"]])>0 || length(allNam[["DIF.var"]])>0 || length(allNam[["weight.var"]]) >0 || length(allNam[["add.vars"]]) >0 ) {
-               varClass<- sapply(c(allNam[["HG.var"]],allNam[["group.var"]],allNam[["DIF.var"]], allNam[["weight.var"]], allNam[["add.vars"]]),FUN = function(ii) {class(dat[,ii])})
-               if ( isFALSE(all(sapply(varClass, length) == 1)) ) {
-                    fehler <- which(sapply(varClass, length) != 1)
-                    stop("Following ",length(fehler), " variables with more that one class: \n", eatTools::print_and_capture(varClass[names(fehler)], spaces = 5))
-               }
-            }
-     ### Variablen fuer model.statement sollen numerisch sein 
-            if(length(allNam[["add.vars"]])>0)  { 
-               clss <- sapply(allNam[["add.vars"]], FUN = function(ii) { inherits(dat[,ii], c("integer", "numeric"))})
-               if(any(clss == FALSE)) {
-                  mess <- sapply(dat[,names(clss[which(clss == FALSE)]), drop=FALSE], class)
-                  stop(paste0("Variable(s) with insufficient class: \n",eatTools::print_and_capture(mess, spaces = 5)))
-               }
-            }
+            chk1 <- varsWithMoreThan1Class(allNam=allNam, dat=dat)              ### Variablen duerfen nur eine Klasse haben 
+            chk2 <- modelVarsNum(allNam=allNam, dat=dat)                        ### Variablen fuer model.statement sollen numerisch sein 
      ### Hintergrundvariablen (conditioning model)
             if(length(allNam[["HG.var"]])>0)    {
                varClass<- sapply(allNam[["HG.var"]], FUN = function(ii) { inherits(dat[,ii], c("integer", "numeric"))})
@@ -314,6 +300,24 @@ checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF
                dat    <- dat[-weg.all,]
             }
             return(list(dat=dat, allNam=allNam, namen.items.weg=namen.items.weg,perExHG=perExHG, namen.all.hg=namen.all.hg))}
+
+### hilfsfunktion fuer checkBGV, hat keine rueckgabe, checkt nur 
+varsWithMoreThan1Class <- function(allNam, dat) {
+   if(length(allNam[["HG.var"]])>0 || length(allNam[["group.var"]])>0 || length(allNam[["DIF.var"]])>0 || length(allNam[["weight.var"]]) >0 || length(allNam[["add.vars"]]) >0 ) {
+      varClass<- sapply(c(allNam[["HG.var"]],allNam[["group.var"]],allNam[["DIF.var"]], allNam[["weight.var"]], allNam[["add.vars"]]),FUN = function(ii) {class(dat[,ii])})
+      if(isFALSE(all(sapply(varClass, length) == 1)) ) {
+         fehler <- which(sapply(varClass, length) != 1)
+         stop("Following ",length(fehler), " variables with more that one class: \n", eatTools::print_and_capture(varClass[names(fehler)], spaces = 5))
+      } }}
+
+### hilfsfunktion fuer checkBGV, hat keine rueckgabe, checkt nur 
+modelVarsNum <- function(allNam, dat) {
+   if(length(allNam[["add.vars"]])>0)  { 
+      clss <- sapply(allNam[["add.vars"]], FUN = function(ii) { inherits(dat[,ii], c("integer", "numeric"))})
+      if(any(clss == FALSE)) {
+         mess <- sapply(dat[,names(clss[which(clss == FALSE)]), drop=FALSE], class)
+         stop(paste0("Variable(s) with insufficient class: \n",eatTools::print_and_capture(mess, spaces = 5)))
+      } } } 
 
 
 ### called by defineModel() ----------------------------------------------------

@@ -16,15 +16,36 @@ overwriteAnchorGpcmTAM <- function(anchor, dmo, Y, group, wgt) {
       control<- dmo[["control"]]
       control[["maxiter"]] <- 50
       if(dmo[["irtmodel"]] %in% c("1PL", "PCM", "PCM2", "RSM")) {
-         skelet <- tam.mml(resp = dmo[["daten"]][,dmo[["all.Names"]][["variablen"]]], constraint = dmo[["constraint"]], pid = dmo[["daten"]][,"ID"], Y = Y, Q = dmo[["qMatrix"]][,-1,drop=FALSE], irtmodel = dmo[["irtmodel"]], pweights = wgt, control = control, group=group)
+         if(dmo[["irtmodel"]] == "PCM") {
+            skelet <- generatePCM_skeleton_TAM(dmo=dmo, anchor=anchor)
+            message(paste0("Model '",dmo[["analysis.name"]],"': Reconstruct the 'xsi.fixed.estimated' structure to prepare partial credit anchoring in TAM."))   
+         } else {    
+            skelet <- tam.mml(resp = dmo[["daten"]][,dmo[["all.Names"]][["variablen"]]], constraint = dmo[["constraint"]], pid = dmo[["daten"]][,"ID"], Y = Y, Q = dmo[["qMatrix"]][,-1,drop=FALSE], irtmodel = dmo[["irtmodel"]], pweights = wgt, control = control, group=group)
+         }
       } else {
          skelet <- tam.mml.2pl(resp = dmo[["daten"]][,dmo[["all.Names"]][["variablen"]]], pid = dmo[["daten"]][,"ID"], Y = Y, Q = dmo[["qMatrix"]][,-1,drop=FALSE], xsi.fixed = anchor, irtmodel = dmo[["irtmodel"]], est.slopegroups=dmo[["est.slopegroups"]],pweights = wgt, B.fixed = dmo[["fixSlopeMat"]], est.variance = dmo[["estVar"]], control = control, group=group)
       }         
       diffe  <- Sys.time() - beg
-      if(as.numeric(diffe) > 0.2) {message(paste0("Model '",dmo[["analysis.name"]],"': Generate skeleton for partial credit anchoring: ", timeFormat(diffe)))}
+      if(as.numeric(diffe) > 0.2 && dmo[["irtmodel"]] != "PCM") {message(paste0("Model '",dmo[["analysis.name"]],"': Generate skeleton for partial credit anchoring: ", timeFormat(diffe)))}
       anchor <- prepAnchorTAM(dfm = dmo, skeleton = skelet[["xsi.fixed.estimated"]])
    }
    return(anchor)}
+   
+### die Funktion erzeugt die Liste, die normalerweise das gefittete tam-objekt mit mod[["xsi.fixed.estimated"]] zurueck gibt, nur mit leeren Werten
+### in prepAnchorTAM werden hierin dann die VORHANDENEN anker-Werte eingetragen. Items, die nicht verankert werden, werden aus "xsi.fixed.estimated" entfernt
+### diese Funktion erzeugt auch die NUmmerierung, die wichtig ist und nicht geaendert werden darf 
+generatePCM_skeleton_TAM <- function(dmo, anchor){
+   itemSeq <- do.call("rbind", lapply(dmo[["all.Names"]][["variablen"]], FUN = function(i) {
+              cats <- paste0("Cat", 1:max(dmo[["daten"]][,i], na.rm=TRUE))
+              rows <- paste(i, cats, sep="_")
+              dfr  <- data.frame(empty=rep(NA,length(rows)),  xsi = 1)
+              rownames(dfr) <- rows
+              return(dfr)})) 
+   itemSeq[,"empty"] <- 1:nrow(itemSeq)
+   colnames(itemSeq) <- c("", "xsi")
+   itemSeq <- as.matrix(itemSeq)
+   ret     <- list(xsi.fixed.estimated = itemSeq)
+   return(ret)}   
 
 runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.console = TRUE, wait = TRUE, onlySkeleton = FALSE) {
             argString <-  paste(names(formals(runModel))[-1], names(formals(runModel))[-1], sep=" = ", collapse=", ")
