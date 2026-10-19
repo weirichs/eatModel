@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">eatModel</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.10.42</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.11.0</span>
       </span>
     </div>
 
@@ -53,15 +53,18 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get.itn</span><span class="op">(</span><span class="va">file</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get.itn</span><span class="op">(</span><span class="va">file</span>, software <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"conquest"</span>, <span class="st">"conquest5"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <p></p>
 <dl><dt id="arg-file">file<a class="anchor" aria-label="anchor" href="#arg-file"></a></dt>
-<dd><p><!-- %%     ~~Describe \code{file} here~~ -->
-Character string with the name of the Conquest item analysis file.</p></dd>
+<dd><p>Character string with the name of the Conquest item analysis file.</p></dd>
+
+  <dt id="arg-software">software<a class="anchor" aria-label="anchor" href="#arg-software"></a></dt>
+<dd><p>The software that created the itn file, i.e. <code>"conquest"</code> for Conquest version 2,
+(default) and <code>"conquest5"</code> for Conquest version 5.</p></dd>
 
 </dl></div>
     <div id="value">
@@ -136,9 +139,7 @@ Version 2.0. Generalised Item Response Modeling Software.</em> Camberwell, Victo
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"twodim.itn"</span>, package <span class="op">=</span> <span class="st">"eatModel"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nzchar</a></span><span class="op">(</span><span class="va">file</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span><span class="va">itn</span>  <span class="op">&lt;-</span> <span class="fu">get.itn</span><span class="op">(</span><span class="va">file</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>
   </div>

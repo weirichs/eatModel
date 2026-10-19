@@ -39,7 +39,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">eatModel</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.10.42</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.11.0</span>
       </span>
     </div>
 
@@ -100,7 +100,7 @@
 <div class="section level2">
 <h2 id="exemplary-analysis">Exemplary analysis<a class="anchor" aria-label="anchor" href="#exemplary-analysis"></a>
 </h2>
-<p>The package comes with two relatively large examplary data sets, one only for dichotomous items, one also for polytomous items. First data set (<code>trends</code>) contains fictional achievement scores of 13524 students in two domains (reading, listening) from three measurement occasions (2010, 2015, 2020) in the long format. The data are not longitudinal as the individuals stem from different cohorts and do not overlap across measurement occasions. The name of the data set is <code>trends</code>. You can find detailed exemplary analyses in the help pages of <code><a href="reference/defineModel.html">defineModel()</a></code>. The following example estimates a between-item two-dimensional 2pl model with conditioning (background) model for the student cohort measured in 2020. The <code><a href="reference/splitModels.html">splitModels()</a></code> function can be used previously if the corresponding model should be estimated in 2010 and 2015 likewise.</p>
+<p>The package comes with two relatively large examplary data sets, one only for dichotomous items, one also for polytomous items. First data set (<code>trends</code>) contains fictional achievement scores of 13524 students in two domains (reading, listening) from three measurement occasions (2010, 2015, 2020) in the long format. The data are not longitudinal as the individuals stem from different cohorts and do not overlap across measurement occasions. The name of the data set is <code>trends</code>. You can find detailed exemplary analyses in the help pages of <code><a href="reference/defineModel.html">defineModel()</a></code>. The following example estimates a between-item two-dimensional 2pl model with conditioning (background) model for the student cohort measured in 2020 who worked on booklet number Bo08. The <code><a href="reference/splitModels.html">splitModels()</a></code> function can be used previously if the corresponding model should be estimated in 2010 and 2015 likewise.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/weirichs/eatModel" class="external-link">eatModel</a></span><span class="op">)</span></span>
 <span><span class="co">### load exemplary data </span></span>
@@ -145,7 +145,7 @@
 <span><span class="co"># transform into wide format. Again, we use only a small subsample to reduce computational burden</span></span>
 <span><span class="va">datW</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">reading</span>, <span class="va">bookletID</span> <span class="op">==</span> <span class="st">"TH08"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">reshape2</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/reshape2/man/cast.html" class="external-link">dcast</a></span><span class="op">(</span><span class="va">idstud</span><span class="op">~</span><span class="va">item</span>, value.var <span class="op">=</span> <span class="st">"valueSum"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># combine the two lowest categories for item D205143 to avoid categories with too few observations</span></span>
+<span><span class="co"># For item D205143, combine a few categories to avoid having categories with too few observations</span></span>
 <span><span class="va">datW</span><span class="op">[</span>,<span class="st">"D205143"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu">car</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/recode.html" class="external-link">recode</a></span><span class="op">(</span><span class="va">datW</span><span class="op">[</span>,<span class="st">"D205143"</span><span class="op">]</span>, <span class="st">"1=0; 2=0; 3=1; 4=1; 5=2"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># # define the model</span></span>

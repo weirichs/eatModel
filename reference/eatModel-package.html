@@ -81,7 +81,11 @@ Historically, eatModel is a &amp;#8216;reboot&amp;#8217; of the package eatRest 
   Thus, eatModel is the second attempt, launched in summer 2014 and introduced in summer 2015.
   Its functionality is closely related to eatRest but adds some new features—for example, the
   support of 2pl and partial credit models using the TAM and mirt packages and several
-  linking procedures for more than two times of measurement."><meta property="og:image" content="/logo.png"><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
+  linking procedures for more than two times of measurement.
+Starting with package version 0.11.0, eatModel also supports Conquest version 5. Please note that the
+  import functions that read in direct ASCII output from Conquest (get.shw, get.wle, get.plausible, etc.)
+  were written only for version 2. In version 5, Conquest allows you to export results to xlsx files instead
+  of ASCII files, which enables clearer further processing and thus renders the old ASCII import functions obsolete."><meta property="og:image" content="/logo.png"><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
@@ -99,7 +103,7 @@ Historically, eatModel is a &amp;#8216;reboot&amp;#8217; of the package eatRest 
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">eatModel</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.10.42</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.11.0</span>
       </span>
     </div>
 
@@ -211,13 +215,17 @@ Historically, eatModel is a &amp;#8216;reboot&amp;#8217; of the package eatRest 
   Its functionality is closely related to <code>eatRest</code> but adds some new features—for example, the
   support of 2pl and partial credit models using the <code>TAM</code> and <code>mirt</code> packages and several
   linking procedures for more than two times of measurement.</p>
+<p>Starting with package version 0.11.0, eatModel also supports Conquest version 5. Please note that the
+  import functions that read in direct ASCII output from Conquest (get.shw, get.wle, get.plausible, etc.)
+  were written only for version 2. In version 5, Conquest allows you to export results to xlsx files instead
+  of ASCII files, which enables clearer further processing and thus renders the old ASCII import functions obsolete.</p>
     </div>
 
 
     <div id="details">
     <h2>Details</h2>
 
-<table class="table table"><tr><td>Package:</td><td>eatModel</td></tr><tr><td>Type:</td><td>Package</td></tr><tr><td>Version:</td><td>0.10.42</td></tr><tr><td>Date:</td><td>2026-09-23</td></tr><tr><td>License:</td><td>GPL(&gt;=2)</td></tr></table></div>
+<table class="table table"><tr><td>Package:</td><td>eatModel</td></tr><tr><td>Type:</td><td>Package</td></tr><tr><td>Version:</td><td>0.11.0</td></tr><tr><td>Date:</td><td>2026-10-19</td></tr><tr><td>License:</td><td>GPL(&gt;=2)</td></tr></table></div>
     <div id="author">
     <h2>Author</h2>
     <p>Author/maintainer: Sebastian Weirich &lt;sebastian.weirich@iqb.hu-berlin.de&gt;</p>
