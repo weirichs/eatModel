@@ -8,7 +8,8 @@ Deviance Plot for \pkg{Conquest} log files
 Plots the deviance change in every iteration.
 }
 \usage{
-plotDevianceConquest(logFile, omitUntil=1, reverse=TRUE, change=TRUE, adaptWindow = TRUE)
+plotDevianceConquest(logFile, omitUntil=1, reverse=TRUE, change=TRUE, adaptWindow = TRUE,
+    software = c("conquest", "conquest5"))
 }
 \arguments{
   \item{logFile}{
@@ -30,6 +31,10 @@ Logical: Should the size of the output window be adjusted to accommodate the
 additional information about the R session and available memory? This option
 should not be used if the plots are not to be displayed directly but written
 to a PDF file.
+}
+  \item{software}{
+Please select whether you want to use Conquest version 2 (\code{"conquest"}) 
+or 5 (\code{"conquest5"}) here. 
 }
 }
 \author{
