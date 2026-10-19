@@ -80,7 +80,7 @@ runModel <- function(defineModelObj, show.output.on.console = FALSE, show.dos.co
             } else {                                                            ### ab hier fuer den single model Fall
     ### runModel for conquest, mirt, tam
                 if(inherits(defineModelObj, "defineConquest")) {ret <- runModelConquest(dmo=defineModelObj, show.dos.console=show.dos.console,show.output.on.console=show.output.on.console, wait=wait)}   
-                if(inherits(defineModelObj, "defineMirt"))     {ret <- runModelMirt(dmo=defineModelObj)}
+                if(inherits(defineModelObj, "defineMirt"))     {ret <- runModelMirt(dmo=defineModelObj, onlySkeleton=onlySkeleton)}
                 if(inherits(defineModelObj, "defineTam"))      {ret <- runModelTam(dmo=defineModelObj, show.output.on.console=show.output.on.console)}
             }
             return(ret) }
@@ -97,10 +97,10 @@ runModelConquest <- function(dmo, show.dos.console,show.output.on.console, wait)
        setwd(oldPfad)                                                           ### untere Zeile: Rueckgabeobjekt definieren: Conquest
     }
     class(dmo) <- c("runConquest", "list")
-    attr(dmo, "software") <- "conquest"
+    attr(dmo, "software") <- dmo[["software"]]
     return(dmo) }      
 
-runModelMirt <- function(dmo) {
+runModelMirt <- function(dmo, onlySkeleton) {
     if(ncol(dmo[["qMatrix"]]) == 2) {                                           ### eindimensionales Modell
        mirtMod <- 1
     } else {                                                                    ### mehrdimensionales Modell

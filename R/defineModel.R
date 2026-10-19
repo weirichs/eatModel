@@ -1,7 +1,7 @@
 defineModel <- function(dat, items, id, splittedModels = NULL, irtmodel = c("1PL", "2PL", "PCM", "PCM2", "RSM", "GPCM", "GPCM.groups", "2PL.groups", "GPCM.design", "3PL"),
                qMatrix=NULL, DIF.var=NULL, DIF.free = NULL, HG.var=NULL, group.var=NULL, weight.var=NULL, anchor = NULL, domainCol=NULL, itemCol=NULL, valueCol=NULL,catCol = NULL, check.for.linking = TRUE,
                minNperItem = 50, removeMinNperItem = FALSE, boundary = 6, remove.boundary = FALSE, remove.no.answers = TRUE, remove.no.answersHG = TRUE, remove.missing.items = TRUE, remove.constant.items = TRUE,
-               remove.failures = FALSE, remove.vars.DIF.missing = TRUE, remove.vars.DIF.constant = TRUE, remove.insuff.pattern = TRUE, verbose=TRUE, software = c("conquest","tam", "mirt"), dir = NULL,
+               remove.failures = FALSE, remove.vars.DIF.missing = TRUE, remove.vars.DIF.constant = TRUE, remove.insuff.pattern = TRUE, verbose=TRUE, software = c("conquest","tam", "mirt", "conquest5"), dir = NULL,
                analysis.name, schooltype.var = NULL, model.statement = "item",  compute.fit = TRUE, pvMethod = c("regular", "bayesian"), fitTamMmlForBayesian = TRUE, n.plausible=5, seed = NULL, conquest.folder=NULL,
                constraints=c("cases","none","items"),std.err=c("quick","full","none"), distribution=c("normal","discrete"), method=c("gauss", "quadrature", "montecarlo", "quasiMontecarlo", "MHRM", "SEM", "BL"),
                n.iterations=2000,nodes=NULL, p.nodes=2000, f.nodes=2000,converge=0.001,deviancechange=0.0001, equivalence.table=c("wle","mle","NULL"), use.letters=FALSE,
@@ -64,8 +64,8 @@ defineModelSingle <- function (a) {
        dat  <- eatTools::makeDataFrame(dat, name = "dat")
      ### software checken
        software <- match.arg(arg = tolower(software), choices = eval(formals(defineModel)[["software"]]))
-       if(software == "conquest" && is.null(a[["conquest.folder"]]) ) {conquest.folder <- identifyConquestFolder() }
-       if(software %in% c("conquest", "tam")) {
+       if(software %in% c("conquest", "conquest5") && is.null(a[["conquest.folder"]]) ) {conquest.folder <- identifyConquestFolder(software=software) }
+       if(software %in% c("conquest", "conquest5", "tam")) {
           irtmodel <- match.arg(irtmodel, choices = eval(formals(defineModel)[["irtmodel"]]))
           if(is.null(Msteps) ) {                                                ### den Default fuer Msteps so setzen wie in TAM
              if ( irtmodel == "3PL" ) { Msteps <- 10 } else { Msteps <- 4 }
@@ -75,7 +75,7 @@ defineModelSingle <- function (a) {
        }  
        method   <- match.arg(method, choices = eval(formals(defineModel)[["method"]]))
        pvMethod <- match.arg(pvMethod, choices = eval(formals(defineModel)[["pvMethod"]]))
-       if(software == "conquest") {
+       if(software %in% c("conquest", "conquest5")) {
           original.options <- options("scipen")                                 ### lese Option fuer Anzahl der Nachkommastellen
           options(scipen = 20)                                                  ### setze Option fuer Anzahl der Nachkommastellen
           if(is.symbol(a[["analysis.name"]])) {stop("Please specify 'analysis.name' or use 'software = \"tam\"'\n")}
@@ -172,7 +172,7 @@ defineModelSingle <- function (a) {
        }
        lab <- data.frame(itemNr = 1:length(cbc[["allNam"]][["variablen"]]), item = cbc[["allNam"]][["variablen"]], stringsAsFactors = FALSE)
        if(!is.null(a[["anchor"]]))  {
-          ankFrame <- anker (lab = lab, prm = anchor, qMatrix = obs3[["qMatrix"]], domainCol=domainCol, itemCol=itemCol, valueCol=valueCol, catCol=catCol)
+          ankFrame <- anker(lab = lab, prm = anchor, qMatrix = obs3[["qMatrix"]], domainCol=domainCol, itemCol=itemCol, valueCol=valueCol, catCol=catCol, dat=cpsc[["dat"]], software = software)
        } else {
           ankFrame <- NULL
           if(fitTamMmlForBayesian == FALSE ) {
@@ -180,7 +180,7 @@ defineModelSingle <- function (a) {
              fitTamMmlForBayesian <- TRUE
           }
        }
-       if(software == "conquest" )   {
+       if(software %in% c("conquest", "conquest5"))   {
           daten$ID <- gsub ( " ", "0", formatC(daten$ID, width=max(as.numeric(names(table(nchar(daten$ID)))))) )
           fixed.width <- c(as.numeric(names(table(nchar(daten[,"ID"])))), obs4[["all.hg.char"]], rep(max(obs4[["var.char"]]),length(obs4[["var.char"]])))
      ### erstmal testen, ob die Characterzahl wirklich einheitlich ist ... datensatz wird dazu nicht auf festplatte geschrieben
@@ -193,9 +193,9 @@ defineModelSingle <- function (a) {
           batch <- paste( normalize.path(conquest.folder),paste(analysis.name,".cqc",sep=""), sep=" ")
           write(batch, file.path(dir,paste(analysis.name,".bat",sep="")))
           foo <- gen.syntax(Name=analysis.name, daten=daten, all.Names = cbc[["allNam"]], namen.all.hg = cbc[["namen.all.hg"]], all.hg.char = obs4[["all.hg.char"]], var.char= max(obs4[["var.char"]]), model=obs3[["qMatrix"]], anchored=anchor, pfad=dir, n.plausible=n.plausible, compute.fit = compute.fit,
-                 constraints=constraints, std.err=std.err, distribution=distribution, method=met[["method"]], n.iterations=n.iterations, nodes=met[["nodes"]], p.nodes=p.nodes, f.nodes=f.nodes, converge=converge,deviancechange=deviancechange, equivalence.table=equivalence.table, use.letters=use.letters, model.statement=obs2[["model.statement"]], conquest.folder = conquest.folder, allowAllScoresEverywhere = allowAllScoresEverywhere, seed = seed, export = export)
+                 constraints=constraints, std.err=std.err, distribution=distribution, method=met[["method"]], n.iterations=n.iterations, nodes=met[["nodes"]], p.nodes=p.nodes, f.nodes=f.nodes, converge=converge,deviancechange=deviancechange, equivalence.table=equivalence.table, use.letters=use.letters, model.statement=obs2[["model.statement"]], conquest.folder = conquest.folder, allowAllScoresEverywhere = allowAllScoresEverywhere, seed = seed, software=software, export = export)
           if(!is.null(anchor))  {
-             write.table(ankFrame[["resConquest"]], file.path(dir,paste(analysis.name,".ank",sep="")) ,sep=" ", col.names = FALSE, row.names = FALSE, quote = FALSE)
+             write.table(ankFrame[["resConquest"]][,1:2], file.path(dir,paste(analysis.name,".ank",sep="")) ,sep=" ", col.names = FALSE, row.names = FALSE, quote = FALSE)
           }
      ### wenn Conquest gewaehlt, dann ggf. Logfile umbenennen, falls es bereits (unter demselben namen) existiert
           if(file.exists( file.path ( dir,  paste(analysis.name,".log",sep=""))) )  {
@@ -206,7 +206,7 @@ defineModelSingle <- function (a) {
           options(scipen = unlist(original.options)); flush.console()           ### Achtung: setze Konsolenpfade in Hochkommas, da andernfalls keine Leerzeichen in den Ordner- bzw. Dateinamen erlaubt sind!
           sysInfo  <- Sys.info()
           if(sysInfo[["sysname"]] == "Linux") {suff <- ""; setwd("/")} else {suff <- "\""}
-          ret <- list ( software = software, input = paste(suff, file.path(dir, paste(analysis.name,"cqc",sep=".")), suff, sep=""), conquest.folder = paste(suff, conquest.folder, suff, sep=""), dir=dir, analysis.name=analysis.name, model.name = analysis.name, qMatrix=obs3[["qMatrix"]], all.Names=cbc[["allNam"]], deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]], perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], daten=daten, method=met[["method"]], nodes=met[["nodes"]], p.nodes=p.nodes, f.nodes=f.nodes, renam=obs[["renam"]], viewed = cpsc[["viewed"]])
+          ret <- list(software = software, input = paste(suff, file.path(dir, paste(analysis.name,"cqc",sep=".")), suff, sep=""), conquest.folder = paste(suff, conquest.folder, suff, sep=""), dir=dir, analysis.name=analysis.name, model.name = analysis.name, qMatrix=obs3[["qMatrix"]], all.Names=cbc[["allNam"]], deskRes = deskRes, discrim = discrim, perNA=pwvv[["perNA"]], per0=cpsc[["per0"]], perA = cpsc[["perA"]], perExHG = cbc[["perExHG"]], itemsExcluded = cbc[["namen.items.weg"]], daten=daten, method=met[["method"]], nodes=met[["nodes"]], p.nodes=p.nodes, f.nodes=f.nodes, renam=obs[["renam"]], viewed = cpsc[["viewed"]], anchor=list(ank = ankFrame[["resTam"]], allNam = cbc[["allNam"]]))
           class(ret) <-  c("defineConquest", "list")
        }
      ### Sektion 'Rueckgabeobjekt fuer tam'
@@ -239,12 +239,10 @@ defineModelSingle <- function (a) {
        }
        return(ret)}
 
-
-
 ### hilfsfunktion fuer defineModelSingle
 renameVariables <- function(a, qMatrix, software, all.Names, dat) {
        renam       <- NULL                                                      ### initialisieren
-       if(software == "conquest") {
+       if(software %in% c("conquest", "conquest5")) {
           if(max(nchar(all.Names[["variablen"]]))>10) {
              neu   <- paste0("a", as.numeric(as.factor(all.Names[["variablen"]])))
              i     <- 1
@@ -270,7 +268,7 @@ renameVariables <- function(a, qMatrix, software, all.Names, dat) {
 renameVariables2 <- function(all.Names, dat, software, model.statement) {       
        exclude <- which(names(all.Names) == "DIF.free")
        subsNam <- .substituteSigns(dat=dat, variable=unlist(all.Names[-unique(c(1,2, exclude))]), all.Names = all.Names)
-       if(software == "conquest" || !is.null(all.Names[["DIF.var"]])) {
+       if(software %in% c("conquest", "conquest5") || !is.null(all.Names[["DIF.var"]])) {
           if(!all(subsNam$old == subsNam$new)) {                                ### Conquest erlaubt keine gross geschriebenen und expliziten Variablennamen, die ein "." oder "_" enthalten
              sn     <- unique(subsNam[which( subsNam$old != subsNam$new),])
              if(nrow(sn) > 4) {toadd <- " (truncated)"} else {toadd <- ""}
@@ -289,6 +287,7 @@ renameVariables2 <- function(all.Names, dat, software, model.statement) {
        if(length(intersect(all.Names$HG.var, all.Names$variablen))>0)     {stop("Test items and HG variable have to be mutually exclusive.\n")}
        if(length(intersect(all.Names$group.var, all.Names$variablen))>0)  {stop("Test items and group variable have to be mutually exclusive.\n")}
        return(list(all.Names = all.Names, dat=dat, model.statement=model.statement))}
+
 
 generateOrCheckQmatrix <- function(a, qMatrix, all.Names) {
        if(is.null(a[["qMatrix"]])) {
@@ -311,7 +310,7 @@ generateOrCheckQmatrix <- function(a, qMatrix, all.Names) {
 prepareDatasets <- function(namen.all.hg, dat, software, allNam, use.letters) {
        if(length(namen.all.hg)>0) {all.hg.char <- sapply(namen.all.hg, FUN=function(ii) {max(nchar(as.character(na.omit(dat[,ii]))))})} else {all.hg.char <- NULL}
        var.char <- sapply(dat[,allNam[["variablen"]], drop = FALSE], FUN=function(ii) {max(nchar(as.character(na.omit(ii))))})
-       if(software == "conquest" )   {                                          ### obere Zeile: wieviele character muss ich fuer jedes Item reservieren?
+       if(software %in% c("conquest","conquest5"))   {                          ### obere Zeile: wieviele character muss ich fuer jedes Item reservieren?
           no.number <- setdiff(1:length(var.char), grep("[[:digit:]]",var.char))
           if(length(no.number)>0) {var.char[no.number] <- 1}                    ### -Inf steht dort, wo nur missings sind, hier soll die Characterbreite auf 1 gesetzt sein
           if(use.letters == TRUE)   {                                           ### sollen Buchstaben statt Ziffern benutzt werden? Dann erfolgt hier Recodierung.
@@ -324,4 +323,5 @@ prepareDatasets <- function(namen.all.hg, dat, software, allNam, use.letters) {
           }
        }
        return(list(dat=dat, var.char = var.char, all.hg.char=all.hg.char))}
+
 

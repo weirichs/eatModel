@@ -1,6 +1,6 @@
 cf <- system.file("extdata", "console_Feb2007.exe", package = "eatModel")
 hasConquest <- nchar(cf)>0 && file.exists(cf)
-path <- getwd() # defineMOdel aender setwd(), deshalb muss das hier wieder zurueckgesetzt werden
+path <- getwd() # defineModel aender setwd(), deshalb muss das hier wieder zurueckgesetzt werden
 
 #load(pl2w("c:/diskdrv/Winword/Psycho/IQB/Dropbox/R/eat/eatModel/tests/testthat/vera_dat.rda"))
 load(test_path("vera_dat.rda"))

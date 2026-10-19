@@ -1,7 +1,7 @@
 ### getConquestResult() is called by getResults()
 ### the other functions are called by getConquestResult()
 
-getConquestResults<- function(path, analysis.name, model.name, qMatrix, all.Names, abs.dif.bound , sig.dif.bound, p.value, deskRes, discrim, omitFit, omitRegr, omitWle, omitPV, daten, renam, Q3=Q3, q3theta=q3theta, q3MinObs =  q3MinObs, q3MinType = q3MinType, omitUntil) {
+getConquestResults <- function(path, analysis.name, model.name, qMatrix, all.Names, abs.dif.bound , sig.dif.bound, p.value, deskRes, discrim, omitFit, omitRegr, omitWle, omitPV, daten, renam, Q3, q3theta, q3MinObs, q3MinType, omitUntil, software, anchor) {
          allFiles <- list.files(path=path, pattern = analysis.name, recursive = FALSE)
          qL       <- reshape2::melt(qMatrix, id.vars = colnames(qMatrix)[1], variable.name = "dimensionName", na.rm=TRUE)
          qL       <- qL[which(qL[,"value"] != 0 ) , ]
@@ -9,49 +9,58 @@ getConquestResults<- function(path, analysis.name, model.name, qMatrix, all.Name
          ret      <- NULL                                                       ### Rueckgabeobjekt initialisieren
     ### Sektion 'Konvergenz pruefen' (log)
          logFile  <- paste(analysis.name, "log", sep=".")
-         isConv   <- converged ( dir = path, logFile = logFile )
+         isConv   <- converged(dir = path, logFile = logFile, software=software)
          isPoly   <- length(unique(deskRes[,"Codes"]))>1                        ### war modell polytom? damit das geht, muss es immer deskriptive Statistiken geben, muss also in 'defineModel' obligatorisch sein!
     ### Deviance als pdf plotten
-         plotPdf  <- getConquestDeviance(path=path, analysis.name = analysis.name, omitUntil = omitUntil)
+         plotPdf  <- getConquestDeviance(path=path, analysis.name = analysis.name, omitUntil = omitUntil, software=software)
     ### Itemparameter auslesen (itn)
-         ret      <- rbind(ret, getConquestItn (model.name=model.name, analysis.name=analysis.name, qMatrix=qMatrix, qL=qL, allFiles=allFiles, path=path, renam=renam))
+         ret      <- rbind(ret, getConquestItn(model.name=model.name, analysis.name=analysis.name, qMatrix=qMatrix, qL=qL, allFiles=allFiles, path=path, renam=renam, software=software))
     ### Descriptives auslesen
          ret      <- rbind(ret, getConquestDesc (model.name=model.name, deskRes = deskRes, qMatrix=qMatrix, qL = qL, renam=renam))
     ### Diskrimination auslesen
          ret      <- rbind(ret, getConquestDiscrim (model.name=model.name, discrim = discrim, qMatrix=qMatrix, qL = qL, renam=renam))
     ### Itemparameter auslesen (shw): alle folgenden Funktionen werden nur aufgerufen, wenn es ein showfile gibt
-         shwFile  <- paste(analysis.name, "shw", sep=".")
+         if(software=="conquest5") {
+            add <- ".xlsx"
+         } else {
+            add <- ""
+         }
+         shwFile  <- paste0(analysis.name, ".shw", add)
          if (!shwFile %in% allFiles) {
-             cat("Cannot find Conquest showfile.\n")
+             cat(paste0("Cannot find Conquest showfile '",shwFile,"'. Skip \n"))
          } else {
              fle  <- file.path(path, shwFile)
              attr(fle, "allNames") <- all.Names                                 ### Hotfix: siehe DIF-Kommentar in get.shw() funktion
-             shw  <- get.shw( file = fle )                                      ### untere Zeile: 'reine' itemparameter auslesen
-             if(is.null( dim(shw$cov.structure) )) {from <- NA} else { from <- shw$cov.structure[-ncol(shw$cov.structure),1]}
+             if(software=="conquest5") {
+                shw  <- get.shw.v5(file = fle)
+             } else {
+                shw  <- get.shw(file = fle)
+             }             
+             if(is.null(dim(shw$cov.structure))) {from <- NA} else { from <- shw$cov.structure[-ncol(shw$cov.structure),1]}
              altN <- data.frame ( nr = 1:(ncol(qMatrix)-1), pv = paste("dim", 1:(ncol(qMatrix)-1),sep="."), from = from ,  to = colnames(qMatrix)[-1], stringsAsFactors = FALSE)
              shw[["item"]]  <- merge(shw[["item"]], qL[,-match("value", colnames(qL))], by.x = "item", by.y = colnames(qMatrix)[1], all=TRUE)
-             isPCM<- checkPcmFromShowfile(fle)                                  ### war es ein partial credit model?
-             shw12<- getConquestShw (model.name=model.name, qMatrix=qMatrix, qL=qL, shw=shw, altN=altN, renam=renam)
-             add  <- getConquestAdditionalTerms (model.name=model.name, qMatrix=qMatrix, shw=shw, shwFile = shwFile, renam=renam)
+             isPCM<- checkPcmFromShowfile(fle, software=software)               ### war es ein partial credit model?
+             shw12<- getConquestShw (model.name=model.name, qMatrix=qMatrix, qL=qL, shw=shw, altN=altN, renam=renam, anchor=anchor)
+             add  <- getConquestAdditionalTerms(model.name=model.name, qMatrix=qMatrix, shw=shw, shwFile = shwFile, renam=renam)
              if(!isPCM) {                                                       ### fuer no partial credit (also dichotom)
                 ret <- rbind(ret, shw12[["shw1"]], shw12[["shw2"]])
                 ret <- rbind(ret, add)
              } else {                                                           ### fuer partial credit
+                message("Partial credit parameters are transformed from d-parameterization to delta-parameterization.") 
                 ret <- rbind(ret, getConquestPartialCredit(shw = shw12, add=add))
              }
-
              ret  <- rbind(ret, getConquestInfit (model.name=model.name, shw=shw, renam=renam))
-    ### reliabilitaeten ergaenzen
-             ret  <- rbind(ret, data.frame ( model = model.name, source="conquest", var1=NA, var2=NA,type="tech", indicator.group="persons", group = colnames(qMatrix)[-1], par="eap", derived.par = "rel", value = shw[["reliability"]][,"eap.rel"], stringsAsFactors=FALSE))
+    ### reliabilitaeten ergaenzen: erstmal nur fuer Version 2 
+             if(software=="conquest") {ret  <- rbind(ret, data.frame ( model = model.name, source="conquest", var1=NA, var2=NA,type="tech", indicator.group="persons", group = colnames(qMatrix)[-1], par="eap", derived.par = "rel", value = shw[["reliability"]][,"eap.rel"], stringsAsFactors=FALSE))}
     ### Populationsparameter und Regressionsparameter aus Showfile auslesen (shw)
              ret  <- rbind(ret, getConquestPopPar (model.name=model.name, qMatrix=qMatrix, shw=shw))
              ret  <- rbind(ret, getConquestRegPar (model.name=model.name, shw=shw, altN = altN))
     ### Sektion 'Modellindizes auslesen' (shw)
-             ret  <- rbind(ret, data.frame ( model = model.name, source = "conquest", var1 = NA, var2 = NA , type = "model", indicator.group = NA, group = NA, par = c("deviance", "Npar"),  derived.par = NA, value = shw$final.deviance , stringsAsFactors = FALSE))
+             if(software=="conquest") {ret  <- rbind(ret, data.frame ( model = model.name, source = "conquest", var1 = NA, var2 = NA , type = "model", indicator.group = NA, group = NA, par = c("deviance", "Npar"),  derived.par = NA, value = shw$final.deviance , stringsAsFactors = FALSE))}
     ### Personenparameter auslesen (wle) ... da hierzu das Objekt 'altN' gebraucht wird, das aus dem shw-file erzeugt wird, geht das Auslesen von WLEs nur, wenn das Auslesen von shw geklappt hat
-             wles <- getConquestWles (model.name=model.name, analysis.name=analysis.name, qMatrix=qMatrix, allFiles=allFiles, omitWle = omitWle, altN = altN, path=path)
+             wles <- getConquestWles (model.name=model.name, analysis.name=analysis.name, qMatrix=qMatrix, allFiles=allFiles, omitWle = omitWle, altN = altN, path=path, software=software)
              ret  <- rbind(ret, wles[["res"]])
-             pvs  <- getConquestPVs (model.name=model.name, analysis.name=analysis.name, omitPV = omitPV, altN = altN, path=path, allFiles=allFiles)
+             pvs  <- getConquestPVs (model.name=model.name, analysis.name=analysis.name, omitPV = omitPV, altN = altN, path=path, allFiles=allFiles, software=software)
              ret  <- rbind(ret, pvs[["res"]])
     ### Q3 erzeugen
              ret  <- rbind(ret, getConquestQ3 (model.name=model.name, shw=shw,Q3=Q3, q3theta=q3theta, omitWle=omitWle, omitPV=omitPV, pv=pvs[["pv"]],wle=wles[["wle"]],daten=daten,all.Names=all.Names, q3MinObs=q3MinObs, q3MinType=q3MinType, shw1 = shw12[["shw1"]], renam=renam))
@@ -64,34 +73,35 @@ getConquestResults<- function(path, analysis.name, model.name, qMatrix, all.Name
 
 ### ----------------------------------------------------------------------------
 
-converged<- function (dir, logFile) {
-  isConv <- TRUE
-  if (!file.exists(file.path ( dir, logFile ))) {
-    cat(paste0("Warning: Model seems not to have converged. Cannot find log file '",file.path ( dir, logFile ),"'.\n"))
-    isConv <- FALSE
-  }  else  {
-    logF  <- scan(file = file.path ( dir, logFile ), what="character",sep="\n",quiet=TRUE)
-    if(length(logF) == 0 ) {
-      cat(paste0("Warning: Model seems not to have converged. Log file '",file.path ( dir, logFile ),"' is empty.\n"))
-      isConv <- FALSE
-    }  else  {
-      last  <- logF[length(logF)]
-      if ( ! eatTools::crop(last) == "=>quit;" ) {
-        if ( length( grep("quit;" , last)) == 0 ) {
-          cat(paste0("Warning: Model seems not to have converged. Log file unexpectedly finishs with '",last,"'.\nReading in model output might fail.\n"))
-          isConv <- FALSE
-        }  }  }  }
-  return(isConv)  }
+converged <- function (dir, logFile, software) {
+            isConv <- TRUE
+            if(!file.exists(file.path ( dir, logFile ))) {
+                cat(paste0("Warning: Model seems not to have converged. Cannot find log file '",file.path ( dir, logFile ),"'.\n"))
+                isConv <- FALSE
+            }  else  {
+                logF  <- scan(file = file.path(dir, logFile), what="character",sep="\n",quiet=TRUE)
+                if(length(logF) == 0) {
+                   cat(paste0("Warning: Model seems not to have converged. Log file '",file.path ( dir, logFile ),"' is empty.\n"))
+                   isConv <- FALSE
+                }  else  {
+                   last  <- logF[length(logF)]
+                   if(!eatTools::crop(last) == eatTools::recodeLookup(software, data.frame(alt = c("conquest", "conquest5"), neu = c("=>quit;", "quit"), stringsAsFactors = FALSE))) {
+                      if(length( grep("quit" , last)) == 0 ) {
+                         cat(paste0("Warning: Model seems not to have converged. Log file unexpectedly finishs with '",last,"'.\nReading in model output might fail.\n"))
+                         isConv <- FALSE
+                      }  }  }  }
+            return(isConv)  }
 
 ### ----------------------------------------------------------------------------
 
-getConquestItn <- function (model.name, analysis.name, qMatrix, qL, allFiles, path, renam){
-         itnFile  <- paste(analysis.name, "itn", sep=".")
+getConquestItn <- function (model.name, analysis.name, qMatrix, qL, allFiles, path, renam, software){
+         add      <- car::recode(software, "'conquest'=''; 'conquest5'='.txt'")
+         itnFile  <- paste0(analysis.name, ".itn", add)
          if (!itnFile %in% allFiles) {
              cat("Cannot find Conquest itn-file.\n")
              return(NULL)
          } else {
-             itn  <- get.itn( file.path(path, itnFile) )
+             itn  <- get.itn(file.path(path, itnFile), software=software)
              allID<- c("dif.name", "dif.value", "item.name", "Label")
              drin <- allID[which(allID %in% colnames(itn))]
              itnL <- reshape2::melt(itn, id.vars = drin, measure.vars = "pt.bis", value.name = "ptBis", variable.name = "pointBiserialCorrelation", na.rm=FALSE) |> dplyr::mutate(category = paste0("Cat", Label)) |> subset(Label > 0)
@@ -106,13 +116,21 @@ getConquestItn <- function (model.name, analysis.name, qMatrix, qL, allFiles, pa
 
 ### ----------------------------------------------------------------------------
 
-getConquestShw <- function (model.name, qMatrix, qL, shw, altN, renam){
+getConquestShw <- function (model.name, qMatrix, qL, shw, altN, renam, anchor){
          shw1 <- data.frame ( model = model.name, source = "conquest", var1 = shw$item[,"item"], var2 = "Cat1" , type = "fixed", indicator.group = "items", group = shw$item[,"dimensionName"], par = "est",  derived.par = NA, value = as.numeric(shw$item[,"ESTIMATE"]), stringsAsFactors = FALSE)
          shw2 <- data.frame ( model = model.name, source = "conquest", var1 = shw$item[,"item"], var2 = "Cat1", type = "fixed", indicator.group = "items",group = shw$item[,"dimensionName"], par = "est",  derived.par = "se", value = as.numeric(shw$item[,"ERROR"]), stringsAsFactors = FALSE)
-         toOff<- shw2[ which(is.na(shw2[,"value"])), "var1"]
-         if(length(toOff)>0) {
-            shw1[match(toOff, shw1[,"var1"]), "par"] <- "offset"
-            shw2  <- shw2[-which(is.na(shw2[,"value"])),]                       ### entferne Zeilen aus shw2, die in der "value"-Spalte NA haben
+         if(!is.null(anchor[["ank"]])) {
+            if("category" %in% colnames(anchor[["ank"]])) {
+               toOff<- subset(anchor[["ank"]], category == "Cat1")              ### hier geht es erstmal nur um den beta-Parameter, die Stufenparameter (cat1, cat2, ...) kommen in getconquestadditionalterms
+            } else {
+               toOff<- anchor[["ank"]]
+            }
+            stopifnot(length(unique(toOff[,"item"])) == nrow(toOff))
+            if(nrow(toOff)>0) {
+               shw1[match(toOff[,"item"], shw1[,"var1"]), "par"] <- "offset"
+               shw2  <- shw2[-match(toOff[,"item"], shw2[,"var1"]),]            ### entferne Zeilen aus shw2, die ankerparameter sind 
+               if(nrow(shw2)==0) {shw2 <- NULL}
+            }
          }
          shwLi<- list(shw1=shw1, shw2=shw2)
          if(!is.null(renam)) {
@@ -163,52 +181,61 @@ getConquestInfit <- function (model.name,  shw, renam){
 ### ----------------------------------------------------------------------------
 
 getConquestAdditionalTerms <- function(model.name, qMatrix, shw, shwFile, renam){
-         if(length(shw) <= 4 )  {  return(NULL)}                                ### ggf. Parameter zusaetzlicher Conquest-Terme einlesen, wenn length(shw) <= 4, gibt es keinen zusaetzlichen Terme
+         addT  <- setdiff(names(shw), c("item", "regression", "cov.structure", "final.deviance", "reliability"))
+         if(length(addT) == 0) {return(NULL)}                                   ### ggf. Parameter zusaetzlicher Conquest-Terme einlesen, das sind alle ausser "item" "regression"     "cov.structure"  "final.deviance" "reliability" 
          res   <- NULL                                                          ### initialisieren
          read  <- 2 : (length(shw) - 3)                                         ### Diese Terme muessen eingelesen werden
-         for ( i in names(shw)[read] ) {
-               cols <- unlist(isLetter(i))                                      ### versuche Spalte(n) zu identifizieren
-               if( !all(cols %in% colnames(shw[[i]])) ) {
-                   cat(paste("Cannot identify variable identifier for additional term '",i,"' in file '",shwFile,"'. Skip procedure.\n",sep=""))
-               }  else  {
-                   if(length(cols) == 1 ) {
-                      var1 <- paste( cols, shw[[i]][,cols],sep="_")
-                   } else {
-                      var1 <- unlist(apply(shw[[i]][,cols], MARGIN=1, FUN = function ( y ) {
-                              paste ( unlist(lapply ( 1:length(y), FUN = function ( yy ) {
-                                      nam <- y[yy]
-                                      if(!is.null(renam)) {if(nam %in% renam[,"new"]) {nam <- eatTools::recodeLookup(nam, renam[,c("new", "old")])}}
-                                      ret <- paste(names(y)[yy], nam,sep="_")
-                                      return(ret)})), sep="", collapse = "_X_")  }))
-                   }
-                   if(ncol(qMatrix) != 2 ){
-                      cat(paste0("Warning: Cannot identify the group the term '",i,"' in file '",shwFile,"' belongs to. Insert 'NA' to the 'group' column.\n"))
-                      gr <- NA
-                   }  else {
-                      gr <- colnames(qMatrix)[2]
-                   }                                                            ### untere zeile: gesonderte partial credit behandlung
-                   if(length(grep("step",i)) == 1 && "step" %in% colnames(shw[[i]])){
-                       shwI <- eatTools::na_omit_selection(shw[[i]], "ESTIMATE")
-                       res  <- rbind(res, data.frame ( model = model.name, source = "conquest", var1 = shwI[,"item"], var2 = paste0("step",shwI[,"step"]) , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = NA, value = shwI[,"ESTIMATE"], stringsAsFactors = FALSE),  data.frame ( model = model.name, source = "conquest", var1 = shwI[,"item"], var2 = paste0("step",shwI[,"step"]) , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "se", value = shwI[,"ERROR"], stringsAsFactors = FALSE))
-                   }  else  {
-                       vars<- c("ESTIMATE", "MNSQ", "MNSQ.1", "ERROR")
-                       cls <- sapply(shw[[i]][,vars], inherits, what=c("numeric", "integer"))
-                       if ( !all(cls) ) {
-                            cat(paste0("Expect column(s) '",paste(vars[which(cls==FALSE)],collapse= "', '"), "' in file '",shwFile,"' (statement '",i,"') to be numeric. Current column format is: '",paste(sapply(shw[[i]][,vars[which(cls==FALSE)]],class), collapse="', '"),"'. Column will be transformed.\n"))
-                            shw[[i]] <- dplyr::mutate_at(shw[[i]], .vars = names(cls[which(cls==FALSE)]), .funs = eatTools::asNumericIfPossible, maintain.factor.scores = TRUE)
+         for(i in addT) {
+             cols <- car::recode(unlist(isLetter(i)), "'step'='category'")    ### versuche Spalte(n) zu identifizieren
+             cols <- intersect(cols, colnames(shw[[i]]))
+             if(length(cols)==0) {
+                cat(paste("Cannot identify variable identifier for additional term '",i,"' in file '",shwFile,"'. Skip procedure.\n",sep=""))
+             } else {
+                if(length(cols) == 1) {
+                   var1 <- paste( cols, shw[[i]][,cols],sep="_")
+                } else {
+                   var1 <- unlist(apply(shw[[i]][,cols], MARGIN=1, FUN = function ( y ) {
+                           paste(unlist(lapply ( 1:length(y), FUN = function ( yy ) {
+                                 nam <- y[yy]
+                                 if(!is.null(renam)) {if(nam %in% renam[,"new"]) {nam <- eatTools::recodeLookup(nam, renam[,c("new", "old")])}}
+                                 ret <- paste(names(y)[yy], nam,sep="_")
+                                 return(ret)})), sep="", collapse = "_X_") }))
+                }
+                if(ncol(qMatrix) != 2) {
+                   cat(paste0("Warning: Cannot identify the group the term '",i,"' in file '",shwFile,"' belongs to. Insert 'NA' to the 'group' column.\n"))
+                   gr <- NA
+                }  else {
+                   gr <- colnames(qMatrix)[2]
+                }                                                            ### untere zeile: gesonderte partial credit behandlung
+                if(length(grep("step",i)) == 1 && "step" %in% colnames(shw[[i]])){
+                    shwI <- eatTools::na_omit_selection(shw[[i]], "ESTIMATE")
+                    toOff<- as.vector(unlist(by(data = shwI, INDICES = shwI[,"item"], FUN = function(x) {
+                       if(any(!is.na(suppressWarnings(as.numeric(x[,"ERROR"]))))) {
+                          ret <- rep("est", nrow(x))
+                       } else {
+                         ret <- rep("offset", nrow(x))
                        }
-                       shwE <- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = NA, value = shw[[i]][,"ESTIMATE"], stringsAsFactors = FALSE)
-                       shwE2<- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "infit", value = shw[[i]][,"MNSQ.1"], stringsAsFactors = FALSE)
-                       shwE3<- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "outfit", value = shw[[i]][,"MNSQ"], stringsAsFactors = FALSE)
-                       shwSE<- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "se", value = shw[[i]][,"ERROR"], stringsAsFactors = FALSE)
-                       toOff<- shwSE[ which(is.na(shwSE[,"value"])), "var1"]
-                       if(length(toOff)>0) {
-                          shwE[match(toOff, shwE[,"var1"]), "par"] <- "offset"
-                          shwSE <- shwSE[-which(is.na(shwSE[,"value"])),]
-                       }
-                       res  <- rbind ( res, shwE, shwE2, shwE3, shwSE)
-                   }
-               }
+                       return(ret)})))
+                    res  <- rbind(res, data.frame ( model = model.name, source = "conquest", var1 = shwI[,"item"], var2 = paste0("step",shwI[,"step"]) , type = "fixed", indicator.group = "items", group = gr, par = toOff,  derived.par = NA, value = shwI[,"ESTIMATE"], stringsAsFactors = FALSE), data.frame ( model = model.name, source = "conquest", var1 = shwI[,"item"], var2 = paste0("step",shwI[,"step"]) , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "se", value = as.numeric(shwI[,"ERROR"]), stringsAsFactors = FALSE)) |> suppressWarnings()
+                }  else  {
+                    vars<- c("ESTIMATE", "MNSQ", "MNSQ.1", "ERROR")
+                    cls <- sapply(shw[[i]][,vars], inherits, what=c("numeric", "integer"))
+                    if(!all(cls)) {
+                         cat(paste0("Expect column(s) '",paste(vars[which(cls==FALSE)],collapse= "', '"), "' in file '",shwFile,"' (statement '",i,"') to be numeric. Current column format is: '",paste(sapply(shw[[i]][,vars[which(cls==FALSE)]],class), collapse="', '"),"'. Column will be transformed.\n"))
+                         shw[[i]] <- dplyr::mutate_at(shw[[i]], .vars = names(cls[which(cls==FALSE)]), .funs = eatTools::asNumericIfPossible, maintain.factor.scores = TRUE)
+                    }
+                    shwE <- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = NA, value = as.numeric(shw[[i]][,"ESTIMATE"]), stringsAsFactors = FALSE)  |> suppressWarnings()
+                    shwE2<- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "infit", value = as.numeric(shw[[i]][,"MNSQ.1"]), stringsAsFactors = FALSE) |> suppressWarnings()
+                    shwE3<- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "outfit", value = as.numeric(shw[[i]][,"MNSQ"]), stringsAsFactors = FALSE) |> suppressWarnings()
+                    shwSE<- data.frame ( model = model.name, source = "conquest", var1 = var1, var2 = NA , type = "fixed", indicator.group = "items", group = gr, par = "est",  derived.par = "se", value = as.numeric(shw[[i]][,"ERROR"]), stringsAsFactors = FALSE)  |> suppressWarnings()
+                    toOff<- shwSE[ which(is.na(shwSE[,"value"])), "var1"]
+                    if(length(toOff)>0) {
+                       shwE[match(toOff, shwE[,"var1"]), "par"] <- "offset"
+                       shwSE <- shwSE[-which(is.na(shwSE[,"value"])),]
+                    }
+                    res  <- rbind ( res, shwE, shwE2, shwE3, shwSE)
+                }
+            }
          }
          return(res)}
 
@@ -253,119 +280,132 @@ getConquestRegPar <- function ( model.name, shw, altN){
 
 ### ----------------------------------------------------------------------------
 
-getConquestWles <- function ( model.name, analysis.name, qMatrix, allFiles, omitWle, altN, path){
-  wleFile  <- paste(analysis.name, "wle", sep=".")
-  if ( omitWle == TRUE ) {return(NULL)}
-  if (!wleFile %in% allFiles) {
-    cat("Cannot find Conquest WLE file.\n")
-    return(NULL)
-  }
-  wle  <- get.wle( file.path(path, wleFile) )
-  res  <- NULL
-  for ( i in 1:nrow(altN)) { colnames(wle) <- gsub(  paste(".",altN[i,"nr"],"$",sep=""), paste("_", altN[i,"to"],sep="") , colnames(wle))}
-  wleL <- reshape2::melt(wle, id.vars = "ID", measure.vars = colnames(wle)[-c(1:2)], na.rm=TRUE)
-  foo  <- data.frame ( eatTools::halveString( as.character(wleL[,"variable"]), pattern = "_"), stringsAsFactors=FALSE)
-  colnames(foo) <- c("par", "group")
-  foo[,"derived.par"] <- car::recode(foo[,"par"], "'wle'='est'; 'std.wle'='se'; else=NA")
-  foo[,"par"]         <- car::recode(foo[,"par"], "'wle'='wle'; 'std.wle'='wle'; 'n.solved'='NitemsSolved'; 'n.total'='NitemsTotal'")
-  wleL <- data.frame ( wleL[,-match("variable", colnames(wleL)), drop=FALSE], foo, stringsAsFactors = FALSE)
-  wleW <- reshape2::dcast(wleL[which(wleL[,"par"] == "wle"),], ID+group~derived.par, value="value")
-  rels <- do.call("rbind", by(wleW, INDICES = wleW[,"group"], FUN = function ( g ) { data.frame (dim = g[1,"group"], rel = 1 - mean(g[,"se"]^2)/var(g[,"est"]), stringsAsFactors = FALSE)}))
-  res  <- rbind ( res, data.frame ( model = model.name, source = "conquest", var1 = c(wleL[,"ID"],rep(NA,nrow(rels))), var2 = NA , type = c(rep("indicator",nrow(wleL)), rep("tech",nrow(rels))), indicator.group = "persons", group = c(wleL[,"group"],rels[,"dim"]), par = c(wleL[,"par"],rep("wle",nrow(rels))),  derived.par = c(wleL[,"derived.par"],rep("rel", nrow(rels))), value = c(wleL[,"value"] ,rels[,"rel"]) , stringsAsFactors = FALSE))
-  return(list(res=res, wle=wle))   }
+getConquestWles <- function ( model.name, analysis.name, qMatrix, allFiles, omitWle, altN, path, software){
+         add    <- car::recode(software, "'conquest'=''; 'conquest5'='.xlsx'")
+         wleFile<- paste0(analysis.name, ".wle", add)
+         if(omitWle == TRUE ) {return(NULL)}
+         if(!wleFile %in% allFiles) {
+            cat("Cannot find Conquest WLE file.\n")
+            return(NULL)
+         }
+         if(software=="conquest") {
+            wle <- get.wle(file.path(path, wleFile))                            ### unten: ins mittel-longformat, um rel zu bestimmen
+         } else {
+            wle <- eatTools::makeDataFrame(read_excel(file.path(path, wleFile)), verbose=FALSE)
+            nams<- data.frame(let = eatTools::removeNumeric(colnames(wle)), zif = eatTools::removeNonNumeric(colnames(wle)), stringsAsFactors = FALSE) |> dplyr::mutate(neu = car::recode(let, "'SeqNum'='case'; 'PID'='ID'; 'Score_D'='n.solved.'; 'MaxScore_D'='n.total.'; 'Est_D'='wle.'; 'SE_D'='std.wle.'")) |> suppressWarnings()
+            colnames(wle) <- paste0(nams[,"neu"], nams[,"zif"])
+         }
+         if(is.null(wle)) {return(NULL)}
+         res  <- NULL                                                           ### initialisieren
+         for(i in 1:nrow(altN)) { colnames(wle) <- gsub(  paste(".",altN[i,"nr"],"$",sep=""), paste("_", altN[i,"to"],sep="") , colnames(wle))}
+         wleL <- reshape2::melt(wle, id.vars = "ID", measure.vars = colnames(wle)[-c(1:2)], na.rm=TRUE)
+         foo  <- data.frame ( eatTools::halveString( as.character(wleL[,"variable"]), pattern = "_"), stringsAsFactors=FALSE)
+         colnames(foo) <- c("par", "group")                                     ### halveString statt strsplit nehmen, weil es sonst schiefgeht, wenn dimensionsname einen Unterstrich enthaelt; foo muss immer zwei spalten haben, das ist nicht so, wenn man strsplit nimmt und der dimensionsname einen Unterstrich enthaelt
+         foo[,"derived.par"] <- car::recode(foo[,"par"], "'wle'='est'; 'std.wle'='se'; else=NA")
+         foo[,"par"]         <- car::recode(foo[,"par"], "'wle'='wle'; 'std.wle'='wle'; 'n.solved'='NitemsSolved'; 'n.total'='NitemsTotal'")
+         wleL <- data.frame ( wleL[,-match("variable", colnames(wleL)), drop=FALSE], foo, stringsAsFactors = FALSE)
+         wleW <- reshape2::dcast(wleL[which(wleL[,"par"] == "wle"),], ID+group~derived.par, value="value")
+         rels <- do.call("rbind", by(wleW, INDICES = wleW[,"group"], FUN = function ( g ) { data.frame (dim = g[1,"group"], rel = 1 - mean(g[,"se"]^2)/var(g[,"est"]), stringsAsFactors = FALSE)}))
+         res  <- rbind ( res, data.frame ( model = model.name, source = "conquest", var1 = c(wleL[,"ID"],rep(NA,nrow(rels))), var2 = NA , type = c(rep("indicator",nrow(wleL)), rep("tech",nrow(rels))), indicator.group = "persons", group = c(wleL[,"group"],rels[,"dim"]), par = c(wleL[,"par"],rep("wle",nrow(rels))),  derived.par = c(wleL[,"derived.par"],rep("rel", nrow(rels))), value = c(wleL[,"value"] ,rels[,"rel"]) , stringsAsFactors = FALSE))
+         return(list(res=res, wle=wle))   }
 
 ### ----------------------------------------------------------------------------
 
-getConquestPVs <- function ( model.name, analysis.name, omitPV, altN, path, allFiles){
-  pvFile<- paste(analysis.name, "pvl", sep=".")
-  if ( omitPV == TRUE ) {return(NULL)}
-  if (!pvFile %in% allFiles) {
-    cat("Cannot find Conquest PV file.\n")
-    return(NULL)
-  }
-  pv    <- get.plausible( file.path(path, pvFile), forConquestResults = TRUE )
-  rec   <- paste("'",altN[,"pv"] , "' = '" , altN[,"to"], "'" ,sep = "", collapse="; ")
-  pv$pvLong[,"variable"] <- car::recode( pv$pvLong[,"variable"], rec)
-  res   <- data.frame ( model = model.name, source = "conquest", var1 = pv$pvLong[,"ID"], var2 = NA , type = "indicator", indicator.group = "persons", group = pv$pvLong[,"variable"], par = "pv",  derived.par = paste("pv", as.numeric(pv$pvLong[,"PV.Nr"]),sep=""), value = as.numeric(pv$pvLong[,"value"]) , stringsAsFactors = FALSE)
-  eaps  <- reshape2::melt ( data.frame ( pv$pvWide[,"ID", drop=FALSE], pv$eap, stringsAsFactors = FALSE), id.vars = "ID", na.rm=TRUE)
-  foo   <- data.frame ( do.call("rbind", strsplit(as.character(eaps[,"variable"]), "_")), stringsAsFactors = FALSE)
-  colnames(foo) <- c("par", "group")
-  foo[,"derived.par"] <- car::recode(foo[,"par"], "'eap'='est'; 'se.eap'='se'; else=NA")
-  foo[,"par"]         <- "eap"
-  foo[,"group"]       <- car::recode(tolower(foo[,"group"]), rec)
-  res   <- rbind(res, data.frame ( model = model.name, source = "conquest", var1 = eaps[,"ID"], var2 = NA , type = "indicator", indicator.group = "persons", group = foo[,"group"], par = "eap",  derived.par = foo[,"derived.par"], value = eaps[,"value"] , stringsAsFactors = FALSE))
-  return(list(res=res, pv=pv))}
+getConquestPVs <- function ( model.name, analysis.name, omitPV, altN, path, allFiles, software){
+   add   <- car::recode(software, "'conquest'=''; 'conquest5'='.xlsx'")
+   pvFile<- paste0(analysis.name, ".pvl", add)
+   if(omitPV == TRUE ) {return(NULL)}
+   if(!pvFile %in% allFiles) {
+      cat("Cannot find Conquest PV file.\n")
+      return(NULL)
+   }
+   if(software=="conquest") {
+      pv <- get.plausible( file.path(path, pvFile), forConquestResults = TRUE )
+   } else {
+      pvw<- eatTools::makeDataFrame(read_excel(file.path(path, pvFile)), verbose=FALSE) |> dplyr::rename(ID=PID)
+      pv <- list(pvWide = pvw, pvLong = reshape2::melt(pvw, id.vars = "ID", measure.vars = grep("^PV", colnames(pvw), value=TRUE), na.rm=TRUE) |> dplyr::mutate(PV.Nr = eatTools::removeNonNumeric(eatTools::halveString(as.character(variable), "_", first=TRUE)[,1]), variable = paste0("dim.", eatTools::removeNonNumeric(eatTools::halveString(as.character(variable), "_", first=FALSE)[,2]))),eap = pvw[,grep("^EAP", colnames(pvw), value=TRUE), drop=FALSE])
+      nam<- data.frame(let = eatTools::removeNumeric(colnames(pv$eap)), zif = eatTools::removeNonNumeric(colnames(pv$eap)), stringsAsFactors = FALSE) |> dplyr::mutate(neu = car::recode(let, "'EAP_'='eap_Dim.'")) |> suppressWarnings()
+      colnames(pv$eap) <- paste0(nam[,"neu"], nam[,"zif"])
+      for(i in colnames(pv$eap)) {pv[["eap"]][,paste0("se_", i)] <- NA}
+   }
+   pv$pvLong[,"variable"] <- eatTools::recodeLookup(pv$pvLong[,"variable"], altN[,c("pv", "to")])
+   res   <- data.frame ( model = model.name, source = "conquest", var1 = pv$pvLong[,"ID"], var2 = NA , type = "indicator", indicator.group = "persons", group = pv$pvLong[,"variable"], par = "pv",  derived.par = paste("pv", as.numeric(pv$pvLong[,"PV.Nr"]),sep=""), value = as.numeric(pv$pvLong[,"value"]) , stringsAsFactors = FALSE)
+   eaps  <- reshape2::melt(data.frame ( pv$pvWide[,"ID", drop=FALSE], pv$eap, stringsAsFactors = FALSE), id.vars = "ID", na.rm=TRUE)
+   foo   <- eatTools::halveString(as.character(eaps[,"variable"]), pattern="_", colnames=c("par", "group")) |> eatTools::makeDataFrame() |> dplyr::mutate(derived.par = car::recode(par, "'eap'='est'; 'se.eap'='se'; else=NA"), par = "eap", group = eatTools::recodeLookup(tolower(group), altN[,c("pv", "to")]))
+   res   <- rbind(res, data.frame ( model = model.name, source = "conquest", var1 = eaps[,"ID"], var2 = NA , type = "indicator", indicator.group = "persons", group = foo[,"group"], par = "eap",  derived.par = foo[,"derived.par"], value = eaps[,"value"] , stringsAsFactors = FALSE))
+   return(list(res=res, pv=pv))}
+
 
 ### ----------------------------------------------------------------------------
 
 getConquestQ3 <- function(model.name, shw,Q3, q3theta, omitWle, omitPV, pv,wle,daten,all.Names, q3MinObs, q3MinType, shw1, renam){
-         if ( Q3 == FALSE ) {return(NULL)}
-         if ( q3theta == "pv") {
-              if ( omitPV == TRUE ) {
-                   cat("Cannot compute Q3 if 'omitPV == TRUE' and 'q3theta == \"pv\"'. Skip computation.\n")
-                   return(NULL)
-              }
-              theta <- pv[["pvWide"]][,2:3]
-         }
-         if ( q3theta == "wle") {
-              if ( omitWle == TRUE ) {
-                   cat("Cannot compute Q3 if 'omitWle == TRUE' and 'q3theta == \"wle\"'. Skip computation.\n")
-                   return(NULL)
-              }
-              colW  <- grep("^wle", colnames(wle))[1]
-              theta <- wle[,c(2,colW)]
-         }
-         if ( q3theta == "eap") {
-              if ( omitPV == TRUE ) {
-                   cat("Cannot compute Q3 if 'omitPV == TRUE' and 'q3theta == \"eap\"'. Skip computation.\n")
-                   return(NULL)
-              }
-              colEAP<- grep("^eap", colnames(pv[["pvWide"]]))[1]
-              theta <- pv[["pvWide"]][,c(2,colEAP)]
-         }
-         drinI <- match( shw[["item"]][,"item"], colnames(daten))               ### ggf.: welche Items im Datensatz stehen nicht im Showfile (*.shw)?
-         drinP <- match(theta[,1], daten[,"ID"])                                ### ggf.: welche Personen im Datensatz stehen nicht im PV-File
-         stopifnot(length(which(is.na(drinP))) == 0 , length(which(is.na(drinI))) == 0 )
-         q3.res<- sirt::Q3(dat = daten[drinP,drinI], theta = theta[,2], b = shw[["item"]][,"ESTIMATE"], progress = FALSE)
-         nObs  <- NULL                                                          ### untere Zeile: paarweise Anzahl Beobachtungen je Itempaar
-         if(q3MinObs > 1) {nObs <- fast_pairwise_tables(daten[,all.Names[["variablen"]]])}
-         matL  <- reshapeQ3 (mat = q3.res$q3.matrix, q3MinObs = q3MinObs, q3MinType = q3MinType, nObs = nObs)
-         if(!is.null(renam)) {for(i in c("Var1", "Var2")) {matL[,i] <- eatTools::recodeLookup(matL[,i], renam[,c("new", "old")])}}
-         if( nrow(matL)== 0) { return(NULL)}
-         res   <- data.frame ( model = model.name, source = "conquest", var1 = matL[,"Var1"],  var2 = matL[,"Var2"] , type = "fixed",indicator.group = "items",group = paste(names(table(shw1[,"group"])), collapse="_"), par = "q3", derived.par = NA, value = matL[,"value"] , stringsAsFactors = FALSE)
-         return(res)}
+   if(Q3 == FALSE ) {return(NULL)}
+   if(q3theta == "pv") {
+      if(omitPV == TRUE ) {
+         cat("Cannot compute Q3 if 'omitPV == TRUE' and 'q3theta == \"pv\"'. Skip computation.\n")
+         return(NULL)
+      }
+      theta <- pv[["pvWide"]][,2:3]
+   }
+   if(q3theta == "wle") {
+      if(omitWle == TRUE ) {
+         cat("Cannot compute Q3 if 'omitWle == TRUE' and 'q3theta == \"wle\"'. Skip computation.\n")
+         return(NULL)
+      }
+      colW  <- grep("^wle", colnames(wle))[1]
+      theta <- wle[,c(2,colW)]
+   }
+   if(q3theta == "eap") {
+      if(omitPV == TRUE ) {
+         cat("Cannot compute Q3 if 'omitPV == TRUE' and 'q3theta == \"eap\"'. Skip computation.\n")
+         return(NULL)
+      }
+      colEAP<- grep("^eap|EAP", colnames(pv[["pvWide"]]))[1]
+      theta <- pv[["pvWide"]][,c(2,colEAP)]
+   }
+   drinI <- match(shw[["item"]][,"item"], colnames(daten))                      ### ggf.: welche Items im Datensatz stehen nicht im Showfile (*.shw)?
+   drinP <- match(theta[,1], daten[,"ID"])                                      ### ggf.: welche Personen im Datensatz stehen nicht im PV-File
+   stopifnot(length(which(is.na(drinP))) == 0 , length(which(is.na(drinI))) == 0 )
+   q3.res<- sirt::Q3(dat = daten[drinP,drinI], theta = theta[,2], b = shw[["item"]][,"ESTIMATE"], progress = FALSE)
+   nObs  <- NULL                                                                ### untere Zeile: paarweise Anzahl Beobachtungen je Itempaar
+   if(q3MinObs > 1) {nObs <- fast_pairwise_tables(daten[,all.Names[["variablen"]]])}
+   matL  <- reshapeQ3 (mat = q3.res$q3.matrix, q3MinObs = q3MinObs, q3MinType = q3MinType, nObs = nObs)
+   if(!is.null(renam)) {for(i in c("Var1", "Var2")) {matL[,i] <- eatTools::recodeLookup(matL[,i], renam[,c("new", "old")])}}
+   if( nrow(matL)== 0) { return(NULL)}
+   res   <- data.frame ( model = model.name, source = "conquest", var1 = matL[,"Var1"],  var2 = matL[,"Var2"] , type = "fixed",indicator.group = "items",group = paste(names(table(shw1[,"group"])), collapse="_"), par = "q3", derived.par = NA, value = matL[,"value"] , stringsAsFactors = FALSE)
+   return(res)}
 ### ----------------------------------------------------------------------------
 
-getConquestDeviance <- function ( path, analysis.name, omitUntil = omitUntil) {
+getConquestDeviance <- function ( path, analysis.name, omitUntil, software) {
     ### erstmal zusaetzliche Informationen (Anzahl nodes etc.) gewinnen
-  cqc  <- scan(file.path ( path, paste0(analysis.name, ".cqc")),what="character",sep="\n",quiet=TRUE)
-  such <- c("method", "nodes", "converge", "seed")
-  ret  <- lapply(such, FUN = function ( su ) {
-    indm <- grep(paste0(su, "="), cqc)
-    if ( length(indm)>1) {                                         ### schlechter Hotfix, f_nodes entfernen
-       hf   <- grep("f_nodes", cqc)
-       indm <- setdiff(indm, hf)
-    }
-    if(length(indm) != 1) {
-       cat(paste("Cannot identify '",su,"' from cqc file.\n",sep=""))
-       met <- NULL
-    }  else  {
-       pos1<- nchar(unlist(strsplit(cqc[indm], su))[1])            ### position finden, an der 'method' steht
-       pos2<- which(sapply(1:nchar(cqc[indm]), FUN = function(x){ substr(cqc[indm],x,x) == ","}))
-       if(length(pos2)==0) {
-          pos2<- nchar(cqc[indm])
-       } else {
-          pos2<- min(pos2[which(pos2>pos1)])
-       }
-       met <- eatTools::removePattern(substr(cqc[indm], pos1+1, pos2-1), paste0(su,"="))
-    }
-    return(met)})                                                  ### Zeit als Differenz von cqc und shw file
-  names(ret) <- such
-  ret  <- Filter(Negate(is.null), ret)
-  tme  <- file.info ( file.path ( path, paste0(analysis.name, ".shw")))[["mtime"]] - file.info ( file.path ( path, paste0(analysis.name, ".cqc")))[["mtime"]]
-  grDevices::pdf(file = file.path ( path, paste0(analysis.name, "_dev.pdf")), width = 10, height = 7.5)
-  plotDevianceConquest ( logFile = list ( path=path, analysis.name=analysis.name, ret=ret, tme=tme), omitUntil = omitUntil, adaptWindow = FALSE)
-  grDevices::dev.off() }
+         cqc  <- scan(file.path ( path, paste0(analysis.name, ".cqc")),what="character",sep="\n",quiet=TRUE)
+         such <- c("method", "nodes", "converge", "seed")
+         ret  <- lapply(such, FUN = function(su) {
+                 indm <- grep(paste0(su, "="), cqc)
+                 if(length(indm)>1) {                                           ### schlechter Hotfix, f_nodes entfernen
+                    hf   <- grep("f_nodes|p_nodes", cqc)
+                    indm <- setdiff(indm, hf)
+                 }
+                 if(length(indm) != 1) {
+                    cat(paste("Cannot identify '",su,"' from cqc file '",file.path ( path, paste0(analysis.name, ".cqc")),"'.\n",sep=""))
+                    met <- NULL
+                 }  else  {
+                    pos1<- nchar(unlist(strsplit(cqc[indm], su))[1])            ### position finden, an der 'method' steht
+                    pos2<- which(sapply(1:nchar(cqc[indm]), FUN = function(x){ substr(cqc[indm],x,x) == ","}))
+                    if(length(pos2)==0) {
+                       pos2<- nchar(cqc[indm])
+                    } else {
+                       pos2<- min(pos2[which(pos2>pos1)])
+                    }
+                    met <- eatTools::removePattern(substr(cqc[indm], pos1+1, pos2-1), paste0(su,"="))
+                 }
+                 return(met)}) |> setNames(such)                                ### Zeit als Differenz von cqc und shw file
+         ret  <- Filter(Negate(is.null), ret)
+         add  <- car::recode(software, "'conquest'=''; 'conquest5'='.xlsx'")
+         tme  <- file.info ( file.path ( path, paste0(analysis.name, ".shw", add)))[["mtime"]] - file.info ( file.path ( path, paste0(analysis.name, ".cqc")))[["mtime"]]
+         grDevices::pdf(file = file.path ( path, paste0(analysis.name, "_dev.pdf")), width = 10, height = 7.5)
+         plotDevianceConquest(logFile = list ( path=path, analysis.name=analysis.name, ret=ret, tme=tme), omitUntil = omitUntil, adaptWindow = FALSE)
+         grDevices::dev.off() }
 
 ### called by getConquestDeviance() --------------------------------------------
 
@@ -379,9 +419,10 @@ prepareWindow <- function(adaptWindow) {
               }
            }}
            
-plotDevianceConquest <- function ( logFile, omitUntil = 1, reverse = TRUE, change = TRUE, adaptWindow = TRUE) {
+plotDevianceConquest <- function ( logFile, omitUntil = 1, reverse = TRUE, change = TRUE, adaptWindow = TRUE, software = c("conquest", "conquest5")) {
+           software <- match.arg(arg = tolower(software), choices = eval(formals(plotDevianceConquest)[["software"]]))
            prepareWindow(adaptWindow)
-           if ( inherits(logFile, "character")) {lf <- logFile}  else  { lf <- file.path(logFile[["path"]], paste0(logFile[["analysis.name"]], ".log"))}
+           if(inherits(logFile, "character")) {lf <- logFile}  else  { lf <- file.path(logFile[["path"]], paste0(logFile[["analysis.name"]], ".log"))}
            input<- scan(lf,what="character",sep="\n",quiet=TRUE)
            ind  <- grep("eviance=", input)
            dev  <- unlist(lapply(input[ind], FUN = function (x) {               ### bei negativer deviance veraenderung erzeugt conquest klammern mit
@@ -398,7 +439,7 @@ plotDevianceConquest <- function ( logFile, omitUntil = 1, reverse = TRUE, chang
            } else {
               dc<- mat[,2]
            }
-           if ( change ){
+           if(change){
               dc<- diff(dc)
               yl<- "Deviance Change"                                            ### labels der y-Achse definieren
            } else {
@@ -468,13 +509,20 @@ timeFormat <- function(timediff, digits, format = NULL) {
              return(time)
           }}
 
-checkPcmFromShowfile <- function(fle){
-         txt <- scan(file = fle, what="character",sep="\n",quiet=TRUE)
-         row <- grep("The item model", txt, ignore.case=TRUE)
+checkPcmFromShowfile <- function(fle, software){
+         if(software == "conquest") {
+            txt <- scan(file = fle, what="character",sep="\n",quiet=TRUE)
+            row <- grep("The item model", txt, ignore.case=TRUE)
+            stat<- txt[row]
+         } else {
+            txt <- eatTools::makeDataFrame(read_excel(fle, sheet = "Summary"), verbose=FALSE)
+            row <- grep("The item model", txt[,1], ignore.case=TRUE)
+            stat<- txt[row,]
+         }   
          stopifnot(length(row)==1)
-         pat1<- eatTools::removePattern(tolower(txt[row]), tolower("The item model"))
+         pat1<- eatTools::removePattern(tolower(stat), tolower("The item model"))
          pat2<- eatTools::crop(gsub(":| |\\*|\\+", " ", pat1))
-         if(pat2 == "item item step") {
+         if(grepl("item item step", pat2)) {
             message(paste0("Pattern '",substring(pat1,3), "' found. Assume partial credit model."))
             pc <- TRUE
          } else {
@@ -487,8 +535,8 @@ getConquestPartialCredit <- function(shw, add){
          shw <- do.call("rbind", by(shw[["shw1"]], INDICES =shw[["shw1"]][,"var1"], FUN = function (item) {
                 if(item[,"var1"] %in% add[,"var1"]) {                           ### wenn true, dann partial credit
                    item2 <- add[intersect(which(add[,"var1"] == item[,"var1"]), which(is.na(add[,"derived.par"]))),] |> dplyr::mutate(value = value + item[,"value"], var2 = paste0("Cat",eatTools::removeNonNumeric(var2)))
-                   bounds<- c(-6, 6)                                            ### untere Zeile: a ist der slope parameter, der ist bei conquest immer 1
-                   ds    <- item2[,"value"]
+                   bounds<- c(-6, 6)                                            ### obere Zeile: diese umrechnung muss beim verankern umgekehrt ausgefuehrt werden!
+                   ds    <- item2[,"value"]                                     ### untere Zeile: a ist der slope parameter, der ist bei conquest immer 1
                    while(isTRUE(inherits(try(thurs  <- sapply(1:length(ds), FUN = function(k) { uniroot( function(th) P_get_k(theta = th, k=k, m = length(ds), ds=ds, a = 1) - 0.625, interval = bounds)$root  }) , silent=TRUE ),"try-error"))) {
                      bounds[1] <- bounds[1] - 1                                 ### theta bounds vergroessern wenn itemparameter ausserhalb des ranges und es daher fehlermeldung gibt
                      bounds[2] <- bounds[2] + 1
@@ -496,7 +544,7 @@ getConquestPartialCredit <- function(shw, add){
                    }
                    thurs <- item2 |> dplyr::mutate(derived.par = "thurstone", value= thurs)
                    item  <- item2
-                } else {
+                } else {                                                        ### hier wird die .625-Verschiebung fuer dichotome items gemacht
                    thurs <- item |> dplyr::mutate(derived.par = "thurstone", value= item[,"value"] + log(0.625/(1-0.625)))
                 }
                 return(rbind(item, thurs))}))

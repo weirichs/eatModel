@@ -25,7 +25,7 @@ package?eatModel
 
 ## Exemplary analysis
 
-The package comes with two relatively large examplary data sets, one only for dichotomous items, one also for polytomous items. First data set (`trends`) contains fictional achievement scores of 13524 students in two domains (reading, listening) from three measurement occasions (2010, 2015, 2020) in the long format. The data are not longitudinal as the individuals stem from different cohorts and do not overlap across measurement occasions. The name of the data set is `trends`. You can find detailed exemplary analyses in the help pages of `defineModel()`. The following example estimates a between-item two-dimensional 2pl model with conditioning (background) model for the student cohort measured in 2020. The `splitModels()` function can be used previously if the corresponding model should be estimated in 2010 and 2015 likewise. 
+The package comes with two relatively large examplary data sets, one only for dichotomous items, one also for polytomous items. First data set (`trends`) contains fictional achievement scores of 13524 students in two domains (reading, listening) from three measurement occasions (2010, 2015, 2020) in the long format. The data are not longitudinal as the individuals stem from different cohorts and do not overlap across measurement occasions. The name of the data set is `trends`. You can find detailed exemplary analyses in the help pages of `defineModel()`. The following example estimates a between-item two-dimensional 2pl model with conditioning (background) model for the student cohort measured in 2020 who worked on booklet number Bo08. The `splitModels()` function can be used previously if the corresponding model should be estimated in 2010 and 2015 likewise. 
 
 ```R
 library(eatModel)
@@ -72,7 +72,7 @@ data(reading)
 # transform into wide format. Again, we use only a small subsample to reduce computational burden
 datW <- subset(reading, bookletID == "TH08") |> reshape2::dcast(idstud~item, value.var = "valueSum")
 
-# combine the two lowest categories for item D205143 to avoid categories with too few observations
+# For item D205143, combine a few categories to avoid having categories with too few observations
 datW[,"D205143"] <- car::recode(datW[,"D205143"], "1=0; 2=0; 3=1; 4=1; 5=2")
 
 # # define the model

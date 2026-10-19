@@ -1,2 +1,93 @@
 auf github ersetzen
-- hilfeseite defineModel() ab bsp. 8 
+- anker
+- runMOdel
+- runModelMirt
+- generateOrCheckRefPop
+- checkItemConsistency
+- createAnchorListConquestPCM
+- get.wle
+- getConquestWles
+- getresults
+- defineModel
+- defineModelSingle
+- renameVariables
+- renameVariables2
+- prepareDatasets
+- check_HG_var
+- checkItemConsistency
+- checkID_consistency
+- checkDir
+- adaptMethod
+- itemFromRes
+- gen.syntax
+- identifyConquestFolder
+- getConquestResults
+- getTamResults
+- converged
+- getConquestDeviance
+- plotDevianceConquest 
+- getConquestItn
+- get.shw.v5
+- get.shw
+- addDifSig
+- checkPcmFromShowfile
+- getConquestAdditionalTerms
+- getConquestWles
+- getConquestPVs
+- getConquestQ3
+- lord1980
+- eapFromRes
+- getConquestShw
+- getConquestPartialCredit
+- createAnchorSkeleton
+- fillStepValues
+- fillBetaValues
+- get.itn + Hilfedatei, weil Argument dazugekommen ist 
+- hilfeseite defineModel() ab bsp. 8, wenn bsp. aktualisiert  
+- hilfeseite defineModel(), obere Haelfte bis Beispiele
+
+
+══ Results ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+Duration: 406.5 s
+
+── Skipped tests (6) ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+• empty test (6): test_defineModel.R:9:5, test_defineModel.R:26:5, test_defineModel.R:45:5, test_defineModel.R:57:5, test_defineModel.R:67:5, test_defineModel.R:81:5
+
+── Failed tests ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Error (test_defineModel.R:36:5): importing results works for three-dimensional model
+Error in `if (!eatTools::crop(last) == eatTools::recodeLookup(software, data.frame(alt = c("conquest", "conquest5"), neu = c("=>quit;", "quit"), stringsAsFactors = FALSE))) {     if (length(grep("quit", last)) == 0) {         cat(paste0("Warning: Model seems not to have converged. Log file unexpectedly finishs with '", last, "'.\nReading in model output might fail.\n"))         isConv <- FALSE     } }`: Argument hat Länge 0
+Backtrace:
+    ▆
+ 1. ├─base::suppressWarnings(getResults(run3d)) at test_defineModel.R:36:5
+ 2. │ └─base::withCallingHandlers(...)
+ 3. └─eatModel::getResults(run3d)
+ 4.   ├─base::eval(parse(text = do)) at eatModel/R/eatModel.r:232:21
+ 5.   │ └─base::eval(parse(text = do))
+ 6.   └─eatModel:::getConquestResults(...)
+ 7.     └─eatModel:::converged(dir = path, logFile = logFile, software = software) at eatModel/R/eatModel.r:2987:10
+
+Error (test_partial_credit_anchoring_conquest.R:35:1): (code run outside of `test_that()`)
+Error in `tam_mml_mstep_regression(resp = resp, hwt = hwt, resp.ind = resp.ind, pweights = pweights, pweightsM = pweightsM, Y = Y, theta = theta, theta2 = theta2, YYinv = YYinv, ndim = ndim, nstud = nstud, beta.fixed = beta.fixed, variance = variance, Variance.fixed = variance.fixed, group = group, G = G, snodes = snodes, nomiss = nomiss, thetasamp.density = thetasamp.density, iter = iter, min.variance = min.variance, userfct.variance = userfct.variance, variance_acceleration = variance_acceleration, est.variance = est.variance,      beta = beta)`: Problems in variance estimation.
+ Try to Choose argument control=list( xsi.start0=TRUE, ...) 
+Backtrace:
+    ▆
+ 1. └─eatModel::runModel(def2) at test_partial_credit_anchoring_conquest.R:35:1
+ 2.   └─eatModel:::runModelTam(dmo = defineModelObj, show.output.on.console = show.output.on.console) at eatModel/R/eatModel.r:1190:65
+ 3.     └─TAM::tam.mml(...) at eatModel/R/eatModel.r:1262:14
+ 4.       └─TAM:::tam_mml_mstep_regression(...)
+
+Failure (test_thurstone_thresholds.R:58:8): PCM Thurstonian thresholds are comparable for TAM and ConQuest
+Expected `all(abs(x) < tolerance)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Maximum absolute difference: 1.96240106321912
+Backtrace:
+    ▆
+ 1. └─eatModel (local) expect_all_abs_lt(merge2[, "diff_thurs"], tolerance = 0.05) at test_thurstone_thresholds.R:58:8
+ 2.   └─testthat::expect_true(...) at test_thurstone_thresholds.R:2:5
+
+[ FAIL 3 | WARN 8 | SKIP 6 | PASS 318 ]
+
+Keep trying!

@@ -3,31 +3,25 @@
 
 ### called by getRestuls() and plotICC() ---------------------------------------
 
-eapFromRes <- function (resultsObj, idVarName = NULL, verbose = TRUE){
-  checkmate::assert_character(idVarName, null.ok = TRUE, len = 1)
-  checkmate::assert_logical(verbose, len = 1)
-  #
-  eapRo <- setdiff(intersect(which(resultsObj[,"par"] == "eap"),
-                             which(resultsObj[,"indicator.group"] == "persons")),
-                   which(resultsObj[,"derived.par"] == "rel"))
-  id <- unique(resultsObj[intersect(which(resultsObj[,"type"] == "tech"),
-                                    which(resultsObj[,"par"] == "ID")),"derived.par"])
-  id <- getIdVarName(id, idVarName, verbose=verbose)
-  if(length(eapRo) == 0){
-    warning("'resultsObj' does not contain any eap values.")
-    return(NULL)
-  }  else  {
-    sel  <- resultsObj[eapRo,]
-    sel  <- do.call("rbind", by(sel, INDICES = sel[,c("model", "group")], FUN = function ( gr ) {
-      res  <- reshape2::dcast ( gr , model+group+var1~derived.par, value.var = "value")
-      colnames(res)[-c(1:2)] <- c(id, "EAP", "SE.EAP")
-      weg  <- match(c("model", id), colnames(res))
-      res  <- data.frame(res[,c("model", id)], dimension = as.character(gr[1,"group"]),
-                         res[,-weg,drop=FALSE], stringsAsFactors = FALSE)
-      return(res)}))
-    return(sel)
-  }
-}
+eapFromRes <- function ( resultsObj, idVarName = NULL, verbose = TRUE ) {
+   checkmate::assert_character(idVarName, null.ok = TRUE, len = 1)
+   eapRo<- setdiff(intersect( which(resultsObj[,"par"] == "eap"),which(resultsObj[,"indicator.group"] == "persons")), which(resultsObj[,"derived.par"] == "rel"))
+   id   <- unique(resultsObj[intersect(which(resultsObj[,"type"] == "tech"), which(resultsObj[,"par"] == "ID")),"derived.par"])
+   id   <- getIdVarName(id, idVarName, verbose=verbose)
+   if(length(eapRo) == 0) {
+      warning("'resultsObj' does not contain any eap values.")
+      return ( NULL )
+   } else {
+      sel  <- resultsObj[eapRo,]
+      sel  <- do.call("rbind", by(sel, INDICES = sel[,c("model", "group")], FUN = function ( gr ) {
+              res  <- reshape2::dcast ( gr , model+group+var1~derived.par, value.var = "value")
+              colnames(res)[-c(1:2)] <- c(id, "EAP", "SE.EAP")[c(1:(ncol(res)-2))]
+              weg  <- match(c("model", id), colnames(res))
+              res  <- data.frame ( res[,c("model", id)], dimension = as.character(gr[1,"group"]), res[,-weg,drop=FALSE], stringsAsFactors = FALSE)
+              return(res)}))
+      return(sel)
+   }  }
+
 
 ### called by getRestuls() and plotICC() ---------------------------------------
 
@@ -120,7 +114,7 @@ itemFromRes <- function ( resultsObj) {
                      adb <- mod[intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")), which(mod[,"derived.par"] == "abs.dif.bound")),"value"]
                      sdb <- mod[intersect(intersect(which(mod[,"type"] == "tech"), which(mod[,"par"] == "dif")), which(mod[,"derived.par"] == "sig.dif.bound")),"value"]
                  }
-     ### ist es partial credit mit dif in tam? dann spezielle Auslesefunktion benutzen
+     ### ist es partial credit mit dif in tam? dann spezielle Auslesefunktion benutzen             
                  isPC <- length(grep("Cat2", sel[,"var2"])) > 0
                  soft <- unique(sel[,"source"])
                  sel[,"isPC"] <- isPC
@@ -130,13 +124,14 @@ itemFromRes <- function ( resultsObj) {
      ### gibt es DIF? wenn ja, wird das separat ausgelesen und drangemergt
                      if(length(isDif) > 0) {                                    ### untere Zeile: alle Variablen auslesen (quasi ein Hilfsobjekt)
                         vars     <- mod[intersect(which(mod[,"type"] == "tech"),which(mod[,"par"] == "variablen")),"derived.par"]
-                        itemList <- do.call("rbind", lapply ( vars, FUN = function ( v ) {
-                                    ind <- grep( paste0("_",v,"_"), sel[,"var1"])
-                                    it  <- sort ( unique ( sel[ind,"var1"]))
+     ### to do: das hier funktioniert noch nicht fuer bspw. example 11 
+                        itemList <- do.call("rbind", lapply(vars, FUN = function ( v ) {
+                                    ind <- grep(paste0("_",v,"_"), sel[,"var1"])
+                                    it  <- sort(unique(sel[ind,"var1"]))
                                     if(length(it)>2) {
                                        warning(paste0("DIF variable '",mod[isDif,"derived.par"],"' seems to have more than two categories. To date, this is not supported by 'eatModel'."))
                                     }
-                                    return ( data.frame ( item = v, dif = it[1], weg = it[length(it)] , stringsAsFactors = FALSE) ) }))
+                                    return(data.frame(item = v, dif = it[1], weg = it[length(it)] , stringsAsFactors = FALSE) ) }))
                         weg      <- eatTools::whereAre ( itemList[,"weg"], sel[,"var1"], verbose=FALSE)
                         forDif   <- eatTools::whereAre ( itemList[,"dif"], sel[,"var1"], verbose=FALSE)
                         stopifnot(length( intersect(weg, forDif)) == 0 )
@@ -153,8 +148,8 @@ itemFromRes <- function ( resultsObj) {
      ### wenn es nur Cat1 in den Spaltennamen gibt, es also Rasch/2pl ist, soll Cat1 rausgeloescht werden
                              if(length(grep("Cat2", colnames(res)))==0) {res <- adaptOutputForNonPCM(res)}
                              return(res)}))
-                     if(length(isDif) > 0 && isPC == TRUE && soft == "conquest") {
-                        sel <- selDIF
+                     if(length(isDif) > 0 && isPC == TRUE && soft %in% c("conquest", "conquest5")) {
+                        sel <- selDIF 
                      } else {
                         if(length(isDif) > 0) {
                            ciCo<- colnames(selDIF)[grep("^CI__", colnames(selDIF))]
@@ -317,24 +312,30 @@ eapRelFromRes <- function(resultsObj){
 
 # reichert den data.frame mit spalten fuer dif indices an
 # lbCol = lower bound column; ubCol = upper bound column; adb = 'abs.dif.bound'; sdb = 'sig.dif.bound'
-lord1980 <- function(dat, absDifCol, seDifCol, lbCol, ubCol, adb, sdb) {
-       ret  <- data.frame ( dat, do.call("rbind", apply(dat[,c(absDifCol, seDifCol, lbCol, ubCol)], MARGIN = 1, FUN = function ( d ) {
+lord1980 <- function(dat, absDifCol, seDifCol, lbCol, ubCol, adb=NULL, sdb=NULL) {
+       allV <- list(absDifCol=absDifCol, seDifCol=seDifCol, lbCol=lbCol, ubCol=ubCol)
+       allN <- lapply(allV, FUN=function(ii) {eatTools::existsBackgroundVariables(dat = dat, variable=ii)})
+       ret  <- data.frame ( dat, do.call("rbind", apply(dat[,c(allN[["absDifCol"]], allN[["seDifCol"]], allN[["lbCol"]], allN[["ubCol"]])], MARGIN = 1, FUN = function ( d ) {
                check <- all(!is.na(d))
                if(check == TRUE) {
-                  crit1 <- d[[absDifCol]] > adb
-                  crit2 <- !all ( sort ( c ( d[[lbCol]], sdb , d[[ubCol]]), index.return = TRUE)$ix == 1:3 )
-                  if ( crit1 == TRUE & crit2 == TRUE) { res <- 1 }  else { res <- 0}
+                  if(!is.null(adb) && !is.null(sdb)) {
+                     crit1 <- d[[allN[["absDifCol"]]]] > adb
+                     crit2 <- !all ( sort ( c ( d[[allN[["lbCol"]]]], sdb , d[[allN[["ubCol"]]]]), index.return = TRUE)$ix == 1:3 )
+                     if ( crit1 == TRUE & crit2 == TRUE) { res <- 1 }  else { res <- 0}
+                  } else {
+                     res <- NA
+                  }
      ### Implementiere Formel nach Lord (1980) und ETS-Klassifikation von DIF; siehe Funktion equating.rasch aus 'eatRest'
                   ets   <- "A"
-                  ets1  <- d[[absDifCol]] > 0.43
-                  ets2  <- !all ( sort ( c ( d[[lbCol]], 0 , d[[ubCol]]), index.return = TRUE)$ix == 1:3 )
-                  if ( ets1 == TRUE & ets2 == TRUE) { ets <- "B" }
-                  etsC1 <- d[[absDifCol]] > 0.64
-                  etsC2 <- !all ( sort ( c ( d[[lbCol]], 0.43 , d[[ubCol]]), index.return = TRUE)$ix == 1:3 )
-                  if ( etsC1 == TRUE & etsC2 == TRUE) { ets <- "C" }
+                  ets1  <- d[[allN[["absDifCol"]]]] > 0.43
+                  ets2  <- !all ( sort ( c ( d[[allN[["lbCol"]]]], 0 , d[[allN[["ubCol"]]]]), index.return = TRUE)$ix == 1:3 )
+                  if(ets1 == TRUE & ets2 == TRUE) { ets <- "B" }
+                  etsC1 <- d[[allN[["absDifCol"]]]] > 0.64
+                  etsC2 <- !all(sort ( c ( d[[allN[["lbCol"]]]], 0.43 , d[[allN[["ubCol"]]]]), index.return = TRUE)$ix == 1:3 )
+                  if(etsC1 == TRUE & etsC2 == TRUE) { ets <- "C" }
                   res   <- data.frame(difIndex = res, ETS = ets )
                } else {
                   res   <- data.frame(difIndex = NA, ETS = NA )
                }
                return(res)})))
-       return(ret)}
+       return(ret)}        

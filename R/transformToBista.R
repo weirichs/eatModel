@@ -207,16 +207,16 @@ generateOrCheckRefPop <- function (equatingList, refPop, dims, mods, isRunM, id,
            }
            refPop <- merge(expand.grid(model = mods, domain = dims), refPop, by.x = "domain", by.y = colnames(refPop)[1], all.x=TRUE, all.y = FALSE)
        }
-       if(ncol ( refPop ) < 5) {
+       if(ncol(refPop) < 5) {
            cat ( paste("The 'refPop' data.frame does not include information about reference population mean/SD on Bista metric. Values will be defaulted to mean = ",defaultM," and SD = ",defaultSD,".\n",sep=""))
            refPop <- data.frame(refPop, defaultMean = defaultM, defaultSD = defaultSD, stringsAsFactors = FALSE)
        } else {
-           if ( ncol ( refPop) != 6 ) { stop ( "Invalid 'refPop'.\n") }
+           if(ncol(refPop) != 6) {stop("Invalid 'refPop'.\n")}
        }
-    ### in der vorletzten Spalte werden Werte um die 500 erwartet, in der letzten Spalte Werte um die 100 ... wenn das nicht so ist, gibt es eine kleine Warnung
+    ### in der vorletzten Spalte werde Werte um die 500 erwartet, in der letzten Spalte Werte um die 100 ... wenn das nicht so ist, gibt es eine kleine Warnung
        r1 <- sort(range(refPop[,ncol(refPop)-1], na.rm=TRUE))
        r2 <- sort(range(refPop[,ncol(refPop)], na.rm=TRUE))
        if(min(r1) < 400 || max(r1) > 600) {cli::cli_warn(c("'refPop': Unexpected values for the the transformed mean on the Bista metric of the reference population.", "i"="Value expected: 500", "x"=paste0("Value(s) found: ",paste( unique(round(refPop[,ncol(refPop)-1], digits = 2)), collapse= ", ")))) }
-       if(min(r1) < 50 || max(r1) > 150) {cli::cli_warn(c("'refPop': Unexpected values for the the transformed standard deviation on the Bista metric of the reference population.", "i"="Value expected: 100", "x"=paste0("Value(s) found: ",paste( unique(round(refPop[,ncol(refPop)], digits = 2)), collapse= ", ")))) }
+       if(min(r2) < 50 || max(r2) > 150) {cli::cli_warn(c("'refPop': Unexpected values for the the transformed standard deviation on the Bista metric of the reference population.", "i"="Value expected: 100", "x"=paste0("Value(s) found: ",paste( unique(round(refPop[,ncol(refPop)], digits = 2)), collapse= ", ")))) }
        return(refPop)}
 

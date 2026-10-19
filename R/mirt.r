@@ -274,7 +274,6 @@ getMirtResults <- function(runModelObj, omitFit, omitRegr, omitWle, omitPV) {
          #beg    <- Sys.time()
          #ret    <- rbind(ret, getTamQ3(runModelObj=runModelObj, leseAlles = leseAlles, shw1 = resItem[["shw1"]], Q3=Q3, q3MinObs=q3MinObs, q3MinType=q3MinType))
          #diffe  <- Sys.time() - beg
-         #if(as.numeric(diffe) > 0.2) {message(paste0("Getting Q3 statistic calling tam.modelfit from getTamQ3: ", eatTools::timeFormat(diffe)))}
          return(ret)}
                
 getMirtItempars <- function(runModelObj, qL, qMatrix, leseAlles, software) {

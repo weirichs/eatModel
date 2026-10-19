@@ -92,13 +92,18 @@
   Its functionality is closely related to \code{eatRest} but adds some new features---for example, the
   support of 2pl and partial credit models using the \code{TAM} and \code{mirt} packages and several
   linking procedures for more than two times of measurement.
+
+  Starting with package version 0.11.0, eatModel also supports Conquest version 5. Please note that the 
+  import functions that read in direct ASCII output from Conquest (get.shw, get.wle, get.plausible, etc.) 
+  were written only for version 2. In version 5, Conquest allows you to export results to xlsx files instead 
+  of ASCII files, which enables clearer further processing and thus renders the old ASCII import functions obsolete. 
 }
 \details{
 \tabular{ll}{
 Package: \tab eatModel\cr
 Type: \tab Package\cr
-Version: \tab 0.10.42\cr
-Date: \tab 2026-09-23\cr
+Version: \tab 0.11.0\cr
+Date: \tab 2026-10-19\cr
 License: \tab GPL(>=2)
 }
 }

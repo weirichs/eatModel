@@ -47,29 +47,25 @@ doAufb <- function ( x, argL ) {
 
 ### ----------------------------------------------------------------------------
 
-identifyConquestFolder <- function () {
-  cf <- system.file("extdata", "console_Feb2007.exe", package = "eatModel")
-  if ( nchar(cf)>0) {return(cf)}
-
-  cf <- system.file("exec", "console_Feb2007.exe", package = "eatModel")
-  if ( nchar(cf)>0) {return(cf)}
-
-  defaultConquest <- "i:/Methoden/00_conquest_console/console_Feb2007.exe"
-  if ( file.exists(defaultConquest)) {return(defaultConquest)}
-
-  msg <- paste0("Cannot find conquest 2007 executable file. ",
-                "Please provide it via the 'conquest.folder' argument.")
-  if ( !interactive()) {stop(msg, call. = FALSE)}
-
-  packageStartupMessage("Cannot find conquest 2007 executable file. Please choose manually.")
-  fname <- tryCatch(file.choose(), error = function(e) "")
-  if ( nchar(fname)==0) {stop(msg, call. = FALSE)}
-
-  root <- system.file(package = "eatModel")
-  execDir <- file.path(root, "exec")
-  if ( !file.exists(execDir)) {dir.create(execDir)}
-  foo <- file.copy(from = fname, to = file.path(execDir, "console_Feb2007.exe"))
-  return(file.path(execDir, "console_Feb2007.exe"))}
+identifyConquestFolder <- function (software) {
+    soft <- car::recode(software, "'conquest'='console_Feb2007.exe'; 'conquest5'='ConQuestConsole.exe'")
+    ver  <- car::recode(software, "'conquest'=2; 'conquest5'=5")
+    cf   <- system.file("extdata", soft, package = "eatModel")
+    if(nchar(cf)>0) {return(cf)}                                                ### erste Variante, wo er sucht
+    cf   <- system.file("exec", soft, package = "eatModel")                     ### nichts gefunden? zweite Variante, wo er suchen soll
+    if(nchar(cf)>0) {return(cf)}                                                ### wieder nicht? dann kucke mal auf den Netzlaufwerken
+    defaultConquest <- "i:/Methoden/00_conquest_console/console_Feb2007.exe"
+    if(file.exists(defaultConquest)) {return(defaultConquest)}
+    msg  <- paste0("Cannot find conquest version ",ver," executable file. ", "Please provide it via the 'conquest.folder' argument.")
+    if(!interactive()) {stop(msg, call. = FALSE)}
+    packageStartupMessage(paste0("Cannot find conquest version ",ver," executable file. Please choose manually."))
+    fname<- tryCatch(file.choose(), error = function(e) "")
+    if(nchar(fname)==0) {stop(msg, call. = FALSE)}
+    root <- system.file(package = "eatModel")
+    exDir<- file.path(root, "exec")
+    if(!file.exists(exDir)) {dir.create(exDir)}
+    foo  <- file.copy(from = fname, to = file.path(exDir, soft))
+    return(file.path(exDir, soft))}
 
 ### ----------------------------------------------------------------------------
 
@@ -188,8 +184,7 @@ prepAnchorTAM <- function (dfm, skeleton = NULL) {                              
             if(dfm[["irtmodel"]] %in% c("PCM", "GPCM", "GPCM.groups") && !is.null(skeleton)) {
                stopifnot(length(dim(skeleton)) == 2)                            ### skeleton soll kein x-dimensionaler array sein, sondern genau zweidimensionale Matrix
                ankLong  <- ank |> dplyr::mutate(name = paste(item,category, sep="_"))
-               weg      <- which(rownames(skeleton) %nin% ankLong[,"name"])     ### partial credit anchoring using skeleton
-               if(length(weg)>0) {skeleton <- skeleton[-weg,]}
+               skeleton <- checkForMutualAbsence(skel = skeleton, ank = ankLong)### hier wird geprueft: haben items im Fokusdatensatz andere Kategorien als im Ankerdatensatz 
                stopifnot(length(ankLong[,"name"]) == length(unique(ankLong[,"name"])))
                stopifnot(length(rownames(skeleton)) == length(unique(rownames(skeleton))))
                ank        <- skeleton
@@ -242,7 +237,7 @@ adaptMethod <- function(method, software,nodes){
            if(method %in% c("MHRM", "SEM", "BL")) {stop(paste0("Method '",method,"' is only available for software = 'mirt'"))}
         }
         if(method == "quasiMontecarlo" && software == "conquest") {
-           cat("Method 'quasiMontecarlo' is not available for software 'conquest'. Set method to 'montecarlo'.\n")
+           cat("Method 'quasiMontecarlo' is not available for software 'conquest' (version 2). Set method to 'montecarlo'.\n")
            method <- "montecarlo"
         }
         if(method %in% c("montecarlo", "quasiMontecarlo"))  {                   ### stochastische Integration
@@ -262,7 +257,7 @@ adaptMethod <- function(method, software,nodes){
            }
            if ( software == "tam" )   { nodes <- seq(-6,6,len=nodes); snodes <- 0; QMC <- FALSE}
         }
-    		return(list(method=method, nodes=nodes, snodes=snodes, QMC=QMC))}
+    	return(list(method=method, nodes=nodes, snodes=snodes, QMC=QMC))}
 
 ### ----------------------------------------------------------------------------
 
@@ -294,7 +289,7 @@ recodeNULL <- function(x) {
               if(is.null(x)) {return(eatTools::cleanifyString(tempfile(pattern="", tmpdir = "")))}
               return(x)}
 
-anker <- function(lab, prm, qMatrix, domainCol, itemCol, valueCol, catCol)  {
+anker <- function(lab, prm, qMatrix, domainCol, itemCol, valueCol, catCol, dat, software)  {
                   stopifnot(ncol(lab)==2)
                   if(!ncol(prm) == 2 ) {                                        ### wenn itemliste nicht unique ... 'domain'-Spalte kann ausgelassen werden
                      if(is.null(itemCol) || is.null(valueCol))  {stop("If anchor parameter frame has more than two columns, 'itemCol' and 'valueCol' must be specified.\n")}
@@ -334,8 +329,75 @@ anker <- function(lab, prm, qMatrix, domainCol, itemCol, valueCol, catCol)  {
                      }
                   }
                   resT<- eatTools::mergeAttr(lab, prm, by = "item", sort = FALSE, all = FALSE, setAttr = FALSE, unitName = "item", xName = "item response data", yName = "anchor list", verbose = c("match", "unique"))
-                  res <- resT |> dplyr::arrange(dplyr::across(tidyselect::all_of(intersect(c("itemNr", "category"), names(resT))))) |> dplyr::select(-tidyselect::any_of("item"))
+                  if("category" %in% colnames(prm)) {                           ### fuer conquest ("res") wird nach dichotom und partial credit unterschieden
+                     res <- createAnchorListConquestPCM(lab=lab, prm=prm, dat=dat, software=software)
+                  }                                                             ### wenn es zwar partial credit ist, es aber keine gemeinsamen PC-items in Datensatz und Ankerliste  
+                  if("category" %nin% colnames(prm) || is.null(res)) {          ### gibt, gibt createAnchorListConquestPCM NULL zurueck. In diesem Fall soll herkoemmliche Ankervariante (untere Zeile) genutzt werden
+                     res <- resT |> dplyr::arrange(dplyr::across(tidyselect::all_of(intersect(c("itemNr", "category"), names(resT))))) |> dplyr::select(-tidyselect::any_of("item"))
+                  }
                   return(list ( resConquest = res, resTam = resT[,-2]))}
+
+createAnchorListConquestPCM <- function(lab, prm, dat, software) {
+   if(software %in% c("tam", "mirt")) {return(NULL)}
+   itemsPC <- do.call("rbind", lapply(lab[,"item"], FUN = function(i) {
+              if(max(dat[,i], na.rm=TRUE) > 1) {return(data.frame(item=i, valMax = max(dat[,i], na.rm=TRUE), stringsAsFactors = FALSE))}}))
+   lab[,"cat"] <- paste0("/* item ",lab[,"item"], " */")
+   labPC   <- NULL                                                              ### initialisieren. lapply geht nicht, weil gleichzeitig in lab delta zu d parametrisierung geaendert werden muss
+   message("Transform anchor parameters from delta-parametrization to d-parametrization for conquest.")
+   if(length(intersect(itemsPC[,"item"], prm[,"item"])) == 0) {return(NULL)}
+   skelet  <- createAnchorSkeleton(dat=dat, itemsPC=itemsPC, lab=lab)           ### reihenfolge dieser funktionsaufrufe ist wichtig, darf nicht geaendert werden
+   skelet  <- fillStepValues(lab=skelet, prm=prm, itemsPC=itemsPC)
+   skelet  <- fillBetaValues(lab=skelet, prm=prm)
+   return(skelet)}
+
+fillBetaValues <- function(lab, prm) {
+   lab <- by(data = lab, INDICES = grepl("step", lab[,"cat"]), FUN = function(x) {return(na.omit(x))})
+   lab[["FALSE"]] <- do.call("rbind", by(data = lab[["FALSE"]], INDICES = lab[["FALSE"]][,"itemNr"], FUN = function(zeile) {
+          if(is.na(suppressWarnings(as.numeric(zeile[,"item"])))) {
+             ind <- eatTools::whereAre(zeile[,"item"], prm[,"item"], verbose=FALSE)
+                 stopifnot(length(ind)<2)
+                 if(length(ind)==1) {
+                    zeile[,"item"] <- round(prm[ind,"parameter"], digits = 5)
+                 } else {
+                    zeile[,"item"] <- NA
+                 }
+              }
+              return(zeile)}))
+   lab <- do.call("rbind", lapply(lab, FUN = function(x) {x |> dplyr::mutate_at(.vars = "item", .funs = as.numeric) |> na.omit()})) |> suppressWarnings()
+   return(lab)}
+
+createAnchorSkeleton <- function(dat, itemsPC, lab){
+   for(i in 1:nrow(itemsPC)) {
+       add <- data.frame(itemNr = rep(0, itemsPC[i,"valMax"]-1), item = rep(itemsPC[i,"item"], itemsPC[i,"valMax"]-1), cat = paste0("/* item ",itemsPC[i,"item"], " step ", 1:(itemsPC[i,"valMax"]-1) ," */"), stringsAsFactors = FALSE)
+       lab <- rbind(lab,add)
+   }    
+   lab[,"itemNr"] <- 1:nrow(lab)
+   return(lab)}
+
+fillStepValues <- function(lab=skelet, prm=prm, itemsPC)   {
+   for(i in 1:nrow(itemsPC)) {
+       sub <- subset(prm, item == itemsPC[i,"item"])
+       if(nrow(sub)==0) {
+          lab[eatTools::whereAre(itemsPC[i,"item"], lab[,"item"], verbose=FALSE),"item"] <- NA
+       } else {
+          lab[min(which(lab[,"item"] == itemsPC[i,"item"])),"item"] <- round(mean(sub[,"parameter"]), digits = 5)
+          sub[,"step"] <- sub[,"parameter"] - mean(sub[,"parameter"])
+          if((nrow(sub)-1) != length(which(lab[,"item"] == itemsPC[i,"item"]))) {
+             cli::cli_abort(c(paste0("Mismatch between number of categories in reference and focus group for item '",itemsPC[i,"item"],"':"), 
+                "x"=paste0("Reference group (anchor file): ", nrow(sub[-nrow(sub),]), " step parameter."),
+                "x"=paste0("Focus group (current data set): Expect ",length(lab[which(lab[,"item"] == itemsPC[i,"item"]),])," step parameters according to categories ",paste(0:(length(lab[which(lab[,"item"] == itemsPC[i,"item"]),])+1),collapse=", ")," in the data."),
+                "i"="Recommended to exclude this item from the anchor, since partial anchoring of item categories in Conquest is not possible due to the d/delta transformation."))
+             if((nrow(sub)-1) > length(which(lab[,"item"] == itemsPC[i,"item"]))) {
+                lab[which(lab[,"item"] == itemsPC[i,"item"]),"item"] <- sub[1:length(which(lab[,"item"] == itemsPC[i,"item"])),"step"]   
+             } else {
+                lab[which(lab[,"item"] == itemsPC[i,"item"])[1:(nrow(sub)-1)],"item"] <- sub[1:(nrow(sub)-1),"step"]   
+             }
+          } else {
+             lab[which(lab[,"item"] == itemsPC[i,"item"]),"item"] <- sub[-nrow(sub),"step"]
+          }
+       }
+   }
+   return(lab)}       
 
 ### ----------------------------------------------------------------------------
 

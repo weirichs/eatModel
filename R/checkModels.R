@@ -190,116 +190,137 @@ checkContextVars <- function(x, varname, type = c("weight", "DIF", "group", "HG"
 
 ### called by defineModel() ----------------------------------------------------
 checkBGV <- function(allNam, dat, software, remove.no.answersHG, remove.vars.DIF.missing, namen.items.weg, remove.vars.DIF.constant, renam, method){
-            weg.dif <- NULL; weg.hg <- NULL; weg.weight <- NULL; weg.group <- NULL# initialisieren
-            chk1 <- varsWithMoreThan1Class(allNam=allNam, dat=dat)              ### Variablen duerfen nur eine Klasse haben 
-            chk2 <- modelVarsNum(allNam=allNam, dat=dat)                        ### Variablen fuer model.statement sollen numerisch sein 
-     ### Hintergrundvariablen (conditioning model)
-            if(length(allNam[["HG.var"]])>0)    {
-               varClass<- sapply(allNam[["HG.var"]], FUN = function(ii) { inherits(dat[,ii], c("integer", "numeric"))})
-               if(!all(varClass)) {
-                  datX<- dat                                                    ### originalen Datensatz zum Vergleich speichern
-                  vnam<- names(varClass)[which(varClass == FALSE)]              ### das sind die Variablennamen, die jetzt zu indikatoren gemacht werden muessen
-                  dat <- eatTools::na_omit_selection(dat, varsToOmitIfNA=vnam)
-                  if(nrow(dat) != nrow(datX)) {
-                     if(isFALSE(remove.no.answersHG)) {
-                        stop(paste0("Found ",nrow(datX) - nrow(dat), " missings on background variable(s). With 'remove.no.answersHG = FALSE', the conversion of the factor variable into dichotomous indicators fails.\n   Please use 'remove.no.answersHG = TRUE' or replace the missings on factor variables of the conditioning model with an explicit indicator value, for example 'miss'."))
-                     } else {
-                        cat(paste("Remove ",nrow(datX) - nrow(dat)," cases with missings on background variable(s) because otherwise the conversion of the factor variable into dichotomous indicators would fail.\n",sep=""))
-                     }
-                  }
-                  cat(paste("Background variable(s) '",paste(vnam, collapse="', '"),"' of class \n    '",paste(sapply(dat[,vnam, drop=FALSE], class),collapse="', '"),"' will be converted to indicator variables.\n",sep=""))
-                  ind <- do.call("cbind", lapply ( vnam, FUN = function ( yy ) {### wenn background-variable ein faktor ist, werden daraus jetzt numerische dummies
-                         dat[,yy] <- eatTools::cleanifyString(dat[,yy])
-                         newFr <- model.matrix( as.formula (paste("~",yy,sep="")), data = dat)[,-1,drop=FALSE]
-                         cat(paste("    Variable '",yy,"' was converted to ",ncol(newFr)," indicator(s) with name(s) '",paste(colnames(newFr), collapse= "', '"), "'.\n",sep=""))
-                         return(newFr) }))
-                  if(software == "conquest") {                                  ### ggf. fuer Conquest Namen der HG-Variablen aendern
-                      subNm <- .substituteSigns(dat=ind, variable=colnames(ind))
-                      if(!all(subNm$old == subNm$new)) {
-                          sn  <- subNm[which( subNm$old != subNm$new),]
-                          colnames(ind) <- eatTools::recodeLookup(colnames(ind), sn[,c("old", "new")])
-                      }                                                         ### entferne Originalnamen aus allNam[["HG.var"]] und ergaenze neue Namen
-                  }
-                  allNam[["HG.var"]] <- c(setdiff(allNam[["HG.var"]],vnam), colnames(ind))
-                  if ( length(allNam[["HG.var"]]) > 99 && software == "conquest" ) {
-                       cat(paste0("Warning: ", length(allNam[["HG.var"]]), " background variables might be problematic in 'Conquest'. Recommend to use 'TAM' instead.\n"))
-                  }                                                             ### Warnung wenn mehr als 100 HG-Variablen und Conquest
-                  dat <- data.frame ( dat, ind, stringsAsFactors = FALSE )      ### ergaenze neue Variablen im Datensatz
-               }
-               hg.info <- lapply(allNam[["HG.var"]], FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="HG", itemdata=dat[,allNam[["variablen"]], drop = FALSE], suppressAbort = TRUE, internal=TRUE, renam=renam )})
-               for ( i in 1:length(hg.info)) { dat[, hg.info[[i]][["varname"]] ] <- hg.info[[i]]$x }
-               wegVar  <- unlist(lapply(hg.info, FUN = function ( uu ) { uu[["toRemove"]] }))
-               if(length(wegVar)>0) {
-                  allNam[["HG.var"]] <- setdiff ( allNam[["HG.var"]], wegVar) 
-                  if(length(allNam[["HG.var"]]) ==0) {allNam[["HG.var"]] <- NULL}
-               }
-               weg.hg  <- unique(unlist(lapply(hg.info, FUN = function ( y ) {y$weg})))
-               if(length(weg.hg)>0) {                                           ### untere Zeile: das removen geschieht erst etwas spaeter, wenn datensatz zusammengebaut ist
-                   if ( remove.no.answersHG == TRUE ) {
-                        cat(paste("Remove ",length(weg.hg)," cases with missings on at least one HG variable.\n",sep=""))
-                   }  else  {
-                        cat(paste(length(weg.hg)," cases with missings on at least one HG variable will be kept according to 'remove.no.answersHG = FALSE'.\n",sep=""))
-                        weg.hg <- NULL
-                   }
-               }
+   chk1 <- varsWithMoreThan1Class(allNam=allNam, dat=dat)              ### Variablen duerfen nur eine Klasse haben 
+   chk2 <- modelVarsNum(allNam=allNam, dat=dat)                        ### Variablen fuer model.statement sollen numerisch sein 
+ ### Hintergrundvariablen (conditioning model)
+   chk3 <- check_HG_var(allNam = allNam, dat=dat, software=software, remove.no.answersHG=remove.no.answersHG, renam=renam)
+ ### Gruppenvariablen
+   chk4 <- check_group_var(allNam = chk3[["allNam"]], dat=chk3[["dat"]], renam=renam)
+ ### DIF-Variablen
+   chk5 <- check_DIF_var(allNam = chk3[["allNam"]], dat=chk3[["dat"]], remove.vars.DIF.missing=remove.vars.DIF.missing, remove.vars.DIF.constant=remove.vars.DIF.constant, namen.items.weg=namen.items.weg, renam=renam)
+ ### Gewichtungsvariablen
+   chk6 <- check_weight_var(allNam = chk3[["allNam"]], dat=chk3[["dat"]], software=software, renam=renam)
+ ### jetzt alles rausschmeissen, was wegen irgendeines Grundes raus soll ... Achtung: group- und DIF- bzw. group- und HG-Variablen duerfen sich ueberschneiden!
+   namen.all.hg <- unique(c(chk3[["allNam"]][["HG.var"]],chk3[["allNam"]][["group.var"]],chk3[["allNam"]][["DIF.var"]],chk3[["allNam"]][["weight.var"]], chk3[["allNam"]][["add.vars"]]))
+   weg.all <- unique(c(chk5[["weg.dif"]], chk3[["weg.hg"]], chk6[["weg.weight"]], chk4[["weg.group"]]))
+   if(length(weg.all)>0) {
+      cat(paste("Remove",length(weg.all),"case(s) overall due to missings on at least one explicit variable.\n"))
+      perExHG<- chk3[["dat"]][weg.all, allNam[["ID"]] ]
+      dat    <- chk3[["dat"]][-weg.all,]
+   } else {
+      dat    <- chk3[["dat"]]
+      perExHG<- NULL
+   }
+   return(list(dat=dat, allNam=chk3[["allNam"]], namen.items.weg=chk5[["namen.items.weg"]],perExHG=perExHG, namen.all.hg=namen.all.hg))}
+
+check_weight_var <- function(allNam, dat, software, renam) {
+   weg.weight <- NULL
+   if(length(allNam[["weight.var"]])>0)  {
+      if(length(allNam[["weight.var"]])!=1) {stop("Use only one weight variable.")}
+      weight.info <- lapply(allNam[["weight.var"]], FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="weight", itemdata=dat[,allNam[["variablen"]], drop = FALSE], internal = TRUE, renam=renam)})
+      for(i in 1:length(weight.info)) {dat[, weight.info[[i]]$varname ] <- weight.info[[i]]$x}
+      weg.weight  <- unique(unlist(lapply(weight.info, FUN = function ( y ) {y$weg})))
+      if(length(weg.weight)>0) {                                                ### untere Zeile: remove geschieht erst etwas spaeter, wenn datensatz zusammengebaut ist
+         cat(paste("Remove ",length(weg.weight)," cases with missings on weight variable.\n",sep=""))
+      }
+      if(software=="mirt") {                                                    ### siehe mirt-Hilfe: gewichte sollen sich zur Anzahl der Faelle addieren und koennen nur fuer EM genutzt werden
+         sumWgt <- sum(dat[,allNam[["weight.var"]]], na.rm=TRUE)
+         if(sumWgt != nrow(dat)) {cli::cli_warn(c("For 'mirt', the sum of the weights must equal the total sample size for proper weighting to be applied.", "x"=paste0("Sample size: ",nrow(dat)), "x"=paste0("Sum of weights: ", sumWgt)))}
+         if(method %nin% c("gauss", "quadrature")) {cli::cli_warn(c("In the mirt software, weights can only be included in the estimation for the 'EM' method. This corresponds to 'gauss' or 'quadrature' in eatModel.", "x"=paste0("Chosen method: ", method)))}
+      }
+      is0 <- which(dat[,allNam[["weight.var"]]] == 0)
+      if(length(is0)>0) {warning(paste0(length(is0), " cases with zero weight."))}
+   }   
+   return(list(weg.weight=weg.weight))}
+
+check_DIF_var <- function(allNam, dat, remove.vars.DIF.missing, remove.vars.DIF.constant, namen.items.weg, renam) {
+   weg.dif <- NULL
+   if(length(allNam[["DIF.var"]])>0)  {
+      dif.info <- lapply(allNam[["DIF.var"]], FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="DIF", itemdata=dat[,allNam[["variablen"]], drop = FALSE], internal = TRUE, renam=renam)})
+      if(remove.vars.DIF.missing == TRUE ) {
+         for(uu in 1:length(dif.info)) { if (length(dif.info[[uu]]$wegDifMis) >0) {
+             cat(paste("Remove item(s) which only have missing values in at least one group of DIF variable '",dif.info[[uu]]$varname,"'.\n", sep=""))
+             namen.items.weg <- c(namen.items.weg,dif.info[[uu]]$wegDifMis) }
+         }
+      }
+      if(remove.vars.DIF.constant == TRUE ) {
+         for(uu in 1:length(dif.info)) { if (length(dif.info[[uu]]$wegDifConst) >0) {
+             cat(paste("Remove item(s) which are constant in at least one group of DIF variable '",dif.info[[uu]]$varname,"'.\n",sep=""))
+             namen.items.weg <- c(namen.items.weg,dif.info[[uu]]$wegDifConst) }
+         }
+      }
+      for(i in 1:length(dif.info)) { dat[, dif.info[[i]]$varname ] <- dif.info[[i]]$x }
+          weg.dif  <- unique(unlist(lapply(dif.info, FUN = function ( y ) {y$weg})))
+          if(length(weg.dif)>0)  {                                              ### untere Zeile: removen geschieht erst etwas spaeter, wenn datensatz zusammengebaut ist
+             stop("sollte nicht vorkommen")                                     ### cat(paste("Remove ",length(weg.dif)," cases with missings on DIF variable.\n",sep=""))
+          }
+      }
+      return(list(weg.dif=weg.dif, namen.items.weg=namen.items.weg))}
+
+check_group_var <- function(allNam, dat, renam) {
+   weg.group <- NULL
+   if(length(allNam[["group.var"]])>0)  {
+      group.info <- lapply(allNam$group.var, FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="group", itemdata=dat[,allNam[["variablen"]], drop = FALSE], internal=TRUE, renam=renam)})
+      for ( i in 1:length(group.info)) { dat[, group.info[[i]]$varname ] <- group.info[[i]]$x }
+      weg.group  <- unique(unlist(lapply(group.info, FUN = function ( y ) {y$weg})))
+      if(length(weg.group)>0)  {                                                ### untere Zeile: das removen geschieht erst etwas spaeter, wenn datensatz zusammengebaut ist
+         cat(paste("Remove ",length(weg.group)," cases with missings on group variable.\n",sep=""))
+      }
+   }
+   return(list(weg.group=weg.group))}   
+
+check_HG_var <- function(allNam, dat, software, remove.no.answersHG, renam) {
+   weg.hg <- NULL
+   if(length(allNam[["HG.var"]])>0)    {
+      varClass<- sapply(allNam[["HG.var"]], FUN = function(ii) { inherits(dat[,ii], c("integer", "numeric"))})
+      if(!all(varClass)) {
+         datX<- dat                                                             ### originalen Datensatz zum Vergleich speichern
+         vnam<- names(varClass)[which(varClass == FALSE)]                       ### das sind die Variablennamen, die jetzt zu indikatoren gemacht werden muessen
+         dat <- eatTools::na_omit_selection(dat, varsToOmitIfNA=vnam)
+         if(nrow(dat) != nrow(datX)) {
+            if(isFALSE(remove.no.answersHG)) {
+               stop(paste0("Found ",nrow(datX) - nrow(dat), " missings on background variable(s). With 'remove.no.answersHG = FALSE', the conversion of the factor variable into dichotomous indicators fails.\n   Please use 'remove.no.answersHG = TRUE' or replace the missings on factor variables of the conditioning model with an explicit indicator value, for example 'miss'."))
+            } else {
+               cat(paste("Remove ",nrow(datX) - nrow(dat)," cases with missings on background variable(s) because otherwise the conversion of the factor variable into dichotomous indicators would fail.\n",sep=""))
             }
-     ### Gruppenvariablen
-            if(length(allNam[["group.var"]])>0)  {
-                group.info <- lapply(allNam$group.var, FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="group", itemdata=dat[,allNam[["variablen"]], drop = FALSE], internal=TRUE, renam=renam)})
-                for ( i in 1:length(group.info)) { dat[, group.info[[i]]$varname ] <- group.info[[i]]$x }
-                weg.group  <- unique(unlist(lapply(group.info, FUN = function ( y ) {y$weg})))
-                if(length(weg.group)>0)  {                                      ### untere Zeile: das removen geschieht erst etwas spaeter, wenn datensatz zusammengebaut ist
-                    cat(paste("Remove ",length(weg.group)," cases with missings on group variable.\n",sep=""))
-                }
-            }
-     ### DIF-Variablen
-            if(length(allNam[["DIF.var"]])>0)  {
-                dif.info <- lapply(allNam[["DIF.var"]], FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="DIF", itemdata=dat[,allNam[["variablen"]], drop = FALSE], internal = TRUE, renam=renam)})
-                if ( remove.vars.DIF.missing == TRUE ) {
-                     for ( uu in 1:length(dif.info)) { if (length(dif.info[[uu]]$wegDifMis) >0) {
-                           cat(paste("Remove item(s) which only have missing values in at least one group of DIF variable '",dif.info[[uu]]$varname,"'.\n", sep=""))
-                           namen.items.weg <- c(namen.items.weg,dif.info[[uu]]$wegDifMis) }
-                     }
-                }
-                if ( remove.vars.DIF.constant == TRUE ) {
-                      for ( uu in 1:length(dif.info)) { if (length(dif.info[[uu]]$wegDifConst) >0) {
-                            cat(paste("Remove item(s) which are constant in at least one group of DIF variable '",dif.info[[uu]]$varname,"'.\n",sep=""))
-                            namen.items.weg <- c(namen.items.weg,dif.info[[uu]]$wegDifConst) }
-                     }
-                }
-                for ( i in 1:length(dif.info)) { dat[, dif.info[[i]]$varname ] <- dif.info[[i]]$x }
-                weg.dif  <- unique(unlist(lapply(dif.info, FUN = function ( y ) {y$weg})))
-                if(length(weg.dif)>0)  {                                        ### untere Zeile: removen geschieht erst etwas spaeter, wenn datensatz zusammengebaut ist
-                    stop("sollte nicht vorkommen")                              ### cat(paste("Remove ",length(weg.dif)," cases with missings on DIF variable.\n",sep=""))
-                }
-            }
-     ### Gewichtungsvariablen
-            if(length(allNam[["weight.var"]])>0)  {
-                if(length(allNam[["weight.var"]])!=1) {stop("Use only one weight variable.")}
-                weight.info <- lapply(allNam[["weight.var"]], FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="weight", itemdata=dat[,allNam[["variablen"]], drop = FALSE], internal = TRUE, renam=renam)})
-                for ( i in 1:length(weight.info)) {dat[, weight.info[[i]]$varname ] <- weight.info[[i]]$x}
-                weg.weight  <- unique(unlist(lapply(weight.info, FUN = function ( y ) {y$weg})))
-                if(length(weg.weight)>0) {                                      ### untere Zeile: remove geschieht erst etwas spaeter, wenn datensatz zusammengebaut ist
-                    cat(paste("Remove ",length(weg.weight)," cases with missings on weight variable.\n",sep=""))
-                }
-                if(software=="mirt") {                                          ### siehe mirt-Hilfe: gewichte sollen sich zur Anzahl der Faelle addieren und koennen nur fuer EM genutzt werden
-                   sumWgt <- sum(dat[,allNam[["weight.var"]]], na.rm=TRUE)
-                   if(sumWgt != nrow(dat)) {cli::cli_warn(c("For 'mirt', the sum of the weights must equal the total sample size for proper weighting to be applied.", "x"=paste0("Sample size: ",nrow(dat)), "x"=paste0("Sum of weights: ", sumWgt)))}
-                   if(method %nin% c("gauss", "quadrature")) {cli::cli_warn(c("In the mirt software, weights can only be included in the estimation for the 'EM' method. This corresponds to 'gauss' or 'quadrature' in eatModel.", "x"=paste0("Chosen method: ", method)))}
-                }
-                is0 <- which(dat[,allNam[["weight.var"]]] == 0)
-                if(length(is0)>0) {warning(paste0(length(is0), " cases with zero weight."))}
-            }                                                                   ### untere Zeile, Achtung: group- und DIF- bzw. group- und HG-Variablen duerfen sich ueberschneiden!
-     ### jetzt alles rausschmeissen, was wegen irgendeines Grundes raus soll
-            namen.all.hg <- unique(c(allNam[["HG.var"]],allNam[["group.var"]],allNam[["DIF.var"]],allNam[["weight.var"]], allNam[["add.vars"]]))
-            weg.all <- unique(c(weg.dif, weg.hg, weg.weight, weg.group))
-            perExHG <- NULL
-            if(length(weg.all)>0) {
-               cat(paste("Remove",length(weg.all),"case(s) overall due to missings on at least one explicit variable.\n"))
-               perExHG<- dat[weg.all, allNam[["ID"]] ]
-               dat    <- dat[-weg.all,]
-            }
-            return(list(dat=dat, allNam=allNam, namen.items.weg=namen.items.weg,perExHG=perExHG, namen.all.hg=namen.all.hg))}
+         }
+         cat(paste("Background variable(s) '",paste(vnam, collapse="', '"),"' of class \n    '",paste(sapply(dat[,vnam, drop=FALSE], class),collapse="', '"),"' will be converted to indicator variables.\n",sep=""))
+         ind <- do.call("cbind", lapply ( vnam, FUN = function ( yy ) {         ### wenn background-variable ein faktor ist, werden daraus jetzt numerische dummies
+               dat[,yy] <- eatTools::cleanifyString(dat[,yy])
+               newFr <- model.matrix( as.formula (paste("~",yy,sep="")), data = dat)[,-1,drop=FALSE]
+               cat(paste("    Variable '",yy,"' was converted to ",ncol(newFr)," indicator(s) with name(s) '",paste(colnames(newFr), collapse= "', '"), "'.\n",sep=""))
+               return(newFr) }))
+         if(software %in% c("conquest", "conquest5")) {                                           ### ggf. fuer Conquest Namen der HG-Variablen aendern
+            subNm <- .substituteSigns(dat=ind, variable=colnames(ind))
+            if(!all(subNm$old == subNm$new)) {
+               sn  <- subNm[which( subNm$old != subNm$new),]
+               colnames(ind) <- eatTools::recodeLookup(colnames(ind), sn[,c("old", "new")])
+            }                                                                   ### entferne Originalnamen aus allNam[["HG.var"]] und ergaenze neue Namen
+         }
+         allNam[["HG.var"]] <- c(setdiff(allNam[["HG.var"]],vnam), colnames(ind))
+         if(length(allNam[["HG.var"]]) > 99 && software %in% c("conquest", "conquest5") ) {
+            cat(paste0("Warning: ", length(allNam[["HG.var"]]), " background variables might be problematic in 'Conquest'. Recommend to use 'TAM' instead.\n"))
+         }                                                                      ### Warnung wenn mehr als 100 HG-Variablen und Conquest
+         dat <- data.frame ( dat, ind, stringsAsFactors = FALSE )               ### ergaenze neue Variablen im Datensatz
+      }
+      hg.info <- lapply(allNam[["HG.var"]], FUN = function(ii) {checkContextVars(x = dat[,ii], varname=ii, type="HG", itemdata=dat[,allNam[["variablen"]], drop = FALSE], suppressAbort = TRUE, internal=TRUE, renam=renam )})
+      for(i in 1:length(hg.info)) { dat[, hg.info[[i]][["varname"]] ] <- hg.info[[i]]$x}
+      wegVar  <- unlist(lapply(hg.info, FUN = function ( uu ) { uu[["toRemove"]] }))
+      if(length(wegVar)>0) {
+         allNam[["HG.var"]] <- setdiff ( allNam[["HG.var"]], wegVar) 
+         if(length(allNam[["HG.var"]]) ==0) {allNam[["HG.var"]] <- NULL}
+      }
+      weg.hg  <- unique(unlist(lapply(hg.info, FUN = function ( y ) {y$weg})))
+      if(length(weg.hg)>0) {                                                    ### untere Zeile: das removen geschieht erst etwas spaeter, wenn datensatz zusammengebaut ist
+         if(remove.no.answersHG == TRUE ) {
+            cat(paste("Remove ",length(weg.hg)," cases with missings on at least one HG variable.\n",sep=""))
+         } else {
+            cat(paste(length(weg.hg)," cases with missings on at least one HG variable will be kept according to 'remove.no.answersHG = FALSE'.\n",sep=""))
+            weg.hg <- NULL
+         }
+      }
+   }
+   return(list(weg.hg=weg.hg, dat=dat, allNam=allNam))}
 
 ### hilfsfunktion fuer checkBGV, hat keine rueckgabe, checkt nur 
 varsWithMoreThan1Class <- function(allNam, dat) {
@@ -407,9 +428,9 @@ checkItemConsistency <- function(dat, allNam, remove.missing.items, remove.insuf
                 rem <- printPartialCreditInfToConsole(valND=valND, verbose = verbose, renam=renam)
                 if(remove.insuff.pattern) {namen.items.weg <- c(namen.items.weg, rem)}
              }
-             if(model.statement == "item" && software=="conquest") { warning("Sure you want to use 'model statement = item' even when items are not dichotomous?")}
+             if(model.statement == "item" && software %in% c("conquest", "conquest5")) { warning("Sure you want to use 'model statement = item' even when items are not dichotomous?")}
           } else {
-             if(software != "conquest" && irtmodel %nin% c("1PL", "2PL","3PL", "2PL.groups")) {cli::cli_warn(c("Possible inconsistency between the data and the chosen model. It is possible that the process will crash at the latest when the parameterized models are re-read and further processed.", "x"="Data are dichotomous.", "x"=paste0("'irtmodel' is '",irtmodel,"'"))) }
+             if(software == "tam" && irtmodel %nin% c("1PL", "2PL","3PL", "2PL.groups")) {cli::cli_warn(c("Possible inconsistency between the data and the chosen model. It is possible that the process will crash at the latest when the parameterized models are re-read and further processed.", "x"="Data are dichotomous.", "x"=paste0("'irtmodel' is '",irtmodel,"'"))) }
           }
           return(list(dat=dat,allNam=allNam, namen.items.weg=unique(namen.items.weg)))}
 
@@ -443,34 +464,36 @@ printPartialCreditInfToConsole <- function(valND, verbose, renam){
 ### called by defineModel() ----------------------------------------------------
 
 checkID_consistency <- function(dat, allNam, software){
-  dat[,allNam[["ID"]] ] <- as.character(dat[,allNam[["ID"]] ])
-  doppelt     <- which(duplicated(dat[,allNam[["ID"]]]))
-  if(length(doppelt)>0)  {stop(paste( length(doppelt) , " duplicate IDs found!",sep=""))}
-  if(software == "conquest") {
-    notAllowed  <- grep("-|\\.", dat[,allNam[["ID"]] ])
-    if ( length(notAllowed)>0) {
-      cat("Conquest neither allows '.' nor '-' in ID variable. Delete signs from ID variable.\n")
-      dat[,allNam[["ID"]] ] <- eatTools::removePattern(string = eatTools::removePattern(string=dat[,allNam[["ID"]] ], pattern="\\."), pattern = "-")
-      if ( length ( which(duplicated(dat[,allNam[["ID"]]])))>0) {
-        dat[,allNam[["ID"]] ] <- paste0(1:nrow(dat),dat[,allNam[["ID"]] ])
-      }
-    }
-  }
-  return(dat)}
+          dat[,allNam[["ID"]] ] <- as.character(dat[,allNam[["ID"]] ])
+          doppelt     <- which(duplicated(dat[,allNam[["ID"]]]))
+          if(length(doppelt)>0)  {stop(paste( length(doppelt) , " duplicate IDs found!",sep=""))}
+          if(software %in% c("conquest", "conquest5")) {
+              notAllowed  <- grep("-|\\.", dat[,allNam[["ID"]] ])               ### fuer Conquest: unerlaubte Zeichen aus ID-Variable loeschen
+              if ( length(notAllowed)>0) {
+                   cat("Conquest neither allows '.' nor '-' in ID variable. Delete signs from ID variable.\n")
+                   dat[,allNam[["ID"]] ] <- eatTools::removePattern(string = eatTools::removePattern(string=dat[,allNam[["ID"]] ], pattern="\\."), pattern = "-")
+                   if ( length ( which(duplicated(dat[,allNam[["ID"]]])))>0) {
+                         dat[,allNam[["ID"]] ] <- paste0(1:nrow(dat),dat[,allNam[["ID"]] ])
+                   }                                                            ### wenn ID jetzt nicht mehr unique ist, wieder unique machen
+              }
+          }
+          return(dat)}
+
 
 ### called by defineModel() ----------------------------------------------------
 
 checkDir <- function(dir, software) {
-  if(!is.null(dir)) {
-    dir <- normalizePath(dir)
-    if(dir.exists(dir) == FALSE) {
-      cat(paste("Warning: Specified folder '",dir,"' does not exist. Create folder ... \n",sep=""))
-      dir.create(dir, recursive = TRUE)
-    }
-  }  else  {
-    if (software == "conquest") {stop("Argument 'dir' must be specified if software = 'conquest'.\n")}
+  if(!is.null(dir)) {                                                 ### Sofern ein verzeichnis angegeben wurde (nicht NULL),
+     dir <- normalizePath(dir,"/")                                   ### das Verzeichnis aber nicht existiert, wird es jetzt erzeugt
+     if(dir.exists(dir) == FALSE) {
+        cat(paste("Warning: Specified folder '",dir,"' does not exist. Create folder ... \n",sep=""))
+        dir.create(dir, recursive = TRUE)
+     }
+  } else {                                                          ### sicher ist sicher ...
+     if (software %in% c("conquest", "conquest5")) {stop("Argument 'dir' must be specified if software = 'conquest'.\n")}
   }
   return(dir)}
+
 
 ### called by defineModel() ----------------------------------------------------
 
@@ -534,3 +557,22 @@ checkPersonSumScores <- function(datL, allNam, dat, remove.failures, qmat){
           datM  <- do.call("rbind", by(data=datL, INDICES = datL[,c(allNam[["ID"]], colnames(mat)[ncol(mat)])], FUN = function(x) {data.frame(x[1,c(allNam[["ID"]], colnames(mat)[ncol(mat)])], viewed = nrow(x), stringsAsFactors = FALSE)}))
           return(list(dat=dat, per0=per0, perA=perA, viewed = datM))}
 
+checkForMutualAbsence <- function(skel, ank) {
+   weg  <- which(rownames(skel) %nin% ank[,"name"])  
+   if(length(weg)>0) {
+      items <- unique(eatTools::halveString(rownames(skel)[weg], pattern = "_Cat", first=FALSE)[,1])
+      drin  <- which(items %in% ank[,"item"])
+      if(length(drin)>0) {
+         for(i in drin) {cli::cli_warn(c(paste0("Item '",items[i],"': Number of categories differ between reference and focus group."), "x"=paste0("Reference group (anchor file): '",paste(subset(ank, item == items[i])[,"category"], collapse= "', '"), "'"),  "x"=paste0("Focus group (current data set): '", paste(eatTools::halveString(grep(items[i], rownames(skel), value=TRUE), "_", first = FALSE)[,2], collapse="', '"),"'"), "i"= "It is recommended that you do not use this item for anchoring."))}
+      }
+   }
+   weg1 <- which(ank[,"name"] %nin% rownames(skel))
+   if(length(weg1)>0) {
+      items <- unique(ank[weg1,"item"])
+      drin  <- which(items %in% unique(eatTools::halveString(rownames(skel)[weg], pattern = "_Cat", first=FALSE)[,1]))
+      if(length(drin)>0) {
+         for(i in drin) {cli::cli_warn(c(paste0("Item '",items[i],"': Number of categories differ between reference and focus group."), "x"=paste0("Reference group (anchor file): '",paste(subset(ank, item == items[i])[,"category"], collapse= "', '"), "'"),  "x"=paste0("Focus group (current data set): '", paste(eatTools::halveString(grep(items[i], rownames(skel), value=TRUE), "_", first = FALSE)[,2], collapse="', '"),"'"), "i"= "It is recommended that you do not use this item for anchoring."))}
+      }
+   }
+   if(length(weg)>0) {skel <- skel[-weg,]}
+   return(skel)}
