@@ -109,6 +109,7 @@ defineModelSingle <- function (a) {
           colnames(dat)            <- eatTools::recodeLookup(colnames(dat), data.frame(old = DIF.free, new = paste0("ZZ",DIF.free)))
        }
      ### wenn software = conquest, duerfen variablennamen nicht mehr als 11 Zeichen haben! das heisst, falls doch, werden die items hier umbenannt
+     ### 'renameVariables' benennt dabei Items im Datensatz, in all.Names, in der Q-Matrix und in der Ankerparameterliste um!
        mat <- generateOrCheckQmatrix(a=a, qMatrix=qMatrix, all.Names = all.Names)## Funktion muss hier schon aufgerufen werden (insgesamt zweimal), denn wenn (noch) keine q Matrix spezifiziert wurde, schlaegt 'renameVariables()' fehl
        obs <- renameVariables(a=a, qMatrix=mat[["qMatrix"]], software=software, all.Names=mat[["all.Names"]], dat=dat)
      ### ID-Variable pruefen und ggf. aendern
@@ -172,7 +173,7 @@ defineModelSingle <- function (a) {
        }
        lab <- data.frame(itemNr = 1:length(cbc[["allNam"]][["variablen"]]), item = cbc[["allNam"]][["variablen"]], stringsAsFactors = FALSE)
        if(!is.null(a[["anchor"]]))  {
-          ankFrame <- anker(lab = lab, prm = anchor, qMatrix = obs3[["qMatrix"]], domainCol=domainCol, itemCol=itemCol, valueCol=valueCol, catCol=catCol, dat=cpsc[["dat"]], software = software)
+          ankFrame <- anker(lab = lab, prm = obs[["anchor"]], qMatrix = obs3[["qMatrix"]], domainCol=domainCol, itemCol=itemCol, valueCol=valueCol, catCol=catCol, dat=cpsc[["dat"]], software = software)
        } else {
           ankFrame <- NULL
           if(fitTamMmlForBayesian == FALSE ) {
@@ -256,6 +257,14 @@ renameVariables <- function(a, qMatrix, software, all.Names, dat) {
              if(!is.null(a[["qMatrix"]])) {                                     ### umbenennung muss auch in der q matrix erfolgen, wenn es eine gibt 
                 qMatrix[,1] <- eatTools::recodeLookup(qMatrix[,1], renam)
              }
+             if(!is.null(a[["anchor"]])) {
+                if(!is.null(a[["itemCol"]])) {
+                   col <- a[["itemCol"]]
+                } else {
+                   col <- 1
+                }
+                a[["anchor"]][,col] <- eatTools::recodeLookup(a[["anchor"]][,col], renam)
+             }
           }
        } else {
           if(!is.null(all.Names[["group.var"]])) {
@@ -263,7 +272,7 @@ renameVariables <- function(a, qMatrix, software, all.Names, dat) {
              all.Names[["group.var"]] <- NULL
           }
        }
-       return(list(dat=dat, qMatrix=qMatrix, all.Names=all.Names, renam=renam))}
+       return(list(dat=dat, qMatrix=qMatrix, all.Names=all.Names, renam=renam, anchor = a[["anchor"]]))}
 
 renameVariables2 <- function(all.Names, dat, software, model.statement) {       
        exclude <- which(names(all.Names) == "DIF.free")

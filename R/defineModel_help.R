@@ -33,7 +33,11 @@ doAufb <- function ( x, argL ) {
           }
      ### alles was hier definiert wurde, in ArgL ersetzen
           if(exists("qMatrix")) {argL[["qMatrix"]]<- qMatrix}
-          if(exists("itemSel")) {argL[["items"]]  <- itemSel}
+          if(exists("itemSel")) {
+            if(inherits(try(argL[["items"]]  <- itemSel, silent=TRUE ),"try-error"))  {
+               cli::cli_abort(c("Cannot assign item selection. Possible reason:", "x"=  "Did you forget to specify the 'items' argument in 'defineModel()', even though no item split was defined in 'splitModels()'?"))
+            }
+          }
           if(exists("datSel"))  {argL[["dat"]]    <- datSel}
           if(!is.null(dirI))    {argL[["dir"]]    <- dirI}
           argL[["analysis.name"]] <- nameI

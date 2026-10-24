@@ -178,7 +178,7 @@ checkContextVars <- function(x, varname, type = c("weight", "DIF", "group", "HG"
                                 wegDifConst<- c(wegDifConst,  row.names(completeMissingGroupwise[notIdent,]))
                              }
      ### jetzt die Items identifizieren, die in einer bestimmten DIF-gruppe fuer eine Kategorie weniger als 3 responses haben (mit denen sind auch keine DIF-Analysen moeglich)
-                             less3   <- which(sapply(n.werte, function(ll){min(unlist(ll)) < 3}))
+                             less3   <- suppressWarnings(which(sapply(n.werte, function(ll){min(unlist(ll)) < 3})))
                              if(length(less3)>0) {
                                 cat(paste("Warning: For ",length(less3)," items, some response categories in some DIF groups have less than 3 valid responses: '",paste(names(less3), collapse="', '"), "'. \n   Remove these items because otherwise the IRT DIF model probably will crash.\n",sep=""))
                                 wegDifConst<- c(wegDifConst, names(less3))
@@ -551,7 +551,9 @@ checkPersonSumScores <- function(datL, allNam, dat, remove.failures, qmat){
           }
     ### wird spaeter fuer wle-Auslesen gebraucht: fuer jede person ausgeben lassen, wieviele items sie auf jeder domaene vorgelegt bekommen hat. geht nur fuer between item dimensionality
           mat   <- do.call("rbind", by(qmat, INDICES = qmat[,1], FUN = function(z) {
-                   z[,"dim"] <- colnames(z)[which(z[1,] == 1)]
+                   if(inherits(try(z[,"dim"] <- colnames(z)[which(z[1,] == 1)], silent=TRUE ),"try-error"))  {
+                      cli::cli_abort(c("Some items in the Q Matrix appear to belong to more than one dimension.", "x"=  "Are you sure there is 'between-item multidimensionality' here?"))
+                   }
                    return(z[,c(1, ncol(z))])}))
           datL  <- merge(datL, mat, by.x = "variable", by.y = colnames(mat)[1])
           datM  <- do.call("rbind", by(data=datL, INDICES = datL[,c(allNam[["ID"]], colnames(mat)[ncol(mat)])], FUN = function(x) {data.frame(x[1,c(allNam[["ID"]], colnames(mat)[ncol(mat)])], viewed = nrow(x), stringsAsFactors = FALSE)}))
