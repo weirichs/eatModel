@@ -54,7 +54,7 @@ getConquestResults <- function(path, analysis.name, model.name, qMatrix, all.Nam
              if(software=="conquest") {ret  <- rbind(ret, data.frame ( model = model.name, source="conquest", var1=NA, var2=NA,type="tech", indicator.group="persons", group = colnames(qMatrix)[-1], par="eap", derived.par = "rel", value = shw[["reliability"]][,"eap.rel"], stringsAsFactors=FALSE))}
     ### Populationsparameter und Regressionsparameter aus Showfile auslesen (shw)
              ret  <- rbind(ret, getConquestPopPar (model.name=model.name, qMatrix=qMatrix, shw=shw))
-             ret  <- rbind(ret, getConquestRegPar (model.name=model.name, shw=shw, altN = altN))
+             ret  <- rbind(ret, getConquestRegPar (model.name=model.name, shw=shw, altN = altN, software=software))
     ### Sektion 'Modellindizes auslesen' (shw)
              if(software=="conquest") {ret  <- rbind(ret, data.frame ( model = model.name, source = "conquest", var1 = NA, var2 = NA , type = "model", indicator.group = NA, group = NA, par = c("deviance", "Npar"),  derived.par = NA, value = shw$final.deviance , stringsAsFactors = FALSE))}
     ### Personenparameter auslesen (wle) ... da hierzu das Objekt 'altN' gebraucht wird, das aus dem shw-file erzeugt wird, geht das Auslesen von WLEs nur, wenn das Auslesen von shw geklappt hat
@@ -259,24 +259,25 @@ getConquestPopPar <- function(model.name, qMatrix, shw){
 
 ### ----------------------------------------------------------------------------
 
-getConquestRegPar <- function ( model.name, shw, altN){
-  if(nrow(shw$regression)<=1) {return(NULL)}
-  reg  <- shw$regression
-  if(!is.null( dim(shw$cov.structure) )) {
-    for ( i in 1:nrow(altN)) { colnames(reg) <- gsub(altN[i,"from"], altN[i,"to"], colnames(reg))}
-  }  else  {
-    index  <- grep("_$", colnames(reg))
-    colnames(reg)[index] <- paste(colnames(reg)[index], altN[,"to"], sep="")
-  }
-  regL <- reshape2::melt(reg, id.vars = colnames(reg)[1], measure.vars = colnames(reg)[-c(1, ncol(reg))], na.rm=TRUE)
-  foo  <- data.frame ( do.call("rbind", strsplit(as.character(regL[,"variable"]), "_")), stringsAsFactors = FALSE)
-  colnames(foo) <- c("par", "group")
-  foo[,"derived.par"] <- car::recode(foo[,"par"], "'error'='se'; else = NA")
-  foo[,"par"] <- "est"
-  regL <- data.frame ( regL[,-match("variable", colnames(regL)), drop=FALSE], foo, stringsAsFactors = FALSE)
-  regL[,"reg.var"] <- car::recode(regL[,"reg.var"], "'CONSTANT'='(Intercept)'")
-  res  <- data.frame ( model = model.name, source = "conquest", var1 = regL[,"reg.var"], var2 = NA , type = "regcoef", indicator.group = NA, group = regL[,"group"], par = regL[,"par"],  derived.par = regL[,"derived.par"], value = regL[,"value"] , stringsAsFactors = FALSE)
-  return(res)}
+getConquestRegPar <- function ( model.name, shw, altN, software){
+         if(nrow(shw$regression)<=1) {return(NULL)}
+         reg  <- shw$regression                                                 ### untere Zeile: Dimensionen analog zu Q matrix umbenennen
+         if(!is.null(dim(shw$cov.structure))) {
+            for(i in 1:nrow(altN)) {colnames(reg) <- gsub(altN[i,"from"], altN[i,"to"], colnames(reg))}
+         }  else  {
+            index  <- grep("_$", colnames(reg))
+            colnames(reg)[index] <- paste(colnames(reg)[index], altN[,"to"], sep="")
+         }
+         if(software == "conquest") {
+            cols <- -c(1, ncol(reg))
+         } else {
+            cols <- -1 
+         }
+         regL <- reshape2::melt(reg, id.vars = colnames(reg)[1], measure.vars = colnames(reg)[cols], na.rm=TRUE)
+         regL <- suppressWarnings(data.frame(regL, eatTools::halveString(as.character(regL[,"variable"]), "_", first=TRUE, colnames = c("par", "group")), stringsAsFactors = FALSE) |> dplyr::mutate(derived.par = car::recode(par, "'error'='se'; else = NA"), par = "est") |> dplyr::select(-variable))
+         regL[,"reg.var"] <- car::recode(regL[,"reg.var"], "'CONSTANT'='(Intercept)'")
+         res  <- data.frame ( model = model.name, source = "conquest", var1 = regL[,"reg.var"], var2 = NA , type = "regcoef", indicator.group = NA, group = regL[,"group"], par = regL[,"par"],  derived.par = regL[,"derived.par"], value = regL[,"value"] , stringsAsFactors = FALSE)
+         return(res)}
 
 ### ----------------------------------------------------------------------------
 
