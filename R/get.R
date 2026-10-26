@@ -143,7 +143,7 @@ get.shw.v5 <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, si
                stopifnot(ncol(inp5) %% 2 == 0)                                  ### data.frame muss gerade Spaltenanzahl haben
                inp5  <- inp5[,-2*(1:(ncol(inp5)/2))]                            ### alle gerade Spalten entfernen  
                inp5[,"Dimension"] <- gsub("_", " ", inp5[,"Dimension"])
-               colnames(inp5)[-1] <- removeNonNumeric(colnames(inp5)[-1])
+               colnames(inp5)[-1] <- eatTools::removeNonNumeric(colnames(inp5)[-1])
                all.output$cov.structure <- inp5
             }
             cat("Importing reliability indices not yet implemented for Conquest Version 5.\n")
