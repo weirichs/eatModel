@@ -299,7 +299,11 @@ getConquestWles <- function ( model.name, analysis.name, qMatrix, allFiles, omit
          if(is.null(wle)) {return(NULL)}
          res  <- NULL                                                           ### initialisieren
          for(i in 1:nrow(altN)) { colnames(wle) <- gsub(  paste(".",altN[i,"nr"],"$",sep=""), paste("_", altN[i,"to"],sep="") , colnames(wle))}
-         wleL <- reshape2::melt(wle, id.vars = "ID", measure.vars = colnames(wle)[-c(1:2)], na.rm=TRUE)
+         wleL <- reshape2::melt(wle, id.vars = "ID", measure.vars = colnames(wle)[-c(1:2)], na.rm=TRUE) |> dplyr::mutate_at(.vars = "value", .funs = as.numeric) |> na.omit()
+         if(length(grep("wle", as.character(wleL[,"variable"]), ignore.case=TRUE))==0) {
+            cat(paste0("WLE file '",wleFile,"' does not appear to contain any valid values. The process of reading the WLE values is being aborted.\n"))
+            return(NULL)
+         }
          foo  <- data.frame ( eatTools::halveString( as.character(wleL[,"variable"]), pattern = "_"), stringsAsFactors=FALSE)
          colnames(foo) <- c("par", "group")                                     ### halveString statt strsplit nehmen, weil es sonst schiefgeht, wenn dimensionsname einen Unterstrich enthaelt; foo muss immer zwei spalten haben, das ist nicht so, wenn man strsplit nimmt und der dimensionsname einen Unterstrich enthaelt
          foo[,"derived.par"] <- car::recode(foo[,"par"], "'wle'='est'; 'std.wle'='se'; else=NA")

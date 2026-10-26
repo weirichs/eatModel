@@ -94,7 +94,7 @@ get.shw.v5 <- function(file, dif.term, split.dif = TRUE, abs.dif.bound = 0.6, si
                          stopifnot(length(row.ii) == 1)
                          row.ii <- as.numeric(unlist(lapply (strsplit(input1[row.ii,], " +"), FUN=function(ll) {ll[length(ll)]}) ))
                          return(row.ii)})
-            input2    <- eatTools::makeDataFrame(read_excel(file, sheet = "ResponseModel"), verbose=FALSE) |> suppressMessages()
+            input2    <- eatTools::makeDataFrame(read_excel(file, sheet = "ResponseModel"), verbose=FALSE) |> suppressWarnings() |> suppressMessages()
             ind       <- grep("^TERM",input2[,1])                               ### Wieviele Tabellen gibt es einzulesen?
             ind2      <- grep(paste(rep("-", 15), collapse=""), input2[,1])
             if(length(ind)==0) {stop(paste("No TERM-statement found in file ",file,".\n",sep=""))}
