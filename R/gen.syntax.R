@@ -2,7 +2,7 @@
 
 gen.syntax     <- function(Name,daten, all.Names, namen.all.hg = NULL, all.hg.char = NULL, var.char, model = NULL, anchored, constraints=c("cases","none","items"), pfad=NULL, Title=NULL,n.plausible=5,std.err=c("quick","full","none"), compute.fit ,
                            distribution=c("normal","discrete"), method=c("gauss", "quadrature", "montecarlo"), n.iterations=200, nodes=NULL, p.nodes=2000, f.nodes=2000, converge=0.001,deviancechange=0.0001, equivalence.table=c("wle","mle","NULL"), use.letters=use.letters, model.statement=model.statement, conquest.folder = NULL, allowAllScoresEverywhere,
-                           seed , software , export = list(logfile = TRUE, systemfile = FALSE, history = TRUE, covariance = TRUE, reg_coefficients = TRUE, designmatrix = FALSE) )  {
+                           seed, software, export = list(logfile = TRUE, systemfile = FALSE, history = TRUE, covariance = TRUE, reg_coefficients = TRUE, designmatrix = FALSE), viewed)  {
                    if(is.null(anchored)) {anchored <- FALSE} else {anchored <- TRUE}
                    export.default <- list(logfile = TRUE, systemfile = FALSE, history = TRUE, covariance = TRUE, reg_coefficients = TRUE, designmatrix = FALSE)
                    if(software=="conquest5") {
@@ -174,6 +174,15 @@ gen.syntax     <- function(Name,daten, all.Names, namen.all.hg = NULL, all.hg.ch
                       ind.2 <- grep("^set constraints",syntax)                  ### wenn ANKER gesetzt, setze constraints auf "none"
                       if(match.arg(constraints) != "none") { cat("Anchorparameter were defined. Set constraints to 'none'.\n")}
                       syntax[ind.2]  <- "set constraints=none;"
+                   }
+                   if(ncol(model)>2) {                                          ### fuer mehrdimensionale Modelle: schauen, ob es Personen gibt, die in jeder Dimension items bearbeitet haben. Falls nicht, WLE-Erzeugung stoppen (equivalence table generation schlaegt sonst fehl)
+                      viewW <- reshape2::dcast(viewed, as.formula(paste0(all.Names[["ID"]], "~dim")), value.var = "viewed")
+                      allVal<- rowSums(viewW[,-1], na.rm = FALSE)
+                      if(all(is.na(allVal))) {
+                         cat(paste0("There are no persons that have valid values across all ",ncol(model)-1," dimensions. Remove WLE generation from the Conquest syntax. \n   (Otherwise, the model could crash because equivalence tables cannot be calculated.)\n"))
+                         ind.2 <- grep("estimate=wle|estimates=wle|equivalence wle",syntax)
+                         syntax <- syntax[-ind.2]
+                      }
                    }
                    if(!all(sapply(export, inherits, what="logical"))) {stop("All list elements of argument 'export' have to be of class 'logical'.")}
                    export <- as.list(userSpecifiedList ( l = export, l.default = export.default ))

@@ -327,15 +327,7 @@ getTamWles <- function(runModelObj, qMatrix, leseAlles, omitWle) {
          wleL[,"par"]   <- car::recode(unlist(lapply(strsplit(as.character(wleL[,"variable"]),"\\."), FUN = function (l) {l[1]})), "'PersonScores'='NitemsSolved'; 'PersonMax'='NitemsTotal'; 'theta'='wle'; 'error'='wle'")
          wleL[,"derived.par"] <- car::recode(unlist(lapply(strsplit(as.character(wleL[,"variable"]),"\\."), FUN = function (l) {l[1]})), "'theta'='est'; 'error'='se';else=NA")
     ### in partial credit entspricht 'PersonMax' nicht der Gesamtzahl der Items der Domaene, muss also aus q matrix rekonstruiert werden
-         if(grepl("PCM|RSM", runModelObj[["irtmodel"]], ignore.case=TRUE)) {
-            if(!all(unique(wleL[,"group"]) %in% unique(attr(runModelObj, "defineModelObj")[["viewed"]][,"dim"]))) {
-               cat(paste0("Cannot match dimensions of Q matrix ('",paste(unique(attr(runModelObj, "defineModelObj")[["viewed"]][,"dim"]), collapse="', '"), "') with groups in WLE object ('",paste(unique(wleL[,"group"]), collapse="', '"),"'). WLE object will not contain valid number of items presented per person and per dimension.\n"))
-            } else {
-               wleX <- merge(wleL[which(wleL[,"par"] == "NitemsTotal"),], attr(runModelObj, "defineModelObj")[["viewed"]], by.x = c("pid", "group"), by.y = c(attr(runModelObj, "defineModelObj")[["all.Names"]][["ID"]], "dim"), all=TRUE)
-               if(any(is.na(wleX[,"viewed"]))) {wleX[which(is.na(wleX[,"viewed"])),"viewed"] <- 0}
-               wleL <- eatTools::rbind_common(wleL[which(wleL[,"par"] != "NitemsTotal"),], wleX)
-            }
-         }
+         wleL <- addItemsViewedPerDomain(wleL = wleL, runModelObj=runModelObj)
          rel  <- reshape2::melt(as.data.frame ( wle)[1,weg1], na.rm = TRUE) |> suppressMessages()
          if ( "variable" %in% colnames(rel)) {                                  ### das Auslesen der Dimensionsnamen fuer den ein- und zweidimensionalen Fall (Objekt 'trans') ist noch nicht wirklich schoen, muesste gegebenenfalls (wenn mal Zeit ist) elegantisiert werden
                rel[,"original"] <- unlist(lapply(strsplit(as.character(rel[,"variable"]),"\\."), FUN = function (l) {l[length(l)]}))
@@ -345,6 +337,19 @@ getTamWles <- function(runModelObj, qMatrix, leseAlles, omitWle) {
          }
          res  <- data.frame ( model = attr(runModelObj, "defineModelObj")[["analysis.name"]], source = "tam", var1 = c(wleL[,"pid"],rep(NA,nrow(rel))), var2 = NA , type = c(rep("indicator",nrow(wleL)), rep("tech", nrow(rel))), indicator.group = "persons", group = c(wleL[,"group"],rel[,"uebersetzt"]), par = c(wleL[,"par"],rep("wle", nrow(rel))),  derived.par = c(wleL[,"derived.par"],rep("rel",nrow(rel))), value = c(wleL[,"value"] ,rel[,"value"]), stringsAsFactors = FALSE)
          return(res)}
+
+addItemsViewedPerDomain <- function(wleL, runModelObj){
+   if(grepl("PCM|RSM", runModelObj[["irtmodel"]], ignore.case=TRUE)) {
+      if(!all(unique(wleL[,"group"]) %in% unique(attr(runModelObj, "defineModelObj")[["viewed"]][,"dim"]))) {
+          cat(paste0("Cannot match dimensions of Q matrix ('",paste(unique(attr(runModelObj, "defineModelObj")[["viewed"]][,"dim"]), collapse="', '"), "') with groups in WLE object ('",paste(unique(wleL[,"group"]), collapse="', '"),"'). WLE object will not contain valid number of items presented per person and per dimension.\n"))
+      } else { 
+          wleX <- merge(wleL[which(wleL[,"par"] == "NitemsTotal"),], attr(runModelObj, "defineModelObj")[["viewed"]], by.x = c("pid", "group"), by.y = c(attr(runModelObj, "defineModelObj")[["all.Names"]][["ID"]], "dim"), all=TRUE)
+          if(any(is.na(wleX[,"viewed"]))) {wleX[which(is.na(wleX[,"viewed"])),"viewed"] <- 0}
+          wleL <- eatTools::rbind_common(wleL[which(wleL[,"par"] != "NitemsTotal"),], wleX)
+      }   
+   }
+   return(wleL)}
+
 
 ### ----------------------------------------------------------------------------
 

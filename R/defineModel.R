@@ -194,7 +194,7 @@ defineModelSingle <- function (a) {
           batch <- paste( normalize.path(conquest.folder),paste(analysis.name,".cqc",sep=""), sep=" ")
           write(batch, file.path(dir,paste(analysis.name,".bat",sep="")))
           foo <- gen.syntax(Name=analysis.name, daten=daten, all.Names = cbc[["allNam"]], namen.all.hg = cbc[["namen.all.hg"]], all.hg.char = obs4[["all.hg.char"]], var.char= max(obs4[["var.char"]]), model=obs3[["qMatrix"]], anchored=anchor, pfad=dir, n.plausible=n.plausible, compute.fit = compute.fit,
-                 constraints=constraints, std.err=std.err, distribution=distribution, method=met[["method"]], n.iterations=n.iterations, nodes=met[["nodes"]], p.nodes=p.nodes, f.nodes=f.nodes, converge=converge,deviancechange=deviancechange, equivalence.table=equivalence.table, use.letters=use.letters, model.statement=obs2[["model.statement"]], conquest.folder = conquest.folder, allowAllScoresEverywhere = allowAllScoresEverywhere, seed = seed, software=software, export = export)
+                 constraints=constraints, std.err=std.err, distribution=distribution, method=met[["method"]], n.iterations=n.iterations, nodes=met[["nodes"]], p.nodes=p.nodes, f.nodes=f.nodes, converge=converge,deviancechange=deviancechange, equivalence.table=equivalence.table, use.letters=use.letters, model.statement=obs2[["model.statement"]], conquest.folder = conquest.folder, allowAllScoresEverywhere = allowAllScoresEverywhere, seed = seed, software=software, export = export, viewed = cpsc[["viewed"]])
           if(!is.null(anchor))  {
              write.table(ankFrame[["resConquest"]][,1:2], file.path(dir,paste(analysis.name,".ank",sep="")) ,sep=" ", col.names = FALSE, row.names = FALSE, quote = FALSE)
           }
