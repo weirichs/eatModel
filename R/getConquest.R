@@ -201,9 +201,8 @@ getConquestAdditionalTerms <- function(model.name, qMatrix, shw, shwFile, renam)
                                  ret <- paste(names(y)[yy], nam,sep="_")
                                  return(ret)})), sep="", collapse = "_X_") }))
                 }
-                if(ncol(qMatrix) != 2) {
-                   cat(paste0("Warning: Cannot identify the group the term '",i,"' in file '",shwFile,"' belongs to. Insert 'NA' to the 'group' column.\n"))
-                   gr <- NA
+                if(ncol(qMatrix) != 2) {                                     ### fuer mehrdimensionale modelle kann die Dimensionszuordnung nicht direkt aus der Q Matrix bestimmt werden
+                   gr <- "leer"                                              ### deshalb wird sie hier vorerst auf NULL gesetzt und ANSCHLIESSEND an 'res' drangemergt
                 }  else {
                    gr <- colnames(qMatrix)[2]
                 }                                                            ### untere zeile: gesonderte partial credit behandlung
@@ -235,9 +234,20 @@ getConquestAdditionalTerms <- function(model.name, qMatrix, shw, shwFile, renam)
                     }
                     res  <- rbind ( res, shwE, shwE2, shwE3, shwSE)
                 }
+                if(ncol(qMatrix) != 2) {
+                   res <- mergeDimensionToResults(res=res, qma=qMatrix)
+                }
             }
          }
          return(res)}
+
+mergeDimensionToResults <- function(res, qma) {
+   res[,"group"] <- NULL
+   qL  <- eatTools::facToChar(reshape2::melt(qma, id.vars = colnames(qma)[1], variable.name = "group", na.rm=TRUE))
+   qL  <- qL[which(qL[,"value"] != 0 ) , ]
+   if(length(setdiff(res[,"var1"], qL[,"item"]))>0) {warning("For some units in showfile, dimension cannot be identified from Q matrix. Please contact the package maintainer.")}
+   res <- eatTools::mergeAttr(res, qL[,c("item", "group")], by.x = "var1", by.y = "item", all.x = TRUE, all.y = FALSE, setAttr=FALSE, xName = "showfile", yName = "Q matrix")
+   return(res)}
 
 
 ### ----------------------------------------------------------------------------
