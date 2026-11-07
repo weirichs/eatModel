@@ -380,7 +380,7 @@ createAnchorSkeleton <- function(dat, itemsPC, lab){
 
 fillStepValues <- function(lab=skelet, prm=prm, itemsPC)   {
    for(i in 1:nrow(itemsPC)) {
-       sub <- subset(prm, item == itemsPC[i,"item"])
+       sub <- subset(prm, item == itemsPC[i,"item"]) |> dplyr::arrange(category)
        if(nrow(sub)==0) {
           lab[eatTools::whereAre(itemsPC[i,"item"], lab[,"item"], verbose=FALSE),"item"] <- NA
        } else {
@@ -401,7 +401,7 @@ fillStepValues <- function(lab=skelet, prm=prm, itemsPC)   {
           }
        }
    }
-   return(lab)}       
+   return(lab)} 
 
 ### ----------------------------------------------------------------------------
 

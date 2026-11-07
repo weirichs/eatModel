@@ -549,7 +549,7 @@ checkPcmFromShowfile <- function(fle, software){
 getConquestPartialCredit <- function(shw, add){
          shw <- do.call("rbind", by(shw[["shw1"]], INDICES =shw[["shw1"]][,"var1"], FUN = function (item) {
                 if(item[,"var1"] %in% add[,"var1"]) {                           ### wenn true, dann partial credit
-                   item2 <- add[intersect(which(add[,"var1"] == item[,"var1"]), which(is.na(add[,"derived.par"]))),] |> dplyr::mutate(value = value + item[,"value"], var2 = paste0("Cat",eatTools::removeNonNumeric(var2)))
+                   item2 <- add[intersect(which(add[,"var1"] == item[,"var1"]), which(is.na(add[,"derived.par"]))),] |> dplyr::mutate(value = value + item[,"value"], var2 = paste0("Cat",eatTools::removeNonNumeric(var2))) |> dplyr::arrange(var2)
                    bounds<- c(-6, 6)                                            ### obere Zeile: diese umrechnung muss beim verankern umgekehrt ausgefuehrt werden!
                    ds    <- item2[,"value"]                                     ### untere Zeile: a ist der slope parameter, der ist bei conquest immer 1
                    while(isTRUE(inherits(try(thurs  <- sapply(1:length(ds), FUN = function(k) { uniroot( function(th) P_get_k(theta = th, k=k, m = length(ds), ds=ds, a = 1) - 0.625, interval = bounds)$root  }) , silent=TRUE ),"try-error"))) {
