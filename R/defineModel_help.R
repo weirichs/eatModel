@@ -386,22 +386,18 @@ fillStepValues <- function(lab=skelet, prm=prm, itemsPC)   {
        } else {
           lab[min(which(lab[,"item"] == itemsPC[i,"item"])),"item"] <- round(mean(sub[,"parameter"]), digits = 5)
           sub[,"step"] <- sub[,"parameter"] - mean(sub[,"parameter"])
-          if((nrow(sub)-1) != length(which(lab[,"item"] == itemsPC[i,"item"]))) {
+          nStepsAnch <- length(which(lab[,"item"] == itemsPC[i,"item"]))
+          if((nrow(sub)-1) != nStepsAnch) {
              cli::cli_abort(c(paste0("Mismatch between number of categories in reference and focus group for item '",itemsPC[i,"item"],"':"), 
                 "x"=paste0("Reference group (anchor file): ", nrow(sub[-nrow(sub),]), " step parameter."),
-                "x"=paste0("Focus group (current data set): Expect ",length(lab[which(lab[,"item"] == itemsPC[i,"item"]),])," step parameters according to categories ",paste(0:(length(lab[which(lab[,"item"] == itemsPC[i,"item"]),])+1),collapse=", ")," in the data."),
+                "x"=paste0("Focus group (current data set): Expect ",nStepsAnch," step parameters according to categories ",paste(0:(nStepsAnch+1),collapse=", ")," in the data."),
                 "i"="Recommended to exclude this item from the anchor, since partial anchoring of item categories in Conquest is not possible due to the d/delta transformation."))
-             if((nrow(sub)-1) > length(which(lab[,"item"] == itemsPC[i,"item"]))) {
-                lab[which(lab[,"item"] == itemsPC[i,"item"]),"item"] <- sub[1:length(which(lab[,"item"] == itemsPC[i,"item"])),"step"]   
-             } else {
-                lab[which(lab[,"item"] == itemsPC[i,"item"])[1:(nrow(sub)-1)],"item"] <- sub[1:(nrow(sub)-1),"step"]   
-             }
           } else {
              lab[which(lab[,"item"] == itemsPC[i,"item"]),"item"] <- sub[-nrow(sub),"step"]
           }
        }
    }
-   return(lab)} 
+   return(lab)}       
 
 ### ----------------------------------------------------------------------------
 
