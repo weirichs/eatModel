@@ -178,8 +178,8 @@ gen.syntax     <- function(Name,daten, all.Names, namen.all.hg = NULL, all.hg.ch
                    if(ncol(model)>2) {                                          ### fuer mehrdimensionale Modelle: schauen, ob es Personen gibt, die in jeder Dimension items bearbeitet haben. Falls nicht, WLE-Erzeugung stoppen (equivalence table generation schlaegt sonst fehl)
                       viewW <- reshape2::dcast(viewed, as.formula(paste0(all.Names[["ID"]], "~dim")), value.var = "viewed")
                       allVal<- rowSums(viewW[,-1], na.rm = FALSE)
-                      if(all(is.na(allVal))) {
-                         cat(paste0("There are no persons that have valid values across all ",ncol(model)-1," dimensions. Remove WLE generation from the Conquest syntax. \n   (Otherwise, the model could crash because equivalence tables cannot be calculated.)\n"))
+                      if(length(which(!is.na(allVal))) < 5) {
+                         cat(paste0("There are only ",length(which(!is.na(allVal)))," person(s) that have valid values across all ",ncol(model)-1," dimensions. Remove WLE generation from the Conquest syntax. \n   (Otherwise, the model could crash because equivalence tables cannot be calculated.)\n"))
                          ind.2 <- grep("estimate=wle|estimates=wle|equivalence wle",syntax)
                          syntax <- syntax[-ind.2]
                       }

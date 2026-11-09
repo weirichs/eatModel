@@ -51,14 +51,15 @@ doAufb <- function ( x, argL ) {
 
 ### ----------------------------------------------------------------------------
 
-identifyConquestFolder <- function (software) {
+identifyConquestFolder <- function (software, folder) {
+    if(!is.null(folder) && file.exists(folder)) {return(folder)}
     soft <- car::recode(software, "'conquest'='console_Feb2007.exe'; 'conquest5'='ConQuestConsole.exe'")
     ver  <- car::recode(software, "'conquest'=2; 'conquest5'=5")
     cf   <- system.file("extdata", soft, package = "eatModel")
     if(nchar(cf)>0) {return(cf)}                                                ### erste Variante, wo er sucht
     cf   <- system.file("exec", soft, package = "eatModel")                     ### nichts gefunden? zweite Variante, wo er suchen soll
     if(nchar(cf)>0) {return(cf)}                                                ### wieder nicht? dann kucke mal auf den Netzlaufwerken
-    defaultConquest <- "i:/Methoden/00_conquest_console/console_Feb2007.exe"
+    defaultConquest <- ifelse(ver == 2, "i:/Methoden/00_conquest_console/console_Feb2007.exe", "c:/Program Files/ACER ConQuest/ConQuestConsole.exe")
     if(file.exists(defaultConquest)) {return(defaultConquest)}
     msg  <- paste0("Cannot find conquest version ",ver," executable file. ", "Please provide it via the 'conquest.folder' argument.")
     if(!interactive()) {stop(msg, call. = FALSE)}

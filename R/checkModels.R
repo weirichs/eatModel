@@ -31,73 +31,75 @@ optionalRenam <- function(vec, renam) {
       vec <- eatTools::recodeLookup(as.character(vec), renam[,c(2,1)])
       return(vec)}} 
 
-checkQmatrixConsistency <- function(qmat, errorWhenNot01 = FALSE){
-  if(is.null(qmat)) {return(qmat)}
-  qmat <- eatTools::makeDataFrame(qmat, name = "Q matrix", onlyWarn=FALSE)
-  if(!inherits(qmat[,1], "character")){
-    qmat[,1] <- as.character(qmat[,1])}
-  nClass<- sapply(qmat[,-1,drop=FALSE], inherits, what=c("numeric", "integer"))
+checkQmatrixConsistency <-  function(qmat, errorWhenNot01 = FALSE) {
+             if(is.null(qmat)) {return(qmat)}
+             qmat  <- eatTools::makeDataFrame(qmat, name = "Q matrix", onlyWarn=FALSE)
+             if(!inherits(qmat[,1], "character")) { qmat[,1] <- as.character(qmat[,1])}
+             nClass<- sapply(qmat[,-1,drop=FALSE], inherits, what=c("numeric", "integer"))
+    ### alle Spalten ausser der ersten muessen numerisch oder integer sein
+             if ( !all(nClass)) {
+                  cat(paste0("Warning: Found non-numeric indicator column(s) in the Q matrix. Transform column(s) '",paste(colnames(qmat)[ which(nClass==FALSE)+1], collapse = "', '") ,"' into numeric format.\n"))
+                  qmat <- data.frame ( qmat[,1,drop=FALSE], eatTools::asNumericIfPossible(qmat[,-1,drop=FALSE]), stringsAsFactors = FALSE)
+             }
+    ### es sollten nur werte von 0 und 1 auftreten (keine missings) ... in wenigen Faellen (conquest 2pl mit fixierte Itemladungen)
+    ### sind auch andere Werte als 0/1 erlaubt, deshalb hier nur Warnung statt Fehler
+    ### Ausnahme: wenn Funktion con splitModels() aufgerufen wird, MUSS es bei anderern Werten als 0/1 einen fehler geben
+             werte <- eatTools::tableUnlist(qmat[,-1,drop=FALSE], useNA="always")
+             unexp <- setdiff( names(werte) , c("0","1", "NA"))
+             if(length(unexp)>0) {
+                if(errorWhenNot01) {
+                   stop(paste0("Expected values for Q matrix are 0 and 1. Found unexpected values: '",paste(unexp, collapse="', '"),"'."))
+                } else {
+                   cat(paste0("Warning: Expected values for Q matrix are 0 and 1. Found unexpected values: '",paste(unexp, collapse="', '"),"'.\n"))
+                }
+             }
+             if(werte[match("NA", names(werte))] > 0) {stop("Missing values in Q matrix.\n")}
+    ### Indikatorspalten duerfen nicht konstant 0 sein (konstant 1 ginge, das waere dann within item multidimensionality)
+             wertes<- lapply(qmat[,-1,drop=FALSE], FUN = function (col)  {all ( col == 0)})
+             konst <- which(wertes == TRUE)
+             if ( length(konst)>0) {                                            ### sind alle Indikatorspalten ausschliesslich 0 -> fehler
+                  if(length(konst) == length(wertes)) {stop("All indicator columns in Q matrix have 0 values.")}
+                  cat(paste0("Column(s) '",paste(names(konst), collapse = "', '"),"' in Q matrix are konstant with value 0. Delete column(s).\n"))
+                  qmat <- qmat[,-match(names(konst), colnames(qmat)), drop=FALSE]
+             }
+    ### keine doppelten Eintraege in Itemspalte
+             doppel<- which(duplicated(qmat[,1]))
+             if(length(doppel)>0) {
+                cat("Found duplicated elements in the item id column of the q matrix. Duplicated elements will be removed.\n")
+                chk  <- table(qmat[,1])                                         ### es wird hier vorher gecheckt, ob, wenn ein Item zweimal in der Q Matrix
+                chk  <- chk[which(chk > 1)]                                     ### auftritt, es beidemale auf dieselben latenten Dimensionen laedt
+                chkL <- lapply(names(chk), FUN = function ( ch ) {
+                        qChk <- qmat[which(qmat[,1] == ch),]
+                        pste <- apply(qChk, 1, FUN = function ( x ) { paste(x[-1], collapse="")})
+                        if( !all ( pste == pste[1] )) {stop(paste0("Inconsistent Q matrix. Item '",ch,"' occurs ",nrow(qChk), " times with incoherent loading structure: \n",eatTools::print_and_capture(qChk, spaces = 3)))}  })
+                qmat <- qmat[!duplicated(qmat[,1]),]
+             }
+    ### items loeschen, die auf keiner dimension laden
+             zeilen<- apply(qmat, 1, FUN = function ( y ) { all ( names(table(y[-1])) == "0")  })
+             weg   <- which(zeilen == TRUE)
+             if(length(weg)>0) {
+                cat(paste("Note: ",length(weg)," item(s) in Q matrix do not belong to any dimension. Delete these item(s) from Q matrix.\n",sep=""))
+                if(length(weg) < 20) {
+                   cat("    "); cat(paste(qmat[weg,1],collapse=", ")); cat("\n")
+                } else {
+                   printClearConsole1(qmat=qmat, weg=weg)                       ### bei vielen items wird die Konsole zugemuellt, nur sophistizierte Auwahl printen
+                }
+                qmat  <- qmat[-weg,]
+             }
+             return(qmat)}
 
-  # all columns - except the first - must be numeric or integer
-  if(!all(nClass)){
-    cat(paste0("Warning: Found non-numeric indicator column(s) in the Q matrix. Transform column(s) '",paste(colnames(qmat)[ which(nClass==FALSE)+1], collapse = "', '") ,"' into numeric format.\n"))
-    qmat <- data.frame(qmat[,1,drop=FALSE], eatTools::asNumericIfPossible(qmat[,-1,drop=FALSE]), stringsAsFactors = FALSE)}
-  #' There should only be values 0 and 1 (no missings).
-  #' In rare cases (conquest 2pl with fixed Itemladungen) other values than 0/1 are ok,
-  #' that's why there's a warning here, instead of an error.
-  #' Exception: function is called by splitModels() -> HAS to throw an error with values other than 0/1.
-  werte <- eatTools::tableUnlist(qmat[, -1, drop=FALSE], useNA="always")
-  unexp <- setdiff( names(werte) , c("0","1", "NA"))
-  if(length(unexp)>0) {
-     if(errorWhenNot01) {
-        stop(paste0("Expected values for Q matrix are 0 and 1. Found unexpected values: '",paste(unexp, collapse="', '"),"'."))
-     } else {
-        cat(paste0("Warning: Expected values for Q matrix are 0 and 1. Found unexpected values: '",paste(unexp, collapse="', '"),"'.\n"))
-     }
-  }
-  if(werte[match("NA", names(werte))] > 0){
-    stop("Missing values in Q matrix.\n")}
-  # Indikatorspalten duerfen nicht konstant 0 sein (konstant 1 ginge, das waere dann within item multidimensionality)
-  wertes <- lapply(qmat[, -1, drop=FALSE], FUN = function(col) {all(col == 0)})
-  konst <- which(wertes == TRUE)
-  if(length(konst) > 0){              # sind alle Indikatorspalten ausschliesslich 0 -> Fehler
-    if(length(konst) == length(wertes)){
-      stop("All indicator columns in Q matrix have 0 values.")
-    }
-    cat(paste0("Column(s) '",paste(names(konst), collapse = "', '"),
-               "' in Q matrix are constant with value 0. Delete column(s).\n"))
-    qmat <- qmat[,-match(names(konst), colnames(qmat)), drop=FALSE]
-  }
-
-  # no doubled input in item columns.
-  doppel <- which(duplicated(qmat[,1]))
-  if(length(doppel) > 0){
-    cat("Found duplicated elements in the item id column of the q matrix. Duplicated elements will be removed.\n")
-    chk  <- table(qmat[,1])                           # es wird hier vorher gecheckt, ob - wenn ein Item zweimal in der Q Matrix
-    chk  <- chk[which(chk > 1)]                       # auftritt - es beidemale auf dieselben latenten Dimensionen laedt.
-    chkL <- lapply(names(chk), FUN = function(ch){
-      qChk <- qmat[which(qmat[,1] == ch),]
-      pste <- apply(qChk, 1, FUN = function(x) {paste(x[-1], collapse="")})
-      if(!all(pste == pste[1])){
-        stop(paste0("Inconsistent Q matrix. Item '", ch, "' occurs ", nrow(qChk),
-                    " times with incoherent loading structure: \n",
-                    eatTools::print_and_capture(qChk, spaces = 3)))
-        }
-      })
-    qmat <- qmat[!duplicated(qmat[,1]),]
-  }
-
-  # delete items, that don't load on any dimension.
-  zeilen <- apply(qmat, 1, FUN = function(y) {all(names(table(y[-1])) == "0")} )
-  weg    <- which(zeilen == TRUE)
-  if(length(weg) > 0){
-    cat(paste("Note: Following ",length(weg)," item(s) in Q matrix do not belong to any dimension. Delete these item(s) from Q matrix.\n",
-              sep=""))
-    cat("    "); cat(paste(qmat[weg,1],collapse=", ")); cat("\n")
-    qmat <- qmat[-weg,]
-  }
-  return(qmat)
-}
+printClearConsole1 <- function(qmat, weg) {
+    qma     <- qmat[-weg,]
+    qma[,"pattern"] <- apply(qma, MARGIN = 1, FUN = function(zeile) {paste(zeile[-1], collapse="_")})
+    nProPat <- ceiling(20 / length(unique(qma[,"pattern"])))
+    items   <- by(data = qma, INDICES = qma[,"pattern"], FUN = function(pat) {
+               if(nrow(pat) < nProPat) {
+                  nn <- nrow(pat)
+               } else {
+                  nn <- nProPat
+               }
+               return(sample(qma[,1], size = nn, replace=FALSE))}) |> unlist() |> as.vector()
+    cat("    "); cat(paste(c(items,"[truncated]"),collapse=", ")); cat("\n")  }
 
 ### called by defineModel() ----------------------------------------------------
 

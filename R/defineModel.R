@@ -64,7 +64,7 @@ defineModelSingle <- function (a) {
        dat  <- eatTools::makeDataFrame(dat, name = "dat")
      ### software checken
        software <- match.arg(arg = tolower(software), choices = eval(formals(defineModel)[["software"]]))
-       if(software %in% c("conquest", "conquest5") && is.null(a[["conquest.folder"]]) ) {conquest.folder <- identifyConquestFolder(software=software) }
+       if(software %in% c("conquest", "conquest5")) {conquest.folder <- identifyConquestFolder(software=software, folder = a[["conquest.folder"]]) }
        if(software %in% c("conquest", "conquest5", "tam")) {
           irtmodel <- match.arg(irtmodel, choices = eval(formals(defineModel)[["irtmodel"]]))
           if(is.null(Msteps) ) {                                                ### den Default fuer Msteps so setzen wie in TAM
@@ -306,11 +306,21 @@ generateOrCheckQmatrix <- function(a, qMatrix, all.Names) {
           notInDat<- setdiff(qMatrix[,1], all.Names$variablen)
           notInQ  <- setdiff( all.Names$variablen , qMatrix[,1])
           if(length(notInDat)>0) {
-             cat(paste("Following ", length(notInDat)," item(s) missed in data frame will be removed from Q matrix: \n    ",paste(notInDat,collapse=", "),"\n",sep=""))
+             cat(paste(length(notInDat)," item(s) missed in data frame will be removed from Q matrix: \n", sep="")) 
+             if(length(notInDat)< 20) {
+                cat("    "); cat(paste(notInDat,collapse=", "),"\n",sep="")
+             } else {
+                printClearConsole1(qmat=qMatrix, weg=eatTools::whereAre(notInDat, qMatrix[,1], verbose=FALSE))
+             }
              qMatrix <- checkQmatrixConsistency(qMatrix[-match(notInDat, qMatrix[,1]),])
           }
           if(length(notInQ)>0) {
-             cat(paste("Following ", length(notInQ)," item(s) missed in Q matrix will be removed from data: \n    ",paste(notInQ,collapse=", "),"\n",sep=""))
+             cat(paste(length(notInQ)," item(s) missed in Q matrix will be removed from data: \n", sep=""))
+             if(length(notInQ)< 20) {
+                cat("    "); cat(paste(notInQ,collapse=", "),"\n",sep="")
+             } else {
+                cat("    "); cat(paste(c(sample(notInQ, size = 20, replace=FALSE),"[truncated]"),collapse=", "),"\n",sep="")
+             }
           }                                                                     ### Wichtig! Sicherstellen, dass Reihenfolge der Items in Q-Matrix mit Reihenfolge der Items im Data.frame uebereinstimmt!
           all.Names[["variablen"]] <- qMatrix[,1]
        }
