@@ -4,11 +4,18 @@ doAufb <- function ( x, argL ) {
           if(!is.null(x[["qMatrix"]])) {
      ### check: wenn superSplitter BERUHEND AUF ITEM GROUPING genutzt wird, wird 'items'-Argument von 'defineModel' ignoriert bzw. ueberschrieben
              itemMis<- setdiff ( x[["qMatrix"]][,1], colnames(argL[["dat"]]))
-             if(length(itemMis) > 0) {cli::cli_warn(c(paste0("Model split preparation for model No. ",x[["model.no"]], ", model name ",x[["model.name"]],": ", length(itemMis), " items from ",nrow(x[["qMatrix"]])," items listed the Q matrix not found in data:"), "i"=paste0("'", paste(itemMis, collapse= "', '"),"'")))}
+             if(length(itemMis) > 0) {
+                if(length(itemMis) < 20) {
+                   cli::cli_warn(c(paste0("Model split preparation for model No. ",x[["model.no"]], ", model name ",x[["model.name"]],": ", length(itemMis), " items from ",nrow(x[["qMatrix"]])," items listed in the Q matrix not found in data:"), "i"=paste0("'", paste(itemMis, collapse= "', '"),"'")))
+                } else {
+                   snip <- capture.output(printClearConsole1(qmat=x[["qMatrix"]], weg=eatTools::whereAre(itemMis, x[["qMatrix"]][,1], verbose=FALSE)))
+                   cli::cli_warn(c(paste0("Model split preparation for model No. ",x[["model.no"]], ", model name ",x[["model.name"]],": ", length(itemMis), " items from ",nrow(x[["qMatrix"]])," items listed in the Q matrix not found in data:"), "i"=snip))
+                }   
+             }
              itemSel<- intersect ( x[["qMatrix"]][,1], colnames(argL[["dat"]]))
              qMatrix<- x[["qMatrix"]]
-          }  else  {
-             if ( is.null(argL[["items"]]) )  { stop(paste0("Model no. ",x[["model.no"]]," ('",x[["model.name"]],"'): no items defined.\n"))}
+          } else {
+             if(is.null(argL[["items"]]) )  { stop(paste0("Model no. ",x[["model.no"]]," ('",x[["model.name"]],"'): no items defined.\n"))}
              itemSel<- argL[["items"]]                                          ### itemSel = "items selected"
           }
      ### Personen im Datensatz selektieren: Achtung: wenn keine Personen in "person.grouping", nimm alle!
@@ -17,17 +24,17 @@ doAufb <- function ( x, argL ) {
              if( length ( persMis ) > 0) {warning(paste0("Model split preparation for model No. ",x[["model.no"]], ", model name ",x[["model.name"]],": ", length(persMis) ," from ",nrow(x[["person.grouping"]])," persons not found in data.\n"))}
              persons<- intersect ( x[["person.grouping"]][,1], argL[["dat"]][,argL[["id"]]])
              datSel <- argL[["dat"]][match(persons, argL[["dat"]][,argL[["id"]]]),]
-          }  else  {
+          } else {
              datSel <- argL[["dat"]]
           }
      ### Unterverzeichnisse definieren
           if(is.null(argL[["dir"]])) { dirI <- NULL }  else  { dirI   <- file.path(argL[["dir"]], substring(x[["model.subpath"]],3)) }
           nameI  <- x[["model.name"]]
-          if ( !is.null(argL[["qMatrix"]]) ) {qMatrix <- argL[["qMatrix"]]}
+          if(!is.null(argL[["qMatrix"]])) {qMatrix <- argL[["qMatrix"]]}
           if(!exists("qMatrix") && is.null(argL[["qMatrix"]]) ) {
              nDim    <- 1
              qMatrix <- NULL
-          }   else   {
+          } else {
              if(!exists("qMatrix") ) { qMatrix <- argL[["qMatrix"]]}
              nDim <- ncol(qMatrix)-1
           }
